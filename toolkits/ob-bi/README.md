@@ -1,4 +1,4 @@
-### **WSO2 Open Banking BI CDS Toolkit 1.0.0**
+### **WSO2 Open Banking BI CDS Reference Toolkit 1.0.0**
 
 **Try Locally:**
 
