@@ -1,4 +1,4 @@
-### **WSO2 Open Banking APIM CDS Toolkit 1.0.0**
+### **WSO2 Open Banking APIM CDS Reference Toolkit 1.0.0**
 
 **Try Locally:**
 
