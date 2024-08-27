@@ -1,0 +1,50 @@
+{
+  "data": [
+    {
+      "account_id": "30080012343456",
+      "display_name": "account_1",
+      "accountId": "30080012343456",
+      "accountName": "account_1",
+      "authorizationMethod": "single",
+      "nickName": "not-working",
+      "customerAccountType": "Individual",
+      "type": "TRANS_AND_SAVINGS_ACCOUNTS",
+      "isEligible": true,
+      "isJointAccount": false,
+      "jointAccountConsentElectionStatus": false
+    },
+    {
+      "account_id": "30080098763459",
+      "display_name": "account_2",
+      "accountId": "30080098763459",
+      "accountName": "account_2",
+      "authorizationMethod": "single",
+      "nickName": "not-working",
+      "customerAccountType": "Individual",
+      "type": "TRANS_AND_SAVINGS_ACCOUNTS",
+      "isEligible": true,
+      "isJointAccount": false,
+      "jointAccountConsentElectionStatus": false
+    },
+    {
+      "accountId": "19761212",
+      "accountName": "Everyday Account",
+      "nickName": "My day to day expenses",
+      "customerAccountType": "Personal",
+      "type": "TRANS_AND_SAVINGS_ACCOUNTS",
+      "isEligible": true,
+      "isJointAccount": true,
+      "jointAccountinfo": {
+        "jointAccountConsentElectionStatus": "ELECTED",
+        "linkedMember": [
+          {
+            "memberId": "jah-a@wso2.com@carbon.super",
+            "type": "Owner",
+            "meta": {}
+          }
+        ]
+      },
+      "meta": {}
+    }
+  ]
+}

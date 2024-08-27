@@ -1,0 +1,72 @@
+name: Build Consumer Data Standards AU Reference Implementation Repository
+
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  pull_request:
+    branches:
+      - 'main'
+    types:
+      - labeled
+
+jobs:
+
+  Build-repo-check:
+
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'Ready-to-Build') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v1
+        with:
+          java-version: 8
+      - uses: actions/checkout@v3
+      - name: Set up Node 16
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+      - name: Cache local Maven repository
+        uses: actions/cache@v2
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+      - name: Setup Maven settings.xml
+        uses: whelk-io/maven-settings-xml-action@v11
+        with:
+          mirrors: >
+            [
+              {
+                "id": "wso2-nexus",
+                "mirrorOf": "wso2-nexus",
+                "url": "http://maven.wso2.org/nexus/content/groups/wso2-public/"
+              },
+              {
+                "id": "wso2.releases",
+                "mirrorOf": "wso2.releases",
+                "url": "http://maven.wso2.org/nexus/content/repositories/releases/"
+              },
+              {
+                "id": "wso2.snapshots",
+                "mirrorOf": "wso2.snapshots",
+                "url": "http://maven.wso2.org/nexus/content/repositories/snapshots/"
+              },
+              {
+                "id": "knopflerfish",
+                "mirrorOf": "knopflerfish",
+                "url": "http://resources.knopflerfish.org/repo/maven2/release"
+              }
+            ]
+      - name: Build with Maven
+        run: |
+          export MAVEN_OPTS="-Xmx8g -XX:MaxPermSize=512m"
+          mvn -B install --file pom.xml
+
+# Repositories mirrored due to the use of HTTP repositories. Mirrors can be removed after the respective repositories
+# are updated.
+#        [wso2-nexus (http://maven.wso2.org/nexus/content/groups/wso2-public/, default, releases+snapshots),
+#        wso2.releases (http://maven.wso2.org/nexus/content/repositories/releases/, default, releases+snapshots),
+#        wso2.snapshots (http://maven.wso2.org/nexus/content/repositories/snapshots/, default, snapshots),
+#        knopflerfish (http://resources.knopflerfish.org/repo/maven2/release, default, releases+snapshots)]

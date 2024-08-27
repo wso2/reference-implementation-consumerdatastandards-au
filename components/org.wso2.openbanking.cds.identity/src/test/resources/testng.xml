@@ -1,0 +1,81 @@
+<!--
+  ~ Copyright (c)  2021, WSO2 Inc. (http://www.wso2.com). All Rights Reserved.
+  ~
+  ~ This software is the property of WSO2 Inc. and its suppliers, if any.
+  ~ Dissemination of any information or reproduction of any material contained
+  ~ herein is strictly forbidden, unless permitted by WSO2 in accordance with
+  ~ the WSO2 Software License available at https://wso2.com/licenses/eula/3.1.
+  ~ For specific language governing the permissions and limitations under this
+  ~ license, please see the license as well as any agreement you’ve entered into
+  ~ with WSO2 governing the purchase of this software and any associated services.
+  ~
+  -->
+
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd" >
+
+<suite name="identity-base-test-suite">
+    <test name="accelerator-dcr-test-all">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.dcr.DCRUtilTest"/>
+        </classes>
+    </test>
+    <test name="auth-extensions-test">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.auth.extensions.request.validator.RequestObjectValidatorTest"/>
+            <class name="org.wso2.openbanking.cds.identity.auth.extensions.response.handler.CDSResponseTypeHandlerImplTest"/>
+            <class name="org.wso2.openbanking.cds.identity.auth.extensions.response.validator.CDSCodeResponseTypeValidatorTest"/>
+        </classes>
+    </test>
+    <test name="application-listener">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.listener.application.ApplicationManagementListenerTest"/>
+        </classes>
+    </test>
+    <test name="grant-type-handlers">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.grant.type.handlers.CDSAuthorizationCodeGrantHandlerTest"/>
+            <class name="org.wso2.openbanking.cds.identity.grant.type.handlers.CDSRefreshGrantHandlerTest"/>
+        </classes>
+    </test>
+    <test name="claims">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.claims.CDSClaimProviderTest"/>
+        </classes>
+    </test>
+    <test name="push-auth-validator">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.push.auth.extension.request.validator.CDSPushAuthRequestValidatorTest"/>
+        </classes>
+    </test>
+    <test name="metadata-periodical-updater">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.metadata.periodical.updater.internal.PeriodicalMetaDataUpdateJobTest"/>
+            <class name="org.wso2.openbanking.cds.identity.metadata.periodical.updater.service.dataholder.responsibility.CleanupRegistrationResponsibilityTest"/>
+            <class name="org.wso2.openbanking.cds.identity.metadata.periodical.updater.service.dataholder.responsibility.DataHolderResponsibilitiesExecutorTest"/>
+            <class name="org.wso2.openbanking.cds.identity.metadata.periodical.updater.service.dataholder.responsibility.InvalidateConsentsResponsibilityTest"/>
+            <class name="org.wso2.openbanking.cds.identity.metadata.periodical.updater.service.retryer.RetryerTest"/>
+            <class name="org.wso2.openbanking.cds.identity.metadata.periodical.updater.utils.UtilsTest"/>
+        </classes>
+    </test>
+    <test name="cds-client-authenticators">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.authenticator.CDSArrangementPrivateKeyJWTClientAuthenticatorTest"/>
+            <class name="org.wso2.openbanking.cds.identity.authenticator.CDSPARPrivateKeyJWTClientAuthenticatorTest"/>
+            <class name="org.wso2.openbanking.cds.identity.authenticator.CDSRevocationPrivateKeyJWTClientAuthenticatorTest"/>
+            <class name="org.wso2.openbanking.cds.identity.authenticator.CDSTokenPrivateKeyJWTClientAuthenticatorTest"/>
+            <class name="org.wso2.openbanking.cds.identity.authenticator.CDSIntrospectionPrivateKeyJWTClientAuthenticatorTest"/>
+        </classes>
+    </test>
+    <test name="cds-tomcat-filters">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.filter.CDSIntrospectionFilterTest"/>
+            <class name="org.wso2.openbanking.cds.identity.filter.CDSParFilterTest"/>
+            <class name="org.wso2.openbanking.cds.identity.filter.CDSTokenRevocationFilterTest"/>
+        </classes>
+    </test>
+    <test name="cds-introspection-data-provider">
+        <classes>
+            <class name="org.wso2.openbanking.cds.identity.listener.CDSIntrospectionDataProviderTest"/>
+        </classes>
+    </test>
+</suite>

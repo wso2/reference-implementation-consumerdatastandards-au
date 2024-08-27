@@ -1,0 +1,174 @@
+/**
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@App:name("CDSCustomerRecipientMetricsApp")
+@App:description('Summarize customer count and recipient count data to be used by CDS Metrics API')
+
+define trigger ExpiredTriggerStream at every 1 min;
+
+@source(type='wso2event',  @map(type='wso2event'))
+define stream ConsentInputStream(CDR_ARRANGEMENT_ID string, USER_ID string, CLIENT_ID string, STATUS string,
+                        EXPIRY_TIME long);
+
+define stream CountableConsentAuthStream(CONSENT_ID string, CLIENT_ID string, USER_ID string);
+
+define stream ExpiredConsentStream(CONSENT_ID string, CLIENT_ID string, USER_ID string);
+
+define stream RevokedConsentStream(CONSENT_ID string, CLIENT_ID string, USER_ID string);
+
+define stream ActiveAuthCountStream(CLIENT_ID string, USER_ID string, ACTIVE_AUTH_COUNT long, LAST_UPDATED long);
+
+@source(type='wso2event',  @map(type='wso2event'))
+define stream AppDeletionInputStream(clientId string);
+
+define function getNewActiveAuthCount[JavaScript] return int {
+	var newActiveAuthCount = data[0];
+
+	if (newActiveAuthCount > 0) {
+	    return newActiveAuthCount;
+	} else {
+	    return 0;
+	}
+};
+
+-- Persist consent data.
+@primaryKey('CONSENT_ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table CONSENT_RAW_DATA(CONSENT_ID string, TIMESTAMP long, CLIENT_ID string, USER_ID string, STATUS string,
+                        EXPIRY_TIME long);
+
+@primaryKey('CLIENT_ID', 'USER_ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table CDSMetricsCustomerRecipientSummary(CLIENT_ID string, USER_ID string, ACTIVE_AUTH_COUNT long,
+                        LAST_UPDATED long);
+
+-- Logging Streams
+@sink(type='log', prefix='InputLog', priority='DEBUG')
+define stream InputLogStream(CDR_ARRANGEMENT_ID string, CLIENT_ID string, USER_ID string, STATUS string,
+                        EXPIRY_TIME long);
+
+@sink(type='log', prefix='RevokedLog', priority='DEBUG')
+define stream RevokedLogStream(CONSENT_ID string, CLIENT_ID string, USER_ID string);
+
+@sink(type='log', prefix='ExpiredLog', priority='DEBUG')
+define stream ExpiredLogStream(CONSENT_ID string, CLIENT_ID string, USER_ID string);
+
+@sink(type='log', prefix='ActiveAuthCountLog', priority='DEBUG')
+define stream ActiveAuthCountLogStream(CLIENT_ID string, USER_ID string, ACTIVE_AUTH_COUNT long, LAST_UPDATED long);
+
+from ConsentInputStream
+select CDR_ARRANGEMENT_ID, CLIENT_ID, USER_ID, STATUS, EXPIRY_TIME
+insert into InputLogStream;
+
+from RevokedConsentStream
+select CONSENT_ID, CLIENT_ID, USER_ID
+insert into RevokedLogStream;
+
+from ExpiredConsentStream
+select CONSENT_ID, CLIENT_ID, USER_ID
+insert into ExpiredLogStream;
+
+from ActiveAuthCountStream
+select CLIENT_ID, USER_ID, ACTIVE_AUTH_COUNT, LAST_UPDATED
+insert into ActiveAuthCountLogStream;
+
+-- Filter authorizations that should be counted
+from ConsentInputStream[STATUS == "authorized"]#window.unique:first(CDR_ARRANGEMENT_ID)
+select CDR_ARRANGEMENT_ID as CONSENT_ID, CLIENT_ID, USER_ID
+insert into CountableConsentAuthStream;
+
+-- Filter revoked authorizations that should be counted
+from ConsentInputStream[STATUS == "revoked"]#window.unique:first(CDR_ARRANGEMENT_ID) as I join CONSENT_RAW_DATA as T
+on I.CDR_ARRANGEMENT_ID == T.CONSENT_ID
+select I.CDR_ARRANGEMENT_ID as CONSENT_ID, T.CLIENT_ID as CLIENT_ID, T.USER_ID as USER_ID
+having T.STATUS == "authorized"
+insert into RevokedConsentStream;
+
+-- Trigger expired authorizations
+from ExpiredTriggerStream join CONSENT_RAW_DATA
+select CONSENT_ID, CLIENT_ID, USER_ID
+having STATUS == "authorized" and not(EXPIRY_TIME is null) and EXPIRY_TIME < (time:timestampInMilliseconds()/1000)
+insert into ExpiredConsentStream;
+
+-- Update CONSENT_RAW_DATA table
+from ConsentInputStream[STATUS == "authorized"]
+select CDR_ARRANGEMENT_ID as CONSENT_ID,
+    (time:timestampInMilliseconds()/1000) as TIMESTAMP,
+    CLIENT_ID,
+    USER_ID,
+    STATUS,
+    EXPIRY_TIME
+update or insert into CONSENT_RAW_DATA
+    set CONSENT_RAW_DATA.CONSENT_ID = CONSENT_ID,
+    CONSENT_RAW_DATA.TIMESTAMP = TIMESTAMP,
+    CONSENT_RAW_DATA.CLIENT_ID = CLIENT_ID,
+    CONSENT_RAW_DATA.USER_ID = USER_ID,
+    CONSENT_RAW_DATA.STATUS = STATUS,
+    CONSENT_RAW_DATA.EXPIRY_TIME = EXPIRY_TIME
+    on CONSENT_RAW_DATA.CONSENT_ID == CONSENT_ID;
+
+from RevokedConsentStream
+select CONSENT_ID, time:timestampInMilliseconds()/1000 as TIMESTAMP
+update CONSENT_RAW_DATA
+    set CONSENT_RAW_DATA.STATUS = "revoked",
+    CONSENT_RAW_DATA.TIMESTAMP = TIMESTAMP
+    on CONSENT_RAW_DATA.CONSENT_ID == CONSENT_ID;
+
+from ExpiredConsentStream
+select CONSENT_ID, time:timestampInMilliseconds()/1000 as TIMESTAMP
+update CONSENT_RAW_DATA
+    set CONSENT_RAW_DATA.STATUS = "expired",
+    CONSENT_RAW_DATA.TIMESTAMP = TIMESTAMP
+    on CONSENT_RAW_DATA.CONSENT_ID == CONSENT_ID;
+
+-- Update active authorization counts in CDSMetricsCustomerRecipientSummary
+from CountableConsentAuthStream#window.length(1) as I
+    left outer join CDSMetricsCustomerRecipientSummary as T
+on I.CLIENT_ID == T.CLIENT_ID and I.USER_ID == T.USER_ID
+select I.CLIENT_ID as CLIENT_ID, I.USER_ID as USER_ID,
+    ifThenElse(T.ACTIVE_AUTH_COUNT > 0, T.ACTIVE_AUTH_COUNT + 1, 1L) as ACTIVE_AUTH_COUNT,
+    time:timestampInMilliseconds()/1000 as LAST_UPDATED
+insert into ActiveAuthCountStream;
+
+from RevokedConsentStream#window.length(1) as I left outer join CDSMetricsCustomerRecipientSummary as T
+on I.CLIENT_ID == T.CLIENT_ID and I.USER_ID == T.USER_ID
+select I.CLIENT_ID as CLIENT_ID, I.USER_ID as USER_ID,
+    ifThenElse(T.ACTIVE_AUTH_COUNT > 0, T.ACTIVE_AUTH_COUNT - 1, 0L) as ACTIVE_AUTH_COUNT,
+    time:timestampInMilliseconds()/1000 as LAST_UPDATED
+insert into ActiveAuthCountStream;
+
+from ExpiredConsentStream#window.batch() as I
+left outer join CDSMetricsCustomerRecipientSummary as T
+on I.CLIENT_ID == T.CLIENT_ID and I.USER_ID == T.USER_ID
+select I.CLIENT_ID, I.USER_ID,
+    cast(getNewActiveAuthCount(T.ACTIVE_AUTH_COUNT - count(CONSENT_ID)), 'long') as ACTIVE_AUTH_COUNT,
+    time:timestampInMilliseconds()/1000 as LAST_UPDATED
+group by I.CLIENT_ID, I.USER_ID
+insert into ActiveAuthCountStream;
+
+from ActiveAuthCountStream
+select CLIENT_ID, USER_ID, ACTIVE_AUTH_COUNT, LAST_UPDATED
+update or insert into CDSMetricsCustomerRecipientSummary
+    set CDSMetricsCustomerRecipientSummary.ACTIVE_AUTH_COUNT = ACTIVE_AUTH_COUNT,
+    CDSMetricsCustomerRecipientSummary.LAST_UPDATED = LAST_UPDATED
+    on CDSMetricsCustomerRecipientSummary.CLIENT_ID == CLIENT_ID
+        and CDSMetricsCustomerRecipientSummary.USER_ID == USER_ID;
+
+from AppDeletionInputStream
+delete CDSMetricsCustomerRecipientSummary
+    on CDSMetricsCustomerRecipientSummary.CLIENT_ID == clientId;

@@ -1,0 +1,16 @@
+FROM
+  RequestStream
+SELECT
+  messageID, true AS isEligible, str: concat(cast(map: get(propertiesMap, 'customerStatus'), 'string'), ':', appId) as throttleKey, propertiesMap
+INSERT INTO
+  EligibilityStream;
+FROM
+  EligibilityStream [ isEligible == true ] # throttler: timeBatch(5 sec, 0)
+select
+  throttleKey,
+  (count(messageID) >= 50) as isThrottled,
+  expiryTimeStamp
+group by
+  throttleKey
+INSERT
+  ALL EVENTS into ResultStream;

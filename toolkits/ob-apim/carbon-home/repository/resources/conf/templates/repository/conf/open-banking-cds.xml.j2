@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<Server xmlns="http://wso2.org/projects/carbon/open-banking-cds.xml">
+    <IdPermanence>
+        {% if open_banking_cds.id_permanence.enabled is defined %}
+        <Enabled>{{open_banking_cds.id_permanence.enabled}}</Enabled>
+        {% else %}
+        <Enabled>true</Enabled>
+        {% endif %}
+        {% if open_banking_cds.id_permanence.secret_key is defined %}
+        <SecretKey>{{open_banking_cds.id_permanence.secret_key}}</SecretKey>
+        {% else %}
+        <SecretKey>wso2</SecretKey>
+        {% endif %}
+    </IdPermanence>
+    <TokenEncryption>
+        {% if open_banking_cds.token_encryption.enabled is defined %}
+        <Enabled>{{open_banking_cds.token_encryption.enabled}}</Enabled>
+        {% else %}
+        <Enabled>true</Enabled>
+        {% endif %}
+        {% if open_banking_cds.token_encryption.secret_key is defined %}
+        <SecretKey>{{open_banking_cds.token_encryption.secret_key}}</SecretKey>
+        {% else %}
+        <SecretKey>wso2</SecretKey>
+        {% endif %}
+    </TokenEncryption>
+    <Admin>
+        {% if open_banking_cds.admin.api_self_link is defined %}
+        <APISelfLink>{{open_banking_cds.admin.api_self_link}}</APISelfLink>
+        {% else %}
+        <APISelfLink>https://localhost:8243/cds-au/v2/admin/</APISelfLink>
+        {% endif %}
+    </Admin>
+    <JWTAuthentication>
+        {% if open_banking_cds.jwt_authentication.enabled is defined %}
+        <Enabled>{{open_banking_cds.jwt_authentication.enabled}}</Enabled>
+        {% else %}
+        <Enabled>false</Enabled>
+        {% endif %}
+        {% if open_banking_cds.jwt_authentication.issuer is defined %}
+        <Issuer>{{open_banking_cds.jwt_authentication.issuer}}</Issuer>
+        {% endif %}
+        {% if open_banking_cds.jwt_authentication.subject is defined %}
+        <Subject>{{open_banking_cds.jwt_authentication.subject}}</Subject>
+        {% endif %}
+        {% if open_banking_cds.jwt_authentication.audience is defined %}
+        <Audience>{{open_banking_cds.jwt_authentication.audience}}</Audience>
+        {% endif %}
+        {% if open_banking_cds.jwt_authentication.jwks_url is defined %}
+        <JWKSUrl>{{open_banking_cds.jwt_authentication.jwks_url}}</JWKSUrl>
+        {% endif %}
+        {% if open_banking_cds.jwt_authentication.cache_expiry_time is defined %}
+        <CacheExpiryTime>{{open_banking_cds.jwt_authentication.cache_expiry_time}}</CacheExpiryTime>
+        {% endif %}
+        {% if open_banking_cds.jwt_authentication.cache_modified_expiry_time is defined %}
+        <CacheModifiedExpiry>{{open_banking_cds.jwt_authentication.cache_modified_expiry_time}}</CacheModifiedExpiry>
+        {% endif %}
+    </JWTAuthentication>
+    <Headers>
+        {% if open_banking_cds.headers.holder_identifier is defined %}
+        <HolderIdentifier>{{open_banking_cds.headers.holder_identifier}}</HolderIdentifier>
+        {% endif %}
+    </Headers>
+    <Metrics>
+        {% if open_banking_cds.metrics.aggregation_job.enabled is defined %}
+        <AggregationJobEnabled>{{open_banking_cds.metrics.aggregation_job.enabled}}</AggregationJobEnabled>
+        {% endif %}
+        {% if open_banking_cds.metrics.aggregation_job.cache_expiry_time is defined %}
+        <CacheExpiryTime>{{open_banking_cds.metrics.aggregation_job.cache_expiry_time}}</CacheExpiryTime>
+        {% endif %}
+        {% if open_banking_cds.metrics.tps_data_retrieval_url is defined %}
+        <TPSDataRetrievalURL>{{open_banking_cds.metrics.tps_data_retrieval_url}}</TPSDataRetrievalURL>
+        {% else %}
+        <TPSDataRetrievalURL>http://localhost:8007/CDSCurrentPeakTPSApp/CDSCurrentPeakTPSAppStream</TPSDataRetrievalURL>
+        {% endif %}
+        {% if open_banking_cds.metrics.time_zone is defined %}
+        <TimeZone>{{open_banking_cds.metrics.time_zone}}</TimeZone>
+        {% else %}
+        <TimeZone>GMT</TimeZone>
+        {% endif %}
+        {% if open_banking_cds.metrics.availability_start_date is defined %}
+        <AvailabilityStartDate>{{open_banking_cds.metrics.availability_start_date}}</AvailabilityStartDate>
+        {% else %}
+        <AvailabilityStartDate>2023-11-01</AvailabilityStartDate>
+        {% endif %}
+        {% if open_banking_cds.metrics.metrics_v5_start_date is defined %}
+        <MetricsV5StartDate>{{open_banking_cds.metrics.metrics_v5_start_date}}</MetricsV5StartDate>
+        {% else %}
+        <MetricsV5StartDate>2024-05-01</MetricsV5StartDate>
+        {% endif %}
+        {% if open_banking_cds.metrics.consent_abandonment_time is defined %}
+        <ConsentAbandonmentTime>{{open_banking_cds.metrics.consent_abandonment_time}}</ConsentAbandonmentTime>
+        {% else %}
+        <ConsentAbandonmentTime>300</ConsentAbandonmentTime>
+        {% endif %}
+        {% if open_banking_cds.metrics.authorization_code_validity is defined %}
+        <AuthorizationCodeValidityPeriod>{{open_banking_cds.metrics.authorization_code_validity}}</AuthorizationCodeValidityPeriod>
+        {% else %}
+        <AuthorizationCodeValidityPeriod>300</AuthorizationCodeValidityPeriod>
+        {% endif %}
+    </Metrics>
+</Server>

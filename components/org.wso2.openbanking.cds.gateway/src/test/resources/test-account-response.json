@@ -1,0 +1,39 @@
+{
+  "data": {
+    "accounts": [
+      {
+        "accountId": 30080012343456,
+        "maskedNumber": 1234,
+        "openStatus": "OPEN",
+        "displayName": "account_1",
+        "isOwned": true,
+        "nickname": "Alpha",
+        "creationDate": "2019-05-01T15:43:00.12345Z",
+        "productName": "Product name",
+        "productCategory": "TRANS_AND_SAVINGS_ACCOUNTS"
+      },
+      {
+        "accountId": 30080012343456,
+        "maskedNumber": 1234,
+        "openStatus": "OPEN",
+        "displayName": "account_1",
+        "isOwned": true,
+        "nickname": "Alpha",
+        "creationDate": "2019-05-01T15:43:00.12345Z",
+        "productName": "Product name",
+        "productCategory": "TRANS_AND_SAVINGS_ACCOUNTS"
+      }
+    ]
+  },
+  "meta": {
+    "totalRecords": 10,
+    "totalPages": 10
+  },
+  "links": {
+    "next": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/2",
+    "last": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/3",
+    "prev": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/1",
+    "self": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts",
+    "first": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/1"
+  }
+}

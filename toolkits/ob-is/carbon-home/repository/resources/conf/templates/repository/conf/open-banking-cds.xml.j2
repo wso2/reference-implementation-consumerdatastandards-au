@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<Server xmlns="http://wso2.org/projects/carbon/open-banking-cds.xml">
+     <DCR>
+        {% if open_banking_cds.dcr.enable_uri_validation is defined %}
+        <EnableURIValidation>{{open_banking_cds.dcr.enable_uri_validation}}</EnableURIValidation>
+        {% else %}
+        <EnableURIValidation>false</EnableURIValidation>
+        {% endif %}
+        {% if open_banking_cds.dcr.enable_hostname_validation is defined %}
+        <EnableHostNameValidation>{{open_banking_cds.dcr.enable_hostname_validation}}</EnableHostNameValidation>
+        {% else %}
+        <EnableHostNameValidation>false</EnableHostNameValidation>
+        {% endif %}
+        {% if open_banking_cds.dcr.enable_sector_identifier_uri_validation is defined %}
+        <EnableSectorIdentifierUriValidation>{{open_banking_cds.dcr.enable_sector_identifier_uri_validation}}</EnableSectorIdentifierUriValidation>
+        {% else %}
+        <EnableSectorIdentifierUriValidation>false</EnableSectorIdentifierUriValidation>
+        {% endif %}
+        {% if open_banking_cds.dcr.request_jti_validation_enabled is defined %}
+        <EnableRequestJTIValidation>{{open_banking_cds.dcr.request_jti_validation_enabled}}</EnableRequestJTIValidation>
+        {% else %}
+        <EnableRequestJTIValidation>true</EnableRequestJTIValidation>
+        {% endif %}
+        {% if open_banking_cds.dcr.ssa_jti_validation_enabled is defined %}
+        <EnableSSAJTIValidation>{{open_banking_cds.dcr.ssa_jti_validation_enabled}}</EnableSSAJTIValidation>
+        {% else %}
+        <EnableSSAJTIValidation>false</EnableSSAJTIValidation>
+        {% endif %}
+        <JTICache>
+            {% if open_banking_cds.dcr.jti.cache.cache_access_expiry_minutes is defined %}
+            <CacheAccessExpiry>{{open_banking_cds.dcr.jti.cache.cache_access_expiry_minutes}}</CacheAccessExpiry>
+            {% else %}
+            <CacheAccessExpiry>5</CacheAccessExpiry>
+            {% endif %}
+            {% if open_banking_cds.dcr.jti.cache.cache_modified_expiry_minutes is defined %}
+            <CacheModifiedExpiry>{{open_banking_cds.dcr.jti.cache.cache_modified_expiry_minutes}}</CacheModifiedExpiry>
+            {% else %}
+            <CacheModifiedExpiry>5</CacheModifiedExpiry>
+            {% endif %}
+        </JTICache>
+     </DCR>
+     <ConsentManagement>
+        {% if open_banking_cds.consent_management.payable_accounts_retrieve_endpoint is defined %}
+        <PayableAccountsRetrieveEndpoint>{{open_banking_cds.consent_management.payable_accounts_retrieve_endpoint}}</PayableAccountsRetrieveEndpoint>
+        {% else %}
+        <PayableAccountsRetrieveEndpoint>http://APIM_HOSTNAME:9763/api/openbanking/backend-uk/services/bankaccounts/bankaccountservice/payable-accounts</PayableAccountsRetrieveEndpoint>
+        {% endif %}
+        {% if open_banking_cds.consent_management.sharable_accounts_retrieve_endpoint is defined %}
+        <SharableAccountsRetrieveEndpoint>{{open_banking_cds.consent_management.sharable_accounts_retrieve_endpoint}}</SharableAccountsRetrieveEndpoint>
+        {% else %}
+        <SharableAccountsRetrieveEndpoint>http://APIM_HOSTNAME:9763/api/openbanking/backend-uk/services/bankaccounts/bankaccountservice/sharable-accounts</SharableAccountsRetrieveEndpoint>
+        {% endif %}
+        {% if open_banking_cds.consent_management.validate_account_id_on_retrieval is defined %}
+        <ValidateAccountIdOnRetrieval>{{open_banking_cds.consent_management.validate_account_id_on_retrieval}}</ValidateAccountIdOnRetrieval>
+        {% else %}
+        <ValidateAccountIdOnRetrieval>false</ValidateAccountIdOnRetrieval>
+        {% endif %}
+        {% if open_banking_cds.consent_management.enable_account_masking is defined %}
+        <EnableAccountMasking>{{open_banking_cds.consent_management.enable_account_masking}}</EnableAccountMasking>
+        {% else %}
+        <EnableAccountMasking>false</EnableAccountMasking>
+        {% endif %}
+     </ConsentManagement>
+     <CustomerDetails>
+        {% if open_banking_cds.customer_details.enable is defined %}
+        <Enable>{{open_banking_cds.customer_details.enable}}</Enable>
+        {% else %}
+        <Enable>false</Enable>
+        {% endif %}
+        {% if open_banking_cds.customer_details.customer_details_retrieval_endpoint is defined %}
+        <CustomerDetailsRetrieveEndpoint>{{open_banking_cds.customer_details.customer_details_retrieval_endpoint}}</CustomerDetailsRetrieveEndpoint>
+        {% else %}
+        <CustomerDetailsRetrieveEndpoint></CustomerDetailsRetrieveEndpoint>
+        {% endif %}
+     </CustomerDetails>
+     <MetaDataCache>
+        {% if open_banking_cds.metadata_cache.enable is defined %}
+        <EnableMetaDataCache>{{open_banking_cds.metadata_cache.enable}}</EnableMetaDataCache>
+        {% else %}
+        <EnableMetaDataCache>true</EnableMetaDataCache>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.update_period is defined %}
+        <MetaDataCacheUpdatePeriod>{{open_banking_cds.metadata_cache.update_period}}</MetaDataCacheUpdatePeriod>
+        {% else %}
+        <MetaDataCacheUpdatePeriod>5</MetaDataCacheUpdatePeriod>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.data_recipients_discovery_url is defined %}
+        <DataRecipientsDiscoveryURL>{{open_banking_cds.metadata_cache.data_recipients_discovery_url}}</DataRecipientsDiscoveryURL>
+        {% else %}
+        <DataRecipientsDiscoveryURL>https://api.cdr.gov.au/cdr-register/v1/banking/data-recipients</DataRecipientsDiscoveryURL>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.data_recipient_status_url is defined %}
+        <DataRecipientStatusURL>{{open_banking_cds.metadata_cache.data_recipient_status_url}}</DataRecipientStatusURL>
+        {% else %}
+        <DataRecipientStatusURL>https://api.cdr.gov.au/cdr-register/v1/banking/data-recipients/status</DataRecipientStatusURL>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.software_product_status_url is defined %}
+        <SoftwareProductStatusURL>{{open_banking_cds.metadata_cache.software_product_status_url}}</SoftwareProductStatusURL>
+        {% else %}
+        <SoftwareProductStatusURL>https://api.cdr.gov.au/cdr-register/v1/banking/data-recipients/brands/software-products/status</SoftwareProductStatusURL>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.dcr_internal_url is defined %}
+        <DCRInternalURL>{{open_banking_cds.metadata_cache.dcr_internal_url}}</DCRInternalURL>
+        {% else %}
+        <DCRInternalURL>https://localhost:9446/api/openbanking/dynamic-client-registration/register</DCRInternalURL>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.apim_application_search_url is defined %}
+        <APIMApplicationSearchURL>{{open_banking_cds.metadata_cache.apim_application_search_url}}</APIMApplicationSearchURL>
+        {% else %}
+        <APIMApplicationSearchURL>https://localhost:9443/api/am/admin/v2/applications</APIMApplicationSearchURL>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.http_request_retry_count is defined %}
+        <RetryCount>{{open_banking_cds.metadata_cache.http_request_retry_count}}</RetryCount>
+        {% else %}
+        <RetryCount>3</RetryCount>
+        {% endif %}
+        {% if open_banking_cds.metadata_cache.expiry is defined %}
+        <Expiry>{{open_banking_cds.metadata_cache.expiry}}</Expiry>
+        {% else %}
+        <Expiry>2</Expiry>
+        {% endif %}
+        <DataHolderResponsibilities>
+            {% if open_banking_cds.metadata_cache.dataholder_responsibilities.bulk_execution is defined %}
+            <BulkExecution>{{open_banking_cds.metadata_cache.dataholder_responsibilities.bulk_execution}}</BulkExecution>
+            {% else %}
+            <BulkExecution>true</BulkExecution>
+            {% endif %}
+            {% if open_banking_cds.metadata_cache.dataholder_responsibilities.bulk_execution_hour is defined %}
+            <BulkExecutionHour>{{open_banking_cds.metadata_cache.dataholder_responsibilities.bulk_execution_hour}}</BulkExecutionHour>
+            {% else %}
+            <BulkExecutionHour>2</BulkExecutionHour>
+            {% endif %}
+        </DataHolderResponsibilities>
+     </MetaDataCache>
+     <DataHolder>
+        {% if open_banking_cds.data_holder.client_id is defined %}
+        <ClientId>{{open_banking_cds.data_holder.client_id}}</ClientId>
+        {% else %}
+        <ClientId>dataholderbrand</ClientId>
+        {% endif %}
+     </DataHolder>
+     <StreamProcessor>
+         {% if open_banking_cds.stream_processor.server_url is defined %}
+         <ServerUrl>{{open_banking_cds.stream_processor.server_url}}</ServerUrl>
+         {% else %}
+         <ServerUrl>https://BI_HOSTNAME:7444</ServerUrl>
+         {% endif %}
+         {% if open_banking_cds.stream_processor.username is defined %}
+         <Username>{{open_banking_cds.stream_processor.username}}</Username>
+         {% else %}
+         <Username>admin@wso2.com@carbon.super</Username>
+         {% endif %}
+         {% if open_banking_cds.stream_processor.password is defined %}
+         <Password>{{open_banking_cds.stream_processor.password}}</Password>
+         {% else %}
+         <Password>wso2123</Password>
+         {% endif %}
+      </StreamProcessor>
+     <RecipientConsentRevocationEndpoint>
+        {% if open_banking_cds.recipient_consent_revocation_endpoint.enable is defined %}
+        <Enable>{{open_banking_cds.recipient_consent_revocation_endpoint.enable}}</Enable>
+        {% else %}
+        <Enable>false</Enable>
+        {% endif %}
+     </RecipientConsentRevocationEndpoint>
+     <FilterValidators>
+         <IntrospectFilterValidators>
+         {% if open_banking_cds.filter_validators.introspect_filter_validators is defined %}
+             {% for validator in open_banking_cds.filter_validators.introspect_filter_validators %}
+             <Validator>{{validator.class}}</Validator>
+             {% endfor %}
+         {% endif %}
+         </IntrospectFilterValidators>
+         <RevokeFilterValidators>
+              {% if open_banking_cds.filter_validators.revoke_filter_validators is defined %}
+                  {% for validator in open_banking_cds.filter_validators.revoke_filter_validators %}
+                  <Validator>{{validator.class}}</Validator>
+                  {% endfor %}
+              {% endif %}
+         </RevokeFilterValidators>
+         <ParFilterValidators>
+             {% if open_banking_cds.filter_validators.par_filter_validators is defined %}
+                 {% for validator in open_banking_cds.filter_validators.par_filter_validators %}
+                 <Validator>{{validator.class}}</Validator>
+                 {% endfor %}
+             {% endif %}
+         </ParFilterValidators>
+     </FilterValidators>
+     <BNR>
+        <!-- Accepted Values : profile_selection, customer_utype, cookie_data -->
+        {% if open_banking_cds.bnr.customer_type_selection_method is defined %}
+        <CustomerTypeSelectionMethod>{{open_banking_cds.bnr.customer_type_selection_method}}</CustomerTypeSelectionMethod>
+        {% else %}
+        <CustomerTypeSelectionMethod>profile_selection</CustomerTypeSelectionMethod>
+        {% endif %}
+        {% if open_banking_cds.bnr.prioritize_sharable_accounts_response is defined %}
+        <PrioritizeSharableAccountsResponse>{{open_banking_cds.bnr.prioritize_sharable_accounts_response}}</PrioritizeSharableAccountsResponse>
+        {% else %}
+        <PrioritizeSharableAccountsResponse>true</PrioritizeSharableAccountsResponse>
+        {% endif %}
+        {% if open_banking_cds.bnr.enable_consent_revocation is defined %}
+        <EnableConsentRevocation>{{open_banking_cds.bnr.enable_consent_revocation}}</EnableConsentRevocation>
+        {% else %}
+        <EnableConsentRevocation>true</EnableConsentRevocation>
+        {% endif %}
+        {% if open_banking_cds.bnr.validate_accounts_on_retrieval is defined %}
+        <ValidateAccountsOnRetrieval>{{open_banking_cds.bnr.validate_accounts_on_retrieval}}</ValidateAccountsOnRetrieval>
+        {% else %}
+        <ValidateAccountsOnRetrieval>true</ValidateAccountsOnRetrieval>
+        {% endif %}
+     </BNR>
+    <SecondaryUserAccounts>
+        {% if open_banking_cds.secondary_user_accounts.enable is defined %}
+        <Enable>{{open_banking_cds.secondary_user_accounts.enable}}</Enable>
+        {% else %}
+        <Enable>false</Enable>
+        {% endif %}
+        {% if open_banking_cds.secondary_user_accounts.ceasing_secondary_user_sharing_enable is defined %}
+        <CeasingSecondaryUserSharingEnabled>{{open_banking_cds.secondary_user_accounts.ceasing_secondary_user_sharing_enable}}</CeasingSecondaryUserSharingEnabled>
+        {% else %}
+        <CeasingSecondaryUserSharingEnabled>false</CeasingSecondaryUserSharingEnabled>
+        {% endif %}
+    </SecondaryUserAccounts>
+    <DisclosureOptionsManagement>
+        {% if open_banking_cds.disclosure_options_management.enable is defined %}
+        <Enable>{{open_banking_cds.disclosure_options_management.enable}}</Enable>
+        {% else %}
+        <Enable>false</Enable>
+        {% endif %}
+    </DisclosureOptionsManagement>
+</Server>

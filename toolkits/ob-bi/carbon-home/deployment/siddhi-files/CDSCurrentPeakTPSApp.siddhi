@@ -1,0 +1,89 @@
+/**
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+ @App:name('CDSCurrentPeakTPSApp')
+ @App:description('Retrieve current day TPS to be used by CDS Metrics API')
+
+-- Input that receives the time range for which the peak TPS is to be calculated
+@Source(type = 'http-request',
+     source.id='CDSCurrentPeakTPSAppStream',
+     receiver.url='http://<BI_HOSTNAME>:8007/CDSCurrentPeakTPSApp/CDSCurrentPeakTPSAppStream',
+     basic.auth.enabled='false',
+     @map(type = 'json',@attributes(MESSAGE_ID='trp:messageId', START_TIME='$.event.start_time',
+        END_TIME='$.event.end_time')))
+define stream CDSCurrentPeakTPSAppStream(MESSAGE_ID string, START_TIME string, END_TIME string);
+
+-- Output stream which sends peak TPS data
+@sink(type='http-response', source.id='CDSCurrentPeakTPSAppStream', message.id='{{MESSAGE_ID}}', @map(type='json'))
+define stream CDSCurrentPeakTPSAppOutputStream(MESSAGE_ID string, total_count long, aspect string, TIMESTAMP long);
+
+define function getAspect[JavaScript] return string {
+	var aspect;
+	var electedResource = data[0];
+	var unauthenticatedList = ["/banking/products", "/banking/products/{productId}", "/discovery/status", "/discovery/outages"];
+	var authenticatedList = ["/banking/accounts", "/common/customer", "/common/customer/detail", "/register", "/register/{ClientId}",
+	                         "/", "/token", "/authorize", "/revoke", "/userinfo", "/token/introspect", "/jwks", "/.well-known/openid-configuration",
+	                         "/banking/accounts/{accountId}", "/banking/accounts/{accountId}/balance", "/banking/accounts/balances",
+	                         "/banking/accounts/{accountId}/transactions", "/banking/accounts/{accountId}/transactions/{transactionId}",
+	                         "/banking/payees", "/banking/payees/{payeeId}", "/banking/accounts/{accountId}/direct-debits",
+                             "/banking/accounts/{accountId}/payments/scheduled", "/banking/payments/scheduled", "/register/metadata",
+                             "/metrics", "/banking/accounts/direct-debits"];
+
+    if (unauthenticatedList.indexOf(electedResource) > -1) {
+        aspect = "unauthenticated";
+    } else if (authenticatedList.indexOf(electedResource) > -1) {
+        aspect = "authenticated";
+    } else {
+        aspect = "uncategorized";
+    }
+	return aspect;
+};
+
+@primaryKey('ID','ELECTED_RESOURCE')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+@Index('TIMESTAMP')
+define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string,
+                        CLIENT_ID string, USER_AGENT string, STATUS_CODE int, HTTP_METHOD string,
+                        RESPONSE_PAYLOAD_SIZE long, ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string,
+                        TIMESTAMP long, CUSTOMER_STATUS string, ACCESS_TOKEN_ID string, SESSION_TYPE string);
+
+from CDSCurrentPeakTPSAppStream
+select MESSAGE_ID, convert(START_TIME, 'long') as START_TIME, convert(END_TIME, 'long') as END_TIME
+insert into ConvertedCDSCurrentPeakTPSAppStream;
+
+from ConvertedCDSCurrentPeakTPSAppStream as c LEFT OUTER JOIN API_INVOCATION_RAW_DATA as a
+    on a.TIMESTAMP >= START_TIME  AND a.TIMESTAMP <= END_TIME
+select c.MESSAGE_ID, a.TIMESTAMP, a.ID, a.ELECTED_RESOURCE
+insert into CDSCurrentPeakTPSAppRawOutputStream;
+
+from CDSCurrentPeakTPSAppRawOutputStream
+select MESSAGE_ID, TIMESTAMP, ID, getAspect(ELECTED_RESOURCE) as aspect
+insert into CDSCurrentPeakTPSAppAspectStream;
+
+from CDSCurrentPeakTPSAppAspectStream[ID is NULL]
+select MESSAGE_ID, 0l as total_count, aspect, 0l as TIMESTAMP
+insert into CDSCurrentPeakTPSAppOutputStream;
+
+from CDSCurrentPeakTPSAppAspectStream[NOT(ID is NULL)]
+select MESSAGE_ID, TIMESTAMP, ID, aspect
+insert into CDSCurrentPeakTPSAppFilteredOutputStream;
+
+from CDSCurrentPeakTPSAppFilteredOutputStream#window.batch()
+select MESSAGE_ID, count(ID) as total_count, aspect, TIMESTAMP
+group by TIMESTAMP, aspect
+insert into CDSCurrentPeakTPSAppOutputStream;
