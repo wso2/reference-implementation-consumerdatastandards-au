@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Consumer Data Standards Test Suite">
+    <test name="Client Registration Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationCreateTest"/>
+            <class name="com.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationRetrieveTest"/>
+            <class name="com.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationUpdateTest"/>
+            <class name="com.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationDeleteTest"/>
+            <class name="com.wso2.cds.integration.test.clientRegistration.MultiTppDcrEndpointTests"/>
+        </classes>
+    </test>
+    <test name="Client Registration Prerequisite Step" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.tpponboarding.CommonTppOnboardingStep"/>
+        </classes>
+    </test>
+    <test name="Accounts Integration Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.accounts.AccountsRetrievalRequestHeaderValidationTest"/>
+            <class name="com.wso2.cds.integration.test.accounts.AccountsRetrievalRequestValidationTests"/>
+            <class name="com.wso2.cds.integration.test.accounts.AccountsIdPermanenceTest"/>
+            <class name="com.wso2.cds.integration.test.accounts.DuplicateCommonAuthIdTest"/>
+            <class name="com.wso2.cds.integration.test.accounts.MultiTppConsentValidationTest"/>
+        </classes>
+    </test>
+    <test name="Banking API Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.banking_products.ProductRetrievalHeaderValidationTest"/>
+            <class name="com.wso2.cds.integration.test.banking_products.ProductRetrievalValidationTest"/>
+        </classes>
+    </test>
+    <test name="Common API Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalHeaderValidationTests"/>
+            <class name="com.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalTest"/>
+        </classes>
+    </test>
+    <test name="Admin API Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.admin_api.AdminApiValidationTests"/>
+        </classes>
+    </test>
+    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.cdr_arrangement.ConcurrentConsentTest"/>
+        </classes>
+    </test>
+    <test name="Token Validation Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.tokenEndpoint.AccessTokenTest"/>
+            <class name="com.wso2.cds.integration.test.tokenEndpoint.MultiTppTokenFlowValidationTests"/>
+        </classes>
+    </test>
+    <!-- Since the Mock DCR Register is not working now we have to manually update the status.
+    Therefore, commenting out these tests-->
+    <test name="Metadata Update Tests" parallel="false" enabled="false">
+        <classes>
+            <class name="com.wso2.cds.integration.test.metadata_update.MetaDataAccountRetrieval"/>
+            <class name="com.wso2.cds.integration.test.metadata_update.MetaDataConsentAmendment"/>
+            <class name="com.wso2.cds.integration.test.metadata_update.MetaDataConsentAuthorization"/>
+            <class name="com.wso2.cds.integration.test.metadata_update.MetaDataConsentWithdrawal"/>
+            <class name="com.wso2.cds.integration.test.metadata_update.MetaDataUpdateBatchTaskTests"/>
+        </classes>
+    </test>
+    <test name="Throttling Policy Validation Tests" parallel="false" enabled="false">
+        <classes>
+            <class name="com.wso2.cds.integration.test.throttling.ThrottlingPolicyTest"/>
+        </classes>
+    </test>
+    <test name="CX Validation Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.integration.test.authflow.AuthorisationFlowCXValidationTest"/>
+            <class name="com.wso2.cds.integration.test.authflow.AuthorisationFlowUIValidationTest"/>
+            <class name="com.wso2.cds.integration.test.authflow.UserAuthenticationFlowValidationTest"/>
+            <class name="com.wso2.cds.integration.test.authflow.ConsentAmendmentFlowUIValidationTest"/>
+        </classes>
+    </test>
+
+    <!-- Key Manager Validation Tests-->
+    <test name="Authorisation Flow Validation Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.authorizationflow.AuthorisationFlowTest"/>
+            <class name="com.wso2.cds.keymanager.test.authorizationflow.ConsentAmendmentFlowTest"/>
+            <class name="com.wso2.cds.keymanager.test.authorizationflow.SharingDurationValidationTest"/>
+        </classes>
+    </test>
+    <test name="Pushed Authorisation Flow Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.par.PushedAuthorisationFlowTest"/>
+            <class name="com.wso2.cds.keymanager.test.par.RequestObjectValidationTest"/>
+        </classes>
+    </test>
+    <test name="JWT Response Management" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.jarm.JarmResponseModeFormPostJwtValidationTests"/>
+            <class name="com.wso2.cds.keymanager.test.jarm.JarmResponseModeFragmentJwtValidationTests"/>
+            <class name="com.wso2.cds.keymanager.test.jarm.JarmResponseModeJwtValidationTests"/>
+            <class name="com.wso2.cds.keymanager.test.jarm.JarmResponseModeQueryJwtValidationTests"/>
+            <class name="com.wso2.cds.keymanager.test.jarm.JwtSecuredAuthorizationResponseValidationTests"/>
+        </classes>
+    </test>
+    <test name="Business Nominated User Representative Tests" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.bnr.BnrEndToEndTest"/>
+            <class name="com.wso2.cds.keymanager.test.bnr.ConsentAmendmentFlowTests"/>
+            <class name="com.wso2.cds.keymanager.test.bnr.ConsentAuthFlowValidationTests"/>
+            <class name="com.wso2.cds.keymanager.test.bnr.UserNominationManagementTests"/>
+        </classes>
+    </test>
+    <test name="Disclosure Option Management Service" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.doms.DisclosureOptionManagementServiceTest"/>
+        </classes>
+    </test>
+    <test name="Secondary User Instructions" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.secondaryUser.SecondaryUserInstructionsAuthorisationTest"/>
+            <class name="com.wso2.cds.keymanager.test.secondaryUser.SecondaryUserAmendmentFlow"/>
+        </classes>
+    </test>
+    <test name="Ceasing Secondary User" parallel="false" enabled="true">
+        <classes>
+            <class name="com.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserManagementTest"/>
+            <class name="com.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserConsentFlowTest"/>
+        </classes>
+    </test>
+</suite>

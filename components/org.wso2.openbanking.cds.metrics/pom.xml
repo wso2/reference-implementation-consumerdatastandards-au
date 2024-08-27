@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <parent>
+        <artifactId>reference-implementation-consumerdatastandards-au-components</artifactId>
+        <groupId>org.wso2.openbanking</groupId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>org.wso2.openbanking.cds.metrics</artifactId>
+    <name>WSO2 Financial Solutions - CDS Metrics Module</name>
+    <description>WSO2 Financial Solutions - CDS Metrics Module</description>
+    <packaging>bundle</packaging>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.carbon.apimgt</groupId>
+            <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.wso2.openbanking.accelerator</groupId>
+            <artifactId>com.wso2.openbanking.accelerator.common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.wso2.openbanking</groupId>
+            <artifactId>org.wso2.openbanking.cds.common</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-all</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-testng</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jacoco</groupId>
+            <artifactId>org.jacoco.agent</artifactId>
+            <classifier>runtime</classifier>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <!--Excluding them in coverage reports-->
+                        <exclude>**/*Constants.class</exclude>
+                        <exclude>**/*Model.class</exclude>
+                        <exclude>**/*Enum.class</exclude>
+                        <exclude>**/*DataProvider.class</exclude>
+                        <exclude>**/*MetricsServiceImpl.class</exclude>
+                        <exclude>**/internal/**/*</exclude>
+                        <exclude>**/periodic/**/*</exclude>
+                        <exclude>**/cache/**/*</exclude>
+                    </excludes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report-integration</id>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-check</id>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <rule implementation="org.jacoco.maven.RuleConfiguration">
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit implementation="org.jacoco.report.check.Limit">
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <!--TODO: increase coverage-->
+                                            <minimum>0.74</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <suiteXmlFiles>
+                        <suiteXmlFile>src/test/resources/testng.xml</suiteXmlFile>
+                    </suiteXmlFiles>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>${maven-spotbugs.version}</version>
+                <configuration>
+                    <effort>Max</effort>
+                    <threshold>Low</threshold>
+                    <failOnError>false</failOnError>
+                    <xmlOutput>true</xmlOutput>
+                    <spotbugsXmlOutputDirectory>${project.build.directory}/spotbugs</spotbugsXmlOutputDirectory>
+                    <includeFilterFile>${project.basedir}/src/main/resources/findbugs-include.xml</includeFilterFile>
+                    <excludeFilterFile>${project.basedir}/src/main/resources/findbugs-exclude.xml</excludeFilterFile>
+                    <plugins>
+                        <plugin>
+                            <groupId>com.h3xstream.findsecbugs</groupId>
+                            <artifactId>findsecbugs-plugin</artifactId>
+                            <version>${com.h3xstream.findsecbugs.version}</version>
+                        </plugin>
+                    </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>analyze-compile</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>
+                            ${project.artifactId}
+                        </Bundle-SymbolicName>
+                        <Private-Package>
+                            org.wso2.openbanking.cds.metrics.internal
+                        </Private-Package>
+                        <Import-Package>
+                            com.wso2.openbanking.accelerator.common.caching;version="${accelerator.project.version.range}",
+                            com.wso2.openbanking.accelerator.common.exception;version="${accelerator.project.version.range}",
+                            com.wso2.openbanking.accelerator.common.util;version="${accelerator.project.version.range}",
+                            org.wso2.openbanking.cds.common.config,
+                            net.minidev.json;version=${json-smart},
+                            net.minidev.json.parser;version=${json-smart},
+                            org.apache.commons.logging;version="${commons.logging.version}",
+                            org.apache.http,org.apache.http.client.methods;version="${httpclient.version}",
+                            org.apache.http.entity,org.apache.http.impl.client;version="${httpclient.version}",
+                            org.apache.http.util,org.json.simple,
+                            org.json.simple.parser,
+                            org.osgi.framework;version="${osgi.framework.imp.pkg.version.range}",
+                            org.osgi.service.component;version="${osgi.service.component.imp.pkg.version.range}",
+                            org.quartz;version="${quartz.version}",
+                            org.quartz.impl;version="${quartz.version}",
+                            org.quartz.simpl;version="${quartz.version}",
+                            org.quartz.spi;version="${quartz.version}",
+                            org.quartz.xml;version="${quartz.version}",
+                            org.wso2.carbon.apimgt.impl;version="${org.wso2.carbon.apimgt.version}",
+                            org.wso2.carbon.context;version="${carbon.kernel.version}",
+                            org.wso2.carbon.user.core.service;version="${carbon.kernel.version}",
+                            org.wso2.carbon.utils;version="${carbon.kernel.version}"
+                        </Import-Package>
+                        <Export-Package>
+                            !org.wso2.openbanking.cds.metrics.internal,
+                            org.wso2.openbanking.cds.metrics.*;version="${project.version}",
+                        </Export-Package>
+                        <!--Dynamic import needed in order to get the model objects from DAO-->
+                        <DynamicImport-Package>*</DynamicImport-Package>
+                        <_dsannotations>*</_dsannotations>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

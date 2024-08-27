@@ -1,0 +1,17 @@
+FROM
+  RequestStream
+SELECT
+  messageID,
+  NOT regex: find('null', cast(map: get(propertiesMap, 'x-fapi-customer-ip-address'), 'string')) AS isEligible, str: concat(cast(map: get(propertiesMap, 'x-fapi-customer-ip-address'), 'string'), ':', appId) as throttleKey, propertiesMap
+INSERT INTO
+  EligibilityStream;
+FROM
+  EligibilityStream [ isEligible == true ] # throttler: timeBatch(5 sec, 0)
+select
+  throttleKey,
+  (count(messageID) >= 10) as isThrottled,
+  expiryTimeStamp
+group by
+  throttleKey
+INSERT
+  ALL EVENTS into ResultStream;

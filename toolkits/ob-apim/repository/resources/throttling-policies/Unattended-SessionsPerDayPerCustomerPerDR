@@ -1,0 +1,44 @@
+@ primaryKey('ID', 'ELECTED_RESOURCE') @ store(type = 'rdbms', datasource = 'OB_REPORTING_DB') @ Index('TIMESTAMP') define table API_INVOCATION_RAW_DATA(
+  ID string,
+  MESSAGE_ID string,
+  CONSENT_ID string,
+  CONSUMER_ID string,
+  CLIENT_ID string,
+  USER_AGENT string,
+  STATUS_CODE int,
+  HTTP_METHOD string,
+  RESPONSE_PAYLOAD_SIZE long,
+  ELECTED_RESOURCE string,
+  API_NAME string,
+  API_SPEC_VERSION string,
+  TIMESTAMP long,
+  CUSTOMER_STATUS string,
+  ACCESS_TOKEN_ID string,
+  SESSION_TYPE string
+);
+FROM
+  RequestStream
+SELECT
+  regex: find('unattended', cast(map: get(propertiesMap, 'customerStatus'), 'string')) AND regex: find('secured', cast(map: get(propertiesMap, 'authorizationStatus'), 'string')) AS isEligible, str: concat(appId, ':', userId, ':', cast(map: get(propertiesMap, 'customerStatus'), 'string')) as throttleKey, propertiesMap, cast(map: get(propertiesMap, 'authorizationHeader'), 'string') as accessToken
+INSERT INTO
+  EligibilityStream;
+FROM
+  EligibilityStream as e
+  left outer join API_INVOCATION_RAW_DATA as t on e.accessToken == t.ACCESS_TOKEN_ID
+  and t.SESSION_TYPE == 'unattended'
+select
+  isEligible,
+  throttleKey,
+  accessToken
+INSERT INTO
+  EligibilityStream2;
+FROM
+  EligibilityStream2 [ isEligible == true ] # throttler: timeBatch(1 day, 0)
+select
+  throttleKey,
+  (distinctcount(accessToken) > 20) as isThrottled,
+  expiryTimeStamp
+group by
+  throttleKey
+INSERT
+  ALL EVENTS into ResultStream;

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<Server xmlns="http://wso2.org/projects/carbon/open-banking-cds.xml">
+    <Sample>
+        <OBHandler>DummyValue</OBHandler>
+        <OBHandler2>${some.property}</OBHandler2>
+        <OBHandler3 prop="somevalue"></OBHandler3>
+        <OBHandler4>${carbon.home}</OBHandler4>
+    </Sample>
+
+    <DCR>
+        <!--if true validate the policy,client,terms of service,logo uris -->
+        <EnableURIValidation>false</EnableURIValidation>
+        <!--if true validate the hostnames of policy,client,terms of service, logo uris match with the hostname of redirect uri-->
+        <EnableHostNameValidation>false</EnableHostNameValidation>
+
+        <Sampletag>
+            <Repeatabletag>DummyValue1</Repeatabletag>
+            <Repeatabletag>DummyValue2</Repeatabletag>
+            <Repeatabletag>DummyValue3</Repeatabletag>
+        </Sampletag>
+    </DCR>
+
+    <MetaDataCache>
+        <EnableMetaDataCache>true</EnableMetaDataCache>
+        <MetaDataCacheUpdatePeriod>2</MetaDataCacheUpdatePeriod>
+        <DataRecipientsDiscoveryURL>https://test-discovery/</DataRecipientsDiscoveryURL>
+        <DataRecipientStatusURL>https://test-dr/</DataRecipientStatusURL>
+        <SoftwareProductStatusURL>https://test-sp/</SoftwareProductStatusURL>
+        <DCRInternalURL>https://localhost:9446/api/openbanking/dynamic-client-registration/register</DCRInternalURL>
+        <APIMApplicationSearchURL>https://localhost:9443/api/am/admin/v2/applications</APIMApplicationSearchURL>
+        <RetryCount>3</RetryCount>
+        <Expiry>120</Expiry>
+        <DataHolderResponsibilities>
+            <BulkExecution>false</BulkExecution>
+            <BulkExecutionHour>12</BulkExecutionHour>
+        </DataHolderResponsibilities>
+    </MetaDataCache>
+
+    <Admin>
+        <APISelfLink>https://localhost:8243/cds-au/v2/admin/</APISelfLink>
+    </Admin>
+
+    <Headers>
+        <HolderIdentifier>HID</HolderIdentifier>
+    </Headers>
+
+    <FilterValidators>
+        <IntrospectFilterValidators>
+            <Validator>ValidatorClassName</Validator>
+            <Validator>ValidatorClassName</Validator>
+        </IntrospectFilterValidators>
+        <RevokeFilterValidators>
+            <Validator>ValidatorClassName</Validator>
+        </RevokeFilterValidators>
+        <ParFilterValidators>
+            <Validator>ValidatorClassName</Validator>
+        </ParFilterValidators>
+    </FilterValidators>
+    <JWTAuthentication>
+        <Enabled>true</Enabled>
+        <Issuer>DummyIssuer</Issuer>
+        <Subject>DummySubject</Subject>
+        <Audience>DummyAudience</Audience>
+        <JWKSUrl>DummyJWKS</JWKSUrl>
+    </JWTAuthentication>
+    <BNR>
+        <CustomerTypeSelectionMethod>profile_selection</CustomerTypeSelectionMethod>
+        <PrioritizeSharableAccountsResponse>true</PrioritizeSharableAccountsResponse>
+        <ValidateAccountsOnRetrieval>true</ValidateAccountsOnRetrieval>
+        <EnableConsentRevocation>true</EnableConsentRevocation>
+    </BNR>
+    <SecondaryUserAccounts>
+        <Enable>true</Enable>
+        <CeasingSecondaryUserSharingEnabled>true</CeasingSecondaryUserSharingEnabled>
+    </SecondaryUserAccounts>
+    <DisclosureOptionsManagement>
+        <Enable>true</Enable>
+    </DisclosureOptionsManagement>
+</Server>

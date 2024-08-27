@@ -1,0 +1,66 @@
+/**
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@App:name("CDSSharingDateSummarizationApp")
+@App:description("Summarizes the API invocation data while keeping the first and last sharing dates for each consentID and resource.")
+
+@source(type='wso2event',  @map(type='wso2event'))
+define stream APIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
+                        USER_AGENT string, STATUS_CODE int, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
+                        ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
+                        CUSTOMER_STATUS string, ACCESS_TOKEN_ID string);
+
+@primaryKey('CONSENT_ID', 'DATA_CLUSTER')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table CDS_SHARING_START_END_DATE(CONSENT_ID string, DATA_CLUSTER string, SHARING_START_DATE long, LAST_SHARED_DATE long);
+
+-- Function to map elected resource endpoint to the data cluster.
+define function getDataCluster[JavaScript] return string {
+	var dataCluster;
+	var electedResource = data[0];
+
+	var bankAccountsReadList = ['/banking/accounts', '/banking/accounts/balances', '/banking/accounts/{accountId}', '/banking/accounts/{accountId}/balance'];
+	var bankTransactionsReadList = ['/banking/accounts/{accountId}/transactions', '/banking/accounts/{accountId}/transactions/{transactionId}'];
+	var bankPayeesReadList = ['/banking/payees', '/banking/payees/{payeeId}'];
+	var bankRegularPaymentsReadList = ['/banking/accounts/direct-debits', '/banking/accounts/{accountId}/direct-debits', '/banking/accounts/{accountId}/payments/scheduled', '/banking/payments/scheduled'];
+	var bankCommonCustomerReadList = ['/common/customer', '/common/customer/detail'];
+	var profileList = ['/userinfo'];
+
+	if (bankAccountsReadList.indexOf(electedResource) > -1) {
+	  dataCluster = "bank_account_data";
+	} else if (bankTransactionsReadList.indexOf(electedResource) > -1) {
+	  dataCluster = "bank_transaction_data";
+	} else if (bankPayeesReadList.indexOf(electedResource) > -1) {
+      dataCluster = "bank_payee_data";
+	} else if (bankRegularPaymentsReadList.indexOf(electedResource) > -1) {
+	  dataCluster = "bank_regular_payment_data";
+	} else if (bankCommonCustomerReadList.indexOf(electedResource) > -1) {
+	  dataCluster = "common_customer_data";
+	} else if (profileList.indexOf(electedResource) > -1) {
+      dataCluster = "profile";
+    } else {
+	  dataCluster = "Uncategorized";
+	}
+	return dataCluster;
+};
+
+from APIInputStream[not(CONSENT_ID is null) and (STATUS_CODE == 200 or STATUS_CODE == 201)]
+select CONSENT_ID, getDataCluster(ELECTED_RESOURCE) AS DATA_CLUSTER, TIMESTAMP as SHARING_START_DATE, TIMESTAMP as LAST_SHARED_DATE
+update or insert into CDS_SHARING_START_END_DATE
+set CDS_SHARING_START_END_DATE.LAST_SHARED_DATE = LAST_SHARED_DATE
+on CONSENT_ID == CDS_SHARING_START_END_DATE.CONSENT_ID and DATA_CLUSTER == CDS_SHARING_START_END_DATE.DATA_CLUSTER;
