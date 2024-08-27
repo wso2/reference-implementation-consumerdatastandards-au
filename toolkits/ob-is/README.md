@@ -1,4 +1,4 @@
-### **WSO2 Open Banking IS Accelerator 1.0.0**
+### **WSO2 Open Banking CDS IAM Reference Toolkit 1.0.0**
 
 **Try Locally:**
 
