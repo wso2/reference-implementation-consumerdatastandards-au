@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<Server xmlns="http://wso2.org/projects/carbon/open-banking-cds.xml">
+    <DCR>
+        <!--if true validate the policy,client,terms of service,logo uris -->
+        <EnableURIValidation>false</EnableURIValidation>
+        <!--if true validate the hostnames of policy,client,terms of service, logo uris match with the hostname of redirect uri-->
+        <EnableHostNameValidation>false</EnableHostNameValidation>
+    </DCR>
+    <ConsentManagement>
+        <PayableAccountsRetrieveEndpoint>http://APIM_HOSTNAME:9763/api/openbanking/cds/backend/services/services/bankaccounts/bankaccountservice/payable-accounts</PayableAccountsRetrieveEndpoint>
+        <SharableAccountsRetrieveEndpoint>http://APIM_HOSTNAME:9763/api/openbanking/cds/backend/services/bankaccounts/bankaccountservice/sharable-accounts</SharableAccountsRetrieveEndpoint>
+        <!-- Validate AccountID with consented accountID in account retrieval-->
+        <ValidateAccountIdOnRetrieval>false</ValidateAccountIdOnRetrieval>
+    </ConsentManagement>
+    <CustomerDetails>
+        <Enable>false</Enable>
+        <CustomerDetailsRetrieveEndpoint></CustomerDetailsRetrieveEndpoint>
+    </CustomerDetails>
+</Server>

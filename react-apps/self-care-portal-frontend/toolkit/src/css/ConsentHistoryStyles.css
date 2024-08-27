@@ -1,0 +1,99 @@
+/**
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+ 
+body {
+    color: rgba(8, 18, 71, 1);
+}
+
+.content-view{
+    padding:0;   
+}
+
+.padding{
+    padding-bottom: 0px;
+}
+
+.accordion-border{
+    border-radius: 0;  
+    border: 0; 
+    border-top: 1px solid #e5e5e5;
+    padding: -1em;
+    cursor: pointer;
+}
+
+.accordion-border :hover{
+    background-color: #f3f3f3;
+}
+
+.icon {
+    align-self: center; 
+    margin-right: 20px;
+    font-size: 1.2em; 
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.scrollable {
+    max-height: calc(4 * 50px); 
+    overflow-y: auto;
+}
+
+.no-content {
+    padding: 20px; 
+    text-align: center;
+}
+  
+.section {
+    margin-bottom: 20px; 
+}
+  
+.modal-title {
+    font-size: 1.2em;
+    font-weight: 500; 
+    margin-bottom: 10px; 
+}
+  
+.content {
+    margin-left: 0px; 
+}
+
+.modal-padding {
+    padding: 20px; 
+    margin:20px;
+}
+
+.scrollable-plane {
+    max-height: 300px; 
+    overflow-y: auto;
+}
+
+.scrollable-plane-max {
+    max-height: 700px; 
+    overflow-y: auto;
+}
+
+.cluster-card-body {
+    padding: 15px 0 0 0;
+}
+
+.cluster-card-container {
+    padding:0;
+}

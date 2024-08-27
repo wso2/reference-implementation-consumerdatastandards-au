@@ -1,0 +1,28 @@
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com). All Rights Reserved.
+ ~
+ ~ This software is the property of WSO2 LLC. and its suppliers, if any.
+ ~ Dissemination of any information or reproduction of any material contained
+ ~ herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+ ~ You may not alter or remove any copyright or other notice from copies of this content.
+-->
+
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>zip</id>
+    <includeBaseDirectory>true</includeBaseDirectory>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}/consentmgr/self-care-portal-frontend/toolkit</directory>
+            <outputDirectory>self-care-portal-frontend/toolkit</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/consentmgr/dist</directory>
+            <outputDirectory>dist</outputDirectory>
+        </fileSet>
+    </fileSets>
+</assembly>

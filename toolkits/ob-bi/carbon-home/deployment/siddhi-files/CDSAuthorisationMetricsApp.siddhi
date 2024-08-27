@@ -1,0 +1,78 @@
+/**
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@App:name('CDSAuthorisationMetricsApp')
+@App:description('Authorisations related data to be used by CDS Metrics API')
+
+@source(type='wso2event', @map(type='wso2event'))
+@source(type='http',
+    receiver.url='http://<BI_HOSTNAME>:8006/CDSAuthorisationMetricsApp/AuthorisationMetricsInputStream',
+    basic.auth.enabled='false',
+    @map(type='json', @attributes(CONSENT_ID = "consentId",
+                                  CONSENT_STATUS = "consentStatus",
+                                  AUTH_FLOW_TYPE = "authFlowType",
+                                  CUSTOMER_PROFILE = "customerProfile",
+                                  CONSENT_DURATION_TYPE = "consentDurationType",
+                                  TIMESTAMP = "timestamp")))
+define stream AuthorisationMetricsInputStream(CONSENT_ID string, CONSENT_STATUS string, AUTH_FLOW_TYPE string,
+                                              CUSTOMER_PROFILE string, CONSENT_DURATION_TYPE string, TIMESTAMP long);
+
+@source(type='wso2event', @map(type='wso2event'))
+@source(type='http',
+    receiver.url='http://<BI_HOSTNAME>:8006/CDSAuthorisationMetricsApp/AbandonedConsentFlowMetricsInputStream',
+    basic.auth.enabled='false',
+    @map(type='json', fail.on.missing.attribute="false", @attributes(REQUEST_URI_KEY = "requestUriKey",
+                                  CONSENT_ID = "consentId",
+                                  STAGE = "stage",
+                                  TIMESTAMP = "timestamp")))
+define stream AbandonedConsentFlowMetricsInputStream(REQUEST_URI_KEY string, CONSENT_ID string, STAGE string,
+                                                     TIMESTAMP long);
+
+define stream CountableAuthorisationMetricsInputStream(CONSENT_ID string, CONSENT_STATUS string, AUTH_FLOW_TYPE string,
+                                              CUSTOMER_PROFILE string, CONSENT_DURATION_TYPE string, TIMESTAMP long);
+
+@primaryKey('ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table AUTHORISATION_METRICS_DATA(ID string, CONSENT_ID string, CONSENT_STATUS string, AUTH_FLOW_TYPE string,
+                                        CUSTOMER_PROFILE string, CONSENT_DURATION_TYPE string, TIMESTAMP long);
+
+@primaryKey('ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table ABANDONED_CONSENT_FLOW_METRICS_DATA(ID string, REQUEST_URI_KEY string, CONSENT_ID string, STAGE string,
+                                                 TIMESTAMP long);
+
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+@purge(enable='true', interval='60 min', @retentionPeriod(sec='10 days', min='10 days', hours='90 days', days='1 year', months='2 years'))
+define aggregation CDSAuthorisationMetricsAgg
+from CountableAuthorisationMetricsInputStream
+select CONSENT_STATUS, AUTH_FLOW_TYPE, CUSTOMER_PROFILE, CONSENT_DURATION_TYPE, count(CONSENT_ID) as totalCount
+group by CONSENT_STATUS, AUTH_FLOW_TYPE, CUSTOMER_PROFILE, CONSENT_DURATION_TYPE
+aggregate by TIMESTAMP every seconds...month;
+
+-- Filter authorisations that should be counted
+from AuthorisationMetricsInputStream#window.unique:first(CONSENT_ID, CONSENT_STATUS, AUTH_FLOW_TYPE, CUSTOMER_PROFILE, CONSENT_DURATION_TYPE)
+select *
+insert into CountableAuthorisationMetricsInputStream;
+
+from AuthorisationMetricsInputStream
+select UUID() as ID, CONSENT_ID, CONSENT_STATUS, AUTH_FLOW_TYPE, CUSTOMER_PROFILE, CONSENT_DURATION_TYPE, TIMESTAMP
+insert into AUTHORISATION_METRICS_DATA;
+
+from AbandonedConsentFlowMetricsInputStream[NOT(REQUEST_URI_KEY is NULL)]
+select UUID() as ID, REQUEST_URI_KEY, CONSENT_ID, STAGE, TIMESTAMP
+insert into ABANDONED_CONSENT_FLOW_METRICS_DATA;

@@ -1,0 +1,74 @@
+/**
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@App:name("APIRawDataSubmissionApp")
+
+@source(type='wso2event',  @map(type='wso2event'))
+define stream APIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
+                        USER_AGENT string, STATUS_CODE int, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
+                        ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
+                        CUSTOMER_STATUS string, ACCESS_TOKEN_ID string);
+
+@sink(type='inMemory',topic='apiInvocationRawData', @map(type='passThrough'))
+define stream CDSMetricsRawStream(id string, statusCode int, respTime long, electedResource string, reqTimestamp long,
+                        customerStatus string);
+
+@primaryKey('ID','ELECTED_RESOURCE')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+@Index('TIMESTAMP')
+define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string,
+                        CLIENT_ID string, USER_AGENT string, STATUS_CODE int, HTTP_METHOD string,
+                        RESPONSE_PAYLOAD_SIZE long, ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string,
+                        TIMESTAMP long, CUSTOMER_STATUS string, ACCESS_TOKEN_ID string, SESSION_TYPE string);
+
+@primaryKey('ID','MESSAGE_ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
+                        REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
+
+define window APIInputStreamDelayWindow(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
+                          USER_AGENT string, STATUS_CODE int, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
+                          ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
+                          CUSTOMER_STATUS string, ACCESS_TOKEN_ID string) delay(1sec);
+
+--Persist API Invocation Data
+from APIInputStream
+select UUID() as ID, MESSAGE_ID, CONSENT_ID, CONSUMER_ID, CLIENT_ID, USER_AGENT, STATUS_CODE, HTTP_METHOD,
+                        RESPONSE_PAYLOAD_SIZE, ELECTED_RESOURCE, API_NAME, API_SPEC_VERSION, TIMESTAMP, CUSTOMER_STATUS,
+                        ACCESS_TOKEN_ID, ifThenElse(CUSTOMER_STATUS == 'customer-present', 'attended', 'unattended') as
+                        SESSION_TYPE
+insert into API_INVOCATION_RAW_DATA;
+
+--Update session type of token
+--Once a token used in customer present context, it will always be considered as a session used for attended traffic.
+from APIInputStream[CUSTOMER_STATUS == 'customer-present']
+update API_INVOCATION_RAW_DATA
+set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
+on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
+
+--Add APIInputStream to a delay window to wait until data is published to API_LATENCY_RAW_DATA table
+from APIInputStream select *
+insert into APIInputStreamDelayWindow;
+
+--Generate CDS Metrics Raw stream
+from APIInputStreamDelayWindow as apiInputStream
+left outer join API_LATENCY_RAW_DATA as latencyRawData
+    on apiInputStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
+select apiInputStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
+       TIMESTAMP * 1000 as reqTimestamp, CUSTOMER_STATUS as customerStatus
+insert into CDSMetricsRawStream;

@@ -1,0 +1,108 @@
+{
+  "data": {
+    "scheduledPayments": [
+      {
+        "scheduledPaymentId": "0123",
+        "nickname": "nickname",
+        "payerReference": "payerReference",
+        "payeeReference": "payeeReference",
+        "status": "ACTIVE",
+        "from": {
+          "accountId": "30080012343456"
+        },
+        "paymentSet": [
+          {
+            "to": {
+              "toUType": "1234",
+              "accountId": "2345",
+              "payeeId": "435f",
+              "domestic": {
+                "payeeAccountUType": "234",
+                "account": {
+                  "accountName": "accountName",
+                  "bsb": "bsb",
+                  "accountNumber": "accountNumber"
+                },
+                "card": {
+                  "cardNumber": "xxxx xxxx xxxx 1234"
+                },
+                "payId": {
+                  "name": "name",
+                  "identifier": "0192837",
+                  "type": "EMAIL"
+                }
+              },
+              "biller": {
+                "billerCode": "1019",
+                "crn": "crn",
+                "billerName": "billerName"
+              },
+              "international": {
+                "beneficiaryDetails": {
+                  "name": "name",
+                  "country": "country",
+                  "message": "message"
+                },
+                "bankDetails": {
+                  "country": "country",
+                  "accountNumber": "123456",
+                  "bankAddress": {
+                    "name": "alpha bank",
+                    "address": "a123"
+                  },
+                  "beneficiaryBankBIC": "beneficiaryBankBIC",
+                  "fedWireNumber": "fedWireNumber",
+                  "sortCode": "sortCode",
+                  "chipNumber": "chipNumber",
+                  "routingNumber": "routingNumber",
+                  "legalEntityIdentifier": "legalEntityIdentifier"
+                }
+              }
+            },
+            "isAmountCalculated": true,
+            "amount": "90.00",
+            "currency": "AUD"
+          }
+        ],
+        "recurrence": {
+          "nextPaymentDate": "2019-05-01T15:43:00.12345Z",
+          "recurrenceUType": "onceOff",
+          "onceOff": {
+            "paymentDate": "2019-05-01T15:43:00.12345Z"
+          },
+          "intervalSchedule": {
+            "finalPaymentDate": "2019-05-01T15:43:00.12345Z",
+            "paymentsRemaining": 0,
+            "nonBusinessDayTreatment": "ON",
+            "intervals": [
+              {
+                "interval": "interval",
+                "dayInInterval": "dayInInterval"
+              }
+            ]
+          },
+          "lastWeekDay": {
+            "finalPaymentDate": "2019-05-01T15:43:00.12345Z",
+            "paymentsRemaining": 0,
+            "interval": "interval",
+            "lastWeekDay": 0
+          },
+          "eventBased": {
+            "description": "desc"
+          }
+        }
+      }
+    ]
+  },
+  "links": {
+    "self": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/30080012343456/payments/scheduled",
+    "first": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/30080012343456/payments/scheduled/1",
+    "prev": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/30080012343456/payments/scheduled/1",
+    "next": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/30080012343456/payments/scheduled/2",
+    "last": "https://api.alphabank.com/cds-au/1.2.0/banking/accounts/30080012343456/payments/scheduled/3"
+  },
+  "meta": {
+    "totalRecords": 10,
+    "totalPages": 10
+  }
+}

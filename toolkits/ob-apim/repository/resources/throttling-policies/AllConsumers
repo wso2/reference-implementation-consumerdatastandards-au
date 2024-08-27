@@ -1,0 +1,18 @@
+FROM
+  RequestStream
+SELECT
+  messageID,
+  regex: find('^\/cds-au', apiContext) AS isEligible,
+  str: concat(apiContext, ':', cast(map: get(propertiesMap, 'authorizationStatus'), 'string')) as throttleKey, propertiesMap
+INSERT INTO
+  EligibilityStream;
+FROM
+  EligibilityStream [ isEligible == true ] # throttler: timeBatch(5 sec, 0)
+select
+  throttleKey,
+  (count(messageID) >= 300) as isThrottled,
+  expiryTimeStamp
+group by
+  throttleKey
+INSERT
+  ALL EVENTS into ResultStream;

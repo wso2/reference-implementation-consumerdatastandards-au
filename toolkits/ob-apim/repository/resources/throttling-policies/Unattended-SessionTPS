@@ -1,0 +1,16 @@
+FROM
+  RequestStream
+SELECT
+  messageID, regex: find('unattended', cast(map: get(propertiesMap, 'customerStatus'), 'string'))AND regex: find('secured', cast(map: get(propertiesMap, 'authorizationStatus'), 'string')) AS isEligible, str: concat(cast(map: get(propertiesMap, 'customerStatus'), 'string'), ':', cast(map: get(propertiesMap, 'authorizationHeader'), 'string')) as throttleKey, propertiesMap
+INSERT INTO
+  EligibilityStream;
+FROM
+  EligibilityStream [ isEligible == true ] # throttler: timeBatch(5 sec, 0)
+select
+  throttleKey,
+  (count(messageID) >= 5) as isThrottled,
+  expiryTimeStamp
+group by
+  throttleKey
+INSERT
+  ALL EVENTS into ResultStream;
