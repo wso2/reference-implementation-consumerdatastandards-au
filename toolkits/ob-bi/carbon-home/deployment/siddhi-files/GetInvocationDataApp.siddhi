@@ -1,0 +1,109 @@
+/*
+ * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com). All Rights Reserved.
+ *
+ * This software is the property of WSO2 LLC. and its suppliers, if any.
+ * Dissemination of any information or reproduction of any material contained
+ * herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+ * You may not alter or remove any copyright or other notice from copies of this content.
+ */
+
+@App:name("GetInvocationDataApp")
+
+@App:description('API Invocation status retrieval App for the given time frame')
+
+@Source(type = 'http-request',
+     source.id='source',
+     receiver.url='http://localhost:8007/InvocationData/StatusCheckStream',
+     basic.auth.enabled='false',
+     @map(type = 'json',@attributes(MESSAGE_ID='trp:messageId', CHECK_STATUS='event.name',fromDate='event.fromDate',toDate='event.toDate')))
+define stream StatusCheckStream (MESSAGE_ID string, CHECK_STATUS string, fromDate string, toDate string);
+
+@sink(type='http-response', source.id='source', message.id='{{MESSAGE_ID}}', @map(type='json'))
+define stream OutputStream(MESSAGE_ID string, RECEIVED_REQUESTS OBJECT, FAULTY_INVOCATIONS OBJECT, PRODUCT_ENDPOINT_CDR_RULE_VIOLATIONS OBJECT, CONSUMER_ENDPOINT_CDR_RULE_VIOLATIONS OBJECT);
+
+define function getErrorCountsObject[JavaScript] return object {
+  var tooManyRequests = data[0];
+  var forbidden = data[1];
+  var badRequest = data[2];
+  var unauthorized = data[3];
+  var notFound = data[4];
+  var notAcceptable = data[5];
+  var unprocessable = data[6];
+  var obj = {TOO_MANY_REQUESTS: tooManyRequests, FORBIDDEN: forbidden, BAD_REQUEST: badRequest, UNAUTHORIZED: unauthorized, NOT_FOUND: notFound, NOT_ACCEPTABLE: notAcceptable, UNPROCESSABLE: unprocessable};
+  return obj;
+
+};
+
+define function getProductEndpointCDRRuleViolations[JavaScript] return object {
+    var unsupportedVersion = data[0];
+    var invalidField = data[1];
+    var invalidDate = data[2];
+    var invalidPageSize = data[3];
+    var invalidVersion = data[4];
+    var invalidPage = data[5];
+    var tooManyRequests = data[6];
+
+    var obj = { UNSUPPORTED_VERSION: unsupportedVersion, INVALID_FIELD: invalidField, INVALID_DATE: invalidDate, INVALID_PAGE_SIZE: invalidPageSize, INVALID_VERSION: invalidVersion, INVALID_PAGE: invalidPage, TOO_MANY_REQUESTS: tooManyRequests };
+    return obj;
+};
+
+define function getCDRRuleViolations[JavaScript] return object {
+    var invalidAdrStatus = data[0];
+    var invalidSoftwareProductStatus = data[1];
+    var invalidConsentStatus = data[2];
+    var consentIsRevoked = data[3];
+    var unsupportedVersion = data[4];
+    var invalidField = data[5];
+    var invalidDate = data[6];
+    var invalidPageSize = data[7];
+    var invalidVersion = data[8];
+    var invalidPage = data[9];
+    var tooManyRequests = data[10];
+    var unavailableAccount404 = data[11];
+    var unavailableAccount422 = data[12];
+    var invalidAccount404 = data[13];
+    var invalidAccount422 = data[14];
+    var invalidResource404 = data[15];
+    var invalidResource422 = data[16];
+
+    var obj = { INVALID_ADR_STATUS: invalidAdrStatus, INVALID_ADR_SOFTWARE_PRODUCT_STATUS: invalidSoftwareProductStatus, INVALID_CONSENT_STATUS: invalidConsentStatus, CONSENT_IS_REVOKED: consentIsRevoked, UNSUPPORTED_VERSION: unsupportedVersion, INVALID_FIELD: invalidField, INVALID_DATE: invalidDate, INVALID_PAGE_SIZE: invalidPageSize, INVALID_VERSION: invalidVersion, INVALID_PAGE: invalidPage, TOO_MANY_REQUESTS: tooManyRequests, UNAVAILABLE_BANKING_ACCOUNT_404: unavailableAccount404, UNAVAILABLE_BANKING_ACCOUNT_422: unavailableAccount422, INVALID_BANKING_ACCOUNT_404: invalidAccount404, INVALID_BANKING_ACCOUNT_422: invalidAccount422, INVALID_RESOURCE_404: invalidResource404, INVALID_RESOURCE_422: invalidResource422};
+    return obj;
+};
+
+define function getBankingAPIInvocationsObject[JavaScript] return object {
+    var totalCalls = data[0];
+    var ProductEndpointCalls = data[1];
+    var consumerEndpointCallsByADR = data[2];
+
+    var obj = { TOTAL_CALLS: totalCalls, PRODUCT_ENDPOINT_CALLS: ProductEndpointCalls, CONSUMER_DATA_REQUESTS_BY_ADR: consumerEndpointCallsByADR};
+    return obj;
+};
+
+
+from StatusCheckStream#window.timeBatch(1 sec)#rdbms:query('OB_REPORTING_DB', 'BANKING_ENDPOINT_CALLS LONG, PRODUCT_ENDPOINT_CALLS LONG, CONSUMER_ENDPOINT_CALLS_BY_ADR LONG', "select ( select COUNT(*) from API_INVOCATION_RAW_DATA where ELECTED_RESOURCE like '%banking%' AND (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS BANKING_ENDPOINT_CALLS, ( select COUNT(*) from API_INVOCATION_RAW_DATA where ELECTED_RESOURCE like '%products%' AND (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS PRODUCT_ENDPOINT_CALLS, ( select COUNT(*) from API_INVOCATION_RAW_DATA where ELECTED_RESOURCE like '%banking%' AND ELECTED_RESOURCE not like '%products%' AND (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS CONSUMER_ENDPOINT_CALLS_BY_ADR from dual", time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000 )
+select MESSAGE_ID, BANKING_ENDPOINT_CALLS, PRODUCT_ENDPOINT_CALLS, CONSUMER_ENDPOINT_CALLS_BY_ADR
+insert into TotalInvocationsStream;
+
+from StatusCheckStream#window.timeBatch(1 sec)#rdbms:query('OB_REPORTING_DB', 'TOO_MANY_REQUESTS LONG, FORBIDDEN LONG, BAD_REQUEST LONG, UNAUTHORIZED LONG, NOT_FOUND LONG, NOT_ACCEPTABLE LONG, UNPROCESSABLE LONG', 'select ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=429 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS TOO_MANY_REQUESTS, ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=403 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS FORBIDDEN, ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=400 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS BAD_REQUEST, ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=401 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS UNAUTHORIZED, ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=404 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS NOT_FOUND, ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=406 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS NOT_ACCEPTABLE, ( select COUNT(*) from   API_INVOCATION_RAW_DATA where STATUS_CODE=422 and (TIMESTAMP >= ?) AND (TIMESTAMP < ?)) AS UNPROCESSABLE from dual', time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000, time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000 )
+select MESSAGE_ID, TOO_MANY_REQUESTS,  FORBIDDEN, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND, NOT_ACCEPTABLE, UNPROCESSABLE
+insert into FailureInvocationsStream;
+
+from StatusCheckStream#window.timeBatch(1 sec)#rdbms:query('OB_REPORTING_DB', 'INVALID_ADR_STATUS LONG, INVALID_ADR_SOFTWARE_PRODUCT_STATUS LONG, INVALID_CONSENT_STATUS LONG, CONSENT_IS_REVOKED LONG, UNSUPPORTED_VERSION_PRODUCT_ENDPOINT LONG, UNSUPPORTED_VERSION_CONSUMER_ENDPOINT LONG, INVALID_FIELD_PRODUCT_ENDPOINT LONG, INVALID_FIELD_CONSUMER_ENDPOINT LONG, INVALID_DATE_PRODUCT_ENDPOINT LONG, INVALID_DATE_CONSUMER_ENDPOINT LONG, INVALID_PAGE_SIZE_PRODUCT_ENDPOINT LONG, INVALID_PAGE_SIZE_CONSUMER_ENDPOINT LONG, INVALID_VERSION_PRODUCT_ENDPOINT LONG, INVALID_VERSION_CONSUMER_ENDPOINT LONG, INVALID_PAGE_PRODUCT_ENDPOINT LONG, INVALID_PAGE_CONSUMER_ENDPOINT LONG, TOO_MANY_REQUESTS_PRODUCT_ENDPOINT LONG, TOO_MANY_REQUESTS_CONSUMER_ENDPOINT LONG, UNAVAILABLE_BANKING_ACCOUNT_404 LONG, UNAVAILABLE_BANKING_ACCOUNT_422 LONG, INVALID_BANKING_ACCOUNT_404 LONG, INVALID_BANKING_ACCOUNT_422 LONG, INVALID_RESOURCE_404 LONG, INVALID_RESOURCE_422 LONG', "SELECT (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Authorisation/AdrStatusNotActive' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_ADR_STATUS, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'AU.CDR.Entitlements.InvalidAdrSoftwareProductStatus' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_ADR_SOFTWARE_PRODUCT_STATUS, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Authorisation/InvalidConsent' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_CONSENT_STATUS, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Authorisation/RevokedConsent' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS CONSENT_IS_REVOKED, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Header/UnsupportedVersion' AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS UNSUPPORTED_VERSION_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Header/UnsupportedVersion' AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS UNSUPPORTED_VERSION_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/Invalid' AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_FIELD_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/Invalid' AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_FIELD_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/InvalidDateTime' AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_DATE_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/InvalidDateTime' AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_DATE_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/InvalidPageSize' AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_PAGE_SIZE_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/InvalidPageSize' AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_PAGE_SIZE_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Header/InvalidVersion' AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_VERSION_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Header/InvalidVersion' AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_VERSION_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/InvalidPage' AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_PAGE_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_message = 'urn:au-cds:error:cds-all:Field/InvalidPage' AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_PAGE_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=429 AND elected_resource LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS TOO_MANY_REQUESTS_PRODUCT_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=429 AND elected_resource LIKE '%banking%' AND elected_resource NOT LIKE '%products%' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS TOO_MANY_REQUESTS_CONSUMER_ENDPOINT, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=404 AND status_message = 'urn:au-cds:error:cds-banking:Authorisation/UnavailableBankingAccount' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS UNAVAILABLE_BANKING_ACCOUNT_404, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=422 AND status_message = 'urn:au-cds:error:cds-banking:Authorisation/UnavailableBankingAccount' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS UNAVAILABLE_BANKING_ACCOUNT_422, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=404 AND status_message = 'urn:au-cds:error:cds-banking:Authorisation/InvalidBankingAccount' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_BANKING_ACCOUNT_404, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=422 AND status_message = 'urn:au-cds:error:cds-banking:Authorisation/InvalidBankingAccount' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_BANKING_ACCOUNT_422, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=404 AND status_message = 'urn:au-cds:error:cds-all:Resource/Invalid' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_RESOURCE_404, (SELECT Count(*) FROM API_INVOCATION_RAW_DATA WHERE status_code=422 AND status_message = 'urn:au-cds:error:cds-all:Resource/Invalid' AND ( timestamp >= ? ) AND ( timestamp < ? )) AS INVALID_RESOURCE_422 FROM dual", time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000 , time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000 , time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000, time: timestampInMilliseconds (fromDate)/1000,time: timestampInMilliseconds (toDate)/1000 )
+select MESSAGE_ID, INVALID_ADR_STATUS,  INVALID_ADR_SOFTWARE_PRODUCT_STATUS, INVALID_CONSENT_STATUS, CONSENT_IS_REVOKED, UNSUPPORTED_VERSION_PRODUCT_ENDPOINT, UNSUPPORTED_VERSION_CONSUMER_ENDPOINT, INVALID_FIELD_PRODUCT_ENDPOINT, INVALID_FIELD_CONSUMER_ENDPOINT, INVALID_DATE_PRODUCT_ENDPOINT, INVALID_DATE_CONSUMER_ENDPOINT, INVALID_PAGE_SIZE_PRODUCT_ENDPOINT, INVALID_PAGE_SIZE_CONSUMER_ENDPOINT, INVALID_VERSION_PRODUCT_ENDPOINT, INVALID_VERSION_CONSUMER_ENDPOINT, INVALID_PAGE_PRODUCT_ENDPOINT, INVALID_PAGE_CONSUMER_ENDPOINT, TOO_MANY_REQUESTS_PRODUCT_ENDPOINT, TOO_MANY_REQUESTS_CONSUMER_ENDPOINT, UNAVAILABLE_BANKING_ACCOUNT_404, UNAVAILABLE_BANKING_ACCOUNT_422, INVALID_BANKING_ACCOUNT_404, INVALID_BANKING_ACCOUNT_422, INVALID_RESOURCE_404, INVALID_RESOURCE_422
+insert into CDRRuleViolationsStream;
+
+from TotalInvocationsStream#window.timeBatch(1 sec) as a
+join FailureInvocationsStream#window.timeBatch(1 sec) as s on a.MESSAGE_ID == s.MESSAGE_ID
+select a.MESSAGE_ID as MESSAGE_ID, a.BANKING_ENDPOINT_CALLS , a.PRODUCT_ENDPOINT_CALLS, a.CONSUMER_ENDPOINT_CALLS_BY_ADR , s.TOO_MANY_REQUESTS, s.FORBIDDEN, s.BAD_REQUEST, s.UNAUTHORIZED, s.NOT_FOUND, s.NOT_ACCEPTABLE, s.UNPROCESSABLE
+insert into StatusResultStream1;
+
+from StatusResultStream1#window.timeBatch(1 sec) as a
+join CDRRuleViolationsStream#window.timeBatch(1 sec) as s on a.MESSAGE_ID == s.MESSAGE_ID
+select a.MESSAGE_ID, a.BANKING_ENDPOINT_CALLS, a.PRODUCT_ENDPOINT_CALLS, a.CONSUMER_ENDPOINT_CALLS_BY_ADR , a.TOO_MANY_REQUESTS, a.FORBIDDEN, a.BAD_REQUEST, a.UNAUTHORIZED, a.NOT_FOUND, a.NOT_ACCEPTABLE, a.UNPROCESSABLE, s.INVALID_ADR_STATUS, s.INVALID_ADR_SOFTWARE_PRODUCT_STATUS, s.INVALID_CONSENT_STATUS, s.CONSENT_IS_REVOKED, s.UNSUPPORTED_VERSION_PRODUCT_ENDPOINT, s.UNSUPPORTED_VERSION_CONSUMER_ENDPOINT, s.INVALID_FIELD_PRODUCT_ENDPOINT, s.INVALID_FIELD_CONSUMER_ENDPOINT, s.INVALID_DATE_PRODUCT_ENDPOINT, s.INVALID_DATE_CONSUMER_ENDPOINT, s.INVALID_PAGE_SIZE_PRODUCT_ENDPOINT, s.INVALID_PAGE_SIZE_CONSUMER_ENDPOINT, s.INVALID_VERSION_PRODUCT_ENDPOINT, s.INVALID_VERSION_CONSUMER_ENDPOINT, s.INVALID_PAGE_PRODUCT_ENDPOINT, s.INVALID_PAGE_CONSUMER_ENDPOINT, s.TOO_MANY_REQUESTS_PRODUCT_ENDPOINT, s.TOO_MANY_REQUESTS_CONSUMER_ENDPOINT, s.UNAVAILABLE_BANKING_ACCOUNT_404, s.UNAVAILABLE_BANKING_ACCOUNT_422, s.INVALID_BANKING_ACCOUNT_404, s.INVALID_BANKING_ACCOUNT_422, s.INVALID_RESOURCE_404, s.INVALID_RESOURCE_422
+insert into StatusResultStream2;
+
+@info(name='sendResponse')
+from StatusResultStream2
+select MESSAGE_ID as MESSAGE_ID, getBankingAPIInvocationsObject(BANKING_ENDPOINT_CALLS, PRODUCT_ENDPOINT_CALLS, CONSUMER_ENDPOINT_CALLS_BY_ADR) as RECEIVED_REQUESTS, getErrorCountsObject(TOO_MANY_REQUESTS, FORBIDDEN, BAD_REQUEST, UNAUTHORIZED, NOT_FOUND, NOT_ACCEPTABLE, UNPROCESSABLE) as FAULTY_INVOCATIONS, getProductEndpointCDRRuleViolations(UNSUPPORTED_VERSION_PRODUCT_ENDPOINT, INVALID_FIELD_PRODUCT_ENDPOINT, INVALID_DATE_PRODUCT_ENDPOINT, INVALID_PAGE_SIZE_PRODUCT_ENDPOINT, INVALID_VERSION_PRODUCT_ENDPOINT, INVALID_PAGE_PRODUCT_ENDPOINT, TOO_MANY_REQUESTS_PRODUCT_ENDPOINT) as PRODUCT_ENDPOINT_CDR_RULE_VIOLATIONS, getCDRRuleViolations(INVALID_ADR_STATUS, INVALID_ADR_SOFTWARE_PRODUCT_STATUS, INVALID_CONSENT_STATUS, CONSENT_IS_REVOKED, UNSUPPORTED_VERSION_CONSUMER_ENDPOINT, INVALID_FIELD_CONSUMER_ENDPOINT,  INVALID_DATE_CONSUMER_ENDPOINT,  INVALID_PAGE_SIZE_CONSUMER_ENDPOINT,  INVALID_VERSION_CONSUMER_ENDPOINT,  INVALID_PAGE_CONSUMER_ENDPOINT,  TOO_MANY_REQUESTS_CONSUMER_ENDPOINT,  UNAVAILABLE_BANKING_ACCOUNT_404,  UNAVAILABLE_BANKING_ACCOUNT_422,  INVALID_BANKING_ACCOUNT_404,  INVALID_BANKING_ACCOUNT_422,  INVALID_RESOURCE_404,  INVALID_RESOURCE_422) as CONSUMER_ENDPOINT_CDR_RULE_VIOLATIONS
+insert into OutputStream;
+
