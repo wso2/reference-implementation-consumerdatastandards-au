@@ -22,7 +22,7 @@
 
 @Source(type = 'http-request',
      source.id='source',
-     receiver.url='http://WSO2_OB_BI_HOSTNAME:8007/InvocationData/StatusCheckStream',
+     receiver.url='http://<BI_HOSTNAME>:8007/InvocationData/StatusCheckStream',
      basic.auth.enabled='false',
      @map(type = 'json',@attributes(MESSAGE_ID='trp:messageId', CHECK_STATUS='event.name',fromDate='event.fromDate',toDate='event.toDate')))
 define stream StatusCheckStream (MESSAGE_ID string, CHECK_STATUS string, fromDate string, toDate string);
