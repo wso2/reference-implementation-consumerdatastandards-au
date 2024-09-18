@@ -50,6 +50,7 @@ public class CDSErrorHandler implements OpenBankingGatewayExecutor {
 
     private static Log log = LogFactory.getLog(CDSErrorHandler.class);
     private static final String STATUS_CODE = "statusCode";
+    private static final String STATUS_MESSAGE = "statusMessage";
     private static final String RESPONSE_PAYLOAD_SIZE = "responsePayloadSize";
     public static final String X_FAPI_INTERACTION_ID = "x-fapi-interaction-id";
 
@@ -110,9 +111,11 @@ public class CDSErrorHandler implements OpenBankingGatewayExecutor {
 
         ArrayList<OpenBankingExecutorError> errors = obapiRequestContext.getErrors();
         HashSet<String> statusCodes = new HashSet<>();
+        HashMap<String, String> statusMessages = new HashMap<>();
 
         for (OpenBankingExecutorError error : errors) {
             statusCodes.add(error.getHttpStatusCode());
+            statusMessages.put(error.getHttpStatusCode(), error.getCode());
         }
 
         // handle DCR and Unauthorized errors according to oAuth2 format
@@ -161,6 +164,11 @@ public class CDSErrorHandler implements OpenBankingGatewayExecutor {
         // Add error data to analytics map
         Map<String, Object> analyticsData = obapiRequestContext.getAnalyticsData();
         analyticsData.put(STATUS_CODE, statusCode);
+
+        String statusMessage = statusMessages.get(String.valueOf(statusCode));
+        if (statusMessage != null) {
+            analyticsData.put(STATUS_MESSAGE, statusMessage);
+        }
         analyticsData.put(RESPONSE_PAYLOAD_SIZE, (long) obapiRequestContext.getModifiedPayload().length());
         obapiRequestContext.setAnalyticsData(analyticsData);
 

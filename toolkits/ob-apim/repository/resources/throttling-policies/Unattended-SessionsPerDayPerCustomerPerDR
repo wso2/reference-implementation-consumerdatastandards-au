@@ -6,6 +6,7 @@
   CLIENT_ID string,
   USER_AGENT string,
   STATUS_CODE int,
+  STATUS_MESSAGE string,
   HTTP_METHOD string,
   RESPONSE_PAYLOAD_SIZE long,
   ELECTED_RESOURCE string,

@@ -21,7 +21,7 @@
 
 @source(type='wso2event',  @map(type='wso2event'))
 define stream APIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
-                        USER_AGENT string, STATUS_CODE int, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
+                        USER_AGENT string, STATUS_CODE int, STATUS_MESSAGE string, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
                         ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
                         CUSTOMER_STATUS string, ACCESS_TOKEN_ID string);
 
