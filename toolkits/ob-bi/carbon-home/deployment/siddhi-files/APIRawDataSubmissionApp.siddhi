@@ -19,6 +19,10 @@
 @App:name("APIRawDataSubmissionApp")
 
 @source(type='wso2event',  @map(type='wso2event'))
+define stream APILatencyInputStream(MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
+                        REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
+
+@source(type='wso2event',  @map(type='wso2event'))
 define stream APIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
                         USER_AGENT string, STATUS_CODE int, STATUS_MESSAGE string, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
                         ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
@@ -36,16 +40,6 @@ define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID st
                         RESPONSE_PAYLOAD_SIZE long, ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string,
                         TIMESTAMP long, CUSTOMER_STATUS string, ACCESS_TOKEN_ID string, SESSION_TYPE string);
 
-@primaryKey('ID','MESSAGE_ID')
-@store(type='rdbms', datasource='OB_REPORTING_DB')
-define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
-                        REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
-
-define window APIInputStreamDelayWindow(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
-                          USER_AGENT string, STATUS_CODE int, STATUS_MESSAGE string, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
-                          ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
-                          CUSTOMER_STATUS string, ACCESS_TOKEN_ID string) delay(1sec);
-
 --Persist API Invocation Data
 from APIInputStream
 select UUID() as ID, MESSAGE_ID, CONSENT_ID, CONSUMER_ID, CLIENT_ID, USER_AGENT, STATUS_CODE, STATUS_MESSAGE, HTTP_METHOD,
@@ -61,13 +55,9 @@ update API_INVOCATION_RAW_DATA
 set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
---Add APIInputStream to a delay window to wait until data is published to API_LATENCY_RAW_DATA table
-from APIInputStream select *
-insert into APIInputStreamDelayWindow;
-
 --Generate CDS Metrics Raw stream
-from APIInputStreamDelayWindow as apiInputStream
-left outer join API_LATENCY_RAW_DATA as latencyRawData
+from APIInputStream as apiInputStream
+left outer join APILatencyInputStream as latencyRawData
     on apiInputStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
 select apiInputStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
        TIMESTAMP * 1000 as reqTimestamp, CUSTOMER_STATUS as customerStatus
