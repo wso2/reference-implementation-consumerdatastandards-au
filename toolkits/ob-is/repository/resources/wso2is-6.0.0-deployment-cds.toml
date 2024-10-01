@@ -173,6 +173,7 @@ allowed_scopes = ["OB.*", "profile"]
 renew_refresh_token = false
 
 [oauth.endpoints]
+oauth2_token_url = "${carbon.protocol}://APIM_HOSTNAME:8243/token"
 oauth2_consent_page = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/ob/authenticationendpoint/oauth2_authz.do"
 oidc_consent_page = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/ob/authenticationendpoint/oauth2_consent.do"
 
@@ -202,7 +203,7 @@ order = 1
 [event_listener.properties]
 PreventTokenReuse= false
 RejectBeforeInMinutes= "100"
-TokenEndpointAlias= "https://IS_HOSTNAME:9446/oauth2/token"
+TokenEndpointAlias= "https://APIM_HOSTNAME:8243/token"
 notification_endpoint = "https://APIM_HOSTNAME:9443/internal/data/v1/notify"
 username = "${admin.username}"
 password = "${admin.password}"
@@ -230,7 +231,7 @@ order = "894"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://localhost:9446/oauth2/introspect"
+EndpointAlias = "https://APIM_HOSTNAME:8243/token/introspect"
 
 [[event_listener]]
 id = "cds_par_private_key_jwt_authenticator"
@@ -240,7 +241,7 @@ order = "895"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://localhost:9446/api/openbanking/push-authorization/par"
+EndpointAlias = "https://APIM_HOSTNAME:8243/par"
 
 [[event_listener]]
 id = "cds_revoke_private_key_jwt_authenticator"
@@ -250,7 +251,7 @@ order = "896"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://IS_HOSTNAME:9446/oauth2/revoke"
+EndpointAlias = "https://APIM_HOSTNAME:8243/revoke"
 
 [[event_listener]]
 id = "cds_arrangement_private_key_jwt_authenticator"
@@ -260,7 +261,7 @@ order = "897"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://IS_HOSTNAME:8243/arrangements/1.0.0"
+EndpointAlias = "https://APIM_HOSTNAME:8243/arrangements/1.0.0"
 
 [[event_listener]]
 id = "cds_token_private_key_jwt_authenticator"
@@ -268,6 +269,9 @@ type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
 name = "org.wso2.openbanking.cds.identity.authenticator.CDSTokenPrivateKeyJWTClientAuthenticator"
 order = "898"
 enable = true
+
+[event_listener.properties]
+EndpointAlias = "https://APIM_HOSTNAME:8243/token"
 
 [[event_listener]]
 id = "private_key_jwt_authenticator"
@@ -291,7 +295,7 @@ order = "901"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://localhost:9446/oauth2/introspect"
+EndpointAlias = "https://APIM_HOSTNAME:8243/token/introspect"
 
 [oauth.grant_type]
 iwa_ntlm.enable = false
@@ -535,7 +539,7 @@ step = 2
 allowed_values = ["authorization_code", "refresh_token", "client_credentials"]
 
 [open_banking.dcr.registration.audience]
-allowed_values = ["https://IS_HOSTNAME:9446/oauth2/token"]
+allowed_values = ["https://APIM_HOSTNAME:8243/token"]
 
 [open_banking.dcr.registration.token_endpoint_authentication]
 allowed_values = ["private_key_jwt"]
