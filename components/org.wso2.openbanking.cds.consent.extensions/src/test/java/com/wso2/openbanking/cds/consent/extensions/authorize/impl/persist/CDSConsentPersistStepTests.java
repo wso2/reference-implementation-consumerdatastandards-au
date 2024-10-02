@@ -202,7 +202,8 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
                 anyLong(), anyString(), any(HashMap.class), anyString(), any(HashMap.class),
                 anyString(), any(HashMap.class));
 
-        doReturn(new DetailedConsentResource()).when(consentCoreServiceMock).getDetailedConsent(anyString());
+        doReturn(CDSConsentAuthorizeTestConstants.getDetailedConsentResource()).when(consentCoreServiceMock).
+                getDetailedConsent(anyString());
         doNothing().when(consentCoreServiceMock).revokeTokens(any(DetailedConsentResource.class), anyString());
         doReturn(true).when(consentCoreServiceMock).updateAccountMappingStatus(any(ArrayList.class), anyString());
 

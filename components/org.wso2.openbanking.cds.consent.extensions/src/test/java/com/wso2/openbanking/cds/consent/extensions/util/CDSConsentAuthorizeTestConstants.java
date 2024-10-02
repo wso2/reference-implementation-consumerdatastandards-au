@@ -142,6 +142,7 @@ public class CDSConsentAuthorizeTestConstants {
         ArrayList<AuthorizationResource> authorizationResources = new ArrayList<>();
         authorizationResources.add(CDSConsentAuthorizeTestConstants.getAuthorizationResource());
         detailedConsentResource.setAuthorizationResources(authorizationResources);
+        detailedConsentResource.setConsentMappingResources(new ArrayList<>());
 
         return detailedConsentResource;
     }
