@@ -17,11 +17,11 @@
  */
 package org.wso2.openbanking.cds.identity.dcr.model;
 
-import com.wso2.openbanking.accelerator.identity.common.annotations.validationgroups.AttributeChecks;
-import com.wso2.openbanking.accelerator.identity.common.annotations.validationgroups.MandatoryChecks;
 import com.wso2.openbanking.accelerator.identity.dcr.model.RegistrationRequest;
 import com.wso2.openbanking.accelerator.identity.dcr.model.SoftwareStatementBody;
 import com.wso2.openbanking.accelerator.identity.dcr.validation.DCRCommonConstants;
+import com.wso2.openbanking.accelerator.identity.dcr.validation.validationgroups.AttributeChecks;
+import com.wso2.openbanking.accelerator.identity.dcr.validation.validationgroups.MandatoryChecks;
 import org.wso2.openbanking.cds.identity.dcr.constants.CDSValidationConstants;
 import org.wso2.openbanking.cds.identity.dcr.validation.annotation.ValidateCallbackUris;
 import org.wso2.openbanking.cds.identity.dcr.validation.annotation.ValidateJTI;
