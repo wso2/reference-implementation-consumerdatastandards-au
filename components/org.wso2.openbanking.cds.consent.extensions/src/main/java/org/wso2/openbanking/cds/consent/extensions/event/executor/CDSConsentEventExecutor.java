@@ -62,6 +62,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 /**
  * CDS event executor implementation to execute consent state change related events.
@@ -83,6 +84,7 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
     private static final String CONSENT_DATA_MAP = "ConsentDataMap";
     private static final String CONSENT_RESOURCE = "ConsentResource";
     private static final String DETAILED_CONSENT_RESOURCE = "DetailedConsentResource";
+    private static final String REQUEST_URI_KEY = "requestUriKey";
 
     // Data publishing related constants.
     private static final String CLIENT_ID_KEY = "clientId";
@@ -90,6 +92,7 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
     private static final String USER_ID_KEY = "userId";
     private static final String STATUS_KEY = "status";
     private static final String EXPIRY_TIME_KEY = "expiryTime";
+    private static final ConcurrentLinkedDeque<String> publishedRequestUriKeyQueue = new ConcurrentLinkedDeque<>();
 
     @Override
     public void processEvent(OBEvent obEvent) {
@@ -159,6 +162,14 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
             String consentId = (String) eventData.get(CONSENT_ID);
             ConsentStatusEnum consentStatus = getConsentStatusForEventType(obEvent.getEventType());
             AuthorisationFlowTypeEnum authFlowType = getAuthFlowTypeForEventType(obEvent.getEventType());
+            String requestUriKey = getRequestUriKeyFromConsentResource(consentResource, detailedConsentResource);
+            if (requestUriKey != null && publishedRequestUriKeyQueue.contains(requestUriKey)) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Skipping authorisation data publishing for requestUriKey: " + requestUriKey +
+                            " as it has already been published.");
+                }
+                return;
+            }
 
             String customerProfile = null;
             String sharingDuration = null;
@@ -179,6 +190,7 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
                     consentStatus, authFlowType, customerProfile, consentDurationType);
 
             dataPublishingService.publishAuthorisationData(authorisationData);
+            addToPublishedRequestUriKeyQueue(requestUriKey);
         }
 
     }
@@ -375,5 +387,35 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
         } else {
             return AuthorisationFlowTypeEnum.UNCLASSIFIED;
         }
+    }
+
+    /**
+     * Add the request uri key to the published data queue.
+     * If the queue is full, oldest key is removed.
+     * 20 keys are maintained in the queue to handle simultaneous consent state change events.
+     *
+     * @param requestUriKey request uri key coming as a consent attribute
+     */
+    private void addToPublishedRequestUriKeyQueue(String requestUriKey) {
+
+        if (StringUtils.isBlank(requestUriKey)) {
+            return;
+        }
+        if (publishedRequestUriKeyQueue.size() >= 20) {
+            publishedRequestUriKeyQueue.pollFirst();
+        }
+        publishedRequestUriKeyQueue.addLast(requestUriKey);
+    }
+
+    private String getRequestUriKeyFromConsentResource(ConsentResource consentResource,
+                                                       DetailedConsentResource detailedConsentResource) {
+
+        Map<String, String> consentAttributes = null;
+        if (consentResource != null) {
+            consentAttributes = consentResource.getConsentAttributes();
+        } else if (detailedConsentResource != null) {
+            consentAttributes = detailedConsentResource.getConsentAttributes();
+        }
+        return consentAttributes != null ? consentAttributes.get(REQUEST_URI_KEY) : null;
     }
 }

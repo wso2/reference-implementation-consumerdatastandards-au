@@ -150,6 +150,26 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                     revokeTokens(cdrArrangementId, userId);
                     // Activate account mappings which were deactivated when revoking tokens
                     activateAccountMappings(cdrArrangementId);
+
+                    // Update account mapping permissions
+                    ArrayList<ConsentMappingResource> existingConsentMappingResources =
+                            consentCoreService.getDetailedConsent(cdrArrangementId).getConsentMappingResources();
+                    Map<String, String> updatableAccountMappingPermissions = new HashMap<>();
+                    for (ConsentMappingResource consentMappingResource : existingConsentMappingResources) {
+                        String accountId = consentMappingResource.getAccountID();
+                        String oldPermission = consentMappingResource.getPermission();
+                        ArrayList<String> permissionList = accountIdsMapWithPermissions.get(accountId);
+                        if (authResorceId.equals(consentMappingResource.getAuthorizationID()) &&
+                                accountIdsMapWithPermissions.containsKey(accountId)
+                                && permissionList != null && !oldPermission.equals(permissionList.get(0))) {
+                            updatableAccountMappingPermissions.put(consentMappingResource.getMappingID(),
+                                    permissionList.get(0));
+                        }
+                    }
+                    if (!updatableAccountMappingPermissions.isEmpty()) {
+                        consentCoreService.updateAccountMappingPermission(updatableAccountMappingPermissions);
+                    }
+
                     // Amend consent data
                     String expirationDateTime = consentData.getMetaDataMap().get(
                             CDSConsentExtensionConstants.EXPIRATION_DATE_TIME).toString();
