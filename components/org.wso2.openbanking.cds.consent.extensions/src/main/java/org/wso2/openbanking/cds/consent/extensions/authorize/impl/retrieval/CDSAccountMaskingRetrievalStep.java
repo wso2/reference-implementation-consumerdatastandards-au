@@ -34,21 +34,24 @@ public class CDSAccountMaskingRetrievalStep implements ConsentRetrievalStep {
     @Override
     public void execute(ConsentData consentData, JSONObject jsonObject) throws ConsentException {
 
-        boolean isAccountMaskingEnabled = OpenBankingCDSConfigParser.getInstance().isAccountMaskingEnabled();
+        if (consentData.isRegulatory()) {
 
-        if (isAccountMaskingEnabled) {
-            JSONArray accountsJSON = (JSONArray) jsonObject.get(CDSConsentExtensionConstants.ACCOUNTS);
-            JSONArray updatedAccountsJSON = new JSONArray();
+            boolean isAccountMaskingEnabled = OpenBankingCDSConfigParser.getInstance().isAccountMaskingEnabled();
 
-            for (Object accountElement : accountsJSON) {
-                JSONObject account = (JSONObject) accountElement;
-                String accountId = (String) account.get(CDSConsentExtensionConstants.ACCOUNT_ID);
-                String accountNumberDisplay = getDisplayableAccountNumber(accountId);
-                account.put(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE, accountNumberDisplay);
-                updatedAccountsJSON.add(account);
+            if (isAccountMaskingEnabled) {
+                JSONArray accountsJSON = (JSONArray) jsonObject.get(CDSConsentExtensionConstants.ACCOUNTS);
+                JSONArray updatedAccountsJSON = new JSONArray();
 
+                for (Object accountElement : accountsJSON) {
+                    JSONObject account = (JSONObject) accountElement;
+                    String accountId = (String) account.get(CDSConsentExtensionConstants.ACCOUNT_ID);
+                    String accountNumberDisplay = getDisplayableAccountNumber(accountId);
+                    account.put(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE, accountNumberDisplay);
+                    updatedAccountsJSON.add(account);
+
+                }
+                jsonObject.put(CDSConsentExtensionConstants.ACCOUNTS, updatedAccountsJSON);
             }
-            jsonObject.put(CDSConsentExtensionConstants.ACCOUNTS, updatedAccountsJSON);
         }
     }
 
