@@ -28,7 +28,7 @@
         <display-name>JAX-WS/JAX-RS Servlet</display-name>
         <description>JAX-WS/JAX-RS Endpoint</description>
         <servlet-class>
-            org.apache.cxf.transport.servlet.CXFServlet
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
         </servlet-class>
         <init-param>
             <param-name>service-list-stylesheet</param-name>
@@ -37,6 +37,28 @@
         <init-param>
             <param-name>jersey.config.server.provider.classnames</param-name>
             <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.cds.demo.backend.services.BankingService,
+                org.wso2.openbanking.cds.demo.backend.services.CommonService,
+                org.wso2.openbanking.cds.demo.backend.services.DiscoveryService,
+                org.wso2.openbanking.cds.demo.backend.services.CustomerDetailsService,
+                org.wso2.openbanking.cds.demo.backend.services.BankAccountService
+            </param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jaxrs.address</param-name>
+            <param-value>
+                /banking,
+                /common,
+                /discovery,
+                /customerdetails,
+                /bankaccounts
+            </param-value>
         </init-param>
 
         <load-on-startup>1</load-on-startup>
