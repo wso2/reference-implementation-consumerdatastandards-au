@@ -281,17 +281,24 @@ order = "899"
 enable = false
 
 [[event_listener]]
+id = "ob_private_key_jwt_authenticator"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "com.wso2.openbanking.accelerator.identity.clientauth.jwt.OBPrivateKeyJWTClientAuthenticator"
+order = "900"
+enable = false
+
+[[event_listener]]
 id = "introspection_response_interceptor"
 type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
 name="org.wso2.carbon.identity.oauth2.token.handler.clientauth.mutualtls.introspection.IntrospectionResponseInterceptor"
-order= "900"
+order= "901"
 enable=true
 
 [[event_listener]]
 id = "cds_token_introspection_listener"
 type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
 name = "org.wso2.openbanking.cds.identity.listener.CDSTokenIntrospectionListener"
-order = "901"
+order = "902"
 enable = true
 
 [event_listener.properties]
