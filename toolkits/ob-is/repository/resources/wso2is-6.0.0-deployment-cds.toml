@@ -605,7 +605,7 @@ type="int"
 [[open_banking.data_publishing.thrift.stream.attributes]]
 name="statusMessage"
 priority=7
-required=true
+required=false
 [[open_banking.data_publishing.thrift.stream.attributes]]
 name="httpMethod"
 priority=8
