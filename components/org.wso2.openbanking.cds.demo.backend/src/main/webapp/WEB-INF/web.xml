@@ -24,11 +24,11 @@
     <display-name>Open-Banking</display-name>
 
     <servlet>
-        <servlet-name>JAXServlet</servlet-name>
-        <display-name>JAX-WS/JAX-RS Servlet</display-name>
-        <description>JAX-WS/JAX-RS Endpoint</description>
+        <servlet-name>BankingServiceJAXServlet</servlet-name>
+        <display-name>BankingService JAX-WS/JAX-RS Servlet</display-name>
+        <description>BankingService JAX-WS/JAX-RS Endpoint</description>
         <servlet-class>
-            org.apache.cxf.transport.servlet.CXFServlet
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
         </servlet-class>
         <init-param>
             <param-name>service-list-stylesheet</param-name>
@@ -39,12 +39,143 @@
             <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
         </init-param>
 
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.cds.demo.backend.services.BankingService
+            </param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>CommonServiceJAXServlet</servlet-name>
+        <display-name>CommonService JAX-WS/JAX-RS Servlet</display-name>
+        <description>CommonService JAX-WS/JAX-RS Endpoint</description>
+        <servlet-class>
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
+        </servlet-class>
+        <init-param>
+            <param-name>service-list-stylesheet</param-name>
+            <param-value>servicelist.css</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.cds.demo.backend.services.CommonService
+            </param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>DiscoveryServiceJAXServlet</servlet-name>
+        <display-name>DiscoveryService JAX-WS/JAX-RS Servlet</display-name>
+        <description>DiscoveryService JAX-WS/JAX-RS Endpoint</description>
+        <servlet-class>
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
+        </servlet-class>
+        <init-param>
+            <param-name>service-list-stylesheet</param-name>
+            <param-value>servicelist.css</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.cds.demo.backend.services.DiscoveryService
+            </param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>CustomerDetailsJAXServlet</servlet-name>
+        <display-name>CustomerDetails JAX-WS/JAX-RS Servlet</display-name>
+        <description>CustomerDetails JAX-WS/JAX-RS Endpoint</description>
+        <servlet-class>
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
+        </servlet-class>
+        <init-param>
+            <param-name>service-list-stylesheet</param-name>
+            <param-value>servicelist.css</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.cds.demo.backend.services.CustomerDetails
+            </param-value>
+        </init-param>
+
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>BankAccountServiceJAXServlet</servlet-name>
+        <display-name>BankAccountService JAX-WS/JAX-RS Servlet</display-name>
+        <description>BankAccountService JAX-WS/JAX-RS Endpoint</description>
+        <servlet-class>
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
+        </servlet-class>
+        <init-param>
+            <param-name>service-list-stylesheet</param-name>
+            <param-value>servicelist.css</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        </init-param>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.cds.demo.backend.services.BankAccountService
+            </param-value>
+        </init-param>
+
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
-        <servlet-name>JAXServlet</servlet-name>
-        <url-pattern>/services/*</url-pattern>
+        <servlet-name>BankingServiceJAXServlet</servlet-name>
+        <url-pattern>/services/banking/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>CommonServiceJAXServlet</servlet-name>
+        <url-pattern>/services/common/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>DiscoveryServiceJAXServlet</servlet-name>
+        <url-pattern>/services/discovery/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>CustomerDetailsJAXServlet</servlet-name>
+        <url-pattern>/services/customerdetails/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>BankAccountServiceJAXServlet</servlet-name>
+        <url-pattern>/services/bankaccounts/*</url-pattern>
     </servlet-mapping>
 
     <session-config>
