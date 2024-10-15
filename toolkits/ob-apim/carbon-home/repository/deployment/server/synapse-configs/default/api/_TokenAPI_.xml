@@ -31,5 +31,6 @@
     <handlers>
         <handler class="org.wso2.carbon.apimgt.gateway.handlers.common.SynapsePropertiesHandler"/>
         <handler class="org.wso2.openbanking.cds.gateway.handlers.InfoSecDataPublishingHandler"/>
+        <handler class="com.wso2.openbanking.accelerator.gateway.handler.GatewayClientAuthenticationHandler"/>
     </handlers>
 </api>
