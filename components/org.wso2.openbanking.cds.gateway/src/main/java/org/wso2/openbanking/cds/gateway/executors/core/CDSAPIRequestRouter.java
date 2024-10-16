@@ -22,6 +22,7 @@ import com.wso2.openbanking.accelerator.gateway.executor.core.AbstractRequestRou
 import com.wso2.openbanking.accelerator.gateway.executor.core.OpenBankingGatewayExecutor;
 import com.wso2.openbanking.accelerator.gateway.executor.model.OBAPIRequestContext;
 import com.wso2.openbanking.accelerator.gateway.executor.model.OBAPIResponseContext;
+import org.wso2.openbanking.cds.gateway.utils.GatewayConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +47,7 @@ public class CDSAPIRequestRouter extends AbstractRequestRouter {
             requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
                     RequestRouterConstants.API_TYPE_NON_REGULATORY);
             return EMPTY_LIST;
-        } else if (RequestRouterConstants.CDS_UNAUTHENTICATED_ELECTED_RESOURCES.contains(requestContext.getMsgInfo()
+        } else if (GatewayConstants.UNAUTHENTICATED_ENDPOINTS.contains(requestContext.getMsgInfo()
                 .getElectedResource())) {
             requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
                     RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED);

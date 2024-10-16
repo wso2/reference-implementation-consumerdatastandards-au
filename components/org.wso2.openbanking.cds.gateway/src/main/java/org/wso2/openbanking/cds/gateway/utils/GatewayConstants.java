@@ -104,11 +104,16 @@ public class GatewayConstants {
     public static final String CDR_ARRANGEMENT_ENDPOINT = "/{cdrArrangementId}";
     public static final String DISCOVERY_OUTAGES_ENDPOINT = "/discovery/outages";
     public static final String DISCOVERY_STATUS_ENDPOINT = "/discovery/status";
+    public static final String PRODUCTS_ENDPOINT = "/banking/products";
+    public static final String PRODUCT_DETAILS_ENDPOINT = "/banking/products/{productId}";
 
     public static final List<String> INFOSEC_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(AUTHORIZE_ENDPOINT,
             TOKEN_ENDPOINT, USERINFO_ENDPOINT, PAR_ENDPOINT, INTROSPECTION_ENDPOINT, JWKS_ENDPOINT, REVOKE_ENDPOINT,
             REGISTER_ENDPOINT, REGISTER_CLIENT_ID_ENDPOINT, WELL_KNOWN_ENDPOINT, CDR_ARRANGEMENT_ENDPOINT,
             DISCOVERY_OUTAGES_ENDPOINT, DISCOVERY_STATUS_ENDPOINT));
+
+    public static final List<String> UNAUTHENTICATED_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(
+            PRODUCTS_ENDPOINT, PRODUCT_DETAILS_ENDPOINT, DISCOVERY_STATUS_ENDPOINT, DISCOVERY_OUTAGES_ENDPOINT));
 
     public static final String UNKNOWN = "Unknown";
     public static final String CLIENT_USER_AGENT = "User-Agent";

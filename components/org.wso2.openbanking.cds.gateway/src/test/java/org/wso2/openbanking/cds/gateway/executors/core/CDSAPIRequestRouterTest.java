@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
+import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
 import org.wso2.openbanking.cds.gateway.test.util.TestUtil;
 
 import java.util.HashMap;
@@ -60,6 +61,10 @@ public class CDSAPIRequestRouterTest {
         contextProps.put(RequestRouterConstants.API_TYPE_CUSTOM_PROP, RequestRouterConstants.API_TYPE_DCR);
         openAPI.setExtensions(extensions);
         Mockito.when(obapiRequestContext.getOpenAPI()).thenReturn(openAPI);
+
+        MsgInfoDTO msgInfoDTO = new MsgInfoDTO();
+        Mockito.when(obapiRequestContext.getMsgInfo()).thenReturn(msgInfoDTO);
+
         Mockito.when(obapiResponseContext.getContextProps()).thenReturn(contextProps);
         Mockito.when(apiInfo.getTitle()).thenReturn(RequestRouterConstants.DCR_API_NAME);
         Assert.assertNotNull(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext));
@@ -80,6 +85,10 @@ public class CDSAPIRequestRouterTest {
         contextProps.put(RequestRouterConstants.API_TYPE_CUSTOM_PROP, RequestRouterConstants.API_TYPE_CDS);
         openAPI.setExtensions(extensions);
         Mockito.when(obapiRequestContext.getOpenAPI()).thenReturn(openAPI);
+
+        MsgInfoDTO msgInfoDTO = new MsgInfoDTO();
+        Mockito.when(obapiRequestContext.getMsgInfo()).thenReturn(msgInfoDTO);
+
         Mockito.when(obapiResponseContext.getContextProps()).thenReturn(contextProps);
         Mockito.when(apiInfo.getTitle()).thenReturn(RequestRouterConstants.CDS_API_NAME);
         Assert.assertNotNull(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext));
@@ -98,6 +107,10 @@ public class CDSAPIRequestRouterTest {
         Map<String, String> contextProps = new HashMap<>();
         openAPI.setExtensions(extensions);
         Mockito.when(obapiRequestContext.getOpenAPI()).thenReturn(openAPI);
+
+        MsgInfoDTO msgInfoDTO = new MsgInfoDTO();
+        Mockito.when(obapiRequestContext.getMsgInfo()).thenReturn(msgInfoDTO);
+
         Mockito.when(obapiResponseContext.getContextProps()).thenReturn(contextProps);
         Mockito.when(apiInfo.getTitle()).thenReturn(RequestRouterConstants.CDS_API_NAME);
         Assert.assertNotNull(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext));

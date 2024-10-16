@@ -18,16 +18,10 @@
 
 package org.wso2.openbanking.cds.gateway.executors.core;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
  * Constants required for CDSAPIRequestRouter.
  */
 public class RequestRouterConstants {
-
-    public static final List<String> CDS_UNAUTHENTICATED_ELECTED_RESOURCES = Arrays.asList("/banking/products",
-            "/banking/products/{productId}", "/discovery/status", "/discovery/outages");
 
     // Executor list names
     public static final String DEFAULT = "Default";
