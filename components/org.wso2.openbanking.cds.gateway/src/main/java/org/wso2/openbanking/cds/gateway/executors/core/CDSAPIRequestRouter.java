@@ -46,6 +46,11 @@ public class CDSAPIRequestRouter extends AbstractRequestRouter {
             requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
                     RequestRouterConstants.API_TYPE_NON_REGULATORY);
             return EMPTY_LIST;
+        } else if (RequestRouterConstants.CDS_UNAUTHENTICATED_ELECTED_RESOURCES.contains(requestContext.getMsgInfo()
+                .getElectedResource())) {
+            requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                    RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED);
+            return this.getExecutorMap().get(RequestRouterConstants.CDS_UNAUTHENTICATED);
         } else if (RequestRouterConstants.API_TYPE_CONSENT
                 .equals(requestContext.getOpenAPI().getExtensions().get(RequestRouterConstants.API_TYPE_CUSTOM_PROP))) {
             // Add support for consent management portal APIs
@@ -104,6 +109,9 @@ public class CDSAPIRequestRouter extends AbstractRequestRouter {
                     break;
                 case RequestRouterConstants.API_TYPE_CDS:
                     executorList = this.getExecutorMap().get(RequestRouterConstants.CDS);
+                    break;
+                case RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED:
+                    executorList = this.getExecutorMap().get(RequestRouterConstants.CDS_UNAUTHENTICATED);
                     break;
                 case RequestRouterConstants.API_TYPE_COMMON:
                     executorList = this.getExecutorMap().get(RequestRouterConstants.CDS_COMMON);

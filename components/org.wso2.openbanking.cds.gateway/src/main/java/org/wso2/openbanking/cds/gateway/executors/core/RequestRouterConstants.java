@@ -18,15 +18,22 @@
 
 package org.wso2.openbanking.cds.gateway.executors.core;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Constants required for CDSAPIRequestRouter.
  */
 public class RequestRouterConstants {
 
+    public static final List<String> CDS_UNAUTHENTICATED_ELECTED_RESOURCES = Arrays.asList("/banking/products",
+            "/banking/products/{productId}", "/discovery/status", "/discovery/outages");
+
     // Executor list names
     public static final String DEFAULT = "Default";
     public static final String DCR = "DCR";
     public static final String CDS = "CDS";
+    public static final String CDS_UNAUTHENTICATED = "CDSUnauthenticated";
     public static final String CDS_COMMON = "CDSCommon";
     public static final String CONSENT = "Consent";
     public static final String ADMIN = "Admin";
@@ -38,6 +45,7 @@ public class RequestRouterConstants {
     public static final String API_TYPE_NON_REGULATORY = "non-regulatory";
     public static final String API_TYPE_DCR = "dcr";
     public static final String API_TYPE_CDS = "cds";
+    public static final String API_TYPE_CDS_UNAUTHENTICATED = "cds-unauthenticated";
     public static final String API_TYPE_COMMON = "common";
     public static final String API_TYPE_ARRANGEMENT = "arrangement";
     public static final String API_TYPE_ADMIN = "admin";
