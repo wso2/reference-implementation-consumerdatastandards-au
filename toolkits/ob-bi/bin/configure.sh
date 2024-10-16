@@ -55,8 +55,12 @@ CURRENT_PEAK_TPS_APP=${WSO2_OB_BI_HOME}/deployment/siddhi-files/CDSCurrentPeakTP
 # read CDSAuthorisationMetricsApp.siddhi file
 AUTHORISATION_METRICS_APP=${WSO2_OB_BI_HOME}/deployment/siddhi-files/CDSAuthorisationMetricsApp.siddhi;
 
+# read GetInvocationDataApp.siddhi file
+GET_INVOCATION_DATA_APP=${WSO2_OB_BI_HOME}/deployment/siddhi-files/GetInvocationDataApp.siddhi;
+
 echo -e "\nReplace hostnames \n"
 echo -e "================================================\n"
 sed -i -e 's|<BI_HOSTNAME>|'${BI_HOSTNAME}'|g' ${AVAILABILITY_METRICS_APP}
 sed -i -e 's|<BI_HOSTNAME>|'${BI_HOSTNAME}'|g' ${CURRENT_PEAK_TPS_APP}
 sed -i -e 's|<BI_HOSTNAME>|'${BI_HOSTNAME}'|g' ${AUTHORISATION_METRICS_APP}
+sed -i -e 's|<BI_HOSTNAME>|'${BI_HOSTNAME}'|g' ${GET_INVOCATION_DATA_APP}
