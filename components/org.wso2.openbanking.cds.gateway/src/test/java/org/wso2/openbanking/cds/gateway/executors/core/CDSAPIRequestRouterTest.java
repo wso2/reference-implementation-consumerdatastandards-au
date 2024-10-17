@@ -27,6 +27,7 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.apimgt.common.gateway.dto.MsgInfoDTO;
 import org.wso2.openbanking.cds.gateway.test.util.TestUtil;
+import org.wso2.openbanking.cds.gateway.utils.GatewayConstants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -131,5 +132,28 @@ public class CDSAPIRequestRouterTest {
         Mockito.when(obapiResponseContext.getContextProps()).thenReturn(contextProps);
         Assert.assertEquals(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext).size(), 0);
         Assert.assertEquals(cdsApiRequestRouter.getExecutorsForResponse(obapiResponseContext).size(), 0);
+    }
+
+    @Test(priority = 3)
+    public void testUnauthenticatedAPIcall() {
+
+        OBAPIRequestContext obapiRequestContext = Mockito.mock(OBAPIRequestContext.class);
+        OBAPIResponseContext obapiResponseContext = Mockito.mock(OBAPIResponseContext.class);
+        Map<String, Object> extensions = new HashMap<>();
+        Map<String, String> contextProps = new HashMap<>();
+        extensions.put(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED);
+        contextProps.put(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED);
+        openAPI.setExtensions(extensions);
+        Mockito.when(obapiRequestContext.getOpenAPI()).thenReturn(openAPI);
+
+        MsgInfoDTO msgInfoDTO = new MsgInfoDTO();
+        msgInfoDTO.setElectedResource(GatewayConstants.PRODUCT_DETAILS_ENDPOINT);
+        Mockito.when(obapiRequestContext.getMsgInfo()).thenReturn(msgInfoDTO);
+
+        Mockito.when(obapiResponseContext.getContextProps()).thenReturn(contextProps);
+        Assert.assertEquals(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext).size(), 1);
+        Assert.assertEquals(cdsApiRequestRouter.getExecutorsForResponse(obapiResponseContext).size(), 1);
     }
 }
