@@ -533,6 +533,33 @@ name = "org.wso2.openbanking.cds.gateway.executors.error.handler.CDSErrorHandler
 priority = 1000
 
 [[open_banking.gateway.openbanking_gateway_executors.type]]
+name = "CDSUnauthenticated"
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.mtls.cert.validation.executor.CertRevocationValidationExecutor"
+priority = 1
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.api.resource.access.validation.APIResourceAccessValidationExecutor"
+priority = 2
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.idpermanence.IDPermanenceExecutor"
+priority = 3
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.header.validation.CDSHeaderValidationExecutor"
+priority = 4
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.consent.ConsentEnforcementExecutor"
+priority = 5
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.common.reporting.data.executor.CommonReportingDataExecutor"
+priority = 6
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.reporting.CDSCommonDataReportingExecutor"
+priority = 7
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.error.handler.CDSErrorHandler"
+priority = 1000
+
+[[open_banking.gateway.openbanking_gateway_executors.type]]
 name = "CDSCommon"
 [[open_banking.gateway.openbanking_gateway_executors.type.executors]]
 name = "com.wso2.openbanking.accelerator.gateway.executor.impl.mtls.cert.validation.executor.MTLSEnforcementExecutor"
