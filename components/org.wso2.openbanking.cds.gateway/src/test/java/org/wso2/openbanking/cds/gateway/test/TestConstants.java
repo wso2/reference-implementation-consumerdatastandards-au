@@ -45,6 +45,7 @@ public class TestConstants {
                     new AbstractMap.SimpleImmutableEntry<>("Default", VALID_EXECUTOR_MAP),
                     new AbstractMap.SimpleImmutableEntry<>("DCR", VALID_EXECUTOR_MAP),
                     new AbstractMap.SimpleImmutableEntry<>("CDS", VALID_EXECUTOR_MAP),
+                    new AbstractMap.SimpleImmutableEntry<>("CDSCommon", VALID_EXECUTOR_MAP),
                     new AbstractMap.SimpleImmutableEntry<>("CDSUnauthenticated", VALID_EXECUTOR_MAP))
             .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 }

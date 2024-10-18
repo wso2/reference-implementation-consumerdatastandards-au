@@ -156,4 +156,27 @@ public class CDSAPIRequestRouterTest {
         Assert.assertEquals(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext).size(), 1);
         Assert.assertEquals(cdsApiRequestRouter.getExecutorsForResponse(obapiResponseContext).size(), 1);
     }
+
+    @Test(priority = 3)
+    public void testCommonAPIcall() {
+
+        OBAPIRequestContext obapiRequestContext = Mockito.mock(OBAPIRequestContext.class);
+        OBAPIResponseContext obapiResponseContext = Mockito.mock(OBAPIResponseContext.class);
+        Map<String, Object> extensions = new HashMap<>();
+        Map<String, String> contextProps = new HashMap<>();
+        extensions.put(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                RequestRouterConstants.API_TYPE_COMMON);
+        contextProps.put(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                RequestRouterConstants.API_TYPE_COMMON);
+        openAPI.setExtensions(extensions);
+        Mockito.when(obapiRequestContext.getOpenAPI()).thenReturn(openAPI);
+
+        MsgInfoDTO msgInfoDTO = new MsgInfoDTO();
+        msgInfoDTO.setElectedResource(GatewayConstants.COMMON_CUSTOMER_ENDPOINT);
+        Mockito.when(obapiRequestContext.getMsgInfo()).thenReturn(msgInfoDTO);
+
+        Mockito.when(obapiResponseContext.getContextProps()).thenReturn(contextProps);
+        Assert.assertEquals(cdsApiRequestRouter.getExecutorsForRequest(obapiRequestContext).size(), 1);
+        Assert.assertEquals(cdsApiRequestRouter.getExecutorsForResponse(obapiResponseContext).size(), 1);
+    }
 }
