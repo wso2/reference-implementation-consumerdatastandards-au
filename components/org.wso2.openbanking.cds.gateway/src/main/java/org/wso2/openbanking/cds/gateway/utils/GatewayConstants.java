@@ -106,6 +106,8 @@ public class GatewayConstants {
     public static final String DISCOVERY_STATUS_ENDPOINT = "/discovery/status";
     public static final String PRODUCTS_ENDPOINT = "/banking/products";
     public static final String PRODUCT_DETAILS_ENDPOINT = "/banking/products/{productId}";
+    public static final String COMMON_CUSTOMER_ENDPOINT = "/common/customer";
+    public static final String COMMON_CUSTOMER_DETAIL_ENDPOINT = "/common/customer/detail";
 
     public static final List<String> INFOSEC_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(AUTHORIZE_ENDPOINT,
             TOKEN_ENDPOINT, USERINFO_ENDPOINT, PAR_ENDPOINT, INTROSPECTION_ENDPOINT, JWKS_ENDPOINT, REVOKE_ENDPOINT,
@@ -114,6 +116,9 @@ public class GatewayConstants {
 
     public static final List<String> UNAUTHENTICATED_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(
             PRODUCTS_ENDPOINT, PRODUCT_DETAILS_ENDPOINT, DISCOVERY_STATUS_ENDPOINT, DISCOVERY_OUTAGES_ENDPOINT));
+
+    public static final List<String> COMMON_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(
+            COMMON_CUSTOMER_ENDPOINT, COMMON_CUSTOMER_DETAIL_ENDPOINT));
 
     public static final String UNKNOWN = "Unknown";
     public static final String CLIENT_USER_AGENT = "User-Agent";
