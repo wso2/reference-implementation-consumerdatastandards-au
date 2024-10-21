@@ -34,6 +34,7 @@ import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 
 import static org.mockito.Mockito.mock;
+import static org.powermock.api.mockito.PowerMockito.when;
 
 /**
  * Test class for CDSAccountMaskingRetrievalStep.
@@ -47,6 +48,7 @@ public class CDSAccountMaskingRetrievalStepTest extends PowerMockTestCase {
     private static CDSAccountMaskingRetrievalStep cdsAccountMaskingRetrievalStep;
     private JSONObject accountJson;
     private String testJson;
+    private ConsentData consentDataMock;
 
     @BeforeClass
     public void init() throws ParseException {
@@ -70,6 +72,7 @@ public class CDSAccountMaskingRetrievalStepTest extends PowerMockTestCase {
                 "    ]\n" +
                 "}";
         accountJson = (JSONObject) new JSONParser(JSONParser.MODE_PERMISSIVE).parse(testJson);
+        consentDataMock = PowerMockito.mock(ConsentData.class);
     }
 
     @Test
@@ -112,7 +115,8 @@ public class CDSAccountMaskingRetrievalStepTest extends PowerMockTestCase {
 
         JSONObject testAccountsJson = new JSONObject();
         testAccountsJson.put(CDSConsentExtensionConstants.ACCOUNTS, testJson);
-        cdsAccountMaskingRetrievalStep.execute(mock(ConsentData.class), accountJson);
+        when(consentDataMock.isRegulatory()).thenReturn(true);
+        cdsAccountMaskingRetrievalStep.execute(consentDataMock, accountJson);
         Assert.assertNotNull(accountJson.get(CDSConsentExtensionConstants.ACCOUNTS));
         JSONArray returnedAccountsJsonArray = (JSONArray) accountJson.get(CDSConsentExtensionConstants.ACCOUNTS);
         JSONObject returnedAccountJson = (JSONObject) returnedAccountsJsonArray.get(0);
