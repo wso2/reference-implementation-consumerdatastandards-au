@@ -56,9 +56,10 @@ set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
 --Generate CDS Metrics Raw stream
-from APIInputStream as apiInputStream
-left outer join APILatencyInputStream as latencyRawData
-    on apiInputStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
+--A window of length 20 is used to make sure these is no data loss in the join operation
+from APIInputStream#window.length(20) as apiInputStream
+join APILatencyInputStream#window.length(20) as apiLatencyInputStream
+    on apiInputStream.MESSAGE_ID == apiLatencyInputStream.MESSAGE_ID
 select apiInputStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
        TIMESTAMP * 1000 as reqTimestamp, CUSTOMER_STATUS as customerStatus
 insert into CDSMetricsRawStream;
