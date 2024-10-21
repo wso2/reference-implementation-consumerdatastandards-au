@@ -22,6 +22,7 @@ import com.wso2.openbanking.accelerator.gateway.executor.core.AbstractRequestRou
 import com.wso2.openbanking.accelerator.gateway.executor.core.OpenBankingGatewayExecutor;
 import com.wso2.openbanking.accelerator.gateway.executor.model.OBAPIRequestContext;
 import com.wso2.openbanking.accelerator.gateway.executor.model.OBAPIResponseContext;
+import org.wso2.openbanking.cds.gateway.utils.GatewayConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +47,16 @@ public class CDSAPIRequestRouter extends AbstractRequestRouter {
             requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
                     RequestRouterConstants.API_TYPE_NON_REGULATORY);
             return EMPTY_LIST;
+        } else if (GatewayConstants.UNAUTHENTICATED_ENDPOINTS.contains(requestContext.getMsgInfo()
+                .getElectedResource())) {
+            requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                    RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED);
+            return this.getExecutorMap().get(RequestRouterConstants.CDS_UNAUTHENTICATED);
+        } else if (GatewayConstants.COMMON_ENDPOINTS.contains(requestContext.getMsgInfo()
+                .getElectedResource())) {
+            requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
+                    RequestRouterConstants.API_TYPE_COMMON);
+            return this.getExecutorMap().get(RequestRouterConstants.CDS_COMMON);
         } else if (RequestRouterConstants.API_TYPE_CONSENT
                 .equals(requestContext.getOpenAPI().getExtensions().get(RequestRouterConstants.API_TYPE_CUSTOM_PROP))) {
             // Add support for consent management portal APIs
@@ -61,10 +72,6 @@ public class CDSAPIRequestRouter extends AbstractRequestRouter {
             requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
                     RequestRouterConstants.API_TYPE_CDS);
             return this.getExecutorMap().get(RequestRouterConstants.CDS);
-        } else if (RequestRouterConstants.COMMON_API_NAME.equals(requestContext.getOpenAPI().getInfo().getTitle())) {
-            requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
-                    RequestRouterConstants.API_TYPE_COMMON);
-            return this.getExecutorMap().get(RequestRouterConstants.CDS_COMMON);
         } else if (RequestRouterConstants.ADMIN_API_NAME.equals(requestContext.getOpenAPI().getInfo().getTitle())) {
             requestContext.addContextProperty(RequestRouterConstants.API_TYPE_CUSTOM_PROP,
                     RequestRouterConstants.API_TYPE_ADMIN);
@@ -104,6 +111,9 @@ public class CDSAPIRequestRouter extends AbstractRequestRouter {
                     break;
                 case RequestRouterConstants.API_TYPE_CDS:
                     executorList = this.getExecutorMap().get(RequestRouterConstants.CDS);
+                    break;
+                case RequestRouterConstants.API_TYPE_CDS_UNAUTHENTICATED:
+                    executorList = this.getExecutorMap().get(RequestRouterConstants.CDS_UNAUTHENTICATED);
                     break;
                 case RequestRouterConstants.API_TYPE_COMMON:
                     executorList = this.getExecutorMap().get(RequestRouterConstants.CDS_COMMON);
