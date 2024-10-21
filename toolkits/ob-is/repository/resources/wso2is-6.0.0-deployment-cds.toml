@@ -294,6 +294,13 @@ name = "org.wso2.openbanking.cds.identity.listener.CDSTokenIntrospectionListener
 order = "901"
 enable = true
 
+[[event_listener]]
+id = "ob_private_key_jwt_authenticator"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "com.wso2.openbanking.accelerator.identity.clientauth.jwt.OBPrivateKeyJWTClientAuthenticator"
+order = "902"
+enable = false
+
 [event_listener.properties]
 EndpointAlias = "https://APIM_HOSTNAME:8243/token/introspect"
 
