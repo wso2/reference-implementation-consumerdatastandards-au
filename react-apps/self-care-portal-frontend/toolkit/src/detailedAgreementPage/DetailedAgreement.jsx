@@ -99,6 +99,14 @@ export const DetailedAgreement = ({ match }) => {
   });
 
   useEffect(() => {
+      const matchedConsentId = match.params.id;
+      let matchedConsent = consents.data.filter(
+          (consent) => consent.consentId === matchedConsentId
+      );
+      setConsent(matchedConsent[0]);
+  }, [consents]);
+
+  useEffect(() => {
     const labels = lang[consentTypeKey].filter((lbl) =>
       lbl.id.split(',').some((x) => x.toLowerCase() === consent.currentStatus.toLowerCase())
     );
