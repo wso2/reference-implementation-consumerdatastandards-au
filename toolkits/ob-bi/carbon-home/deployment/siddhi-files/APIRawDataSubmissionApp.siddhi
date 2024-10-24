@@ -61,9 +61,9 @@ set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
 --Generate CDS Metrics Raw stream
---A 10 second window is introduced to handle any delays in publishing latency data to the database.
-from APIInputStream#window.timeBatch(10 sec) as apiInputWindowStream
-left outer join API_LATENCY_RAW_DATA as latencyRawData
+--A 5 second window is introduced to handle any delays in publishing latency data to the database.
+from APIInputStream#window.timeBatch(5 sec) as apiInputWindowStream
+join API_LATENCY_RAW_DATA as latencyRawData
     on apiInputWindowStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
 select apiInputWindowStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
        TIMESTAMP * 1000 as reqTimestamp, CUSTOMER_STATUS as customerStatus
