@@ -112,25 +112,25 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'You granted consent on',
+        title: 'Consent granted date:',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Your consent will expire on',
+        title: 'Consent expiration date:',
         type: keyDateTypes.date,
         dateParameterKey: 'validityPeriod',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Sharing period',
+        title: 'Sharing period:',
         type: keyDateTypes.dateRange,
         dateParameterKey: 'createdTimestamp,validityPeriod',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'How often your data will be shared',
+        title: 'Data sharing:',
         type: keyDateTypes.value,
         valueParameterKey: 'consentAttributes.sharing_duration_value'
       },

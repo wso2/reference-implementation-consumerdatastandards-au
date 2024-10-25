@@ -85,8 +85,8 @@ export function generatePDF(consent, applicationName, consentStatus) {
   pdf.text(20, 20, 'Consent ID : ' + consent.consentId);
   pdf.text(20, 30, "Status : " + consentStatus);
   pdf.text(20, 40, 'API Consumer Application : ' + applicationName);
-  pdf.text(20, 50, 'Create date : ' + moment(new Date((consent.createdTimestamp) * 1000)).format("DD-MMM-YYYY"));
-  pdf.text(20, 60, 'Expire date : ' + moment(new Date((consent.validityPeriod) * 1000)).format("DD-MMM-YYYY"));
+  pdf.text(20, 50, 'Creation date : ' + moment(new Date((consent.createdTimestamp) * 1000)).format("DD-MMM-YYYY"));
+  pdf.text(20, 60, 'Expiration date : ' + ((consent.validityPeriod !== 0)?moment(new Date((consent.validityPeriod) * 1000)).format("DD-MMM-YYYY"):"N/A"));
   pdf.text(20, 70, 'Accounts : ' + accounts.join(", "));
   pdf.text(20, 80, 'Data we are sharing on : ');
 
