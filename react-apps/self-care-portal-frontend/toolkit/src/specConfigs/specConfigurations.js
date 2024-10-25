@@ -131,10 +131,8 @@ export const account_lang = [
       },
       {
         title: 'How often your data will be shared',
-        type: keyDateTypes.text,
-        dateParameterKey: '',
-        dateFormat: '',
-        text: 'Ongoing',
+        type: keyDateTypes.value,
+        valueParameterKey: 'consentAttributes.sharing_duration_value'
       },
     ],
     accountsInfoLabel: 'Accounts',
