@@ -42,7 +42,7 @@ export const AccountsInfo = ({ consent }) => {
             <hr id = "sharingDetailsHr" className = "horizontalLine" />
             <h5>{keyDatesConfig.accountsInfoLabel}</h5>
             {uniqueActiveAccountIds.map((accountId, index) => (
-              <li key={index}>{accountId}</li>
+              <li className="permittedAccount" key={index}>{accountId}</li>
             ))}
           </>
         ) : (

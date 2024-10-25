@@ -16,6 +16,7 @@
  * under the License.
  */
 import moment from 'moment'
+import jsPDF from "jspdf";
 import { specConfigurations } from '../specConfigs/specConfigurations.js';
 import { dataTypes } from '../specConfigs/common.js';
 
@@ -40,9 +41,82 @@ export const convertSecondsToDaysHoursMinutes = (seconds) => {
 };
 
 export const getUserId = (user) => {
-  return user.email.endsWith('@carbon.super') ? user.email : user.email + '@carbon.super';  
-}; 
+  return user.email.endsWith('@carbon.super') ? user.email : user.email + '@carbon.super';
+};
 
 export const getTimeStamp = (timestamp) => {
   return moment(timestamp * 1000).format(dataTypes.daysHours);
 };
+
+export function generatePDF(consent, applicationName, consentStatus) {
+
+  const pdf = new jsPDF("p", "mm", "a4");
+  pdf.setFontSize(11);
+  pdf.rect(10, 10, 190, 275);
+
+  const permissionCategories = document.getElementsByClassName('clusterLabelText');
+  const permissions = document.getElementsByClassName('permissionsUL');
+  const accountIDs = document.getElementsByClassName('permittedAccount');
+
+  let contents = [];
+  let accounts = [];
+
+  try {
+
+    for (let i = 0; i < permissions.length; i++) {
+      let permissionTexts = permissions[i].getElementsByClassName('permissionText');
+      let permissionTextsJoined = "";
+      for (let j = 0; j < permissionTexts.length; j++) {
+        permissionTextsJoined += permissionTexts[j].innerHTML;
+        if (j < permissionTexts.length - 1) {
+          permissionTextsJoined += ", ";
+        }
+      }
+      contents.push(permissionTextsJoined);
+    }
+
+    for (let i = 0; i < accountIDs.length; i++) {
+      accounts.push(accountIDs[i].innerHTML);
+    }
+
+  } catch (e) {
+  }
+
+  pdf.text(20, 20, 'Consent ID : ' + consent.consentId);
+  pdf.text(20, 30, "Status : " + consentStatus);
+  pdf.text(20, 40, 'API Consumer Application : ' + applicationName);
+  pdf.text(20, 50, 'Create date : ' + moment(new Date((consent.createdTimestamp) * 1000)).format("DD-MMM-YYYY"));
+  pdf.text(20, 60, 'Expire date : ' + moment(new Date((consent.validityPeriod) * 1000)).format("DD-MMM-YYYY"));
+  pdf.text(20, 70, 'Accounts : ' + accounts.join(", "));
+  pdf.text(20, 80, 'Data we are sharing on : ');
+
+  const maxWidth = 140; // Maximum width of the text in the PDF
+  const lineHeight = 5; // Height between lines
+  let yPosition = 90; // Initial y position
+
+  for (let i = 0; i < contents.length; i++) {
+    const categoryText = permissionCategories[i].innerHTML + ' :';
+    const contentText = contents[i];
+
+    // Split the category text and content text to fit within the maxWidth
+    const categoryLines = pdf.splitTextToSize(categoryText, maxWidth - 10);
+    const contentLines = pdf.splitTextToSize(contentText, maxWidth);
+
+    // Add each line of the category text
+    categoryLines.forEach((line, index) => {
+      pdf.text(30, yPosition + (index * lineHeight), line);
+    });
+
+    // Adjust yPosition for the content text
+    yPosition += categoryLines.length * lineHeight;
+
+    // Add each line of the content text
+    contentLines.forEach((line, index) => {
+      pdf.text(40, yPosition + (index * lineHeight), line);
+    });
+
+    // Adjust yPosition for the next category
+    yPosition += contentLines.length * lineHeight + lineHeight;
+  }
+  pdf.save("consent.pdf");
+}

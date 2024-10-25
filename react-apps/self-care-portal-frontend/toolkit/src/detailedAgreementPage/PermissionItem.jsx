@@ -55,7 +55,7 @@ export const PermissionItem = ({ permissionScope, permissionDataLanguage }) => {
         <Card className="clusterContainer">
           <Accordion.Toggle className="clusterRow" onClick={toggle} as={Card.Header} eventKey="0">
             <Col className="clusterLabel">
-              <h6>{filteredDataLang.dataCluster}</h6>
+              <h6 className="clusterLabelText">{filteredDataLang.dataCluster}</h6>
             </Col>
             <Col className="arrow">
               <FontAwesomeIcon
@@ -68,11 +68,11 @@ export const PermissionItem = ({ permissionScope, permissionDataLanguage }) => {
           <Accordion.Collapse eventKey="0">
             <Card.Body>
               <Container className = "cluster-card-container">
-                  <Row>
+                  <Row className="permissionsUL">
                     {filteredDataLang.permissions.map((index, idx) => (
                       <Col xs={12} sm={6} md={6} lg={4} key={idx}>
                         <ul>
-                          <li>{index}</li>
+                          <li className="permissionText">{index}</li>
                         </ul>
                       </Col>
                     ))}
