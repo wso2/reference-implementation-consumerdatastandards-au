@@ -31,8 +31,13 @@ import { generatePDF } from "../../../toolkit/src/services/cdsUtils";
 
 export const ProfileMain = ({consent, infoLabel, appicationName, logoURL}) => {
 
+    const [isImageError, setIsImageError] = useState(false);
     const consentConsentId = consent.consentId;
     const currentDate = moment().format("YYYY-MM-DDTHH:mm:ss[Z]");
+
+    const handleImageError = () => {
+        setIsImageError(true);
+      };
 
     if (logoURL === undefined || logoURL === '') {
         logoURL = ADRLogo
@@ -56,7 +61,7 @@ export const ProfileMain = ({consent, infoLabel, appicationName, logoURL}) => {
         ? specConfigurations.status.expired : infoLabel.label;
     return (
         <Container className="profileMain">
-            <img id="profileLogo" src={logoURL} width="50" height="50" alt="new"/>
+            <img id="profileLogo" onError={handleImageError} src={isImageError ? ADRLogo : logoURL} width="50" height="50"/>
             <h4 className="mt-3">{appicationName}</h4>
             <>
                 <div className="confirmLink">
