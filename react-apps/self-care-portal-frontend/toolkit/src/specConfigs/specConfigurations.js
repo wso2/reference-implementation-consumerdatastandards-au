@@ -141,8 +141,8 @@ export const account_lang = [
     dataSharedLabel: 'Data we are sharing',
     accreditation: {
       accreditationLabel: 'Accreditation',
-      accreditWebsite: 'is an accredited data recipient. You can check their accreditation at',
-      accreditWebsiteLinkText: 'website',
+      accreditWebsite: 'is an accredited data recipient. You can check their accreditation',
+      accreditWebsiteLinkText: ' here',
       accreditWebsiteLink: 'https://www.cdr.gov.au/find-a-provider',
       accreditDR: 'Accrediated Data Recipient:',
     },
@@ -208,8 +208,8 @@ export const account_lang = [
     accreditation: {
       accreditationLabel: 'Accreditation',
       accreditWebsite:
-        'is an accredited API consumer application. You can check their accrediation on at',
-      accreditWebsiteLinkText: 'website',
+        'is an accredited API consumer application. You can check their accrediation',
+      accreditWebsiteLinkText: ' here',
       accreditWebsiteLink: 'https://www.cdr.gov.au/find-a-provider',
       accreditDR: 'Accredited Data Recipient:',
     },
@@ -274,8 +274,8 @@ export const account_lang = [
     dataSharedLabel: 'Data we shared',
     accreditation: {
       accreditationLabel: 'Accreditation',
-      accreditWebsite: 'is an accredited data recipient. You can check their accrediation on at',
-      accreditWebsiteLinkText: 'website',
+      accreditWebsite: 'is an accredited data recipient. You can check their accrediation',
+      accreditWebsiteLinkText: ' here',
       accreditWebsiteLink: 'https://www.cdr.gov.au/find-a-provider',
       accreditDR: 'Accredited Data Recipient:',
     },
