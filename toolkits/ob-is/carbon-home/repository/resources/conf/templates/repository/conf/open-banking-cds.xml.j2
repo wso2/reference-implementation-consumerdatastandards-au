@@ -246,4 +246,16 @@
         <Enable>false</Enable>
         {% endif %}
     </DisclosureOptionsManagement>
+    <ExternalTraffic>
+        {% if open_banking_cds.external_traffic.header_name is defined %}
+        <HeaderName>{{open_banking_cds.external_traffic.header_name}}</HeaderName>
+        {% else %}
+        <HeaderName>X-External-Traffic</HeaderName>
+        {% endif %}
+        {% if open_banking_cds.external_traffic.expected_value is defined %}
+        <ExpectedValue>{{open_banking_cds.external_traffic.expected_value}}</ExpectedValue>
+        {% else %}
+        <ExpectedValue>true</ExpectedValue>
+        {% endif %}
+    </ExternalTraffic>
 </Server>

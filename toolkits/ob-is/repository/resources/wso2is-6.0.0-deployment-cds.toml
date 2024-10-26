@@ -930,3 +930,7 @@ enable = true
 server_url = "https://BI_HOSTNAME:7444"
 username = "$ref{super_admin.username}@carbon.super"
 password = "$ref{super_admin.password}"
+
+[open_banking_cds.external_traffic]
+header_name = "X-External-Traffic"
+expected_value = "true"
