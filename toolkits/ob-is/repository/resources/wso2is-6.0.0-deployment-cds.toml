@@ -748,6 +748,46 @@ type="long"
 
 #================custom filters and filter-mappings==============
 [[tomcat.filter]]
+name = "InfoSecDataPublishingFilter"
+class = "org.wso2.openbanking.cds.identity.filter.InfoSecDataPublishingFilter"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/token"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/.well-known/openid-configuration"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/userinfo"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/revoke"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/introspect"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/jwks"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/par"
+
+[[tomcat.filter]]
+name = "AuthorizeDataPublishingFilter"
+class = "org.wso2.openbanking.cds.identity.filter.AuthorizeDataPublishingFilter"
+
+[[tomcat.filter_mapping]]
+name = "AuthorizeDataPublishingFilter"
+url_pattern = "/authorize"
+
+[[tomcat.filter]]
 name = "TokenFilter"
 class = "com.wso2.openbanking.accelerator.identity.token.TokenFilter"
 
