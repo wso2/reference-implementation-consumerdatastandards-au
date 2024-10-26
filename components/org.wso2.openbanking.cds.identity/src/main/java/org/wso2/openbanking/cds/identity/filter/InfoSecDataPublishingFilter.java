@@ -256,7 +256,7 @@ public class InfoSecDataPublishingFilter implements Filter {
     }
 
     /**
-     * Check whether data should be published for the current call.
+     * Check whether data should be published for the current request.
      *
      * @return boolean
      */
