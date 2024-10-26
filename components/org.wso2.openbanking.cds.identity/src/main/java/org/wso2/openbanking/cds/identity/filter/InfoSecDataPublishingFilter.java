@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
- *
+ * <p>
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -26,7 +26,9 @@ import net.minidev.json.JSONObject;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.common.data.publisher.CDSDataPublishingService;
+import org.wso2.openbanking.cds.common.utils.CommonConstants;
 import org.wso2.openbanking.cds.identity.filter.constants.CDSFilterConstants;
 
 import java.io.IOException;
@@ -54,6 +56,11 @@ import javax.servlet.http.HttpServletResponse;
 public class InfoSecDataPublishingFilter implements Filter {
 
     private static final Log LOG = LogFactory.getLog(InfoSecDataPublishingFilter.class);
+    private final Map<String, Object> configMap = OpenBankingCDSConfigParser.getInstance().getConfiguration();
+    private final String externalTrafficHeaderName = (String) configMap.get(CommonConstants
+            .EXTERNAL_TRAFFIC_HEADER_NAME);
+    private final String expectedExternalTrafficHeaderValue = (String) configMap.get(CommonConstants
+            .EXTERNAL_TRAFFIC_EXPECTED_VALUE);
 
     @Override
     public void init(FilterConfig filterConfig) {
@@ -83,7 +90,7 @@ public class InfoSecDataPublishingFilter implements Filter {
     public void publishReportingData(HttpServletRequest request, HttpServletResponse response) {
 
         if (Boolean.parseBoolean((String) OpenBankingConfigParser.getInstance().getConfiguration()
-                .get(DataPublishingConstants.DATA_PUBLISHING_ENABLED))) {
+                .get(DataPublishingConstants.DATA_PUBLISHING_ENABLED)) && shouldPublishCurrentRequestData(request)) {
 
             String messageId = UUID.randomUUID().toString();
 
@@ -94,6 +101,9 @@ public class InfoSecDataPublishingFilter implements Filter {
             // publish api endpoint latency data
             Map<String, Object> latencyData = generateLatencyDataMap(request, messageId);
             CDSDataPublishingService.getCDSDataPublishingService().publishApiLatencyData(latencyData);
+        } else {
+            LOG.debug("Data publishing is disabled or the request is not an external request. Infosec data " +
+                    "publishing skipped.");
         }
     }
 
@@ -245,4 +255,15 @@ public class InfoSecDataPublishingFilter implements Filter {
     public void destroy() {
     }
 
+    /**
+     * Check whether data should be published for the current call.
+     *
+     * @return boolean
+     */
+    public boolean shouldPublishCurrentRequestData(ServletRequest request) {
+
+        // Check if current request is external traffic
+        return expectedExternalTrafficHeaderValue.equals(
+                ((HttpServletRequest) request).getHeader(externalTrafficHeaderName));
+    }
 }
