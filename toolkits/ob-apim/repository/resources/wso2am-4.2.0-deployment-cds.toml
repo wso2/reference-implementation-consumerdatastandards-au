@@ -150,7 +150,6 @@ websub_event_receiver_http_endpoint = "http://APIM_HOSTNAME:9021"
 websub_event_receiver_https_endpoint = "https://APIM_HOSTNAME:8021"
 
 [apim.sync_runtime_artifacts.gateway]
-skip_list.apis = ["_AuthorizeAPI_.xml", "_TokenAPI_.xml", "_OIDCDiscoveryAPI_.xml", "_UserInfoAPI_.xml", "_RevokeAPI_.xml", "_IntrospectAPI_.xml", "_PARAPI_.xml"]
 skip_list.sequences = ["jsonConverter.xml"]
 gateway_labels =["Default"]
 

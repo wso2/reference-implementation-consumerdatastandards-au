@@ -173,6 +173,7 @@ allowed_scopes = ["OB.*", "profile"]
 renew_refresh_token = false
 
 [oauth.endpoints]
+oauth2_token_url = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/oauth2/token"
 oauth2_consent_page = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/ob/authenticationendpoint/oauth2_authz.do"
 oidc_consent_page = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/ob/authenticationendpoint/oauth2_consent.do"
 
