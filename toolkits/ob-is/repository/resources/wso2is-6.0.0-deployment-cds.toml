@@ -302,6 +302,7 @@ enable = false
 
 [event_listener.properties]
 EndpointAlias = "https://IS_HOSTNAME:9446/oauth2/introspect"
+
 [oauth.grant_type]
 iwa_ntlm.enable = false
 jwt_bearer.enable = true
