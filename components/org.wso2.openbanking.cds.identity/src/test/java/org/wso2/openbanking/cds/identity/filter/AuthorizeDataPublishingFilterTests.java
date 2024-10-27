@@ -90,8 +90,8 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
     }
 
     @Test(description = "Test that data is published when X-External-Traffic header is true and " +
-            "session data key attribute is present")
-    public void testDataPublishedWhenExternalTrafficHeaderAndSessionDataKeyPresent() throws Exception {
+            "session data key parameter is absent")
+    public void testDataPublishedWhenExternalTrafficHeaderPresentAndSessionDataKeyAbsent() throws Exception {
 
         CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
         PowerMockito.mockStatic(CDSDataPublishingService.class);
@@ -103,7 +103,6 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
         Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
 
         request.addHeader(EXTERNAL_TRAFFIC_HEADER, "true");
-        request.setAttribute(SESSION_DATA_KEY, UUID.randomUUID().toString());
 
         filter.doFilter(request, response, filterChain);
 
@@ -113,7 +112,7 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
     }
 
     @Test(description = "Test that data is not published when X-External-Traffic header contains unexpected value " +
-            "and session data key attribute is present")
+            "and session data key parameter is present")
     public void testDataNotPublishedWhenExternalTrafficHeaderIsNotTrueAndSessionDataKeyPresent()
             throws Exception {
 
@@ -127,7 +126,7 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
         Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
 
         request.addHeader(EXTERNAL_TRAFFIC_HEADER, "false");
-        request.setAttribute(SESSION_DATA_KEY, UUID.randomUUID().toString());
+        request.setParameter(SESSION_DATA_KEY, UUID.randomUUID().toString());
 
         filter.doFilter(request, response, filterChain);
 
@@ -137,8 +136,8 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
     }
 
     @Test(description = "Test that data is not published when X-External-Traffic header is true and " +
-            "session data key attribute is absent")
-    public void testDataNotPublishedWhenExternalTrafficHeaderPresentAndSessionDataKeyAbsent() throws
+            "session data key attribute is present")
+    public void testDataNotPublishedWhenExternalTrafficHeaderAndSessionDataKeyPresent() throws
             Exception {
 
         CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
@@ -151,6 +150,7 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
         Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
 
         request.addHeader(EXTERNAL_TRAFFIC_HEADER, "true");
+        request.setParameter(SESSION_DATA_KEY, UUID.randomUUID().toString());
 
         filter.doFilter(request, response, filterChain);
 
@@ -160,7 +160,7 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
     }
 
     @Test(description = "Test that data is not published when X-External-Traffic header is absent and " +
-            "session data key attribute is present")
+            "session data key parameter is present")
     public void testDataNotPublishedWhenExternalTrafficHeaderAbsentAndSessionDataKeyPresent() throws
             Exception {
 
@@ -173,7 +173,7 @@ public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
                 Mockito.any());
         Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
 
-        request.setAttribute(SESSION_DATA_KEY, UUID.randomUUID().toString());
+        request.setParameter(SESSION_DATA_KEY, UUID.randomUUID().toString());
 
         filter.doFilter(request, response, filterChain);
 

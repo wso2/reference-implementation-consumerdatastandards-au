@@ -17,6 +17,8 @@
  */
 package org.wso2.openbanking.cds.identity.filter;
 
+import org.wso2.openbanking.cds.identity.utils.CDSIdentityConstants;
+
 import javax.servlet.ServletRequest;
 
 /**
@@ -28,7 +30,8 @@ public class AuthorizeDataPublishingFilter extends InfoSecDataPublishingFilter {
     @Override
     public boolean shouldPublishCurrentRequestData(ServletRequest request) {
 
-        // Check if the sessionDataKey is available in the request to prevent publishing the internal redirects.
-        return request.getAttribute("sessionDataKey") != null && super.shouldPublishCurrentRequestData(request);
+        // If the sessionDataKey query parameter is present, it is an internal redirect and should not be published.
+        return request.getParameter(CDSIdentityConstants.SESSION_DATA_KEY_PARAMETER) == null &&
+                super.shouldPublishCurrentRequestData(request);
     }
 }
