@@ -97,7 +97,7 @@ public class GatewayConstants {
     public static final String USERINFO_ENDPOINT = "/oauth2/userinfo";
     public static final String REVOKE_ENDPOINT = "/oauth2/revoke";
     public static final String INTROSPECTION_ENDPOINT = "/oauth2/introspect";
-    public static final String PAR_ENDPOINT = "/oauth2/par";
+    public static final String PAR_ENDPOINT = "/api/openbanking/push-authorization/par";
     public static final String WELL_KNOWN_ENDPOINT = "/oauth2/token/.well-known/openid-configuration";
     public static final String REGISTER_ENDPOINT = "/register";
     public static final String REGISTER_CLIENT_ID_ENDPOINT = "/register/{ClientId}";
