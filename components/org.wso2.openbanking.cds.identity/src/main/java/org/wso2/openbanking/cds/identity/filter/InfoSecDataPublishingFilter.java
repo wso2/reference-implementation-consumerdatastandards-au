@@ -263,7 +263,10 @@ public class InfoSecDataPublishingFilter implements Filter {
     public boolean shouldPublishCurrentRequestData(ServletRequest request) {
 
         // If the request is internal traffic, no need to publish data
-        return expectedExternalTrafficHeaderValue.equalsIgnoreCase(
-                ((HttpServletRequest) request).getHeader(externalTrafficHeaderName));
+        if (request instanceof HttpServletRequest) {
+            return expectedExternalTrafficHeaderValue.equalsIgnoreCase(
+                    ((HttpServletRequest) request).getHeader(externalTrafficHeaderName));
+        }
+        return false;
     }
 }
