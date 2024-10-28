@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
- *
+ * <p>
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -28,6 +28,8 @@ import org.wso2.openbanking.cds.common.data.publisher.CDSDataPublishingService;
 import org.wso2.openbanking.cds.gateway.utils.GatewayConstants;
 
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -54,13 +56,13 @@ public class InfoSecDataPublishingHandler extends AbstractHandler {
 
         String messageId = UUID.randomUUID().toString();
 
-        // publish api endpoint invocation data
-        Map<String, Object> requestData = generateInvocationDataMap(messageContext, messageId);
-        CDSDataPublishingService.getCDSDataPublishingService().publishApiInvocationData(requestData);
-
         // publish api endpoint latency data
         Map<String, Object> latencyData = generateLatencyDataMap(messageContext, messageId);
         CDSDataPublishingService.getCDSDataPublishingService().publishApiLatencyData(latencyData);
+
+        // publish api endpoint invocation data
+        Map<String, Object> requestData = generateInvocationDataMap(messageContext, messageId);
+        CDSDataPublishingService.getCDSDataPublishingService().publishApiInvocationData(requestData);
 
         return true;
     }
@@ -114,7 +116,8 @@ public class InfoSecDataPublishingHandler extends AbstractHandler {
         long requestLatency = System.currentTimeMillis() - requestInTime;
 
         latencyData.put("correlationId", messageId);
-        latencyData.put("requestTimestamp", String.valueOf(Instant.now().getEpochSecond()));
+        latencyData.put("requestTimestamp", DateTimeFormatter.ISO_INSTANT
+                .format(Instant.now().truncatedTo(ChronoUnit.MILLIS)));
         latencyData.put("backendLatency", 0L);
         latencyData.put("requestMediationLatency", 0L);
         latencyData.put("responseLatency", requestLatency >= 0 ? requestLatency : 0L);

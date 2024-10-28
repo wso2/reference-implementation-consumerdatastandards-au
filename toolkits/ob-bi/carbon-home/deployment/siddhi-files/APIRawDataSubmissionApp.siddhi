@@ -40,6 +40,11 @@ define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID st
                         RESPONSE_PAYLOAD_SIZE long, ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string,
                         TIMESTAMP long, CUSTOMER_STATUS string, ACCESS_TOKEN_ID string, SESSION_TYPE string);
 
+@primaryKey('ID','MESSAGE_ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
+                        REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
+
 --Persist API Invocation Data
 from APIInputStream
 select UUID() as ID, MESSAGE_ID, CONSENT_ID, CONSUMER_ID, CLIENT_ID, USER_AGENT, STATUS_CODE, STATUS_MESSAGE, HTTP_METHOD,
@@ -56,10 +61,10 @@ set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
 --Generate CDS Metrics Raw stream
---A window of length 20 is used to make sure these is no data loss in the join operation
-from APIInputStream#window.length(20) as apiInputStream
-join APILatencyInputStream#window.length(20) as apiLatencyInputStream
-    on apiInputStream.MESSAGE_ID == apiLatencyInputStream.MESSAGE_ID
-select apiInputStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
+--A 5 second window is introduced to handle any delays in publishing latency data to the database.
+from APIInputStream#window.timeBatch(5 sec) as apiInputWindowStream
+join API_LATENCY_RAW_DATA as latencyRawData
+    on apiInputWindowStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
+select apiInputWindowStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
        TIMESTAMP * 1000 as reqTimestamp, CUSTOMER_STATUS as customerStatus
 insert into CDSMetricsRawStream;
