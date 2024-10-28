@@ -812,4 +812,26 @@ public class OpenBankingCDSConfigParser {
         }
         return defaultValue;
     }
+
+    /**
+     * Get external traffic header name.
+     * This header should be set by the load balancer to identify the external traffic.
+     *
+     * @return String
+     */
+    public String getExternalTrafficHeaderName() {
+
+        return ((String) getConfigElementFromKey(CommonConstants.EXTERNAL_TRAFFIC_HEADER_NAME)).trim();
+    }
+
+    /**
+     * Get external traffic expected header value.
+     * If this value is set in the header identified by the header name, the traffic is considered as external.
+     *
+     * @return String
+     */
+    public String getExternalTrafficExpectedValue() {
+
+        return ((String) getConfigElementFromKey(CommonConstants.EXTERNAL_TRAFFIC_EXPECTED_VALUE)).trim();
+    }
 }

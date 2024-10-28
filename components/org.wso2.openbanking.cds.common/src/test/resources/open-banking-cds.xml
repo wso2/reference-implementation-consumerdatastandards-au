@@ -94,4 +94,8 @@
     <DisclosureOptionsManagement>
         <Enable>true</Enable>
     </DisclosureOptionsManagement>
+    <ExternalTraffic>
+        <HeaderName>X-External-Traffic</HeaderName>
+        <ExpectedValue>true</ExpectedValue>
+    </ExternalTraffic>
 </Server>

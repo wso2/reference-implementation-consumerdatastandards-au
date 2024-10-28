@@ -45,6 +45,8 @@ public class CommonConstants {
     public static final String VALIDATE_ACCOUNTS_ON_RETRIEVAL = "BNR.ValidateAccountsOnRetrieval";
     public static final String ENABLE_CONSENT_REVOCATION = "BNR.EnableConsentRevocation";
     public static final String CUSTOMER_TYPE_SELECTION_METHOD = "BNR.CustomerTypeSelectionMethod";
+    public static final String EXTERNAL_TRAFFIC_HEADER_NAME = "ExternalTraffic.HeaderName";
+    public static final String EXTERNAL_TRAFFIC_EXPECTED_VALUE = "ExternalTraffic.ExpectedValue";
 
     // Http related constants
     public static final String POST_METHOD = "POST";

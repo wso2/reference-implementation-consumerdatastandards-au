@@ -41,16 +41,15 @@ import java.util.UUID;
 import javax.servlet.FilterChain;
 
 import static org.mockito.Mockito.verify;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
 import static org.wso2.openbanking.cds.identity.filter.util.TestConstants.EXTERNAL_TRAFFIC_HEADER;
+import static org.wso2.openbanking.cds.identity.filter.util.TestConstants.SESSION_DATA_KEY;
 
 /**
- * Test class for CDS Infosec Data Publishing Filter.
+ * Test class for AuthorizeDataPublishingFilter Data Publishing Filter.
  */
 @PowerMockIgnore("jdk.internal.reflect.*")
 @PrepareForTest({OpenBankingCDSConfigParser.class, OpenBankingConfigParser.class, CDSDataPublishingService.class})
-public class InfoSecDataPublishingFilterTests extends PowerMockTestCase {
+public class AuthorizeDataPublishingFilterTests extends PowerMockTestCase {
 
     private OpenBankingCDSConfigParser openBankingCDSConfigParserMock;
     private OpenBankingConfigParser openBankingConfigParserMock;
@@ -58,22 +57,23 @@ public class InfoSecDataPublishingFilterTests extends PowerMockTestCase {
     MockHttpServletRequest request;
     MockHttpServletResponse response;
     FilterChain filterChain;
-    InfoSecDataPublishingFilter filter;
+    AuthorizeDataPublishingFilter filter;
     Map<String, Object> cdsConfigs = new HashMap<>();
     Map<String, Object> configs = new HashMap<>();
 
     @BeforeClass
     public void init() throws OpenBankingException {
 
-        cdsConfigs.put(CommonConstants.EXTERNAL_TRAFFIC_HEADER_NAME, EXTERNAL_TRAFFIC_HEADER);
+        cdsConfigs.put(CommonConstants.EXTERNAL_TRAFFIC_HEADER_NAME, "X-External-Traffic");
         cdsConfigs.put(CommonConstants.EXTERNAL_TRAFFIC_EXPECTED_VALUE, "true");
+        configs.put("DataPublishing.Enabled", "true");
 
         openBankingCDSConfigParserMock = PowerMockito.mock(OpenBankingCDSConfigParser.class);
         PowerMockito.mockStatic(OpenBankingCDSConfigParser.class);
         PowerMockito.when(OpenBankingCDSConfigParser.getInstance()).thenReturn(openBankingCDSConfigParserMock);
         PowerMockito.when(openBankingCDSConfigParserMock.getConfiguration()).thenReturn(cdsConfigs);
 
-        filter = Mockito.spy(InfoSecDataPublishingFilter.class);
+        filter = Mockito.spy(AuthorizeDataPublishingFilter.class);
     }
 
     @BeforeMethod
@@ -83,61 +83,15 @@ public class InfoSecDataPublishingFilterTests extends PowerMockTestCase {
         response = new MockHttpServletResponse();
         filterChain = Mockito.spy(FilterChain.class);
 
-        configs.put("DataPublishing.Enabled", "true");
         openBankingConfigParserMock = PowerMockito.mock(OpenBankingConfigParser.class);
         PowerMockito.mockStatic(OpenBankingConfigParser.class);
         PowerMockito.when(OpenBankingConfigParser.getInstance()).thenReturn(openBankingConfigParserMock);
         PowerMockito.when(openBankingConfigParserMock.getConfiguration()).thenReturn(configs);
     }
 
-    @Test(description = "Test the attributes in the latency data map")
-    public void latencyDataMapAttributesTest() {
-
-        String messageId = UUID.randomUUID().toString();
-        request.setAttribute("REQUEST_IN_TIME", System.currentTimeMillis());
-        Map<String, Object> latencyData = filter.generateLatencyDataMap(request, messageId);
-        assertEquals(latencyData.get("correlationId"), messageId);
-        assertNotNull(latencyData.get("requestTimestamp"));
-        assertNotNull(latencyData.get("backendLatency"));
-        assertNotNull(latencyData.get("requestMediationLatency"));
-        assertNotNull(latencyData.get("responseLatency"));
-        assertNotNull(latencyData.get("responseMediationLatency"));
-    }
-
-    @Test(description = "Test the ResponseLatency attribute in the latency data map")
-    public void latencyDataMapNegativeResponseLatencyTest() {
-
-        String messageId = UUID.randomUUID().toString();
-        request.setAttribute("REQUEST_IN_TIME", System.currentTimeMillis() + (60 * 1000));
-        Map<String, Object> latencyData = filter.generateLatencyDataMap(request, messageId);
-        assertEquals(latencyData.get("responseLatency"), 0L);
-    }
-
-    @Test(description = "Test that data is not published when X-External-Traffic header contains expected value and " +
-            "data publishing is disabled")
-    public void testDataNotPublishedWhenExternalTrafficHeaderPresentAndDataPublishingDisabled() throws Exception {
-
-        CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
-        PowerMockito.mockStatic(CDSDataPublishingService.class);
-        PowerMockito.when(CDSDataPublishingService.getCDSDataPublishingService()).thenReturn(
-                cdsDataPublishingServiceMock);
-
-        Mockito.doReturn(new HashMap<>()).when(filter).generateInvocationDataMap(Mockito.any(), Mockito.any(),
-                Mockito.any());
-        Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
-
-        request.addHeader(EXTERNAL_TRAFFIC_HEADER, "true");
-        configs.put("DataPublishing.Enabled", "false");
-
-        filter.doFilter(request, response, filterChain);
-
-        // Verify that data is NOT published
-        verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiInvocationData(Mockito.anyMap());
-        verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiLatencyData(Mockito.anyMap());
-    }
-
-    @Test(description = "Test that data is published when X-External-Traffic header contains expected value")
-    public void testDataPublishedWhenExternalTrafficHeaderPresentAndContainExpectedValue() throws Exception {
+    @Test(description = "Test that data is published when X-External-Traffic header is true and " +
+            "session data key parameter is absent")
+    public void testDataPublishedWhenExternalTrafficHeaderPresentAndSessionDataKeyAbsent() throws Exception {
 
         CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
         PowerMockito.mockStatic(CDSDataPublishingService.class);
@@ -157,8 +111,10 @@ public class InfoSecDataPublishingFilterTests extends PowerMockTestCase {
         verify(cdsDataPublishingServiceMock).publishApiLatencyData(Mockito.anyMap());
     }
 
-    @Test(description = "Test that data is not published when X-External-Traffic header contains an unexpected value")
-    public void testDataPublishedWhenExternalTrafficHeaderHasUnexpectedValue() throws Exception {
+    @Test(description = "Test that data is not published when X-External-Traffic header contains unexpected value " +
+            "and session data key parameter is present")
+    public void testDataNotPublishedWhenExternalTrafficHeaderIsNotTrueAndSessionDataKeyPresent()
+            throws Exception {
 
         CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
         PowerMockito.mockStatic(CDSDataPublishingService.class);
@@ -170,6 +126,7 @@ public class InfoSecDataPublishingFilterTests extends PowerMockTestCase {
         Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
 
         request.addHeader(EXTERNAL_TRAFFIC_HEADER, "false");
+        request.setParameter(SESSION_DATA_KEY, UUID.randomUUID().toString());
 
         filter.doFilter(request, response, filterChain);
 
@@ -178,13 +135,61 @@ public class InfoSecDataPublishingFilterTests extends PowerMockTestCase {
         verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiLatencyData(Mockito.anyMap());
     }
 
-    @Test(description = "Test that data is not published when X-External-Traffic header absent")
-    public void testDataNotPublishedWhenExternalTrafficHeaderAbsent() throws Exception {
+    @Test(description = "Test that data is not published when X-External-Traffic header is true and " +
+            "session data key attribute is present")
+    public void testDataNotPublishedWhenExternalTrafficHeaderAndSessionDataKeyPresent() throws
+            Exception {
 
         CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
         PowerMockito.mockStatic(CDSDataPublishingService.class);
         PowerMockito.when(CDSDataPublishingService.getCDSDataPublishingService()).thenReturn(
                 cdsDataPublishingServiceMock);
+
+        Mockito.doReturn(new HashMap<>()).when(filter).generateInvocationDataMap(Mockito.any(), Mockito.any(),
+                Mockito.any());
+        Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
+
+        request.addHeader(EXTERNAL_TRAFFIC_HEADER, "true");
+        request.setParameter(SESSION_DATA_KEY, UUID.randomUUID().toString());
+
+        filter.doFilter(request, response, filterChain);
+
+        // Verify that data is NOT published
+        verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiInvocationData(Mockito.anyMap());
+        verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiLatencyData(Mockito.anyMap());
+    }
+
+    @Test(description = "Test that data is not published when X-External-Traffic header is absent and " +
+            "session data key parameter is present")
+    public void testDataNotPublishedWhenExternalTrafficHeaderAbsentAndSessionDataKeyPresent() throws
+            Exception {
+
+        CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
+        PowerMockito.mockStatic(CDSDataPublishingService.class);
+        PowerMockito.when(CDSDataPublishingService.getCDSDataPublishingService()).thenReturn(
+                cdsDataPublishingServiceMock);
+
+        Mockito.doReturn(new HashMap<>()).when(filter).generateInvocationDataMap(Mockito.any(), Mockito.any(),
+                Mockito.any());
+        Mockito.doReturn(new HashMap<>()).when(filter).generateLatencyDataMap(Mockito.any(), Mockito.any());
+
+        request.setParameter(SESSION_DATA_KEY, UUID.randomUUID().toString());
+
+        filter.doFilter(request, response, filterChain);
+
+        // Verify that data is NOT published
+        verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiInvocationData(Mockito.anyMap());
+        verify(cdsDataPublishingServiceMock, Mockito.never()).publishApiLatencyData(Mockito.anyMap());
+    }
+
+    @Test(description = "Test that data is not published when both X-External-Traffic header " +
+            "and sessionDataKey absent")
+    public void testDataNotPublishedWhenExternalTrafficHeaderAndSessionDataKeyAbsent() throws Exception {
+
+        CDSDataPublishingService cdsDataPublishingServiceMock = PowerMockito.mock(CDSDataPublishingService.class);
+        PowerMockito.mockStatic(CDSDataPublishingService.class);
+        PowerMockito.when(CDSDataPublishingService.getCDSDataPublishingService()).
+                thenReturn(cdsDataPublishingServiceMock);
 
         Mockito.doReturn(new HashMap<>()).when(filter).generateInvocationDataMap(Mockito.any(), Mockito.any(),
                 Mockito.any());
