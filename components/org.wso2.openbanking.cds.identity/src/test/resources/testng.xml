@@ -71,6 +71,8 @@
             <class name="org.wso2.openbanking.cds.identity.filter.CDSIntrospectionFilterTest"/>
             <class name="org.wso2.openbanking.cds.identity.filter.CDSParFilterTest"/>
             <class name="org.wso2.openbanking.cds.identity.filter.CDSTokenRevocationFilterTest"/>
+            <class name="org.wso2.openbanking.cds.identity.filter.InfoSecDataPublishingFilterTests"/>
+            <class name="org.wso2.openbanking.cds.identity.filter.AuthorizeDataPublishingFilterTests"/>
         </classes>
     </test>
     <test name="cds-introspection-data-provider">

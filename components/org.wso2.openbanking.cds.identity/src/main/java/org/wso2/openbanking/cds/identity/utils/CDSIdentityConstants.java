@@ -41,5 +41,6 @@ public class CDSIdentityConstants {
     public static final String CODE_RESPONSE_TYPE = "code";
     public static final String JWT_RESPONSE_MODE = "jwt";
     public static final String UNSUPPORTED_RESPONSE_TYPE_ERROR = "unsupported_response_type";
+    public static final String SESSION_DATA_KEY_PARAMETER = "sessionDataKey";
 
 }

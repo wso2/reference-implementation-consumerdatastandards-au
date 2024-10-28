@@ -289,6 +289,20 @@ public class OpenBankingCDSConfigParserTest {
         Assert.assertEquals(openBankingCDSConfigParser.getBNRCustomerTypeSelectionMethod(), "profile_selection");
     }
 
+    @Test(priority = 8)
+    public void testGetExternalTrafficHeaderName() {
+        String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
+        OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
+        Assert.assertEquals(openBankingCDSConfigParser.getExternalTrafficHeaderName(), "X-External-Traffic");
+    }
+
+    @Test(priority = 8)
+    public void testGetExternalTrafficExpectedValue() {
+        String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
+        OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
+        Assert.assertEquals(openBankingCDSConfigParser.getExternalTrafficExpectedValue(), "true");
+    }
+
     private void injectEnvironmentVariable(String key, String value)
             throws ReflectiveOperationException {
 
