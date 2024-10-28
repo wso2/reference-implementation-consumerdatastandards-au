@@ -296,12 +296,15 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
         String consentID = detailedConsentResource.getConsentID();
         this.consentCoreService.revokeConsentWithReason(consentID, CONSENT_STATUS_REVOKED, null,
                 ConsentCoreServiceConstants.CONSENT_REVOKE_FROM_DASHBOARD_REASON);
-        // revoke access tokens
-        try {
-            consentCoreService.revokeTokens(detailedConsentResource, userId);
-        } catch (IdentityOAuth2Exception e) {
-            log.error(String.format("Error occurred while revoking tokens. Only the consent was revoked " +
-                    "successfully. %s", e.getMessage()));
+        // revoke access tokens if the user is not null. User can be null if the consent is revoked by a user with
+        // CustomerCareOfficer role in consent manager.
+        if (userId != null) {
+            try {
+                consentCoreService.revokeTokens(detailedConsentResource, userId);
+            } catch (IdentityOAuth2Exception e) {
+                log.error(String.format("Error occurred while revoking tokens. Only the consent was revoked " +
+                        "successfully. %s", e.getMessage()));
+            }
         }
     }
 
