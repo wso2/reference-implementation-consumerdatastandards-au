@@ -101,7 +101,7 @@ public class GatewayConstants {
     public static final String WELL_KNOWN_ENDPOINT = "/oauth2/token/.well-known/openid-configuration";
     public static final String REGISTER_ENDPOINT = "/register";
     public static final String REGISTER_CLIENT_ID_ENDPOINT = "/register/{ClientId}";
-    public static final String CDR_ARRANGEMENT_ENDPOINT = "/{cdrArrangementId}";
+    public static final String CDR_ARRANGEMENT_ENDPOINT = "/arrangements/1.0.0";
     public static final String DISCOVERY_OUTAGES_ENDPOINT = "/discovery/outages";
     public static final String DISCOVERY_STATUS_ENDPOINT = "/discovery/status";
     public static final String PRODUCTS_ENDPOINT = "/banking/products";
