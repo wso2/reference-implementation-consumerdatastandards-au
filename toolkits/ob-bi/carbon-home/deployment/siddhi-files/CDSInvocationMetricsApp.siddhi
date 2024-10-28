@@ -36,7 +36,7 @@ define function getPriorityTier[JavaScript] return string {
 	var customerStatus = data[1];
 	var unauthenticatedList = ["/banking/products", "/banking/products/{productId}"];
 	var highPriorityList = ["/banking/accounts", "/discovery/status", "/discovery/outages", "/common/customer", "/common/customer/detail", "/register",
-	        "/register/{ClientId}", "/", "/token", "/authorize", "/revoke", "/userinfo", "/token/introspect", "/jwks", "/.well-known/openid-configuration"];
+	        "/register/{ClientId}", "/", "/token", "/authorize", "/revoke", "/userinfo", "/introspect", "/jwks", "/.well-known/openid-configuration"];
 	var lowPriorityList = ["/banking/accounts/{accountId}", "/banking/accounts/{accountId}/balance", "/banking/accounts/balances", "/banking/accounts/{accountId}/transactions",
 	        "/banking/accounts/{accountId}/transactions/{transactionId}", "/banking/payees", "/banking/payees/{payeeId}", "/banking/accounts/{accountId}/direct-debits",
 	        "/banking/accounts/{accountId}/payments/scheduled", "/banking/payments/scheduled"];
@@ -90,7 +90,7 @@ define function getAspect[JavaScript] return string {
 	var electedResource = data[0];
 	var unauthenticatedList = ['/banking/products', '/banking/products/{productId}', '/discovery/status', '/discovery/outages'];
 	var authenticatedList = ['/banking/accounts', '/common/customer', '/common/customer/detail', '/register', '/register/{ClientId}',
-            '/', '/token', '/authorize', '/revoke', '/userinfo', '/token/introspect', '/jwks', '/.well-known/openid-configuration',
+            '/', '/token', '/authorize', '/revoke', '/userinfo', '/introspect', '/jwks', '/.well-known/openid-configuration',
             '/banking/accounts/{accountId}', '/banking/accounts/{accountId}/balance', '/banking/accounts/balances',
             '/banking/accounts/{accountId}/transactions', '/banking/accounts/{accountId}/transactions/{transactionId}',
             '/banking/payees', '/banking/payees/{payeeId}', '/banking/accounts/{accountId}/direct-debits',

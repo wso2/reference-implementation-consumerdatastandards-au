@@ -91,17 +91,17 @@ public class GatewayConstants {
     public static final String WELL_KNOWN_API = "WellKnownAPI";
     public static final String PAR_API = "PARAPI";
 
-    public static final String TOKEN_ENDPOINT = "/token";
-    public static final String AUTHORIZE_ENDPOINT = "/authorize";
-    public static final String JWKS_ENDPOINT = "/jwks";
-    public static final String USERINFO_ENDPOINT = "/userinfo";
-    public static final String REVOKE_ENDPOINT = "/revoke";
-    public static final String INTROSPECTION_ENDPOINT = "/token/introspect";
-    public static final String PAR_ENDPOINT = "/par";
-    public static final String WELL_KNOWN_ENDPOINT = "/.well-known/openid-configuration";
+    public static final String TOKEN_ENDPOINT = "/oauth2/token";
+    public static final String AUTHORIZE_ENDPOINT = "/oauth2/authorize";
+    public static final String JWKS_ENDPOINT = "/oauth2/jwks";
+    public static final String USERINFO_ENDPOINT = "/oauth2/userinfo";
+    public static final String REVOKE_ENDPOINT = "/oauth2/revoke";
+    public static final String INTROSPECTION_ENDPOINT = "/oauth2/introspect";
+    public static final String PAR_ENDPOINT = "/api/openbanking/push-authorization/par";
+    public static final String WELL_KNOWN_ENDPOINT = "/oauth2/token/.well-known/openid-configuration";
     public static final String REGISTER_ENDPOINT = "/register";
     public static final String REGISTER_CLIENT_ID_ENDPOINT = "/register/{ClientId}";
-    public static final String CDR_ARRANGEMENT_ENDPOINT = "/{cdrArrangementId}";
+    public static final String CDR_ARRANGEMENT_ENDPOINT = "/arrangements/1.0.0";
     public static final String DISCOVERY_OUTAGES_ENDPOINT = "/discovery/outages";
     public static final String DISCOVERY_STATUS_ENDPOINT = "/discovery/status";
     public static final String PRODUCTS_ENDPOINT = "/banking/products";
