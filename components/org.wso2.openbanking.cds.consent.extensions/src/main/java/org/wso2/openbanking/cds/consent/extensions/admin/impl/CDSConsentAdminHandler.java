@@ -164,12 +164,6 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                     "not available");
         }
 
-        if (StringUtils.isBlank(userID)) {
-            log.error("Request missing the mandatory query parameter userID");
-            throw new ConsentException(ResponseStatus.BAD_REQUEST, "Mandatory query parameter userID " +
-                    "not available");
-        }
-
         int count, amendmentCount = 0;
 
         try {
@@ -178,7 +172,8 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
 
             DetailedConsentResource currentConsentResource = this.consentCoreService.getDetailedConsent(consentID);
 
-            if (isActionByPrimaryUser(currentConsentResource, userID)) {
+            // userID is null when the request comes from a user with CustomerCareOfficer role in consent manager.
+            if (userID == null || isActionByPrimaryUser(currentConsentResource, userID)) {
 
                 JSONArray consentHistory = new JSONArray();
                 for (Map.Entry<String, ConsentHistoryResource> result : results.entrySet()) {
