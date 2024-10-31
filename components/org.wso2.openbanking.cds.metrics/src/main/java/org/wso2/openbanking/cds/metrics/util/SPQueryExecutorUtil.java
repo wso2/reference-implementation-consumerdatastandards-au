@@ -54,9 +54,12 @@ public class SPQueryExecutorUtil {
 
     private static Log log = LogFactory.getLog(SPQueryExecutorUtil.class);
 
-    private static APIManagerAnalyticsConfiguration analyticsConfiguration = getAnalyticsConfiguration();
-    private static final String spApiHost = analyticsConfiguration.getReporterProperties()
-            .get(MetricsConstants.REST_API_URL_KEY);
+    private static APIManagerAnalyticsConfiguration analyticsConfiguration;
+    private static String spApiHost;
+
+    static {
+        initializeAnalyticsConfiguration();
+    }
 
     /**
      * Executes the given query in SP.
@@ -165,5 +168,15 @@ public class SPQueryExecutorUtil {
         byte[] encodedAuth = Base64.getEncoder()
                 .encode((spUserName + ":" + spPassword).getBytes(StandardCharsets.ISO_8859_1));
         return "Basic " + new String(encodedAuth, StandardCharsets.UTF_8);
+    }
+
+    private static void initializeAnalyticsConfiguration() {
+        analyticsConfiguration = getAnalyticsConfiguration();
+
+        if (analyticsConfiguration == null || analyticsConfiguration.getReporterProperties() == null) {
+            log.error("API Manager analytics is not enabled.");
+        } else {
+            spApiHost = analyticsConfiguration.getReporterProperties().get(MetricsConstants.REST_API_URL_KEY);
+        }
     }
 }
