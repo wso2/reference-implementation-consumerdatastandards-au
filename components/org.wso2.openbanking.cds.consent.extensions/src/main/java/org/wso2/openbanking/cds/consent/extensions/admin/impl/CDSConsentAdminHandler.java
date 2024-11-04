@@ -280,6 +280,14 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
             }
 
             this.consentCoreService.deactivateAccountMappings(mappingIds);
+
+            if (mappingIds.size() == consentMappings.size()) {
+                // If all the mappings are being deactivated, revoke the consent
+                this.consentCoreService.revokeConsentWithReason(detailedConsentResource.getConsentID(),
+                        CONSENT_STATUS_REVOKED, null, ConsentCoreServiceConstants.CONSENT_REVOKE_FROM_DASHBOARD_REASON);
+                log.info(String.format("Consent %s revoked as all the mappings are being deactivated",
+                        detailedConsentResource.getConsentID()));
+            }
         }
         //store joint account withdrawal from the consent to consent amendment history
         this.storeJointAccountWithdrawalHistory(detailedConsentResource);
