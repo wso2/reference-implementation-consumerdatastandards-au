@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Data cluster retrieval step CDS implementation to get human readable scopes.
@@ -64,7 +65,7 @@ public class CDSDataClusterRetrievalStep implements ConsentRetrievalStep {
                     JSONArray existingPermissions = (JSONArray) jsonObject.get(CDSConsentExtensionConstants.
                             EXISTING_PERMISSIONS);
                     for (Object permission : existingPermissions) {
-                        existingScopes.add(PermissionsEnum.valueOf(permission.toString()).toString());
+                        existingScopes.add(permission.toString());
                     }
                     for (Object scope : scopes) {
                         if (existingScopes.contains(scope.toString())) {
@@ -130,15 +131,20 @@ public class CDSDataClusterRetrievalStep implements ConsentRetrievalStep {
      */
     private static JSONArray getDataClusterFromScopes(JSONArray scopes, String customerType) {
 
+        List<String> scopesList = scopes.stream()
+                .map(PermissionsEnum.class::cast)
+                .map(PermissionsEnum::toString)
+                .collect(Collectors.toCollection(ArrayList::new));
+
         JSONArray dataCluster = new JSONArray();
         for (Object scopeEnum : scopes) {
             JSONObject dataClusterItem = new JSONObject();
             String scope = scopeEnum.toString();
             if (CDSConsentExtensionConstants.COMMON_CUSTOMER_BASIC_READ_SCOPE.equalsIgnoreCase(scope) &&
-                    scopes.contains(CDSConsentExtensionConstants.COMMON_CUSTOMER_DETAIL_READ_SCOPE)) {
+                    scopesList.contains(CDSConsentExtensionConstants.COMMON_CUSTOMER_DETAIL_READ_SCOPE)) {
                 continue;
             } else if (CDSConsentExtensionConstants.COMMON_ACCOUNTS_BASIC_READ_SCOPE.equalsIgnoreCase(scope) &&
-                    scopes.contains(CDSConsentExtensionConstants.COMMON_ACCOUNTS_DETAIL_READ_SCOPE)) {
+                    scopesList.contains(CDSConsentExtensionConstants.COMMON_ACCOUNTS_DETAIL_READ_SCOPE)) {
                 continue;
             }
             Map<String, List<String>> cluster;
