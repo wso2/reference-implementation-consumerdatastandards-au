@@ -291,7 +291,9 @@ public class CDSJWTValidator {
     }
 
     private void persistJWTID(final String jti, long expiryTime, long issuedTime) throws OAuthClientAuthnException {
-
+        if (issuedTime == 0) {
+            issuedTime = System.currentTimeMillis();
+        }
         jwtStorageManager.persistJWTIdInDB(jti, expiryTime, issuedTime);
     }
 
