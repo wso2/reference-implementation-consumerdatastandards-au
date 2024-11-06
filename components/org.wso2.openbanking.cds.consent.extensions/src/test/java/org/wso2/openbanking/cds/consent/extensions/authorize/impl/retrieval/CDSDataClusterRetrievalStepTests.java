@@ -40,6 +40,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
+import org.wso2.openbanking.cds.consent.extensions.authorize.utils.PermissionsEnum;
 import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 import org.wso2.openbanking.cds.consent.extensions.util.CDSConsentAuthorizeTestConstants;
 
@@ -115,6 +116,12 @@ public class CDSDataClusterRetrievalStepTests extends PowerMockTestCase {
 
         PowerMockito.mockStatic(HTTPClientUtils.class);
         when(HTTPClientUtils.getHttpsClient()).thenReturn(closeableHttpClientMock);
+
+        Map<String, Object> consentDataMap = new HashMap<>();
+        PermissionsEnum permissionsEnum = PermissionsEnum.valueOf("CDRREADACCOUNTSBASIC");
+        ArrayList<PermissionsEnum> permissionsEnumArrayList = new ArrayList<>();
+        permissionsEnumArrayList.add(permissionsEnum);
+        consentDataMap.put("permissions", permissionsEnumArrayList);
 
         JSONArray permissions = new JSONArray();
         permissions.add("CDRREADACCOUNTSBASIC");
