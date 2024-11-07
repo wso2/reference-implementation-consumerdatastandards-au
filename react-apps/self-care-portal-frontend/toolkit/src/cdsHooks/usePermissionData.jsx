@@ -51,7 +51,13 @@ export const usePermissionData = (permissionData) => {
       : permissionDataLanguageIndividual;
 
   const accountList = permissionData.permissionData.previousConsentData.userList;
-  const matchedUser =  accountList.find(u => u.userId === user.email);  
+  let matchedUser;
+  if (user.role === "customerCareOfficer") {
+    // If the user is a customer care officer, the primary member's account list is shown
+    matchedUser = accountList.find(u => u.authType === "primary_member");
+  } else {
+    matchedUser = accountList.find(u => u.userId === user.email);
+  }
   const accountArray = matchedUser['accountList'];
   const permissionArray = permissionData.permissionData.previousConsentData.permissions;
   const sharingDuration = permissionData.permissionData.previousConsentData.sharingDuration;

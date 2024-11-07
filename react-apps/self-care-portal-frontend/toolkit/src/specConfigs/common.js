@@ -53,7 +53,7 @@ export const dataTypes = {
   // To indicate the dataType is a ISO 8601 date
   timestamp: 'DATE_TIMESTAMP',
   // To Display date in 'YYYY-MM-DD' format and time in 'hh:mm A' format
-  daysHours: 'YYYY-MM-DD hh:mm A',
+  daysHours: 'YYYY-MM-DD hh:mm:ss A',
 };
 
 export const keyValues = {
