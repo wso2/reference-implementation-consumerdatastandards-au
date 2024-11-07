@@ -183,7 +183,7 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                             consentHistoryResource.getDetailedConsentResource();
                     consentResourceJSON.appendField("historyId", result.getKey());
                     consentResourceJSON.appendField("amendedReason", consentHistoryResource.getReason());
-                    consentResourceJSON.appendField("amendedTime", detailedConsentResource.getUpdatedTime());
+                    consentResourceJSON.appendField("amendedTime", consentHistoryResource.getTimestamp());
                     consentResourceJSON.appendField("previousConsentData",
                             this.detailedConsentToJSON(detailedConsentResource));
                     consentHistory.add(consentResourceJSON);
