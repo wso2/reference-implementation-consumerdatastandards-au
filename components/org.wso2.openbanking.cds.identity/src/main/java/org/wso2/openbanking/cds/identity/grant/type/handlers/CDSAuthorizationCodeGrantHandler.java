@@ -110,7 +110,7 @@ public class CDSAuthorizationCodeGrantHandler extends OBAuthorizationCodeGrantHa
      * @return
      */
     @Override
-    public boolean issueRefreshToken() throws IdentityOAuth2Exception {
+    public OAuth2AccessTokenRespDTO issue(OAuthTokenReqMessageContext tokReqMsgCtx) throws IdentityOAuth2Exception {
 
         OAuthTokenReqMessageContext tokenReqMessageContext = getTokenMessageContext();
 
@@ -124,10 +124,21 @@ public class CDSAuthorizationCodeGrantHandler extends OBAuthorizationCodeGrantHa
             if (log.isDebugEnabled()) {
                 log.debug("Refresh token validity period is set to: " + sharingDuration);
             }
-            // do not issue refresh token if sharing duration value equals to zero
-            if (sharingDuration == 0) {
-                return false;
-            }
+
+        }
+        return super.issue(tokReqMsgCtx);
+    }
+
+    @Override
+    public boolean issueRefreshToken() throws IdentityOAuth2Exception {
+
+        OAuthTokenReqMessageContext tokenReqMessageContext = getTokenMessageContext();
+        if (isRegulatory(tokenReqMessageContext)) {
+            long sharingDuration;
+            String[] scopes = tokenReqMessageContext.getScope();
+            String consentId = CDSIdentityUtil.getConsentId(scopes);
+            sharingDuration = CDSIdentityUtil.getRefreshTokenValidityPeriod(consentId);
+            return sharingDuration != 0;
         }
         return true;
     }
