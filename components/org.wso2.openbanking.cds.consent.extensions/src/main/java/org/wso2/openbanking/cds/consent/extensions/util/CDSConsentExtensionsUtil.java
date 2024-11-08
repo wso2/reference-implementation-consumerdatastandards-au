@@ -26,6 +26,7 @@ import com.wso2.openbanking.accelerator.consent.extensions.common.ConsentExcepti
 import com.wso2.openbanking.accelerator.consent.extensions.common.ResponseStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 import org.wso2.openbanking.cds.consent.extensions.validate.utils.CDSConsentValidatorUtil;
 
@@ -38,6 +39,7 @@ public class CDSConsentExtensionsUtil {
 
     private static final Log log = LogFactory.getLog(CDSConsentValidatorUtil.class);
     private static AccountMetadataService accountMetadataService = AccountMetadataServiceImpl.getInstance();
+    private static OpenBankingCDSConfigParser cdsConfigParser = OpenBankingCDSConfigParser.getInstance();
 
     /**
      * Get secondary user instruction data.
@@ -57,7 +59,7 @@ public class CDSConsentExtensionsUtil {
                 return CDSConsentExtensionConstants.ACTIVE_STATUS
                         .equalsIgnoreCase(accountMetadata.get(CDSConsentExtensionConstants.INSTRUCTION_STATUS));
             } else {
-                return false;
+                return cdsConfigParser.isSecondaryAccountsSelectableWithoutAccountMetadata();
             }
         } catch (OpenBankingException e) {
             log.error("Error occurred while retrieving account metadata for account id : " + accountId, e);

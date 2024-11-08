@@ -671,6 +671,23 @@ public class OpenBankingCDSConfigParser {
     }
 
     /**
+     * Get secondary user accounts selectable without account metadata status.
+     * This indicates whether the secondary user accounts can be selected when there is no account metadata
+     * available for the given account and user combination.
+     *
+     * @return boolean
+     */
+    public boolean isSecondaryAccountsSelectableWithoutAccountMetadata() {
+
+        Object config = getConfigElementFromKey(CommonConstants.SELECTABLE_WITHOUT_ACCOUNT_METADATA);
+        if (config != null) {
+            return Boolean.parseBoolean((String) config);
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get Disclosure Options Management enabled status.
      *
      * @return boolean
