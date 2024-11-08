@@ -225,6 +225,12 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                         // bind user consented non-primary accounts with the created consent
                         bindNonPrimaryAccountsToConsentWithGivenPermissions(consentCoreService, consentResource,
                                 consentData, nonPrimaryAccountIDsMapWithPermissions);
+
+                    } else if (!nonPrimaryAccountIDsMapWithPermissions.isEmpty()) {
+                        // bind user consented non-primary accounts with the created consent
+                        bindNonPrimaryAccountsToConsentWithGivenPermissions(consentCoreService, consentResource,
+                                consentData, nonPrimaryAccountIDsMapWithPermissions);
+
                     } else {
                         // case where no specific non-primary account permissions provided
                         bindUserAccountsToConsent(consentCoreService, consentResource, consentData, accountIdList);
