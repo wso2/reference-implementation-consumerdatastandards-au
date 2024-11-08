@@ -233,6 +233,11 @@
         {% else %}
         <Enable>false</Enable>
         {% endif %}
+        {% if open_banking_cds.secondary_user_accounts.selectable_without_account_metadata is defined %}
+        <SelectableWithoutAccountMetadata>{{open_banking_cds.secondary_user_accounts.selectable_without_account_metadata}}</SelectableWithoutAccountMetadata>
+        {% else %}
+        <SelectableWithoutAccountMetadata>false</SelectableWithoutAccountMetadata>
+        {% endif %}
         {% if open_banking_cds.secondary_user_accounts.ceasing_secondary_user_sharing_enable is defined %}
         <CeasingSecondaryUserSharingEnabled>{{open_banking_cds.secondary_user_accounts.ceasing_secondary_user_sharing_enable}}</CeasingSecondaryUserSharingEnabled>
         {% else %}

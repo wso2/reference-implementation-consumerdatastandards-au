@@ -89,6 +89,7 @@
     </BNR>
     <SecondaryUserAccounts>
         <Enable>true</Enable>
+        <SelectableWithoutAccountMetadata>false</SelectableWithoutAccountMetadata>
         <CeasingSecondaryUserSharingEnabled>true</CeasingSecondaryUserSharingEnabled>
     </SecondaryUserAccounts>
     <DisclosureOptionsManagement>
