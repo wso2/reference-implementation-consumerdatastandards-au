@@ -17,7 +17,7 @@
  */
 
 export const common = {
-  footerContent: 'WSO2 Open Banking | ' + new Date().getFullYear()
+  footerContent: 'WSO2 Open Banking Solution | ' + new Date().getFullYear()
 };
 
 export const keyDateTypes = {
@@ -91,3 +91,9 @@ export const consentTypes = [
     image: require('../../../accelerator/src/images/accounts.png'),
   },
 ];
+
+export const consentPdfProperties = {
+  orientation: 'p',
+  measurement: 'mm',
+  pageSize: 'a4'
+};

@@ -18,7 +18,7 @@
 import moment from 'moment'
 import jsPDF from "jspdf";
 import { specConfigurations } from '../specConfigs/specConfigurations.js';
-import { dataTypes } from '../specConfigs/common.js';
+import { dataTypes, consentPdfProperties } from '../specConfigs/common.js';
 
 export const getAmendmendedReason = (amendedReason) => {
   const reason = Object.entries(
@@ -50,7 +50,7 @@ export const getTimeStamp = (timestamp) => {
 
 export function generatePDF(consent, applicationName, consentStatus) {
 
-  const pdf = new jsPDF("p", "mm", "a4");
+  const pdf = new jsPDF(consentPdfProperties.orientation, consentPdfProperties.measurement, consentPdfProperties.size);
   pdf.setFontSize(11);
   pdf.rect(10, 10, 190, 275);
 
@@ -83,11 +83,11 @@ export function generatePDF(consent, applicationName, consentStatus) {
   }
 
   pdf.text(20, 20, 'Consent ID : ' + consent.consentId);
-  pdf.text(20, 30, "Status : " + consentStatus);
+  pdf.text(20, 30, 'Status : ' + consentStatus);
   pdf.text(20, 40, 'API Consumer Application : ' + applicationName);
-  pdf.text(20, 50, 'Creation date : ' + moment(new Date((consent.createdTimestamp) * 1000)).format("DD-MMM-YYYY"));
-  pdf.text(20, 60, 'Expiration date : ' + ((consent.validityPeriod !== 0)?moment(new Date((consent.validityPeriod) * 1000)).format("DD-MMM-YYYY"):"N/A"));
-  pdf.text(20, 70, 'Accounts : ' + accounts.join(", "));
+  pdf.text(20, 50, 'Creation date : ' + moment(new Date((consent.createdTimestamp) * 1000)).format('DD-MMM-YYYY'));
+  pdf.text(20, 60, 'Expiration date : ' + ((consent.validityPeriod !== 0)?moment(new Date((consent.validityPeriod) * 1000)).format('DD-MMM-YYYY'):'N/A'));
+  pdf.text(20, 70, 'Accounts : ' + accounts.join(', '));
   pdf.text(20, 80, 'Data we are sharing on : ');
 
   const maxWidth = 140; // Maximum width of the text in the PDF
@@ -118,5 +118,5 @@ export function generatePDF(consent, applicationName, consentStatus) {
     // Adjust yPosition for the next category
     yPosition += contentLines.length * lineHeight + lineHeight;
   }
-  pdf.save("consent.pdf");
+  pdf.save("consent_" + consent.consentId + ".pdf");
 }
