@@ -92,7 +92,7 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
     private static final String USER_ID_KEY = "userId";
     private static final String STATUS_KEY = "status";
     private static final String EXPIRY_TIME_KEY = "expiryTime";
-    private static final ConcurrentLinkedDeque<String> publishedRequestUriKeyQueue = new ConcurrentLinkedDeque<>();
+    private static final ConcurrentLinkedDeque<String> publishedEventIdentifierQueue = new ConcurrentLinkedDeque<>();
 
     @Override
     public void processEvent(OBEvent obEvent) {
@@ -160,12 +160,13 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
 
             log.debug("Publishing consent data for authorisation metrics.");
             String consentId = (String) eventData.get(CONSENT_ID);
-            ConsentStatusEnum consentStatus = getConsentStatusForEventType(obEvent.getEventType());
-            AuthorisationFlowTypeEnum authFlowType = getAuthFlowTypeForEventType(obEvent.getEventType());
-            String requestUriKey = getRequestUriKeyFromConsentResource(consentResource, detailedConsentResource);
-            if (requestUriKey != null && publishedRequestUriKeyQueue.contains(requestUriKey)) {
+            String eventType = obEvent.getEventType();
+            ConsentStatusEnum consentStatus = getConsentStatusForEventType(eventType);
+            AuthorisationFlowTypeEnum authFlowType = getAuthFlowTypeForEventType(eventType);
+            String eventIdentifier = getEventIdentifier(consentResource, detailedConsentResource, eventType);
+            if (eventIdentifier != null && publishedEventIdentifierQueue.contains(eventIdentifier)) {
                 if (log.isDebugEnabled()) {
-                    log.debug("Skipping authorisation data publishing for requestUriKey: " + requestUriKey +
+                    log.debug("Skipping authorisation data publishing for event identifier: " + eventIdentifier +
                             " as it has already been published.");
                 }
                 return;
@@ -190,7 +191,7 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
                     consentStatus, authFlowType, customerProfile, consentDurationType);
 
             dataPublishingService.publishAuthorisationData(authorisationData);
-            addToPublishedRequestUriKeyQueue(requestUriKey);
+            addToPublishedEventIdentifierQueue(eventIdentifier);
         }
 
     }
@@ -390,25 +391,25 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
     }
 
     /**
-     * Add the request uri key to the published data queue.
+     * Add the event identifier to the published data queue.
      * If the queue is full, oldest key is removed.
      * 20 keys are maintained in the queue to handle simultaneous consent state change events.
      *
-     * @param requestUriKey request uri key coming as a consent attribute
+     * @param eventIdentifier request uri key coming as a consent attribute + event type to identify a unique event.
      */
-    private void addToPublishedRequestUriKeyQueue(String requestUriKey) {
+    private void addToPublishedEventIdentifierQueue(String eventIdentifier) {
 
-        if (StringUtils.isBlank(requestUriKey)) {
+        if (StringUtils.isBlank(eventIdentifier)) {
             return;
         }
-        if (publishedRequestUriKeyQueue.size() >= 20) {
-            publishedRequestUriKeyQueue.pollFirst();
+        if (publishedEventIdentifierQueue.size() >= 20) {
+            publishedEventIdentifierQueue.pollFirst();
         }
-        publishedRequestUriKeyQueue.addLast(requestUriKey);
+        publishedEventIdentifierQueue.addLast(eventIdentifier);
     }
 
-    private String getRequestUriKeyFromConsentResource(ConsentResource consentResource,
-                                                       DetailedConsentResource detailedConsentResource) {
+    private String getEventIdentifier(ConsentResource consentResource, DetailedConsentResource detailedConsentResource,
+                                      String eventType) {
 
         Map<String, String> consentAttributes = null;
         if (consentResource != null) {
@@ -416,6 +417,6 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
         } else if (detailedConsentResource != null) {
             consentAttributes = detailedConsentResource.getConsentAttributes();
         }
-        return consentAttributes != null ? consentAttributes.get(REQUEST_URI_KEY) : null;
+        return consentAttributes != null ? (consentAttributes.get(REQUEST_URI_KEY) + ":" + eventType) : null;
     }
 }

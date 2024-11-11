@@ -27,7 +27,6 @@
             <class name="org.wso2.openbanking.cds.gateway.executors.core.CDSAPIRequestRouterTest"/>
             <class name="org.wso2.openbanking.cds.gateway.throttling.CDSThrottleDataPublisherImplTest"/>
             <class name="org.wso2.openbanking.cds.gateway.mediators.GatewayErrorMediatorTest"/>
-            <class name="org.wso2.openbanking.cds.gateway.handlers.InfoSecDataPublishingHandlerTest"/>
             <class name="org.wso2.openbanking.cds.gateway.executors.reporting.CDSCommonDataReportingExecutorTest"/>
             <class name="org.wso2.openbanking.cds.gateway.executors.header.validation.CDSHeaderValidationExecutorTest"/>
             <class name="org.wso2.openbanking.cds.gateway.executors.jwt.authentication.JWTAuthenticationExecutorTest"/>

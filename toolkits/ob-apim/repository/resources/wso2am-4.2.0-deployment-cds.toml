@@ -150,7 +150,6 @@ websub_event_receiver_http_endpoint = "http://APIM_HOSTNAME:9021"
 websub_event_receiver_https_endpoint = "https://APIM_HOSTNAME:8021"
 
 [apim.sync_runtime_artifacts.gateway]
-skip_list.apis = ["_AuthorizeAPI_.xml", "_TokenAPI_.xml", "_OIDCDiscoveryAPI_.xml", "_UserInfoAPI_.xml", "_RevokeAPI_.xml", "_IntrospectAPI_.xml", "_PARAPI_.xml"]
 skip_list.sequences = ["jsonConverter.xml"]
 gateway_labels =["Default"]
 
@@ -533,6 +532,24 @@ name = "org.wso2.openbanking.cds.gateway.executors.error.handler.CDSErrorHandler
 priority = 1000
 
 [[open_banking.gateway.openbanking_gateway_executors.type]]
+name = "CDSUnauthenticated"
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.idpermanence.IDPermanenceExecutor"
+priority = 1
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.header.validation.CDSHeaderValidationExecutor"
+priority = 2
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.common.reporting.data.executor.CommonReportingDataExecutor"
+priority = 3
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.reporting.CDSCommonDataReportingExecutor"
+priority = 4
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.error.handler.CDSErrorHandler"
+priority = 1000
+
+[[open_banking.gateway.openbanking_gateway_executors.type]]
 name = "CDSCommon"
 [[open_banking.gateway.openbanking_gateway_executors.type.executors]]
 name = "com.wso2.openbanking.accelerator.gateway.executor.impl.mtls.cert.validation.executor.MTLSEnforcementExecutor"
@@ -544,14 +561,20 @@ priority = 2
 name = "com.wso2.openbanking.accelerator.gateway.executor.impl.api.resource.access.validation.APIResourceAccessValidationExecutor"
 priority = 3
 [[open_banking.gateway.openbanking_gateway_executors.type.executors]]
-name = "org.wso2.openbanking.cds.gateway.executors.header.validation.CDSHeaderValidationExecutor"
+name = "org.wso2.openbanking.cds.gateway.executors.idpermanence.IDPermanenceExecutor"
 priority = 4
 [[open_banking.gateway.openbanking_gateway_executors.type.executors]]
-name = "com.wso2.openbanking.accelerator.gateway.executor.impl.common.reporting.data.executor.CommonReportingDataExecutor"
+name = "org.wso2.openbanking.cds.gateway.executors.header.validation.CDSHeaderValidationExecutor"
 priority = 5
 [[open_banking.gateway.openbanking_gateway_executors.type.executors]]
-name = "org.wso2.openbanking.cds.gateway.executors.reporting.CDSCommonDataReportingExecutor"
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.consent.ConsentEnforcementExecutor"
 priority = 6
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "com.wso2.openbanking.accelerator.gateway.executor.impl.common.reporting.data.executor.CommonReportingDataExecutor"
+priority = 7
+[[open_banking.gateway.openbanking_gateway_executors.type.executors]]
+name = "org.wso2.openbanking.cds.gateway.executors.reporting.CDSCommonDataReportingExecutor"
+priority = 8
 [[open_banking.gateway.openbanking_gateway_executors.type.executors]]
 name = "org.wso2.openbanking.cds.gateway.executors.error.handler.CDSErrorHandler"
 priority = 1000
@@ -643,7 +666,7 @@ type="int"
 [[open_banking.data_publishing.thrift.stream.attributes]]
 name="statusMessage"
 priority=7
-required=true
+required=false
 [[open_banking.data_publishing.thrift.stream.attributes]]
 name="httpMethod"
 priority=8

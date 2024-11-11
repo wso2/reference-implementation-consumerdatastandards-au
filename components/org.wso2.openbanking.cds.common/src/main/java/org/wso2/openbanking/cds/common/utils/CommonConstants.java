@@ -45,6 +45,8 @@ public class CommonConstants {
     public static final String VALIDATE_ACCOUNTS_ON_RETRIEVAL = "BNR.ValidateAccountsOnRetrieval";
     public static final String ENABLE_CONSENT_REVOCATION = "BNR.EnableConsentRevocation";
     public static final String CUSTOMER_TYPE_SELECTION_METHOD = "BNR.CustomerTypeSelectionMethod";
+    public static final String EXTERNAL_TRAFFIC_HEADER_NAME = "ExternalTraffic.HeaderName";
+    public static final String EXTERNAL_TRAFFIC_EXPECTED_VALUE = "ExternalTraffic.ExpectedValue";
 
     // Http related constants
     public static final String POST_METHOD = "POST";
@@ -113,6 +115,8 @@ public class CommonConstants {
 
     // Secondary user account config constants
     public static final String SECONDARY_USER_ACCOUNTS_ENABLED = "SecondaryUserAccounts.Enable";
+    public static final String SELECTABLE_WITHOUT_ACCOUNT_METADATA =
+            "SecondaryUserAccounts.SelectableWithoutAccountMetadata";
 
     // Disclosure Options Management config constants
     public static final String DISCLOSURE_OPTIONS_MANAGEMENT_ENABLED = "DisclosureOptionsManagement.Enable";

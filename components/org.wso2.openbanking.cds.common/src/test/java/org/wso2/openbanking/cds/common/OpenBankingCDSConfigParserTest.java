@@ -248,6 +248,13 @@ public class OpenBankingCDSConfigParserTest {
     }
 
     @Test(priority = 8)
+    public void testIsSecondaryAccountsSelectableWithoutAccountMetadata() {
+        String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
+        OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
+        Assert.assertFalse(openBankingCDSConfigParser.isSecondaryAccountsSelectableWithoutAccountMetadata());
+    }
+
+    @Test(priority = 8)
     public void testIsCeasingSecondaryUserSharingEnabled() {
         String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
         OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
@@ -287,6 +294,20 @@ public class OpenBankingCDSConfigParserTest {
         String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
         OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
         Assert.assertEquals(openBankingCDSConfigParser.getBNRCustomerTypeSelectionMethod(), "profile_selection");
+    }
+
+    @Test(priority = 8)
+    public void testGetExternalTrafficHeaderName() {
+        String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
+        OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
+        Assert.assertEquals(openBankingCDSConfigParser.getExternalTrafficHeaderName(), "X-External-Traffic");
+    }
+
+    @Test(priority = 8)
+    public void testGetExternalTrafficExpectedValue() {
+        String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
+        OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
+        Assert.assertEquals(openBankingCDSConfigParser.getExternalTrafficExpectedValue(), "true");
     }
 
     private void injectEnvironmentVariable(String key, String value)

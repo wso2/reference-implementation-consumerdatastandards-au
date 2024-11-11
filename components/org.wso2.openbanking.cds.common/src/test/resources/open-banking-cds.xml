@@ -89,9 +89,14 @@
     </BNR>
     <SecondaryUserAccounts>
         <Enable>true</Enable>
+        <SelectableWithoutAccountMetadata>false</SelectableWithoutAccountMetadata>
         <CeasingSecondaryUserSharingEnabled>true</CeasingSecondaryUserSharingEnabled>
     </SecondaryUserAccounts>
     <DisclosureOptionsManagement>
         <Enable>true</Enable>
     </DisclosureOptionsManagement>
+    <ExternalTraffic>
+        <HeaderName>X-External-Traffic</HeaderName>
+        <ExpectedValue>true</ExpectedValue>
+    </ExternalTraffic>
 </Server>

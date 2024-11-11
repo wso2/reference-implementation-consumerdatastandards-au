@@ -334,8 +334,15 @@ public class CDSDataRetrievalUtil {
                 throw new ConsentException(ResponseStatus.INTERNAL_SERVER_ERROR, "Receipt is not a JSON object");
             }
             JSONObject receipt = (JSONObject) receiptJSON;
+            JSONArray permissionEnumsArray = new JSONArray();
             JSONObject accountData = (JSONObject) receipt.get(CDSConsentExtensionConstants.ACCOUNT_DATA);
-            return (JSONArray) accountData.get(CDSConsentExtensionConstants.PERMISSIONS);
+            JSONArray permissionNames = (JSONArray) accountData.get(CDSConsentExtensionConstants.PERMISSIONS);
+
+            for (Object permissionName : permissionNames) {
+                PermissionsEnum permissionEnum = PermissionsEnum.valueOf(permissionName.toString());
+                permissionEnumsArray.add(permissionEnum);
+            }
+            return permissionEnumsArray;
         } catch (ParseException e) {
             log.error(String.format("Exception occurred while parsing the consent receipt. %s", e.getMessage()));
             throw new ConsentException(ResponseStatus.INTERNAL_SERVER_ERROR,

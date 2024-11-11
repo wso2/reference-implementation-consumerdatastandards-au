@@ -671,6 +671,23 @@ public class OpenBankingCDSConfigParser {
     }
 
     /**
+     * Get secondary user accounts selectable without account metadata status.
+     * This indicates whether the secondary user accounts can be selected when there is no account metadata
+     * available for the given account and user combination.
+     *
+     * @return boolean
+     */
+    public boolean isSecondaryAccountsSelectableWithoutAccountMetadata() {
+
+        Object config = getConfigElementFromKey(CommonConstants.SELECTABLE_WITHOUT_ACCOUNT_METADATA);
+        if (config != null) {
+            return Boolean.parseBoolean((String) config);
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Get Disclosure Options Management enabled status.
      *
      * @return boolean
@@ -811,5 +828,27 @@ public class OpenBankingCDSConfigParser {
             }
         }
         return defaultValue;
+    }
+
+    /**
+     * Get external traffic header name.
+     * This header should be set by the load balancer to identify the external traffic.
+     *
+     * @return String
+     */
+    public String getExternalTrafficHeaderName() {
+
+        return ((String) getConfigElementFromKey(CommonConstants.EXTERNAL_TRAFFIC_HEADER_NAME)).trim();
+    }
+
+    /**
+     * Get external traffic expected header value.
+     * If this value is set in the header identified by the header name, the traffic is considered as external.
+     *
+     * @return String
+     */
+    public String getExternalTrafficExpectedValue() {
+
+        return ((String) getConfigElementFromKey(CommonConstants.EXTERNAL_TRAFFIC_EXPECTED_VALUE)).trim();
     }
 }

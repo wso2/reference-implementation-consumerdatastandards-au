@@ -91,24 +91,34 @@ public class GatewayConstants {
     public static final String WELL_KNOWN_API = "WellKnownAPI";
     public static final String PAR_API = "PARAPI";
 
-    public static final String TOKEN_ENDPOINT = "/token";
-    public static final String AUTHORIZE_ENDPOINT = "/authorize";
-    public static final String JWKS_ENDPOINT = "/jwks";
-    public static final String USERINFO_ENDPOINT = "/userinfo";
-    public static final String REVOKE_ENDPOINT = "/revoke";
-    public static final String INTROSPECTION_ENDPOINT = "/token/introspect";
-    public static final String PAR_ENDPOINT = "/par";
-    public static final String WELL_KNOWN_ENDPOINT = "/.well-known/openid-configuration";
+    public static final String TOKEN_ENDPOINT = "/oauth2/token";
+    public static final String AUTHORIZE_ENDPOINT = "/oauth2/authorize";
+    public static final String JWKS_ENDPOINT = "/oauth2/jwks";
+    public static final String USERINFO_ENDPOINT = "/oauth2/userinfo";
+    public static final String REVOKE_ENDPOINT = "/oauth2/revoke";
+    public static final String INTROSPECTION_ENDPOINT = "/oauth2/introspect";
+    public static final String PAR_ENDPOINT = "/api/openbanking/push-authorization/par";
+    public static final String WELL_KNOWN_ENDPOINT = "/oauth2/token/.well-known/openid-configuration";
     public static final String REGISTER_ENDPOINT = "/register";
     public static final String REGISTER_CLIENT_ID_ENDPOINT = "/register/{ClientId}";
-    public static final String CDR_ARRANGEMENT_ENDPOINT = "/{cdrArrangementId}";
+    public static final String CDR_ARRANGEMENT_ENDPOINT = "/arrangements/1.0.0";
     public static final String DISCOVERY_OUTAGES_ENDPOINT = "/discovery/outages";
     public static final String DISCOVERY_STATUS_ENDPOINT = "/discovery/status";
+    public static final String PRODUCTS_ENDPOINT = "/banking/products";
+    public static final String PRODUCT_DETAILS_ENDPOINT = "/banking/products/{productId}";
+    public static final String COMMON_CUSTOMER_ENDPOINT = "/common/customer";
+    public static final String COMMON_CUSTOMER_DETAIL_ENDPOINT = "/common/customer/detail";
 
     public static final List<String> INFOSEC_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(AUTHORIZE_ENDPOINT,
             TOKEN_ENDPOINT, USERINFO_ENDPOINT, PAR_ENDPOINT, INTROSPECTION_ENDPOINT, JWKS_ENDPOINT, REVOKE_ENDPOINT,
             REGISTER_ENDPOINT, REGISTER_CLIENT_ID_ENDPOINT, WELL_KNOWN_ENDPOINT, CDR_ARRANGEMENT_ENDPOINT,
             DISCOVERY_OUTAGES_ENDPOINT, DISCOVERY_STATUS_ENDPOINT));
+
+    public static final List<String> UNAUTHENTICATED_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(
+            PRODUCTS_ENDPOINT, PRODUCT_DETAILS_ENDPOINT, DISCOVERY_STATUS_ENDPOINT, DISCOVERY_OUTAGES_ENDPOINT));
+
+    public static final List<String> COMMON_ENDPOINTS = Collections.unmodifiableList(Arrays.asList(
+            COMMON_CUSTOMER_ENDPOINT, COMMON_CUSTOMER_DETAIL_ENDPOINT));
 
     public static final String UNKNOWN = "Unknown";
     public static final String CLIENT_USER_AGENT = "User-Agent";

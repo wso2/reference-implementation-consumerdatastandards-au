@@ -173,7 +173,7 @@ allowed_scopes = ["OB.*", "profile"]
 renew_refresh_token = false
 
 [oauth.endpoints]
-oauth2_token_url = "${carbon.protocol}://APIM_HOSTNAME:8243/token"
+oauth2_token_url = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/oauth2/token"
 oauth2_consent_page = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/ob/authenticationendpoint/oauth2_authz.do"
 oidc_consent_page = "${carbon.protocol}://IS_HOSTNAME:${carbon.management.port}/ob/authenticationendpoint/oauth2_consent.do"
 
@@ -203,7 +203,7 @@ order = 1
 [event_listener.properties]
 PreventTokenReuse= false
 RejectBeforeInMinutes= "100"
-TokenEndpointAlias= "https://APIM_HOSTNAME:8243/token"
+TokenEndpointAlias= "https://IS_HOSTNAME:9446/oauth2/token"
 notification_endpoint = "https://APIM_HOSTNAME:9443/internal/data/v1/notify"
 username = "${admin.username}"
 password = "${admin.password}"
@@ -231,7 +231,7 @@ order = "894"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://APIM_HOSTNAME:8243/token/introspect"
+EndpointAlias = "https://IS_HOSTNAME:9446/oauth2/introspect"
 
 [[event_listener]]
 id = "cds_par_private_key_jwt_authenticator"
@@ -241,7 +241,7 @@ order = "895"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://APIM_HOSTNAME:8243/par"
+EndpointAlias = "https://IS_HOSTNAME:9446/api/openbanking/push-authorization/par"
 
 [[event_listener]]
 id = "cds_revoke_private_key_jwt_authenticator"
@@ -251,7 +251,7 @@ order = "896"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://APIM_HOSTNAME:8243/revoke"
+EndpointAlias = "https://IS_HOSTNAME:9446/oauth2/revoke"
 
 [[event_listener]]
 id = "cds_arrangement_private_key_jwt_authenticator"
@@ -261,7 +261,7 @@ order = "897"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://APIM_HOSTNAME:8243/arrangements/1.0.0"
+EndpointAlias = "https://IS_HOSTNAME:8243/arrangements/1.0.0"
 
 [[event_listener]]
 id = "cds_token_private_key_jwt_authenticator"
@@ -271,7 +271,7 @@ order = "898"
 enable = true
 
 [event_listener.properties]
-EndpointAlias = "https://APIM_HOSTNAME:8243/token"
+EndpointAlias = "https://IS_HOSTNAME:9446/oauth2/token"
 
 [[event_listener]]
 id = "private_key_jwt_authenticator"
@@ -294,8 +294,15 @@ name = "org.wso2.openbanking.cds.identity.listener.CDSTokenIntrospectionListener
 order = "901"
 enable = true
 
+[[event_listener]]
+id = "ob_private_key_jwt_authenticator"
+type = "org.wso2.carbon.identity.core.handler.AbstractIdentityHandler"
+name = "com.wso2.openbanking.accelerator.identity.clientauth.jwt.OBPrivateKeyJWTClientAuthenticator"
+order = "902"
+enable = false
+
 [event_listener.properties]
-EndpointAlias = "https://APIM_HOSTNAME:8243/token/introspect"
+EndpointAlias = "https://IS_HOSTNAME:9446/oauth2/introspect"
 
 [oauth.grant_type]
 iwa_ntlm.enable = false
@@ -539,7 +546,7 @@ step = 2
 allowed_values = ["authorization_code", "refresh_token", "client_credentials"]
 
 [open_banking.dcr.registration.audience]
-allowed_values = ["https://APIM_HOSTNAME:8243/token"]
+allowed_values = ["https://IS_HOSTNAME:9446/oauth2/token"]
 
 [open_banking.dcr.registration.token_endpoint_authentication]
 allowed_values = ["private_key_jwt"]
@@ -605,7 +612,7 @@ type="int"
 [[open_banking.data_publishing.thrift.stream.attributes]]
 name="statusMessage"
 priority=7
-required=true
+required=false
 [[open_banking.data_publishing.thrift.stream.attributes]]
 name="httpMethod"
 priority=8
@@ -740,6 +747,46 @@ required=true
 type="long"
 
 #================custom filters and filter-mappings==============
+[[tomcat.filter]]
+name = "InfoSecDataPublishingFilter"
+class = "org.wso2.openbanking.cds.identity.filter.InfoSecDataPublishingFilter"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/token"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/.well-known/openid-configuration"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/userinfo"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/revoke"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/introspect"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/jwks"
+
+[[tomcat.filter_mapping]]
+name = "InfoSecDataPublishingFilter"
+url_pattern = "/par"
+
+[[tomcat.filter]]
+name = "AuthorizeDataPublishingFilter"
+class = "org.wso2.openbanking.cds.identity.filter.AuthorizeDataPublishingFilter"
+
+[[tomcat.filter_mapping]]
+name = "AuthorizeDataPublishingFilter"
+url_pattern = "/authorize"
+
 [[tomcat.filter]]
 name = "TokenFilter"
 class = "com.wso2.openbanking.accelerator.identity.token.TokenFilter"
@@ -914,6 +961,7 @@ validate_accounts_on_retrieval=true
 
 [open_banking_cds.secondary_user_accounts]
 enable = true
+selectable_without_account_metadata = false
 ceasing_secondary_user_sharing_enable = true
 
 [open_banking_cds.disclosure_options_management]
@@ -923,3 +971,7 @@ enable = true
 server_url = "https://BI_HOSTNAME:7444"
 username = "$ref{super_admin.username}@carbon.super"
 password = "$ref{super_admin.password}"
+
+[open_banking_cds.external_traffic]
+header_name = "X-External-Traffic"
+expected_value = "true"
