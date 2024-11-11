@@ -23,7 +23,7 @@ export const specConfigurations = {
   status: {
     authorised: 'authorized',
     expired: 'Expired',
-    revoked: 'revoked',
+    revoked: 'Revoked',
   },
   consent: {
     // if consent is in `authorised` state, `expirationTimeAttribute` parameter from consent data
