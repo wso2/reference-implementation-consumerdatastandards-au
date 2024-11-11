@@ -112,25 +112,25 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'Consent granted date:',
+        title: 'Consent granted date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Consent expiration date:',
+        title: 'Consent expiration date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'validityPeriod',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Sharing period:',
+        title: 'Sharing period : ',
         type: keyDateTypes.dateRange,
         dateParameterKey: 'createdTimestamp,validityPeriod',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Data sharing:',
+        title: 'Data sharing : ',
         type: keyDateTypes.value,
         valueParameterKey: 'consentAttributes.sharing_duration_value'
       },
@@ -189,13 +189,13 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'When you gave consent',
+        title: 'Consent granted date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'When consent was expired',
+        title: 'Consent expired date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'consentAttributes.ExpirationDateTime',
         dateFormat: 'DD MMM YYYY',
@@ -256,13 +256,13 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'When you gave consent',
+        title: 'Consent granted date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'You cancelled your consent on',
+        title: 'Consent revoked date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'updatedTimestamp',
         dateFormat: 'DD MMM YYYY',

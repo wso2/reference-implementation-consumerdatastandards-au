@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 import moment from 'moment'
 import jsPDF from "jspdf";
 import { specConfigurations } from '../specConfigs/specConfigurations.js';
@@ -51,9 +52,11 @@ export const getTimeStamp = (timestamp) => {
 export function generatePDF(consent, applicationName, consentStatus) {
 
   const pdf = new jsPDF(consentPdfProperties.orientation, consentPdfProperties.measurement, consentPdfProperties.size);
-  pdf.setFontSize(11);
+  pdf.setFontSize(consentPdfProperties.fontSize);
   pdf.rect(10, 10, 190, 275);
 
+  const keyDateTitles = document.getElementsByClassName('keyDateTitle');
+  const keyDateValues = document.getElementsByClassName('keyDateValue');
   const permissionCategories = document.getElementsByClassName('clusterLabelText');
   const permissions = document.getElementsByClassName('permissionsUL');
   const accountIDs = document.getElementsByClassName('permittedAccount');
@@ -82,17 +85,26 @@ export function generatePDF(consent, applicationName, consentStatus) {
   } catch (e) {
   }
 
-  pdf.text(20, 20, 'Consent ID : ' + consent.consentId);
-  pdf.text(20, 30, 'Status : ' + consentStatus);
-  pdf.text(20, 40, 'API Consumer Application : ' + applicationName);
-  pdf.text(20, 50, 'Creation date : ' + moment(new Date((consent.createdTimestamp) * 1000)).format('DD-MMM-YYYY'));
-  pdf.text(20, 60, 'Expiration date : ' + ((consent.validityPeriod !== 0)?moment(new Date((consent.validityPeriod) * 1000)).format('DD-MMM-YYYY'):'N/A'));
-  pdf.text(20, 70, 'Accounts : ' + accounts.join(', '));
-  pdf.text(20, 80, 'Data we are sharing on : ');
+  let x = 20;
+  let y = 20;
+
+  pdf.text(x, y, 'Consent ID : ' + consent.consentId);
+  y += 10;
+  pdf.text(x, y, 'Status : ' + consentStatus);
+  y += 10;
+  pdf.text(x, y, 'API Consumer Application : ' + applicationName);
+  y += 10;
+  for (let i = 0; i < keyDateTitles.length; i++) {
+    pdf.text(x, y, keyDateTitles[i].innerHTML + ' ' + keyDateValues[i].innerHTML);
+    y += 10;
+  }
+  pdf.text(x, y, 'Accounts : ' + accounts.join(', '));
+  y += 10;
+  pdf.text(x, y, 'Data we are sharing on : ');
+  y += 10;
 
   const maxWidth = 140; // Maximum width of the text in the PDF
   const lineHeight = 5; // Height between lines
-  let yPosition = 90; // Initial y position
 
   for (let i = 0; i < contents.length; i++) {
     const categoryText = permissionCategories[i].innerHTML + ' :';
@@ -104,19 +116,19 @@ export function generatePDF(consent, applicationName, consentStatus) {
 
     // Add each line of the category text
     categoryLines.forEach((line, index) => {
-      pdf.text(30, yPosition + (index * lineHeight), line);
+      pdf.text(30, y + (index * lineHeight), line);
     });
 
     // Adjust yPosition for the content text
-    yPosition += categoryLines.length * lineHeight;
+    y += categoryLines.length * lineHeight;
 
     // Add each line of the content text
     contentLines.forEach((line, index) => {
-      pdf.text(40, yPosition + (index * lineHeight), line);
+      pdf.text(40, y + (index * lineHeight), line);
     });
 
     // Adjust yPosition for the next category
-    yPosition += contentLines.length * lineHeight + lineHeight;
+    y += contentLines.length * lineHeight + lineHeight;
   }
   pdf.save("consent_" + consent.consentId + ".pdf");
 }
