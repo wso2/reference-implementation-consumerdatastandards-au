@@ -98,8 +98,10 @@ export function generatePDF(consent, applicationName, consentStatus) {
     pdf.text(x, y, keyDateTitles[i].innerHTML + ' ' + keyDateValues[i].innerHTML);
     y += 10;
   }
-  pdf.text(x, y, 'Accounts : ' + accounts.join(', '));
-  y += 10;
+  if (accounts.length > 0) {
+    pdf.text(x, y, 'Accounts : ' + accounts.join(', '));
+    y += 10;
+  }
   pdf.text(x, y, 'Data we are sharing on : ');
   y += 10;
 
