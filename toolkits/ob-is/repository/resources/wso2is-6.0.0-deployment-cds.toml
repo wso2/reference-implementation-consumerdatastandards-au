@@ -542,6 +542,15 @@ display = "ob-identifier-first"
 name = "SMSAuthentication"
 step = 2
 
+[open_banking.dcr.registration.iat]
+required = true
+
+[open_banking.dcr.registration.exp]
+required = true
+
+[open_banking.dcr.registration.jti]
+required = true
+
 [open_banking.dcr.registration.grant_types]
 allowed_values = ["authorization_code", "refresh_token", "client_credentials"]
 

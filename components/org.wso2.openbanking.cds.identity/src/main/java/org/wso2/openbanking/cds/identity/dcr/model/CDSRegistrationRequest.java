@@ -64,6 +64,24 @@ public class CDSRegistrationRequest extends RegistrationRequest {
     }
 
     @Override
+    public String getJti() {
+
+        return registrationRequest.getJti();
+    }
+
+    @Override
+    public String getIat() {
+
+        return registrationRequest.getIat();
+    }
+
+    @Override
+    public String getExp() {
+
+        return registrationRequest.getExp();
+    }
+
+    @Override
     public String getTokenEndPointAuthentication() {
 
         return registrationRequest.getTokenEndPointAuthentication();
