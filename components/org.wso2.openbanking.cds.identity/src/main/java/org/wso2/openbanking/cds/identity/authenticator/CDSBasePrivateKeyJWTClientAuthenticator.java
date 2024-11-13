@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.oauth2.client.authentication.OAuthClientAuthnExc
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.openbanking.cds.identity.authenticator.util.CDSJWTValidator;
 import org.wso2.openbanking.cds.identity.authenticator.util.Constants;
+import org.wso2.openbanking.cds.identity.dcr.constants.CDSValidationConstants;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -182,13 +183,7 @@ public class CDSBasePrivateKeyJWTClientAuthenticator extends AbstractOAuthClient
 
     private List<String> populateMandatoryClaims() {
 
-        List<String> mandatoryClaims = new ArrayList<>();
-        mandatoryClaims.add(Constants.ISSUER_CLAIM);
-        mandatoryClaims.add(Constants.SUBJECT_CLAIM);
-        mandatoryClaims.add(Constants.AUDIENCE_CLAIM);
-        mandatoryClaims.add(Constants.EXPIRATION_TIME_CLAIM);
-        mandatoryClaims.add(Constants.JWT_ID_CLAIM);
-        return mandatoryClaims;
+        return CDSValidationConstants.MANDATORY_ASSERTION_PARAMS_LIST;
     }
 
     /**
