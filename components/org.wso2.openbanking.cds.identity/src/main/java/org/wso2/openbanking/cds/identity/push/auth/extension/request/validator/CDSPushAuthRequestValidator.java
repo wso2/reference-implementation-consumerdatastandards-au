@@ -76,7 +76,7 @@ public class CDSPushAuthRequestValidator extends PushAuthRequestValidator {
                         PushAuthRequestConstants.INVALID_REQUEST_OBJECT,
                         CDSIdentityConstants.INVALID_PUSH_AUTH_REQUEST);
             }
-            for (String key : CDSValidationConstants.MANDATORY_ASSERTION_PARAMS_LIST) {
+            for (String key : CDSIdentityConstants.MANDATORY_ASSERTION_PARAMS_LIST) {
                 if (!assertionClaims.containsKey(key)) {
                     throw new PushAuthRequestValidatorException(HttpStatus.SC_BAD_REQUEST,
                             PushAuthRequestConstants.INVALID_REQUEST, "Mandatory field :" + key

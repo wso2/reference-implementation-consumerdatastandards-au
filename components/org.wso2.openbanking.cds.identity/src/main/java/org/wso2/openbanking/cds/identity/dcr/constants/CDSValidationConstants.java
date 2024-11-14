@@ -17,8 +17,6 @@
  */
 package org.wso2.openbanking.cds.identity.dcr.constants;
 
-import org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt.Constants;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -56,6 +54,4 @@ public class CDSValidationConstants {
     public static final String DCR_VALIDATE_SECTOR_IDENTIFIER_URI = "DCR.EnableSectorIdentifierUriValidation";
     public static final String JTI = "jti";
     public static final String JTI_REPLAYED = "JTI value of the registration request has been replayed";
-    public static final List<String> MANDATORY_ASSERTION_PARAMS_LIST = List.of(Constants.ISSUER_CLAIM,
-            Constants.SUBJECT_CLAIM, Constants.AUDIENCE_CLAIM, Constants.EXPIRATION_TIME_CLAIM, Constants.JWT_ID_CLAIM);
 }
