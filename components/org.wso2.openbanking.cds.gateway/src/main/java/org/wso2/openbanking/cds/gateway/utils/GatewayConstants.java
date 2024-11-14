@@ -139,7 +139,6 @@ public class GatewayConstants {
     public static final String CLIENT_ID = "client_id";
     public static final String ENDPOINT_ADDRESS = "ENDPOINT_ADDRESS";
 
-
     // Constants related to executors
     public static final String HTTP_GET = "GET";
     public static final String HTTP_POST = "POST";
