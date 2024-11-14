@@ -137,6 +137,8 @@ public class GatewayConstants {
     public static final String REST_METHOD = "REST_METHOD";
     public static final String OAUTH_JWT_ASSERTION = "client_assertion";
     public static final String CLIENT_ID = "client_id";
+    public static final String ENDPOINT_ADDRESS = "ENDPOINT_ADDRESS";
+
 
     // Constants related to executors
     public static final String HTTP_GET = "GET";
