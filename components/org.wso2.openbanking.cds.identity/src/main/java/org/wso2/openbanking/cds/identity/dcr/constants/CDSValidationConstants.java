@@ -35,7 +35,6 @@ public class CDSValidationConstants {
     public static final String SSA_POLICY_URI = "policy_uri";
     public static final String SSA_TOS_URI = "tos_uri";
     public static final String SSA_CLIENT_URI = "client_uri";
-    public static final String CLIENT_ASSERTION = "client_assertion";
     public static final String DATA_RECIPIENT_SOFTWARE_PRODUCT = "data-recipient-software-product";
     public static final List<String> VALID_SSA_SCOPES = Collections.unmodifiableList(Arrays.asList(
             "openid", "profile", "bank:accounts.basic:read", "bank:accounts.detail:read", "bank:transactions:read",

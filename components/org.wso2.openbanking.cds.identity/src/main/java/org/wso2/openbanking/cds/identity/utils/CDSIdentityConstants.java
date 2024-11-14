@@ -48,5 +48,6 @@ public class CDSIdentityConstants {
     public static final String SESSION_DATA_KEY_PARAMETER = "sessionDataKey";
     public static final List<String> MANDATORY_ASSERTION_PARAMS_LIST = List.of(Constants.ISSUER_CLAIM,
             Constants.SUBJECT_CLAIM, Constants.AUDIENCE_CLAIM, Constants.EXPIRATION_TIME_CLAIM, Constants.JWT_ID_CLAIM);
+    public static final String CLIENT_ASSERTION = "client_assertion";
 
 }

@@ -30,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
-import org.wso2.openbanking.cds.identity.dcr.constants.CDSValidationConstants;
 import org.wso2.openbanking.cds.identity.utils.CDSIdentityConstants;
 
 import java.text.ParseException;
@@ -65,11 +64,11 @@ public class CDSPushAuthRequestValidator extends PushAuthRequestValidator {
     public void validateAdditionalParams(Map<String, Object> parameters) throws PushAuthRequestValidatorException {
 
         // Validate client assertion
-        if (parameters.containsKey(CDSValidationConstants.CLIENT_ASSERTION)) {
+        if (parameters.containsKey(CDSIdentityConstants.CLIENT_ASSERTION)) {
             JSONObject assertionClaims;
             try {
                 assertionClaims = JWTUtils.decodeRequestJWT(parameters
-                        .get(CDSValidationConstants.CLIENT_ASSERTION).toString(), "body");
+                        .get(CDSIdentityConstants.CLIENT_ASSERTION).toString(), "body");
             } catch (ParseException e) {
                 log.error("Error while parsing JWT assertion", e);
                 throw new PushAuthRequestValidatorException(HttpStatus.SC_BAD_REQUEST,
