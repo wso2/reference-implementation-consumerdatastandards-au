@@ -82,6 +82,9 @@ public class GatewayErrorMediator extends AbstractMediator {
 
         // Error handling logic.
         JSONObject errorData;
+        String statusCodeString = extractStatusCode(messageContext);
+        int statusCode = Integer.parseInt(statusCodeString);
+
         if ((messageContext.getProperty(GatewayConstants.ERROR_CODE)) != null) {
 
             int errorCode = (int) messageContext.getProperty(GatewayConstants.ERROR_CODE);
@@ -109,12 +112,14 @@ public class GatewayErrorMediator extends AbstractMediator {
             // Assume the errors thrown from the relevant internal webapps of these APIs are
             // already formatted according to the CDS format
             return true;
+        } else if (messageContext.getProperty(GatewayConstants.ENDPOINT_ADDRESS) != null &&
+                statusCode != HttpStatus.SC_REQUEST_TIMEOUT) {
+            // Assume the errors coming from the backend are properly formatted.
+            return true;
         } else {
-            String statusCodeString = extractStatusCode(messageContext);
             if (StringUtils.isBlank(statusCodeString)) {
                 return true;
             }
-            int statusCode = Integer.parseInt(statusCodeString);
             ErrorConstants.AUErrorEnum errorEnum;
             if ("406".equals(statusCodeString)) {
                 errorEnum = ErrorConstants.AUErrorEnum.INVALID_ACCEPT_HEADER;
