@@ -19,6 +19,7 @@
 package org.wso2.openbanking.cds.identity.push.auth.extension.request.validator;
 
 import com.wso2.openbanking.accelerator.common.exception.ConsentManagementException;
+import com.wso2.openbanking.accelerator.common.util.JWTUtils;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.models.DetailedConsentResource;
 import com.wso2.openbanking.accelerator.consent.mgt.service.impl.ConsentCoreServiceImpl;
 import com.wso2.openbanking.accelerator.identity.push.auth.extension.request.validator.PushAuthRequestValidator;
@@ -31,6 +32,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpStatus;
 import org.wso2.openbanking.cds.identity.utils.CDSIdentityConstants;
 
+import java.text.ParseException;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Map;
@@ -60,6 +62,27 @@ public class CDSPushAuthRequestValidator extends PushAuthRequestValidator {
 
     @Override
     public void validateAdditionalParams(Map<String, Object> parameters) throws PushAuthRequestValidatorException {
+
+        // Validate client assertion
+        if (parameters.containsKey(CDSIdentityConstants.CLIENT_ASSERTION)) {
+            JSONObject assertionClaims;
+            try {
+                assertionClaims = JWTUtils.decodeRequestJWT(parameters
+                        .get(CDSIdentityConstants.CLIENT_ASSERTION).toString(), "body");
+            } catch (ParseException e) {
+                log.error("Error while parsing JWT assertion", e);
+                throw new PushAuthRequestValidatorException(HttpStatus.SC_BAD_REQUEST,
+                        PushAuthRequestConstants.INVALID_REQUEST_OBJECT,
+                        CDSIdentityConstants.INVALID_PUSH_AUTH_REQUEST);
+            }
+            for (String key : CDSIdentityConstants.MANDATORY_ASSERTION_PARAMS_LIST) {
+                if (!assertionClaims.containsKey(key)) {
+                    throw new PushAuthRequestValidatorException(HttpStatus.SC_BAD_REQUEST,
+                            PushAuthRequestConstants.INVALID_REQUEST, "Mandatory field :" + key
+                            + " is missing in the JWT assertion.");
+                }
+            }
+        }
 
         JSONObject requestObjectJsonBody;
         if (parameters.containsKey(PushAuthRequestConstants.DECODED_JWT_BODY) &&
