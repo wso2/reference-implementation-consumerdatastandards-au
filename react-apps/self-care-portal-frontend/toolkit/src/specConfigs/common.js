@@ -93,7 +93,8 @@ export const consentTypes = [
 ];
 
 export const consentPdfProperties = {
-  orientation: 'p',
-  measurement: 'mm',
-  pageSize: 'a4'
+  orientation: "p",
+  measurement: "mm",
+  pageSize: "a4",
+  fontSize: "11"
 };
