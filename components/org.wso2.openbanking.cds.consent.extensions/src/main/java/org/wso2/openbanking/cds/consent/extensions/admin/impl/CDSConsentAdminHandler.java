@@ -164,12 +164,6 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                     "not available");
         }
 
-        if (StringUtils.isBlank(userID)) {
-            log.error("Request missing the mandatory query parameter userID");
-            throw new ConsentException(ResponseStatus.BAD_REQUEST, "Mandatory query parameter userID " +
-                    "not available");
-        }
-
         int count, amendmentCount = 0;
 
         try {
@@ -178,7 +172,8 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
 
             DetailedConsentResource currentConsentResource = this.consentCoreService.getDetailedConsent(consentID);
 
-            if (isActionByPrimaryUser(currentConsentResource, userID)) {
+            // userID is null when the request comes from a user with CustomerCareOfficer role in consent manager.
+            if (userID == null || isActionByPrimaryUser(currentConsentResource, userID)) {
 
                 JSONArray consentHistory = new JSONArray();
                 for (Map.Entry<String, ConsentHistoryResource> result : results.entrySet()) {
@@ -188,7 +183,7 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                             consentHistoryResource.getDetailedConsentResource();
                     consentResourceJSON.appendField("historyId", result.getKey());
                     consentResourceJSON.appendField("amendedReason", consentHistoryResource.getReason());
-                    consentResourceJSON.appendField("amendedTime", detailedConsentResource.getUpdatedTime());
+                    consentResourceJSON.appendField("amendedTime", consentHistoryResource.getTimestamp());
                     consentResourceJSON.appendField("previousConsentData",
                             this.detailedConsentToJSON(detailedConsentResource));
                     consentHistory.add(consentResourceJSON);
@@ -285,6 +280,14 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
             }
 
             this.consentCoreService.deactivateAccountMappings(mappingIds);
+
+            if (mappingIds.size() == consentMappings.size()) {
+                // If all the mappings are being deactivated, revoke the consent
+                this.consentCoreService.revokeConsentWithReason(detailedConsentResource.getConsentID(),
+                        CONSENT_STATUS_REVOKED, null, ConsentCoreServiceConstants.CONSENT_REVOKE_FROM_DASHBOARD_REASON);
+                log.info(String.format("Consent %s revoked as all the mappings are being deactivated",
+                        detailedConsentResource.getConsentID()));
+            }
         }
         //store joint account withdrawal from the consent to consent amendment history
         this.storeJointAccountWithdrawalHistory(detailedConsentResource);
@@ -296,12 +299,15 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
         String consentID = detailedConsentResource.getConsentID();
         this.consentCoreService.revokeConsentWithReason(consentID, CONSENT_STATUS_REVOKED, null,
                 ConsentCoreServiceConstants.CONSENT_REVOKE_FROM_DASHBOARD_REASON);
-        // revoke access tokens
-        try {
-            consentCoreService.revokeTokens(detailedConsentResource, userId);
-        } catch (IdentityOAuth2Exception e) {
-            log.error(String.format("Error occurred while revoking tokens. Only the consent was revoked " +
-                    "successfully. %s", e.getMessage()));
+        // revoke access tokens if the user is not null. User can be null if the consent is revoked by a user with
+        // CustomerCareOfficer role in consent manager.
+        if (userId != null) {
+            try {
+                consentCoreService.revokeTokens(detailedConsentResource, userId);
+            } catch (IdentityOAuth2Exception e) {
+                log.error(String.format("Error occurred while revoking tokens. Only the consent was revoked " +
+                        "successfully. %s", e.getMessage()));
+            }
         }
     }
 

@@ -17,8 +17,7 @@
  */
 
 export const common = {
-  footerContent: 'WSO2 Open Banking | ' + new Date().getFullYear(),
-  complaintHandleLinkText: 'Complaint handling and resolution',
+  footerContent: 'WSO2 Open Banking Solution | ' + new Date().getFullYear()
 };
 
 export const keyDateTypes = {
@@ -54,7 +53,7 @@ export const dataTypes = {
   // To indicate the dataType is a ISO 8601 date
   timestamp: 'DATE_TIMESTAMP',
   // To Display date in 'YYYY-MM-DD' format and time in 'hh:mm A' format
-  daysHours: 'YYYY-MM-DD hh:mm A',
+  daysHours: 'YYYY-MM-DD hh:mm:ss A',
 };
 
 export const keyValues = {
@@ -92,3 +91,10 @@ export const consentTypes = [
     image: require('../../../accelerator/src/images/accounts.png'),
   },
 ];
+
+export const consentPdfProperties = {
+  orientation: "p",
+  measurement: "mm",
+  pageSize: "a4",
+  fontSize: "11"
+};

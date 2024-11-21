@@ -27,7 +27,9 @@ import { getUserId } from '../services/cdsUtils.js';
  */
 export const getConsentHistoryFromAPI = (consentId, user) => {
   const userId = getUserId(user);
-  const consentHistoryUrl = `${CONFIG.BACKEND_URL}/admin/consent-amendment-history?cdrArrangementID=${consentId}&userID=${userId}`;
+  const consentHistoryAdminUrl = `${CONFIG.BACKEND_URL}/admin/consent-amendment-history?cdrArrangementID=${consentId}`;
+  const consentHistoryDefaultUrl = `${CONFIG.BACKEND_URL}/admin/consent-amendment-history?cdrArrangementID=${consentId}&userID=${userId}`;
+  const consentHistoryUrl = (user.role === "customerCareOfficer") ? consentHistoryAdminUrl : consentHistoryDefaultUrl;
 
   const requestConfig = {
     headers: {

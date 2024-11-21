@@ -24,12 +24,11 @@ export const Accreditation = ({ infoLabel, dataRecipientName, applicationName })
     <>
       <h6>{infoLabel.accreditation.accreditationLabel}</h6>
       <p>
-        {dataRecipientName} {infoLabel.accreditation.accreditWebsite} [
+        {dataRecipientName} {infoLabel.accreditation.accreditWebsite}
         <a href={infoLabel.accreditation.accreditWebsiteLink} target="_blank" rel="noreferrer">
-          {/* add website link */}
           {infoLabel.accreditation.accreditWebsiteLinkText}
         </a>
-        ]
+        .
       </p>
       <div className="accredBox">
         <img id="logo" src={CDRLogo} alt="CDR" />
