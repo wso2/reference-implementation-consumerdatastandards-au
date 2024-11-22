@@ -29,9 +29,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.common.utils.CommonConstants;
+import org.wso2.openbanking.cds.consent.extensions.authorize.utils.CustomerTypeSelectionMethodEnum;
 import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 import org.wso2.openbanking.cds.consent.extensions.util.CDSConsentExtensionsUtil;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -90,6 +94,39 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
             httpServletRequest.setAttribute(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID,
                     dataSet.get(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID));
             preSelectedProfileId = (String) dataSet.get(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID);
+        }
+
+        // Get Customer Type Selection Method from config
+        String customerTypeSelectionMethod = OpenBankingCDSConfigParser.getInstance()
+                .getBNRCustomerTypeSelectionMethod();
+        String customerTypeCookieName = OpenBankingCDSConfigParser.getInstance()
+                .getBNRCustomerTypeSelectionCookieName();
+        if (CustomerTypeSelectionMethodEnum.COOKIE_DATA.toString().equals(customerTypeSelectionMethod)) {
+            String preSelectedProfileIdFromCookie = null;
+
+            Cookie[] cookies = httpServletRequest.getCookies();
+            for (Cookie cookie : cookies) {
+                if (customerTypeCookieName.equalsIgnoreCase(cookie.getName())) {
+                    preSelectedProfileIdFromCookie = cookie.getValue();
+                    break;
+                }
+            }
+
+            if (StringUtils.isNotBlank(preSelectedProfileIdFromCookie)) {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Retrieved customer profile %s from cookie.",
+                            preSelectedProfileIdFromCookie));
+                }
+
+                // Setting profile ID as a request attribute when profile selection data is sent using cookies
+                try {
+                    httpServletRequest.setAttribute(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID,
+                            URLEncoder.encode(preSelectedProfileIdFromCookie, "UTF-8"));
+                    preSelectedProfileId = preSelectedProfileIdFromCookie;
+                } catch (UnsupportedEncodingException e) {
+                    log.error("Unable to encode the profile selection cookie value", e);
+                }
+            }
         }
 
         //Consent amendment flow

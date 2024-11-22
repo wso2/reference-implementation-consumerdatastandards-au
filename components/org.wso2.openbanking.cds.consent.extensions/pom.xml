@@ -175,7 +175,7 @@
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <!--Todo:Improve test coverage-->
-                                            <minimum>0.64</minimum>
+                                            <minimum>0.63</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

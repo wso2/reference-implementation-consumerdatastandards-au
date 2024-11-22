@@ -656,6 +656,17 @@ public class OpenBankingCDSConfigParser {
     }
 
     /**
+     * Get the customer type selection cookie name for cookie_data method.
+     *
+     * @return configured value
+     */
+    public String getBNRCustomerTypeSelectionCookieName() {
+
+        return getConfigElementFromKey(CommonConstants.CUSTOMER_TYPE_SELECTION_COOKIE_NAME) == null ? "" :
+                ((String) getConfigElementFromKey(CommonConstants.CUSTOMER_TYPE_SELECTION_COOKIE_NAME)).trim();
+    }
+
+    /**
      * Get secondary user accounts enabled status.
      *
      * @return boolean
