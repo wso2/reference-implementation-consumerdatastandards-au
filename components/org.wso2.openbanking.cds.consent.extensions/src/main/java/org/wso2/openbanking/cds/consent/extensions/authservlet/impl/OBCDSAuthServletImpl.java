@@ -99,10 +99,10 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
         // Get Customer Type Selection Method from config
         String customerTypeSelectionMethod = OpenBankingCDSConfigParser.getInstance()
                 .getBNRCustomerTypeSelectionMethod();
-        String customerTypeCookieName = OpenBankingCDSConfigParser.getInstance()
-                .getBNRCustomerTypeSelectionCookieName();
         if (CustomerTypeSelectionMethodEnum.COOKIE_DATA.toString().equals(customerTypeSelectionMethod)) {
             String preSelectedProfileIdFromCookie = null;
+            String customerTypeCookieName = OpenBankingCDSConfigParser.getInstance()
+                    .getBNRCustomerTypeSelectionCookieName();
 
             Cookie[] cookies = httpServletRequest.getCookies();
             for (Cookie cookie : cookies) {
