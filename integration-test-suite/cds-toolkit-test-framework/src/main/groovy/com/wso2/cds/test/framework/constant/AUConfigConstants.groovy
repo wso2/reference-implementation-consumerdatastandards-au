@@ -77,5 +77,14 @@ class AUConfigConstants {
 
     //Sharable Account URL
     public static final String SHARABLE_ACCOUNT_URL = "SharableAccountsURL"
+
+    //Database Configuration Details
+    public static final String DATA_BASE_CONFIGURATION = "DataBaseConfiguration"
+    public static final String DB_TYPE = "DBType"
+    public static final String DB_SERVER_HOST = "DBServerHost"
+    public static final String DB_USERNAME = "DBUsername"
+    public static final String DB_PASSWORD = "DBPassword"
+    public static final String DB_DRIVER_CLASS = "DBDriverClass"
+    public static final String ORACLE_DB_SID = "OracleDBSID"
 }
 

@@ -161,6 +161,14 @@ class AUJWTGenerator {
         return payload
     }
 
+    String getClientAssertionJwtWithoutIAT(String clientId=null) {
+        JSONObject clientAssertion = new JSONRequestGenerator().addIssuer(clientId)
+                .addSubject(clientId).addAudience().addExpireDate().addJti().getJsonObject()
+
+        String payload = getSignedRequestObject(clientAssertion.toString())
+        return payload
+    }
+
     /**
      * Get Client Assertion with customized Issuer and Audience
      * @param issuer Issuer
@@ -249,7 +257,7 @@ class AUJWTGenerator {
      * @return
      */
     JWT getSignedAuthRequestObjectForStringSharingDuration(String scopeString, String sharingDuration,
-                                   String cdrArrangementId, String redirect_uri, String clientId, String responseType,
+                                                           String cdrArrangementId, String redirect_uri, String clientId, String responseType,
                                                            String responseMode, CodeChallengeMethod codeChallengeMethod) {
 
         //Generate Code Challenge
@@ -331,6 +339,7 @@ class AUJWTGenerator {
             }
         })
         JSONObject authTimeString = new JSONObject().put("essential", true)
+        JSONObject maxAgeString = new JSONObject().put("essential", true).put("max_age", 86400)
         JSONObject userInfoString = new JSONObject().put("name", null).put("given_name", null).put("family_name", null).put("updated_at", Instant.now())
         JSONObject claimsString = new JSONObject().put("id_token", new JSONObject().put("acr", acr).put("auth_time", authTimeString))
         if (sendSharingDuration) {
@@ -352,7 +361,7 @@ class AUJWTGenerator {
                     .addScope(scopeString)
                     .addState(state)
                     .addNonce()
-                    .addCustomValue("max_age", 86400)
+                    .addCustomValue("max_age", maxAgeString)
                     .addCustomValue("nbf", notBefore.getEpochSecond().toLong())
                     .addCustomJson("claims", claimsString)
                     .addCustomValue("response_mode", responseMode)
@@ -370,7 +379,7 @@ class AUJWTGenerator {
                     .addRedirectURI(redirect_uri)
                     .addScope(scopeString)
                     .addNonce()
-                    .addCustomValue("max_age", 86400)
+                    .addCustomValue("max_age", maxAgeString)
                     .addCustomValue("nbf", notBefore.getEpochSecond().toLong())
                     .addCustomJson("claims", claimsString)
                     .addCustomValue("response_mode", responseMode)
@@ -457,11 +466,11 @@ class AUJWTGenerator {
      * @return claimSet
      */
     String getRequestObjectClaimWithMaxAge(List<AUAccountScope> scopes, long sharingDuration, Boolean sendSharingDuration,
-                                 String cdrArrangementId, String redirect_uri, String clientId, String responseType,
-                                 boolean isStateRequired = true, String state, String responseMode = ResponseMode.JWT,
-                                 Instant expiryDate = Instant.now().plus(1, ChronoUnit.HOURS),
-                                 Instant notBefore = Instant.now(),
-                                 CodeChallengeMethod codeChallengeMethod = CodeChallengeMethod.S256) {
+                                           String cdrArrangementId, String redirect_uri, String clientId, String responseType,
+                                           boolean isStateRequired = true, String state, String responseMode = ResponseMode.JWT,
+                                           Instant expiryDate = Instant.now().plus(1, ChronoUnit.HOURS),
+                                           Instant notBefore = Instant.now(),
+                                           CodeChallengeMethod codeChallengeMethod = CodeChallengeMethod.S256) {
         String claims
 
         String scopeString = "openid ${String.join(" ", scopes.collect({ it.scopeString }))}"

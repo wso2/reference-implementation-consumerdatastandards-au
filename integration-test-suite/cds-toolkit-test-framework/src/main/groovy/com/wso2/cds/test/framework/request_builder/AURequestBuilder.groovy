@@ -59,6 +59,7 @@ class AURequestBuilder {
     private static Logger log = LogManager.getLogger(AURequestBuilder.class.getName())
 
     private static AUConfigurationService auConfiguration = new AUConfigurationService()
+    static AUAuthorisationBuilder auAuthorisationBuilder = new AUAuthorisationBuilder()
 
     /**
      * Method for get application access token
@@ -109,6 +110,7 @@ class AURequestBuilder {
 
         return AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.X_V_HEADER, xv_header)
+                .header(AUConstants.X_FAPI_AUTH_DATE, AUConstants.DATE)
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${userAccessToken}")
     }
 
@@ -133,6 +135,7 @@ class AURequestBuilder {
         return AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.X_V_HEADER, xv_header)
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${userAccessToken}")
+                .header(AUConstants.X_FAPI_CUSTOMER_IP_ADDRESS , AUConstants.IP)
                 .header(AUConstants.X_FAPI_AUTH_DATE, authDate)
                 .header(AUConstants.X_CDS_CLIENT_HEADERS , clientHeader)
     }
@@ -198,7 +201,6 @@ class AURequestBuilder {
 
     }
 
-
     /**
      * Get User Access Token From Authorization Code and optional scopes list.
      *
@@ -252,10 +254,11 @@ class AURequestBuilder {
                                                         String client_id = auConfiguration.getAppInfoClientID(),
                                                         Boolean clientAuthRequired = true,
                                                         Boolean mtlsRequired = true,
-                                                        String signingAlg = auConfiguration.getCommonSigningAlgorithm()) {
+                                                        String signingAlg = auConfiguration.getCommonSigningAlgorithm(),
+                                                        CodeVerifier verifier = auAuthorisationBuilder.getCodeVerifier()) {
         AuthorizationCode grant = new AuthorizationCode(code)
         URI callbackUri = new URI(redirectUrl)
-        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(grant, callbackUri)
+        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(grant, callbackUri, verifier)
 
         URI tokenEndpoint = new URI("${auConfiguration.getServerAuthorisationServerURL()}${AUConstants.TOKEN_ENDPOINT}")
 
@@ -471,8 +474,101 @@ class AURequestBuilder {
         def response = AURestAsRequestBuilder.buildRequest()
                 .contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
                 .formParams(bodyContent)
-                .baseUri(auConfiguration.getServerBaseURL())
+                .baseUri(auConfiguration.getServerAuthorisationServerURL())
                 .post("${AUConstants.CDR_ARRANGEMENT_ENDPOINT}")
         return response
+    }
+
+    /**
+     * Build Introspection Request for Revoke Access Token without Client Id param in request body
+     *
+     * @param token access token
+     * @return Introspection Request Specification
+     */
+    static RequestSpecification buildRevokeTokenWithoutClientIdParam(String token, String clientId) {
+
+        String assertionString = new SignedObject().getJwt(clientId)
+
+        def bodyContent = [
+                (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
+                (AUConstants.CLIENT_ASSERTION_KEY)   : assertionString]
+
+
+        return AURestAsRequestBuilder.buildRequest()
+                .contentType(ContentType.URLENC)
+                .formParams(bodyContent)
+                .formParams("token", token)
+                .formParams("token_type_hint", "access_token")
+                .baseUri(auConfiguration.getServerAuthorisationServerURL())
+    }
+
+    /**
+     * Build Introspection Request without ClientId Param in request body
+     *
+     * @param token access token
+     * @return Introspection Request Specification
+     */
+    static RequestSpecification buildIntrospectionWithoutClientIdParam(String token, String clientId, Integer tpp = null) {
+
+        String assertionString = new SignedObject().getJwt(clientId)
+
+        def bodyContent = [
+                (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
+                (AUConstants.CLIENT_ASSERTION_KEY)   : assertionString]
+
+        return AURestAsRequestBuilder.buildRequest()
+                .contentType(ContentType.URLENC)
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "Basic ${AUTestUtil.getBasicAuthorizationHeader(tpp)}")
+                .formParams(bodyContent)
+                .formParams("token", token)
+                .baseUri(auConfiguration.getServerAuthorisationServerURL())
+    }
+
+    /**
+     * Get User Access Token From Authorization Code.
+     * @param code authorisation code
+     * @param codeVerifier code verifier
+     * @param clientId client id
+     * @param redirectUrl application redirect url
+     * @return user access token
+     */
+    static TokenResponse getUserTokenWithClientIdInReqBody(String code, CodeVerifier codeVerifier,
+                                                           String clientIdInAssertion = auConfiguration.getAppInfoClientID(),
+                                                           String clientIdInReqBody = auConfiguration.getAppInfoClientID(),
+                                                           String redirectUrl = auConfiguration.getAppInfoRedirectURL()
+    ) {
+
+        AuthorizationCode grant = new AuthorizationCode(code)
+        URI callbackUri = new URI(redirectUrl)
+        AuthorizationGrant codeGrant = new AuthorizationCodeGrant(grant, callbackUri, codeVerifier)
+
+        String assertionString = new SignedObject().getJwt(clientIdInAssertion)
+
+        ClientAuthentication clientAuth = new PrivateKeyJWT(SignedJWT.parse(assertionString))
+
+        URI tokenEndpoint = new URI("${auConfiguration.getServerAuthorisationServerURL()}${AUConstants.TOKEN_ENDPOINT}")
+
+        TokenRequest request = new TokenRequest(tokenEndpoint, clientAuth, codeGrant)
+
+        HTTPRequest httpRequest = request.toHTTPRequest()
+
+        ClientID clientIdReqBody = new ClientID(clientIdInReqBody)
+
+        // Manually add the client_id to the HTTPRequest query parameters
+        String originalQuery = httpRequest.getQuery()
+        String newQuery = originalQuery + "&client_id=" + clientIdReqBody.getValue()
+        httpRequest.setQuery(newQuery)
+
+        def response = AURestAsRequestBuilder.buildRequest()
+                .contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
+                .body(httpRequest.query)
+                .post(tokenEndpoint)
+
+        HTTPResponse httpResponse = new HTTPResponse(response.statusCode())
+        httpResponse.setContentType(response.contentType())
+        httpResponse.setContent(response.getBody().print())
+
+        return TokenResponse.parse(httpResponse)
+
     }
 }

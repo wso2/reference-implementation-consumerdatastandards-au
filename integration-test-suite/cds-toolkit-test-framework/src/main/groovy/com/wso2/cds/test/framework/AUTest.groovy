@@ -35,11 +35,14 @@ import com.wso2.cds.test.framework.automation.consent.AUAccountSelectionStep
 import com.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import com.wso2.cds.test.framework.request_builder.AUJWTGenerator
+import com.wso2.cds.test.framework.utility.DbConnection
+import com.wso2.cds.test.framework.utility.SqlQuery
 import com.wso2.openbanking.test.framework.OBTest
 import com.wso2.cds.test.framework.configuration.AUConfigurationService
 import com.wso2.openbanking.test.framework.automation.AutomationMethod
 import com.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 import com.wso2.openbanking.test.framework.configuration.OBConfigParser
+import io.restassured.http.ContentType
 import io.restassured.response.Response
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -51,8 +54,11 @@ import com.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import com.wso2.cds.test.framework.request_builder.AURequestBuilder
 import com.wso2.cds.test.framework.utility.AURestAsRequestBuilder
 import com.wso2.cds.test.framework.utility.AUTestUtil
+import org.testng.asserts.SoftAssert
 
 import java.nio.charset.Charset
+import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import com.google.gson.Gson
@@ -69,6 +75,26 @@ class AUTest extends OBTest {
     AUAuthorisationBuilder auAuthorisationBuilder
     private boolean adrNameCheck
     AUJWTGenerator generator
+    public static int activeAuthIndividual, activeAuthNonIndividual, newAuthCurrentDayOngoingIndividual,
+                      newAuthCurrentDayOngoingNonIndividual, newAuthCurrentDayOnceOffIndividual,
+                      newAuthCurrentDayOnceOffNonIndividual, revokedCurrentDayIndividual, revokedCurrentDayNonIndividual,
+                      amendedCurrentDayIndividual, amendedCurrentDayNonIndividual, expiredCurrentDayIndividual,
+                      expiredCurrentDayNonIndividual, abandonedPreIdentificationCurrentDay, abandonedPreAuthenticationCurrentDay,
+                      abandonedPreAccountSelectionCurrentDay, abandonedPreAuthorisationCurrentDay, abandonedRejectedCurrentDay,
+                      abandonedFailedTokenExchangeCurrentDay, abandonedCurrentDay, unauthenticatedCurrentDay,
+                      highPriorityCurrentDay, lowPriorityCurrentDay, unattendedCurrentDay, largePayloadCurrentDay,
+                      customerCount, recipientCount, sessionCount
+
+    int totalInvocationsPerf, totalInvocationsAvg, totalInvocationsHighPerf, totalInvocationsLowPerf,
+        totalInvocationsUnattendedPerf, totalInvocationsUnAuthPerf, totalInvocationsLargePayPerf,
+        totalInvocationsHighAvg, totalInvocationsLowAvg, totalInvocationsUnattendedAvg, totalInvocationsUnAuthAvg,
+        totalInvocationsLargePayAvg
+    public LocalDate today = LocalDate.now()
+    int currentTime
+    public String unauthErrorCurrentDay, authErrorCurrentDay, aggErrorCurrentDay
+    public int[] performanceMetrics
+    public int[] avgResponseMetrics
+    public int[] totalResources
 
     @BeforeClass(alwaysRun = true)
     void "Initialize Test Suite"() {
@@ -242,7 +268,7 @@ class AUTest extends OBTest {
         String authCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
         return authCode
     }
-  
+
     /**
      * Method for get user access token response
      * @return
@@ -404,12 +430,12 @@ class AUTest extends OBTest {
                         AUPageObjects.VALUE)
                 authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount2CheckBox())
 
-                if (isSelectMultipleAccounts) {
-                    //Select Business Account 2
-                    secondConsentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getBusinessAccount3CheckBox(),
-                            AUPageObjects.VALUE)
-                    authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount3CheckBox())
-                }
+//                if (isSelectMultipleAccounts) {
+//                    //Select Business Account 2
+//                    secondConsentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getBusinessAccount3CheckBox(),
+//                            AUPageObjects.VALUE)
+//                    authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount3CheckBox())
+//                }
             } else {
                 //Select Individual Profile
                 authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
@@ -590,11 +616,11 @@ class AUTest extends OBTest {
      * @param profiles
      */
     String doConsentAuthorisationViaRequestUriDenyFlow(List<AUAccountScope> scopes, URI requestUri,
-                                                     String clientId = null , AUAccountProfile profiles = null,
+                                                       String clientId = null , AUAccountProfile profiles = null,
                                                        boolean isStateParamPresent = true) {
         if (clientId != null) {
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri,
-                auConfiguration.getAppInfoClientID(), isStateParamPresent).toURI().toString()
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri,
+                    auConfiguration.getAppInfoClientID(), isStateParamPresent).toURI().toString()
         } else {
             authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, null,
                     isStateParamPresent).toURI().toString()
@@ -677,6 +703,8 @@ class AUTest extends OBTest {
      */
     void doSecondaryAccountSelection(List<AUAccountScope> scopes, URI requestUri, String clientId = null,
                                      boolean isMultipleAccountsSelect = false) {
+
+        auConfiguration.setPsuNumber(1)
 
         if (clientId != null) {
             authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
@@ -992,7 +1020,7 @@ class AUTest extends OBTest {
 
         return automationResponse
     }
-  
+
     /**
      * Update Business Use rPermission With Incorrect Payload.
      * @param headerString basic auth header
@@ -1148,7 +1176,7 @@ class AUTest extends OBTest {
         return AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
                         Base64.encoder.encodeToString("${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
-                                        .getBytes(Charset.forName("UTF-8"))))
+                                .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
                 .baseUri(auConfiguration.getServerAuthorisationServerURL())
@@ -1201,7 +1229,7 @@ class AUTest extends OBTest {
      */
     static Response updateSecondaryUserInstructionPermission(String secondaryAccId, String userId,
                                                              String secondaryAccountInstructionStatus,
-                                                             boolean otherAccountsAvailability = false) {
+                                                             boolean otherAccountsAvailability = true) {
 
         def requestBody = AUPayloads.getSecondaryUserInstructionPermissionPayload(secondaryAccId, userId,
                 secondaryAccountInstructionStatus, otherAccountsAvailability)
@@ -1226,10 +1254,12 @@ class AUTest extends OBTest {
      */
     static Response getLegalEntityIds(String userID) {
 
+        userID = "amy@gold.com@carbon.super"
+
         return AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
                         Base64.encoder.encodeToString("${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
-                                        .getBytes(Charset.forName("UTF-8"))))
+                                .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .baseUri(auConfiguration.getServerAuthorisationServerURL())
                 .get("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.LEGAL_ENTITY_LIST_ENDPOINT}/${userID}")
@@ -1288,8 +1318,8 @@ class AUTest extends OBTest {
             }
         }
     }
-  
-  /**
+
+    /**
      * Verify Scope of Token Response.
      * @param scopesString - scope list
      * @param eliminatedScope - scope to be eliminated
@@ -1302,25 +1332,25 @@ class AUTest extends OBTest {
                 Assert.assertTrue(scopesString.contains(scope.getScopeString()))
             }
         }
-     }
-      
+    }
+
     /**
      * Method for get user access token response
      * @return
      */
     AccessTokenResponse getUserAccessTokenFormRefreshToken(RefreshToken refreshToken) {
-            try {
-                return AURequestBuilder.getUserTokenFromRefreshToken(refreshToken)
-            }
-            catch (Exception e) {
-                log.error(e)
-            }
+        try {
+            return AURequestBuilder.getUserTokenFromRefreshToken(refreshToken)
         }
+        catch (Exception e) {
+            log.error(e)
+        }
+    }
 
     Response doRevokeCdrArrangement(String clientId, String cdrArrangementId){
 
         generator = new AUJWTGenerator()
-        String assertionString = generator.getClientAssertionJwt(clientId)
+        String assertionString = generator.getClientAssertionJwtWithoutIAT(clientId)
 
         def bodyContent = [(AUConstants.CLIENT_ID_KEY): (clientId),
                            (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
@@ -1375,7 +1405,7 @@ class AUTest extends OBTest {
                 .baseUri(auConfiguration.getServerAuthorisationServerURL())
                 .get("${AUConstants.CONSENT_STATUS_ENDPOINT}${AUConstants.STATUS_PATH}?${consentId}")
     }
-  
+
     /**
      * Consent authorization method with Request URI and Response Mode
      * @param scopes
@@ -1443,5 +1473,917 @@ class AUTest extends OBTest {
 
         // Get Code From URL
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
+
+    /**
+     * Get Metrics Response.
+     * @param period query param to filter period (CURRENT,HISTORIC,ALL)
+     * @return metrics response
+     */
+    static Response getMetrics(String period = "ALL"){
+
+        AUJWTGenerator generator = new AUJWTGenerator()
+        String assertionString = generator.getClientAssertionJwt(AUConstants.ADMIN_API_ISSUER,
+                AUConstants.ADMIN_API_AUDIENCE)
+
+        def metricsResponse = AURequestBuilder.buildBasicRequest(assertionString, AUConstants.X_V_HEADER_METRICS)
+                .contentType(ContentType.JSON)
+                .header(AUConstants.X_MIN_HEADER, AUConstants.X_V_MIN_HEADER_METRICS)
+                .queryParam(AUConstants.PERIOD, period)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ADMIN))
+                .get("${AUConstants.CDS_ADMIN_PATH}${AUConstants.ADMIN_METRICS}")
+
+        return metricsResponse
+    }
+
+    /**
+     * Get the Metrics Response and assign metrics to variables.
+     * @param metricsResponse
+     */
+    void getInitialMetricsResponse(Response metricsResponse) {
+
+        //Invocation
+        unauthenticatedCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.INVOCATION_UNAUTHENTICATED_CURRENTDAY).toInteger()
+        highPriorityCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.INVOCATION_HIGHPRIORITY_CURRENTDAY).toInteger()
+        lowPriorityCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.INVOCATION_LOWPRIORITY_CURRENTDAY).toInteger()
+        largePayloadCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.INVOCATION_LARGEPAYLOAD_CURRENTDAY).toInteger()
+        unattendedCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.INVOCATION_UNATTENDED_CURRENTDAY).toInteger()
+
+        //Authorisations
+        activeAuthIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ACTIVE_AUTHORIZATION_INDIVIDUAL).toInteger()
+        activeAuthNonIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ACTIVE_AUTHORIZATION_NONINDIVIDUAL).toInteger()
+        newAuthCurrentDayOngoingIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.NEWAUTH_CURRENTDAY_ONGOING_INDIVIDUAL).toInteger()
+        newAuthCurrentDayOngoingNonIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.NEWAUTH_CURRENTDAY_ONGOING_NONINDIVIDUAL).toInteger()
+        newAuthCurrentDayOnceOffIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.NEWAUTH_CURRENTDAY_ONCEOFF_INDIVIDUAL).toInteger()
+        newAuthCurrentDayOnceOffNonIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.NEWAUTH_CURRENTDAY_ONCEOFF_NONINDIVIDUAL).toInteger()
+        revokedCurrentDayIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.REVOKED_CURRENTDAY_INDIVIDUAL).toInteger()
+        revokedCurrentDayNonIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.REVOKED_CURRENTDAY_NONINDIVIDUAL).toInteger()
+        amendedCurrentDayIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.AMENDED_CURRENTDAY_INDIVIDUAL).toInteger()
+        amendedCurrentDayNonIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.AMENDED_CURRENTDAY_NONINDIVIDUAL).toInteger()
+        expiredCurrentDayIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.EXPIRED_CURRENTDAY_INDIVIDUAL).toInteger()
+        expiredCurrentDayNonIndividual = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.EXPIRED_CURRENTDAY_NONINDIVIDUAL).toInteger()
+        abandonedCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_CURRENTDAY).toInteger()
+        abandonedPreIdentificationCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_PREIDENTIFICATION_CURRENTDAY).toInteger()
+        abandonedPreAuthenticationCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_PREAUTHENTICATE_CURRENTDAY).toInteger()
+        abandonedPreAccountSelectionCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_PREACCSELECT_CURRENTDAY).toInteger()
+        abandonedPreAuthorisationCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_PREAUTH_CURRENTDAY).toInteger()
+        abandonedRejectedCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_REJECTED_CURRENTDAY).toInteger()
+        abandonedFailedTokenExchangeCurrentDay = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.ABANDON_FAILEDTOKEN_CURRENTDAY).toInteger()
+
+        //Error Response
+        unauthErrorCurrentDay = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_UNAUTH_CURRENTDAY)
+        authErrorCurrentDay = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AUTH_CURRENTDAY)
+        aggErrorCurrentDay = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AGGREGATE_CURRENTDAY)
+
+        //Customer and Recipient Count
+        customerCount = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.DATA_CUSTOMER_COUNT).toInteger()
+        recipientCount = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.DATA_RECIPIENT_COUNT).toInteger()
+
+        //Session Count
+        sessionCount = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.DATA_SESSION_COUNT_CURRENTDAY).toInteger()
+    }
+
+    /**
+     * Asserting Metrics Authorisation Response.
+     * @param metricsResponse
+     */
+    static void assertMetricsAuthorisationResponse(Response metricsResponse) {
+
+        //Asserting the Invocations
+        assertMetricsInvocationResponse(metricsResponse)
+
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ACTIVE_AUTHORIZATION_INDIVIDUAL),
+                "${activeAuthIndividual}", "$AUConstants.ACTIVE_AUTHORIZATION_INDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ACTIVE_AUTHORIZATION_NONINDIVIDUAL),
+                "${activeAuthNonIndividual}", "$AUConstants.ACTIVE_AUTHORIZATION_NONINDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.NEWAUTH_CURRENTDAY_ONGOING_INDIVIDUAL),
+                "${newAuthCurrentDayOngoingIndividual}",
+                "$AUConstants.NEWAUTH_CURRENTDAY_ONGOING_INDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.NEWAUTH_CURRENTDAY_ONGOING_NONINDIVIDUAL), "${newAuthCurrentDayOngoingNonIndividual}",
+                "$AUConstants.NEWAUTH_CURRENTDAY_ONGOING_NONINDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.NEWAUTH_CURRENTDAY_ONCEOFF_INDIVIDUAL),
+                "${newAuthCurrentDayOnceOffIndividual}",
+                "$AUConstants.NEWAUTH_CURRENTDAY_ONCEOFF_INDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.NEWAUTH_CURRENTDAY_ONCEOFF_NONINDIVIDUAL), "${newAuthCurrentDayOnceOffNonIndividual}",
+                "$AUConstants.NEWAUTH_CURRENTDAY_ONCEOFF_NONINDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.REVOKED_CURRENTDAY_INDIVIDUAL),
+                "${revokedCurrentDayIndividual}", "$AUConstants.REVOKED_CURRENTDAY_INDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.REVOKED_CURRENTDAY_NONINDIVIDUAL),
+                "${revokedCurrentDayNonIndividual}",
+                "$AUConstants.REVOKED_CURRENTDAY_NONINDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AMENDED_CURRENTDAY_INDIVIDUAL),
+                "${amendedCurrentDayIndividual}",
+                "$AUConstants.AMENDED_CURRENTDAY_INDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AMENDED_CURRENTDAY_NONINDIVIDUAL),
+                "${amendedCurrentDayNonIndividual}",
+                "$AUConstants.AMENDED_CURRENTDAY_NONINDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.EXPIRED_CURRENTDAY_INDIVIDUAL),
+                "${expiredCurrentDayIndividual}", "$AUConstants.EXPIRED_CURRENTDAY_INDIVIDUAL count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.EXPIRED_CURRENTDAY_NONINDIVIDUAL),
+                "${expiredCurrentDayNonIndividual}", "$AUConstants.EXPIRED_CURRENTDAY_NONINDIVIDUAL count mismatch")
+
+        if (AUConstants.X_V_HEADER_METRICS == 4) {
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ABANDON_CURRENTDAY),
+                    "${abandonedCurrentDay}", "$AUConstants.ABANDON_CURRENTDAY count mismatch")
+        } else {
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ABANDON_CURRENTDAY),
+                    "${abandonedCurrentDay}", "$AUConstants.ABANDON_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_PREIDENTIFICATION_CURRENTDAY), "${abandonedPreIdentificationCurrentDay}",
+                    "$AUConstants.ABANDON_PREIDENTIFICATION_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_PREIDENTIFICATION_CURRENTDAY), "${abandonedPreIdentificationCurrentDay}",
+                    "$AUConstants.ABANDON_PREIDENTIFICATION_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_PREAUTHENTICATE_CURRENTDAY), "${abandonedPreAuthenticationCurrentDay}",
+                    "$AUConstants.ABANDON_PREAUTHENTICATE_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_PREACCSELECT_CURRENTDAY), "${abandonedPreAccountSelectionCurrentDay}",
+                    "$AUConstants.ABANDON_PREACCSELECT_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_PREAUTH_CURRENTDAY), "${abandonedPreAuthorisationCurrentDay}",
+                    "$AUConstants.ABANDON_PREAUTH_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_REJECTED_CURRENTDAY), "${abandonedRejectedCurrentDay}",
+                    "$AUConstants.ABANDON_REJECTED_CURRENTDAY count mismatch")
+            Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse,
+                    AUConstants.ABANDON_FAILEDTOKEN_CURRENTDAY), "${abandonedFailedTokenExchangeCurrentDay}",
+                    "$AUConstants.ABANDON_FAILEDTOKEN_CURRENTDAY count mismatch")
+        }
+    }
+
+
+    /**
+     * Consent Amendment Authorisation
+     * @param scopes
+     * @param cdrArrangementId
+     * @param sharingDuration
+     * @param clientId
+     * @return auth code
+     */
+    String doConsentAmendmentAuthorisation(List<AUAccountScope> scopes, String cdrArrangementId, long sharingDuration,
+                                           String clientId = null) {
+
+        if (clientId == null) {
+            response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
+                    true, cdrArrangementId)
+            requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI())
+                    .toURI().toString()
+        } else {
+            response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
+                    true, cdrArrangementId, clientId)
+            requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId)
+                    .toURI().toString()
+        }
+
+        //Consent Amendment Authorisation Flow
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //Verify Account Selection Page
+                    assert authWebDriver.isElementDisplayed(AUTestUtil.getAltSingleAccountXPath())
+                    authWebDriver.clickButtonXpath(AUTestUtil.getAltSingleAccountXPath())
+
+                    //Click Confirm Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+                .execute()
+
+        // Get Code From URL
+        return AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
+
+    /**
+     * Authorise Consent Without Closing Browser.
+     * @param scopes
+     * @param requestUri
+     * @return authorisation code
+     */
+    String authoriseConsentWithoutClosingBrowser(List<AUAccountScope> scopes, URI requestUri,
+                                                 String clientId = null, boolean isMultipleAccSelect = false,
+                                                 AUAccountProfile profiles = null) {
+
+        if (clientId != null) {
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
+                    .toURI().toString()
+        } else {
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri)
+                    .toURI().toString()
+        }
+
+        //UI Flow Navigation
+        automationResponse = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //Select Profile and Accounts
+                    selectProfileAndAccount(authWebDriver, profiles, isMultipleAccSelect)
+
+                    //Click Confirm Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+                .execute(false)
+
+        // Get Code From URL
+        def authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
+        return authorisationCode
+    }
+
+    /**
+     * Get Errors Count in the Metrics Response.
+     * @param errorsResponse
+     * @param resourceType
+     * @param modifiedErrorCode
+     * @param modifiedValue
+     * @return updatedKeyValuePairsString
+     */
+    static String getErrorsMetrics(String metricsResponse, int modifiedErrorCode) {
+
+        String updatedKeyValuePairsString = ""
+
+        // Parse the metrics response and extract the key-value pairs
+        List<String> errorCountKeyValuePairs = AUTestUtil.parseKeyValuePairs(metricsResponse)
+
+        // Define the expected order based on keys
+        List<Integer> expectedOrderKeys = Arrays.asList(400, 422, 401, 500,  403, 415, 404, 406)
+
+        // Flag to track if the modifiedErrorCode is found in the existing error list
+        boolean isStatusCodePresent = false
+
+        // Iterate through each key-value pair
+        for (int i = 0; i < errorCountKeyValuePairs.size(); i++) {
+
+            String[] keyValue = errorCountKeyValuePairs.get(i).split(":")
+            int key = Integer.parseInt(keyValue[0])
+            int value = Integer.parseInt(keyValue[1])
+
+            // If new error code exist in the existing error Metrics list; Increase the value of the particular
+            // error code by 1 and Update the KeyValue Pair
+            if (key == modifiedErrorCode) {
+                value += 1
+                errorCountKeyValuePairs.set(i, modifiedErrorCode + ":" + value)
+                isStatusCodePresent = true
+                break
+            }
+        }
+
+        // If modifiedErrorCode is not found in the existing list, add it with value 1
+        if (!isStatusCodePresent) {
+            errorCountKeyValuePairs.add(modifiedErrorCode + ":1")
+        }
+
+        // Sort the list according to your desired order
+        errorCountKeyValuePairs.sort(new Comparator<String>() {
+            @Override
+            int compare(String o1, String o2) {
+                int key1 = Integer.parseInt(o1.split(":")[0])
+                int key2 = Integer.parseInt(o2.split(":")[0])
+                return Integer.compare(expectedOrderKeys.indexOf(key1), expectedOrderKeys.indexOf(key2))
+            }
+        })
+
+        // Convert the sorted list to a string array
+        String[] sortedArray = errorCountKeyValuePairs.toArray(new String[0])
+
+        // Output the sorted array
+        for (String element : sortedArray) {
+            // Convert the list to a string
+            updatedKeyValuePairsString = "[" + String.join(", ", errorCountKeyValuePairs) + "]"
+        }
+        return updatedKeyValuePairsString
+    }
+
+    /**
+     * Assert Metrics Error Response.
+     * @param metricsResponse
+     */
+    void assertMetricsErrorResponse(Response metricsResponse) {
+
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_UNAUTH_CURRENTDAY),
+                "${unauthErrorCurrentDay}", "$AUConstants.ERROR_UNAUTH_CURRENTDAY count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AUTH_CURRENTDAY),
+                "${authErrorCurrentDay}", "$AUConstants.ERROR_AUTH_CURRENTDAY count mismatch")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AGGREGATE_CURRENTDAY),
+                "${aggErrorCurrentDay}", "$AUConstants.ERROR_AGGREGATE_CURRENTDAY count mismatch")
+    }
+
+    /**
+     * Calculate Performance, Average Response and Average TPS Metrics for each tier
+     */
+    void calculateTierBasedMetrics() {
+
+        //Calculate Performance Metrics
+        performanceMetrics = metricsPerformanceCalculation()
+
+        //Calculate Total Response Time for each tier
+        avgResponseMetrics = calculateTierWiseTotalResponseTime()
+
+        //Calculate Total Resource count for average TPS
+        totalResources = calculateTotalResourceCount()
+    }
+
+    /**
+     * Calculate Performance Metrics for Defined Tier
+     * @param tier
+     * @return metrics value
+     */
+    int[] metricsPerformanceCalculation() {
+
+        String tier
+        int responseTime
+        int[] withinThreshold = new int[5] // Array to store counts for each tier
+        totalInvocationsPerf = 0
+        totalInvocationsUnAuthPerf = 0
+        totalInvocationsHighPerf = 0
+        totalInvocationsLowPerf = 0
+        totalInvocationsUnattendedPerf = 0
+        totalInvocationsLargePayPerf = 0
+
+        // Get the current UTC time
+        LocalDateTime utcTime = LocalDateTime.now(ZoneOffset.UTC)
+
+        // Convert UTC time to GMT time
+        LocalDateTime gmtTime = utcTime.atOffset(ZoneOffset.UTC).atZoneSameInstant(ZoneOffset.ofHours(0)).toLocalDateTime()
+
+        //Get the current hour
+        currentTime = gmtTime.getHour().toInteger()
+
+        //Get Start and End Time
+        long startTimeOfDay = today.atTime(currentTime, 00, 00).toEpochSecond(ZoneOffset.UTC)
+        long endTimeOfDay =  today.atTime(currentTime, 59, 59).toEpochSecond(ZoneOffset.UTC)
+
+        // Execute SELECT query and get results as an array
+        def query = SqlQuery.retrieveRecordsWithinSpecifiedPeriod(startTimeOfDay, endTimeOfDay)
+        Object[][] results = DbConnection.executeSelectQuery(AUConstants.REPORTING_DBNAME, query)
+        totalInvocationsPerf = results.length
+
+        // Process and check the response time within threshold
+        if (results != null) {
+            for (Object[] row : results) {
+                responseTime = row[0]
+
+                //Do not count the request as a invocation if the status code is 405
+                if(row[2]==AUConstants.STATUS_CODE_405) {
+                    continue
+                }
+
+                tier = AUTestUtil.getPriorityTier(row[1], row[3])
+
+                if(!row[1].equals("/par")) {
+
+                    switch (tier) {
+                        case AUConstants.UNAUTHENTICATED:
+                            totalInvocationsUnAuthPerf = totalInvocationsUnAuthPerf + 1
+                            if (responseTime <= 1500){
+                                withinThreshold[0]++
+                            }
+                            break
+                        case AUConstants.HIGH_PRIORITY:
+                            totalInvocationsHighPerf = totalInvocationsHighPerf + 1
+                            if (responseTime <= 1000){
+                                withinThreshold[1]++
+                            }
+                            break
+                        case AUConstants.LOW_PRIORITY:
+                            totalInvocationsLowPerf = totalInvocationsLowPerf + 1
+                            if (responseTime <= 1500){
+                                withinThreshold[2]++
+                            }
+                            break
+                        case AUConstants.UNATTENDED:
+                            totalInvocationsUnattendedPerf = totalInvocationsUnattendedPerf + 1
+                            if (responseTime <= 4000){
+                                withinThreshold[3]++
+                            }
+                            break
+                        case AUConstants.LARGE_PAYLOAD:
+                            totalInvocationsLargePayPerf = totalInvocationsLargePayPerf + 1
+                            if (responseTime <= 6000){
+                                withinThreshold[4]++
+                            }
+                            break
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + tier + " for " + row[1])
+                    }
+                }
+            }
+        }
+
+        return withinThreshold
+    }
+
+    /**
+     * Assertions for Tier Based Metrics - Performance, Average Response and Average TPS.
+     * @param metricsResponse
+     */
+    void assertTierBasedMetrics(Response metricsResponse) {
+
+        //Asserting the Invocations
+        assertMetricsInvocationResponse(metricsResponse)
+
+        //Asserting the Performance
+        assertPerformanceMetricsResponse(metricsResponse, performanceMetrics)
+
+        //Asserting Average Response Time
+        assertAvgResponseMetricsResponse(metricsResponse, avgResponseMetrics)
+
+        //Asserting Average TPS
+        assertAvgTpsMetricsResponse(metricsResponse, totalResources)
+    }
+
+    /**
+     * Asserting Metrics Invocation Response.
+     * @param metricsResponse
+     */
+    static void assertMetricsInvocationResponse(Response metricsResponse) {
+
+        SoftAssert softAssert = new SoftAssert()
+
+        softAssert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.INVOCATION_UNAUTHENTICATED_CURRENTDAY),
+                "${unauthenticatedCurrentDay}", "$AUConstants.INVOCATION_UNAUTHENTICATED_CURRENTDAY count mismatch")
+        softAssert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.INVOCATION_HIGHPRIORITY_CURRENTDAY),
+                "${highPriorityCurrentDay}", "$AUConstants.INVOCATION_HIGHPRIORITY_CURRENTDAY count mismatch")
+        softAssert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.INVOCATION_LOWPRIORITY_CURRENTDAY),
+                "${lowPriorityCurrentDay}", "$AUConstants.INVOCATION_LOWPRIORITY_CURRENTDAY count mismatch")
+        softAssert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.INVOCATION_UNATTENDED_CURRENTDAY),
+                "${unattendedCurrentDay}", "$AUConstants.INVOCATION_UNATTENDED_CURRENTDAY count mismatch")
+        softAssert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.INVOCATION_LARGEPAYLOAD_CURRENTDAY),
+                "${largePayloadCurrentDay}", "$AUConstants.INVOCATION_LARGEPAYLOAD_CURRENTDAY count mismatch")
+
+        softAssert.assertAll()
+    }
+
+    /**
+     * Assert Performance Metrics Response
+     * @param metricsResponse
+     * @param withinThreshold
+     * @param arrayIndex
+     */
+    void assertPerformanceMetricsResponse(Response metricsResponse, int[] withinThreshold) {
+
+        SoftAssert softAssert = new SoftAssert()
+
+        //Unauthenticated Performance Value
+        String unauthPerfResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.PERFORMANCE_UNAUTH_CURRENTDAY)
+        double unauthPerf = roundUpThreeDecimals(Double.parseDouble(unauthPerfResponse.substring(unauthPerfResponse
+                .lastIndexOf(",") + 1, unauthPerfResponse.length() - 1).trim()))
+
+        softAssert.assertEquals(unauthPerf, calculatePerformance(withinThreshold[0], totalInvocationsUnAuthPerf),
+                "$AUConstants.PERFORMANCE_UNAUTH_CURRENTDAY count mismatch")
+
+        //High Priority Performance Value
+        String highPerfResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.PERFORMANCE_HIGH_CURRENTDAY)
+        double highPerf = roundUpThreeDecimals(Double.parseDouble(highPerfResponse.substring(highPerfResponse
+                .lastIndexOf(",") + 1, highPerfResponse.length() - 1).trim()))
+
+        softAssert.assertEquals(highPerf, calculatePerformance(withinThreshold[1], totalInvocationsHighPerf),
+                "$AUConstants.PERFORMANCE_HIGH_CURRENTDAY count mismatch")
+
+        //Low Priority Performance Value
+        String lowPerfResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.PERFORMANCE_LOW_CURRENTDAY)
+        double lowPerf = roundUpThreeDecimals(Double.parseDouble(lowPerfResponse.substring(lowPerfResponse
+                .lastIndexOf(",") + 1, lowPerfResponse.length() - 1).trim()))
+
+        softAssert.assertEquals(lowPerf, calculatePerformance(withinThreshold[2], totalInvocationsLowPerf),
+                "$AUConstants.PERFORMANCE_LOW_CURRENTDAY count mismatch")
+
+        //Unattended Performance Value
+        String unattendedPerfResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.PERFORMANCE_UNATTENDED_CURRENTDAY)
+        double unattendedPerf = roundUpThreeDecimals(Double.parseDouble(unattendedPerfResponse.substring(unattendedPerfResponse
+                .lastIndexOf(",") + 1, unattendedPerfResponse.length() - 1).trim()))
+
+        softAssert.assertEquals(unattendedPerf, calculatePerformance(withinThreshold[3], totalInvocationsUnattendedPerf),
+                "$AUConstants.PERFORMANCE_UNATTENDED_CURRENTDAY count mismatch")
+
+        //Large Payload Performance Value
+        String largePayPerfResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.PERFORMANCE_LARGE_PAYLOAD_CURRENTDAY)
+        double largePayPerf = roundUpThreeDecimals(Double.parseDouble(largePayPerfResponse.substring(largePayPerfResponse
+                .lastIndexOf(",") + 1, largePayPerfResponse.length() - 1).trim()))
+
+        softAssert.assertEquals(largePayPerf, calculatePerformance(withinThreshold[4], totalInvocationsLargePayPerf),
+                "$AUConstants.PERFORMANCE_LARGE_PAYLOAD_CURRENTDAY count mismatch")
+
+        softAssert.assertAll()
+    }
+
+    /**
+     * Assert Average Response Time.
+     * @param metricsResponse
+     * @param totalResponseTime
+     */
+    void assertAvgResponseMetricsResponse(Response metricsResponse, int[] totalResponseTime) {
+
+        SoftAssert softAssert = new SoftAssert()
+
+        //Unauthenticated Average Response Value
+        double unauthAvgResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AVG_RESPONSE_UNAUTH_CURRENTDAY)
+                .toDouble()
+
+        softAssert.assertEquals(unauthAvgResponse, calculateAverageResponseTime(totalResponseTime[0],
+                totalInvocationsUnAuthAvg), "$AUConstants.AVG_RESPONSE_UNAUTH_CURRENTDAY count mismatch")
+
+        //High Priority Average Response Value
+        double highAvgResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AVG_RESPONSE_HIGH_CURRENTDAY)
+                .toDouble()
+
+        softAssert.assertEquals(highAvgResponse, calculateAverageResponseTime(totalResponseTime[1], totalInvocationsHighAvg),
+                "$AUConstants.AVG_RESPONSE_HIGH_CURRENTDAY count mismatch")
+
+        //Low Priority Average Response Value
+        double lowAvgResponse = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AVG_RESPONSE_LOW_CURRENTDAY)
+                .toDouble()
+
+        softAssert.assertEquals(lowAvgResponse, calculateAverageResponseTime(totalResponseTime[2], totalInvocationsLowAvg),
+                "$AUConstants.AVG_RESPONSE_LOW_CURRENTDAY count mismatch")
+
+        //Unattended Average Response Value
+        double unattendedAvgResponse = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.AVG_RESPONSE_UNATTENDED_CURRENTDAY).toDouble()
+
+        softAssert.assertEquals(unattendedAvgResponse, calculateAverageResponseTime(totalResponseTime[3],
+                totalInvocationsUnattendedAvg), "$AUConstants.AVG_RESPONSE_UNATTENDED_CURRENTDAY count mismatch")
+
+        //Large Payload Average Response Value
+        double largePayAvgResponse = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.AVG_RESPONSE_LARGE_PAYLOAD_CURRENTDAY).toDouble()
+
+        softAssert.assertEquals(largePayAvgResponse, calculateAverageResponseTime(totalResponseTime[4],
+                totalInvocationsLargePayAvg), "$AUConstants.AVG_RESPONSE_LARGE_PAYLOAD_CURRENTDAY count mismatch")
+
+        softAssert.assertAll()
+    }
+
+    /**
+     * Assert Average TPS Metrics.
+     * @param metricsResponse
+     * @param totalResourceCount
+     */
+    void assertAvgTpsMetricsResponse(Response metricsResponse, int[] totalResourceCount) {
+
+        SoftAssert softAssert = new SoftAssert()
+
+        //Unauthenticated Average TPS Value
+        String unauthAvgTps = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AVGTPS_UNAUTHENTICATED_CURRENTDAY)
+
+        def expectedUnauthAvgTps = calculateAverageTps(totalResourceCount[0])
+        softAssert.assertEquals(unauthAvgTps, expectedUnauthAvgTps.toString(),
+                "$AUConstants.AVGTPS_UNAUTHENTICATED_CURRENTDAY count mismatch")
+
+        //Authenticated Average TPS Value
+        def authAvgTps = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AVGTPS_AUTHENTICATED_CURRENTDAY)
+
+        def expectedAuthAvgTps = calculateAverageTps(totalResourceCount[1])
+        softAssert.assertEquals(authAvgTps, expectedAuthAvgTps.toString(),
+                "$AUConstants.AVGTPS_AUTHENTICATED_CURRENTDAY count mismatch")
+
+        //Aggregate Average TPS Value
+        String aggAvgTps = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.AVGTPS_AGGREGATE_CURRENTDAY)
+        int aggregateAvgTps = totalResourceCount[1].toInteger() + totalResourceCount[0].toInteger()
+
+        def expectedAggAvgTps = calculateAverageTps(aggregateAvgTps)
+        softAssert.assertEquals(aggAvgTps, expectedAggAvgTps.toString(),
+                "$AUConstants.AVGTPS_AGGREGATE_CURRENTDAY count mismatch")
+
+        softAssert.assertAll()
+    }
+
+    /**
+     * Round Up the Metrics to Three Decimal Places.
+     * @param withinThreshold
+     * @return roundedPerfValue
+     */
+    static double roundUpThreeDecimals(def metrics) {
+
+        // Using DecimalFormat to round to 3 decimal places
+        String roundedValue = String.format("%.3f", metrics.toDouble())
+        return Double.parseDouble(roundedValue)
+    }
+
+    /**
+     * Calculate Performance Metrics
+     * @param withinThreshold
+     * @param totalInvocations
+     * @return performanceMetrics
+     */
+    static double calculatePerformance(int withinThreshold, int totalInvocations){
+
+        double performanceMetrics
+
+        if(!withinThreshold.equals(0)) {
+            performanceMetrics = withinThreshold.toDouble() / totalInvocations.toDouble()
+        } else {
+            performanceMetrics = 1.000
+        }
+
+        return roundUpThreeDecimals(performanceMetrics)
+    }
+
+
+    /**
+     * Calculate Average Response Time
+     * @param responseTime
+     * @param totalInvocations
+     * @return
+     */
+    static double calculateAverageResponseTime(int responseTime, int totalInvocations){
+
+        double avgResponseTimeMetrics
+
+        if(!responseTime.equals(0)) {
+            avgResponseTimeMetrics = responseTime.toDouble() / totalInvocations.toDouble()
+        } else {
+            avgResponseTimeMetrics = 0
+        }
+
+        return roundUpThreeDecimals(avgResponseTimeMetrics/1000)
+    }
+
+    /**
+     * Calculate Average TPS
+     * @param resourceCount
+     * @return averageTps
+     */
+    static double calculateAverageTps(int resourceCount){
+
+        def averageTpsMetrics
+
+        if(!resourceCount.equals(0)) {
+            averageTpsMetrics = (resourceCount / 86400)
+        } else {
+            averageTpsMetrics = 0
+        }
+
+        return roundUpThreeDecimals(averageTpsMetrics)
+    }
+
+    /**
+     * CDR Arrangement Revocation without Client Id in the request body
+     * @param clientId
+     * @param cdrArrangementId
+     * @return
+     */
+    Response doRevokeCdrArrangementWithoutClientIdInRequest(String clientId, String cdrArrangementId){
+
+        generator = new AUJWTGenerator()
+        String assertionString = generator.getClientAssertionJwt(clientId)
+
+        def bodyContent = [
+                (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
+                (AUConstants.CLIENT_ASSERTION_KEY)     : assertionString,
+                (AUConstants.CDR_ARRANGEMENT_ID)       : cdrArrangementId]
+
+        revocationResponse = AURestAsRequestBuilder.buildRequest()
+                .contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
+                .formParams(bodyContent)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_CDR_ARRANGEMENT))
+                .post("${AUConstants.CDR_ARRANGEMENT_ENDPOINT}")
+
+        return revocationResponse
+    }
+
+    /**
+     * Calculate Total Response Metrics for Defined Tier
+     * @param tier
+     * @return metrics value
+     */
+    int[] calculateTierWiseTotalResponseTime() {
+
+        String tier
+        int responseTime
+        int[] sumResponseTime = new int[5]
+        totalInvocationsPerf = 0
+        totalInvocationsUnAuthAvg = 0
+        totalInvocationsHighAvg = 0
+        totalInvocationsLowAvg = 0
+        totalInvocationsUnattendedAvg = 0
+        totalInvocationsLargePayAvg = 0
+
+        //Get Start and End Time of the day
+        long startTimeOfDay = today.atTime(00, 00, 00).toEpochSecond(ZoneOffset.UTC)
+        long endTimeOfDay =  today.atTime(23, 59, 59).toEpochSecond(ZoneOffset.UTC)
+
+        // Execute SELECT query and get results as an array
+        def query = SqlQuery.retrieveRecordsWithinSpecifiedPeriod(startTimeOfDay, endTimeOfDay)
+        Object[][] results = DbConnection.executeSelectQuery(AUConstants.REPORTING_DBNAME, query)
+        totalInvocationsAvg = results.length
+
+        // Process and check the response time within threshold
+        if (results != null) {
+            for (Object[] row : results) {
+                responseTime = row[0]
+
+                tier = AUTestUtil.getPriorityTier(row[1], row[3])
+
+                if(!row[1].equals("/par")) {
+
+                    switch (tier) {
+                        case AUConstants.UNAUTHENTICATED:
+                            totalInvocationsUnAuthAvg = totalInvocationsUnAuthAvg + 1
+                            sumResponseTime[0] += responseTime
+                            break
+                        case AUConstants.HIGH_PRIORITY:
+                            totalInvocationsHighAvg = totalInvocationsHighAvg + 1
+                            sumResponseTime[1] += responseTime
+                            break
+                        case AUConstants.LOW_PRIORITY:
+                            totalInvocationsLowAvg = totalInvocationsLowAvg + 1
+                            sumResponseTime[2] += responseTime
+                            break
+                        case AUConstants.UNATTENDED:
+                            totalInvocationsUnattendedAvg = totalInvocationsUnattendedAvg + 1
+                            sumResponseTime[3] += responseTime
+                            break
+                        case AUConstants.LARGE_PAYLOAD:
+                            totalInvocationsLargePayAvg = totalInvocationsLargePayAvg + 1
+                            sumResponseTime[4] += responseTime
+                            break
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + tier + " for " + row[1])
+                    }
+                }
+            }
+        }
+        return sumResponseTime
+    }
+
+    /**
+     * Calculate Total Resource Count based on the resource type
+     * @param tier
+     * @return metrics value
+     */
+    int[] calculateTotalResourceCount() {
+
+        String resourceType
+        int responseTime
+        int[] totalResourceCount = new int[2]
+        totalInvocationsPerf = 0
+
+        //Get Start and End Time of the Day
+        long startTimeOfDay = today.atTime(00, 00, 00).toEpochSecond(ZoneOffset.UTC)
+        long endTimeOfDay =  today.atTime(23, 59, 59).toEpochSecond(ZoneOffset.UTC)
+
+        // Execute SELECT query and get results as an array
+        def query = SqlQuery.retrieveRecordsWithinSpecifiedPeriod(startTimeOfDay, endTimeOfDay)
+        Object[][] results = DbConnection.executeSelectQuery(AUConstants.REPORTING_DBNAME, query)
+
+        // Process and check the response time within threshold
+        if (results != null) {
+            for (Object[] row : results) {
+                responseTime = row[0]
+
+                resourceType = AUTestUtil.getAuthenticatedResources(row[1])
+
+                if (!row[1].equals("/par")) {
+
+                    switch (resourceType) {
+                        case AUConstants.UNAUTHENTICATED:
+                            totalResourceCount[0]++
+                            break
+                        case AUConstants.AUTHENTICATED:
+                            totalResourceCount[1]++
+                            break
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + resourceType + " for " + row[1])
+                    }
+                }
+            }
+        }
+
+        return totalResourceCount
+    }
+
+    AccessTokenResponse getUserAccessTokenResponseWithDifferentClientId(String assertionClientId = null, String bodyClientID ) {
+        try {
+            return AURequestBuilder.getUserToken(authorisationCode, AUConstants.CODE_VERIFIER, clientId)
+        }
+        catch (Exception e) {
+            log.error(e)
+        }
+    }
+
+    /**
+     * Consent Amendment Deny
+     * @param scopes
+     * @param cdrArrangementId
+     * @param sharingDuration
+     * @param clientId
+     * @return auth code
+     */
+    String doConsentAmendmentDenyFlow(List<AUAccountScope> scopes, String cdrArrangementId, long sharingDuration,
+                                      String clientId = null) {
+
+        if (clientId == null) {
+            response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
+                    true, cdrArrangementId)
+            requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI())
+                    .toURI().toString()
+        } else {
+            response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
+                    true, cdrArrangementId, clientId)
+            requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId)
+                    .toURI().toString()
+        }
+
+        //Consent Amendment Authorisation Flow
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //Verify Account Selection Page
+                    assert authWebDriver.isElementDisplayed(AUTestUtil.getAltSingleAccountXPath())
+                    authWebDriver.clickButtonXpath(AUTestUtil.getAltSingleAccountXPath())
+
+                    //Click Confirm Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_DENY_XPATH)
+                }
+                .execute()
+
+        return automation.currentUrl.get()
+    }
+
+    /**
+     * Consent Amendment Authorisation
+     * @param scopes
+     * @param cdrArrangementId
+     * @param sharingDuration
+     * @param clientId
+     * @return auth code
+     */
+    String doBusinessConsentAmendmentAuthorisation(List<AUAccountScope> scopes, String cdrArrangementId, long sharingDuration,
+                                                   String clientId = null) {
+
+        if (clientId == null) {
+            response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
+                    true, cdrArrangementId)
+            requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI())
+                    .toURI().toString()
+        } else {
+            response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
+                    true, cdrArrangementId, clientId)
+            requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId)
+                    .toURI().toString()
+        }
+
+        //Consent Amendment Authorisation Flow
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //Click Confirm Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+                .execute()
+
+        // Get Code From URL
+        return AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
     }
 }

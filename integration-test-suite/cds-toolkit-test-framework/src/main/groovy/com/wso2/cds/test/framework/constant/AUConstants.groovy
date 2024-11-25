@@ -71,13 +71,14 @@ class AUConstants extends OBConstants {
     public static final String CODE = "code"
     public static final String ERROR_INVALID_SOFTWARE_PRODUCT = "Invalid Software Product"
 
-    public static final long DEFAULT_SHARING_DURATION = 60000
+    public static final long DEFAULT_SHARING_DURATION = 172800
     public static final long SINGLE_ACCESS_CONSENT = 0
     public static final long ONE_YEAR_DURATION = 31536200
     public static final long NEGATIVE_DURATION = -3000
     public static final long AMENDED_SHARING_DURATION = 3000
-    public static final long SHORT_SHARING_DURATION = 60
+    public static final long SHORT_SHARING_DURATION = 84600
     static final long NEGATIVE_SHARING_DURATION = -3000
+    public static final long SHARING_DURATION_24H = 86400
 
     public static final String BULK_ACCOUNT_PATH = CDS_PATH + "/banking/accounts"
     public static final String SINGLE_ACCOUNT_PATH = CDS_PATH + "/banking/accounts/" + accountID
@@ -87,18 +88,17 @@ class AUConstants extends OBConstants {
     public static final String BULK_DIRECT_DEBITS_PATH = CDS_PATH + "/banking/accounts/direct-debits"
     public static final String BULK_SCHEDULE_PAYMENTS_PATH = CDS_PATH + "/banking/payments/scheduled"
     public static final String BULK_PAYEES = CDS_PATH + "/banking/payees"
-    public static final String BULK_CUSTOMER = CDS_COMMON_PATH + "/common/customer"
-    public static final String CUSTOMER_DETAILS = CDS_COMMON_PATH + "/common/customer/detail"
-    public static final String DISCOVERY_STATUS = CDS_COMMON_PATH + "/discovery/status"
-    public static final String DISCOVERY_OUTAGES = CDS_COMMON_PATH + "/discovery/outages"
+    public static final String BULK_CUSTOMER = CDS_PATH + "/common/customer"
+    public static final String CUSTOMER_DETAILS = CDS_PATH + "/common/customer/detail"
+    public static final String DISCOVERY_STATUS = CDS_PATH + "/discovery/status"
+    public static final String DISCOVERY_OUTAGES = CDS_PATH + "/discovery/outages"
     public static final String ACCOUNTS_CONSENT_PATH = "/au100/accounts-validation"
     public static final String CDR_ARRANGEMENT_ENDPOINT = "/arrangements/1.0.0/revoke"
     public static final String INTROSPECTION_ENDPOINT = "/oauth2/introspect"
     public static final String CONSENT_STATUS_ENDPOINT = "/api/openbanking/consent-mgt/uk300"
-    public static final String PUSHED_AUTHORISATION_BASE_PATH = auConfiguration.getServerAuthorisationServerURL() +
-            "/api/openbanking/push-authorization"
-    public static final String PAR_ENDPOINT = "/par"
-    public static final String REVOKE_PATH = "/oauth2/revoke"
+    public static final String PUSHED_AUTHORISATION_BASE_PATH = auConfiguration.getServerAuthorisationServerURL()
+    public static final String PAR_ENDPOINT = "/api/openbanking/push-authorization/par"
+    public static final String TOKEN_REVOKE_PATH = "/oauth2/revoke"
     public static final String STATUS_PATH = "/account-confirmation"
     public static final String CONSENT_STATUS_AU_ENDPOINT = "api/openbanking/account-type-mgt"
     public static final String UPDATE_BUSINESS_USER  = "/account-type-management/business-stakeholders"
@@ -179,10 +179,6 @@ class AUConstants extends OBConstants {
     public static final String LBL_RESIDENTIAL_ADDRESS = "Residential address"
     public static final String LBL_NAME = "Name"
     public static final String LBL_OCCUPATION = "Occupation"
-
-    public static final String CONSENT_MANAGER_URL = auConfiguration.getServerAuthorisationServerURL() + "/consentmgt"
-    public static final String OAUTH2_INTROSPECT_URL = auConfiguration.getServerAuthorisationServerURL() + "/oauth2/introspect"
-    public static final String CCPORTAL_URL = auConfiguration.getServerAuthorisationServerURL() + "/ccportal"
 
     public static final String ERROR = "error";
     public static final String ERROR_DESCRIPTION = "error_description";
@@ -317,6 +313,11 @@ class AUConstants extends OBConstants {
     public static final String UNSUPPORTED_RESPONSE_MODE = "Unsupported response_mode value. Only jwt response mode is allowed."
     public static final String ERROR_CODE_INVALID_PAGE = "urn:au-cds:error:cds-all:Field/InvalidPage"
     public static final String INVALID_PAGE = "Invalid Page"
+    public static final String INVALID_SIGNING_ALG = "Invalid signing algorithm sent"
+    public static final String INVALID_AUDIENCE_ERROR = "Invalid audience provided"
+    public static final String ERROR_REDIRECT_URL_WITH_DIFF_HOSTNAMES = "Redirect URIs do not contain the same hostname"
+    public static final String ERROR_EMPTY_REDIRECT_URL_IN_SSA = "Redirect URIs can not be null or empty in SSA"
+    public static final String ERROR_WITHOUT_IDTOKEN_SINGED_ALG = "Required parameter idTokenSignedResponseAlg cannot be null"
 
     /**
      * Mock Register Constants
@@ -394,7 +395,7 @@ class AUConstants extends OBConstants {
     public static final String ALL = "ALL"
     public static final String PAGE_SIZE = "page-size"
     public static final String UPDATED_SINCE = "updated-since"
-    public static final String BRAND = "BRAND"
+    public static final String BRAND = "brand"
     public static final String EFFECTIVE = "EFFECTIVE"
     public static final String PERIOD = "period"
     public static final String HISTORIC = "HISTORIC"
@@ -408,7 +409,8 @@ class AUConstants extends OBConstants {
     public static final String ERROR_NOT_ALLOWED_TO_ACCESS = "The access token does not allow you to access the requested resource"
     public static final String PARAM_PROFILE_NAME = "profileName"
     public static final String USER_DENIED_THE_CONSENT = "User denied the consent"
-    public static final String USER_SKIP_THE_CONSENT_FLOW = "User skip the consent flow"
+    public static final String USER_SKIP_THE_CONSENT_FLOW = "User skipped the consent flow"
+    public static final String CANCEL_ERROR_IN_ACCOUNTS_PAGE = "User skip the consent flow"
 
     public static final String ACTIVE = "active"
     public static final String INACTIVE = "inactive"
@@ -468,11 +470,11 @@ class AUConstants extends OBConstants {
     public static final int X_V_HEADER_TRANSACTIONS = 1
     public static final int X_V_HEADER_TRANSACTION = 1
     public static final int X_V_HEADER_DIRECT_DEBITS = 1
-    public static final int X_V_HEADER_PAYMENT_SCHEDULED = 1
+    public static final int X_V_HEADER_PAYMENT_SCHEDULED = 2
     public static final int X_V_HEADER_PAYEES = 2
     public static final int X_V_HEADER_PRODUCTS = 3
     public static final int X_V_HEADER_PRODUCT = 4
-    public static final int X_V_HEADER_METRICS = 3
+    public static final int X_V_HEADER_METRICS = 5
     public static final int X_V_HEADER_METADATA = 1
     public static final int X_V_HEADER_CUSTOMER = 1
     public static final int X_V_HEADER_CUSTOMER_DETAIL = 2
@@ -485,7 +487,7 @@ class AUConstants extends OBConstants {
     public static final String ERROR_UNSUPPORTED_RESPONSE = "Unsupported response_type value. Only code response type is allowed."
     public static final String DCR_CLAIM_LEGAL_ENTITY_ID = "legal_entity_id"
     public static final String DCR_CLAIM_LEGAL_ENTITY_NAME = "legal_entity_name"
-    public static final String SAMPLE_LEGAL_ENTITY_ID = "344F0E809-BDBE-4F8E-BD30-5E6C3CB78D7B"
+    public static final String SAMPLE_LEGAL_ENTITY_ID = "TPP7"
     public static final String SAMPLE_LEGAL_ENTITY_NAME = "Mock Company Pty Ltd."
     public static final String AlternateAccountId = "30080098763501"
     public static final CodeVerifier CODE_VERIFIER = new CodeVerifier()
@@ -512,5 +514,97 @@ class AUConstants extends OBConstants {
     public static final String ADR_STATUS_NOT_ACTIVE = "ADR Status Is Not Active"
     public static final String ERROR_CODE_ADR_STATUS_NOT_ACTIVE = "urn:au-cds:error:cds-banking:Authorisation/AdrStatusNotActive"
     public static final String CONFIG_FILE_NAME = "TestConfiguration.xml"
+
+    static final String PERIOD_CURRENT = "CURRENT"
+    static final String PERIOD_ALL = "ALL"
+    static final String PERIOD_HISTORIC = "HISTORIC"
+    static final String ACTIVE_AUTHORIZATION_INDIVIDUAL = "data.authorisations.activeAuthorisationCount.individual"
+    static final String ACTIVE_AUTHORIZATION_NONINDIVIDUAL = "data.authorisations.activeAuthorisationCount.nonIndividual"
+    static final String NEWAUTH_CURRENTDAY_ONGOING_INDIVIDUAL =
+            "data.authorisations.newAuthorisationCount.currentDay.ongoing.individual"
+    static final String NEWAUTH_CURRENTDAY_ONGOING_NONINDIVIDUAL =
+            "data.authorisations.newAuthorisationCount.currentDay.ongoing.nonIndividual"
+    static final String NEWAUTH_CURRENTDAY_ONCEOFF_INDIVIDUAL =
+            "data.authorisations.newAuthorisationCount.currentDay.onceOff.individual"
+    static final String NEWAUTH_CURRENTDAY_ONCEOFF_NONINDIVIDUAL =
+            "data.authorisations.newAuthorisationCount.currentDay.onceOff.nonIndividual"
+    static final String REVOKED_CURRENTDAY_INDIVIDUAL =
+            "data.authorisations.revokedAuthorisationCount.currentDay.individual"
+    static final String REVOKED_CURRENTDAY_NONINDIVIDUAL =
+            "data.authorisations.revokedAuthorisationCount.currentDay.nonIndividual"
+    static final String AMENDED_CURRENTDAY_INDIVIDUAL =
+            "data.authorisations.amendedAuthorisationCount.currentDay.individual"
+    static final String AMENDED_CURRENTDAY_NONINDIVIDUAL =
+            "data.authorisations.amendedAuthorisationCount.currentDay.nonIndividual"
+    static final String EXPIRED_CURRENTDAY_INDIVIDUAL =
+            "data.authorisations.expiredAuthorisationCount.currentDay.individual"
+    static final String EXPIRED_CURRENTDAY_NONINDIVIDUAL =
+            "data.authorisations.expiredAuthorisationCount.currentDay.nonIndividual"
+    static final String ABANDON_PREIDENTIFICATION_CURRENTDAY =
+            "data.authorisations.abandonmentsByStage.preIdentification.currentDay"
+    static final String ABANDON_PREAUTHENTICATE_CURRENTDAY =
+            "data.authorisations.abandonmentsByStage.preAuthentication.currentDay"
+    static final String ABANDON_PREACCSELECT_CURRENTDAY =
+            "data.authorisations.abandonmentsByStage.preAccountSelection.currentDay"
+    static final String ABANDON_PREAUTH_CURRENTDAY =
+            "data.authorisations.abandonmentsByStage.preAuthorisation.currentDay"
+    static final String ABANDON_REJECTED_CURRENTDAY =
+            "data.authorisations.abandonmentsByStage.rejected.currentDay"
+    static final String ABANDON_FAILEDTOKEN_CURRENTDAY =
+            "data.authorisations.abandonmentsByStage.failedTokenExchange.currentDay"
+    static final String ABANDON_CURRENTDAY =
+            "data.authorisations.abandonedConsentFlowCount.currentDay"
+    static final String PERFORMANCE_CURRENTDAY ="data.performance.currentDay"
+    static final String PERFORMANCE_HIGH_CURRENTDAY ="data.performance.highPriority.currentDay"
+    static final String PERFORMANCE_LOW_CURRENTDAY ="data.performance.lowPriority.currentDay"
+    static final String PERFORMANCE_UNATTENDED_CURRENTDAY ="data.performance.unattended.currentDay"
+    static final String PERFORMANCE_UNAUTH_CURRENTDAY ="data.performance.unauthenticated.currentDay"
+    static final String PERFORMANCE_LARGE_PAYLOAD_CURRENTDAY ="data.performance.largePayload.currentDay"
+    static final String PERFORMANCE_AGGREGATE_CURRENTDAY ="data.performance.aggregate.currentDay"
+    static final String AVG_RESPONSE_HIGH_CURRENTDAY ="data.averageResponse.highPriority.currentDay"
+    static final String AVG_RESPONSE_LOW_CURRENTDAY ="data.averageResponse.lowPriority.currentDay"
+    static final String AVG_RESPONSE_UNATTENDED_CURRENTDAY ="data.averageResponse.unattended.currentDay"
+    static final String AVG_RESPONSE_UNAUTH_CURRENTDAY ="data.averageResponse.unauthenticated.currentDay"
+    static final String AVG_RESPONSE_LARGE_PAYLOAD_CURRENTDAY ="data.averageResponse.largePayload.currentDay"
+    static final String AVGTPS_AUTHENTICATED_CURRENTDAY ="data.averageTps.authenticated.currentDay"
+    static final String AVGTPS_UNAUTHENTICATED_CURRENTDAY ="data.averageTps.unauthenticated.currentDay"
+    static final String AVGTPS_AGGREGATE_CURRENTDAY ="data.averageTps.aggregate.currentDay"
+    static final String INVOCATION_UNAUTHENTICATED_CURRENTDAY = "data.invocations.unauthenticated.currentDay"
+    static final String INVOCATION_HIGHPRIORITY_CURRENTDAY = "data.invocations.highPriority.currentDay"
+    static final String INVOCATION_LOWPRIORITY_CURRENTDAY = "data.invocations.lowPriority.currentDay"
+    static final String INVOCATION_UNATTENDED_CURRENTDAY = "data.invocations.unattended.currentDay"
+    static final String INVOCATION_LARGEPAYLOAD_CURRENTDAY = "data.invocations.largePayload.currentDay"
+    static final String INCORRECT_ACCESS_TOKEN = "95d4d70e-0319-3fea-9532-e199fe72d489"
+
+    static final String ERROR_UNAUTH_CURRENTDAY = "data.errors.unauthenticated.currentDay"
+    static final String ERROR_AUTH_CURRENTDAY = "data.errors.authenticated.currentDay"
+    static final String ERROR_AGGREGATE_CURRENTDAY = "data.errors.aggregate.currentDay"
+    static final String DATA_CUSTOMER_COUNT = "data.customerCount"
+    static final String DATA_RECIPIENT_COUNT = "data.recipientCount"
+    static final String DATA_SESSION_COUNT_CURRENTDAY = "data.sessionCount.currentDay"
+
+    static final String CUSTOMER_PRESENT = "customer-present"
+    static final ABANDON_WAIT_TIME = 78000
+    static final AUTH_CODE_EXPIRATION_TIME = 110001
+    public static final String CODE_EXPIRE_ERROR_MSG = "Expired or Revoked authorization code received from token request"
+    public static final String CALLBACK_MISMATCH = "Callback url mismatch"
+    public static final String LOCALHOST = "localhost"
+
+    public static String REPORTING_DBNAME = "openbank_ob_reporting_statsdb"
+    public static String UNAUTHENTICATED = "Unauthenticated"
+    public static String HIGH_PRIORITY = "High Priority"
+    public static String LOW_PRIORITY = "Low Priority"
+    public static String UNATTENDED = "Unattended"
+    public static String LARGE_PAYLOAD = "Large Payload"
+    public static String REGISTER_PATH = "/register/"
+    public static String AUTHENTICATED = "authenticated"
+    public static String AGGREGATE = "aggregate"
+    static final String AVAILABILITY_UNAUTH_CURRENTMONTH = "data.availability.unauthenticated.currentMonth"
+    static final String AVAILABILITY_AUTH_CURRENTMONTH = "data.availability.authenticated.currentMonth"
+    static final String AVAILABILITY_AGG_CURRENTMONTH = "data.availability.aggregate.currentMonth"
+
+    public static final String ERROR_CODE_INVALID_ARRANGEMENT = "urn:au-cds:error:cds-all:Authorisation/InvalidArrangement"
+    public static final String INVALID_CONSENT_ARRANGEMENT = "Invalid Arrangement ID"
+    public static TOKEN_ENDPOINT = "/oauth2/token"
 }
 

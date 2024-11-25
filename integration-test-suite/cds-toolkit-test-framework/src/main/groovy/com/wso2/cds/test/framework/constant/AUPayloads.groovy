@@ -245,7 +245,7 @@ class AUPayloads {
      */
     static String getSecondaryUserInstructionPermissionPayload(String secondaryAccountId, String secondaryUserId,
                                                                String secondaryAccountInstructionStatus = "active",
-                                                               boolean otherAccountsAvailability = false) {
+                                                               boolean otherAccountsAvailability = true) {
         return """
         {
             "data": [
@@ -290,12 +290,6 @@ class AUPayloads {
                         "secondaryUserID": "${secondaryUserId}",
                         "legalEntitySharingStatus": "${sharingStatus}",
                         "legalEntityID": "${legalEntityId}"
-                    },
-                    {
-                        "accountID": "${accountId2}",
-                        "secondaryUserID": "${secondaryUserId2}",
-                        "legalEntitySharingStatus": "${sharingStatus2}",
-                        "legalEntityID": "${legalEntityId2}"
                     }
                 ]
             }

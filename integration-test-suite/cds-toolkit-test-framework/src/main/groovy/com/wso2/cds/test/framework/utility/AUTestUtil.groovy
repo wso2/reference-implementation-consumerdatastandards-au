@@ -386,7 +386,7 @@ class AUTestUtil extends OBTestUtil {
         }
         return legalEntityIds
     }
-  
+
     /**
      * Read Attributes from HTML Document
      * @param htmlDocumentBody
@@ -521,5 +521,113 @@ class AUTestUtil extends OBTestUtil {
         writeXMLContent(configFilePath, "Application", "ClientID", clientId, auConfiguration.getTppNumber())
     }
 
+    /**
+     * Get the Hostname from Configuration
+     * @return hostname
+     */
+    static String getHostname() {
+
+        try {
+            URL url = new URL(auConfiguration.getServerBaseURL())
+            return url.getHost()
+
+        } catch (MalformedURLException e) {
+            System.err.println("Invalid URL: " + e.getMessage())
+        }
+    }
+
+    /**
+     * Parse Key Value Pair from string array.
+     * @param keyValuePairsString
+     * @return keyValuePairs
+     */
+    static List<String> parseKeyValuePairs(String keyValuePairsString) {
+
+        List<String> keyValuePairs = new ArrayList<>()
+
+        // Remove leading and trailing brackets, then split by comma
+        String[] pairs = keyValuePairsString.substring(1, keyValuePairsString.length() - 1).split(", ")
+
+        for (String pair : pairs) {
+            keyValuePairs.add(pair.trim())
+        }
+        return keyValuePairs
+    }
+
+    /**
+     * Get the tier of a particular request.
+     * @param resourcePath
+     * @param customerStatus
+     * @return tier
+     */
+    static String getPriorityTier(String resourcePath, String customerStatus){
+
+        def highPriorityResources = ["/discovery/status", "/discovery/outages",
+                                     "/register",
+                                     "/register/{ClientId}", "/", "/token", "/authorize", "/revoke", "/userinfo",
+                                     "/introspect", "/jwks", "/.well-known/openid-configuration"]
+        def commonResources = ["/common/customer", "/common/customer/detail"]
+        def accountsResources = ["/banking/accounts"]
+
+        def lowPriorityResources = ["/banking/accounts/{accountId}", "/banking/accounts/{accountId}/balance",
+                                    "/banking/accounts/balances", "/banking/accounts/{accountId}/transactions",
+                                    "/banking/accounts/{accountId}/transactions/{transactionId}", "/banking/payees",
+                                    "/banking/payees/{payeeId}", "/banking/accounts/{accountId}/direct-debits",
+                                    "/banking/accounts/{accountId}/payments/scheduled", "/banking/payments/scheduled"]
+
+        def unattendedList = [ "/register/metadata", "/metrics"]
+        def largePayloadList = ["/banking/accounts/direct-debits"]
+        def unauthenticatedList = ["/banking/products", "/banking/products/{productId}"]
+
+        if (highPriorityResources.contains(resourcePath) ||
+                (customerStatus.equalsIgnoreCase(AUConstants.CUSTOMER_PRESENT) && commonResources.contains(resourcePath)) ||
+                (customerStatus.equalsIgnoreCase(AUConstants.CUSTOMER_PRESENT) && accountsResources.contains(resourcePath))) {
+            return AUConstants.HIGH_PRIORITY
+
+        } else if(lowPriorityResources.contains(resourcePath) &&
+                customerStatus.equalsIgnoreCase(AUConstants.CUSTOMER_PRESENT)) {
+            return AUConstants.LOW_PRIORITY
+
+        } else if((unattendedList.contains(resourcePath)) ||
+                (customerStatus.equalsIgnoreCase(AUConstants.UNATTENDED) && accountsResources.contains(resourcePath)) ||
+                (customerStatus.equalsIgnoreCase(AUConstants.UNATTENDED) && commonResources.contains(resourcePath)) ||
+                (customerStatus.equalsIgnoreCase(AUConstants.UNATTENDED) && lowPriorityResources.contains(resourcePath))) {
+            return AUConstants.UNATTENDED
+
+        } else if (largePayloadList.contains(resourcePath)) {
+            return AUConstants.LARGE_PAYLOAD
+
+        } else if (unauthenticatedList.contains(resourcePath)) {
+            return AUConstants.UNAUTHENTICATED
+        }
+    }
+
+    /**
+     * Get Authenticated and Unauthenticated Resources
+     * @param resourcePath
+     * @return relevant tier for resource
+     */
+    static String getAuthenticatedResources(String resourcePath){
+
+        def authenticatedList = ["/register", "/register/{ClientId}", "/", "/token", "/authorize", "/revoke",
+                                 "/userinfo", "/introspect", "/jwks", "/common/customer", "/common/customer/detail",
+                                 "/banking/accounts", "/banking/accounts/{accountId}", "/banking/accounts/{accountId}/balance",
+                                 "/banking/accounts/balances", "/banking/accounts/{accountId}/transactions",
+                                 "/banking/accounts/{accountId}/transactions/{transactionId}", "/banking/payees",
+                                 "/banking/payees/{payeeId}", "/banking/accounts/{accountId}/direct-debits",
+                                 "/banking/accounts/{accountId}/payments/scheduled", "/banking/payments/scheduled",
+                                 "/register/metadata", "/metrics", "/banking/accounts/direct-debits"]
+
+        def unauthenticatedList = ["/banking/products", "/banking/products/{productId}",
+                                   "/discovery/status", "/discovery/outages"]
+
+        if (authenticatedList.contains(resourcePath)) {
+            return AUConstants.AUTHENTICATED
+
+        } else if(unauthenticatedList.contains(resourcePath)) {
+            return AUConstants.UNAUTHENTICATED
+
+        }
+    }
 }
 

@@ -253,5 +253,47 @@ class AUConfigurationService extends OBConfigurationService {
     String getSharableAccountUrl() {
         return configuration.get(OBConfigConstants.SERVER + "." + AUConfigConstants.SHARABLE_ACCOUNT_URL)
     }
+
+    /**
+     * Get DB Type
+     */
+    String getDbType() {
+        return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.DB_TYPE)
+    }
+
+    /**
+     * Get DB Server Host
+     */
+    String getDbServerHost() {
+        return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.DB_SERVER_HOST)
+    }
+
+    /**
+     * Get DB Username
+     */
+    String getDbUsername() {
+        return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.DB_USERNAME)
+    }
+
+    /**
+     * Get DB Password
+     */
+    String getDbPassword() {
+        return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.DB_PASSWORD)
+    }
+
+    /**
+     * Get DB Driver Class
+     */
+    String getDbDriverClass() {
+        return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.DB_DRIVER_CLASS)
+    }
+
+    /**
+     * Get Oracle DB SID
+     */
+    String getOracleSid() {
+        return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.ORACLE_DB_SID)
+    }
 }
 

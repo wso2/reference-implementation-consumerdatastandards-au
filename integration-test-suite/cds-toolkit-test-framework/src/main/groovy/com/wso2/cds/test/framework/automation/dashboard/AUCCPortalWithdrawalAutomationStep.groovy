@@ -55,6 +55,4 @@ class AUCCPortalWithdrawalAutomationStep implements BrowserAutomationStep{
         driver.submitButtonXpath(AUPageObjects.AU_CCPORTAL_SIGNIN_XPATH)
         webDriver.manage().timeouts().implicitlyWait(100,TimeUnit.SECONDS);
     }
-
 }
-

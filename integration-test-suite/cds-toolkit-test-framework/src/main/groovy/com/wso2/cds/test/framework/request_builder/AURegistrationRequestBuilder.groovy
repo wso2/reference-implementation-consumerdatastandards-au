@@ -285,6 +285,56 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .addCustomValue("adr_name", "ADR").getClaimsJsonAsString()
     }
 
+    String getRegularClaimsWithInvalidTokenAuthSignAlg() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+                .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addTokenEndpointAuthSignAlg("ES512")
+                .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
+                .getClaimsJsonAsString()
+    }
+
+    String getClaimsWithInvalidAud() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA()).addIDTokenEncResponseAlg()
+                .addIDTokenEncResponseEnc().removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addAudience("https://obiam:9446/client-registration").getClaimsJsonAsString()
+    }
+
+    String getRegularClaimsWithoutApplicationType() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+                .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
+                .removeKeyValue(AUConstants.APPLICATION_TYPE_KEY).getClaimsJsonAsString()
+    }
+
+    String getRegularClaimsWithInvalidRequestObjectSigningAlg() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+                .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
+                .addRequestObjectSigningAlgo("ES512").getClaimsJsonAsString()
+    }
+
+    String getRegularClaimsWithInvalidIdTokenSigningResponseAlg() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+                .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
+                .addIDTokenSignedResponseAlg("ES512").getClaimsJsonAsString()
+    }
+
+    String getRegularClaimsWithoutIdTokenSigningResponseAlg() {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+                .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
+                .removeKeyValue(AUConstants.ID_TOKEN_SIGNED_RESPONSE_ALG_KEY).getClaimsJsonAsString()
+    }
+
+    String getExpiredRequestClaims(long date) {
+        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+                .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
+                .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
+                .addExpireDate(date)
+                .getClaimsJsonAsString()
+    }
+
     /**
      * Provide regular payload with Hybrid Response Type for DCR
      * @return
