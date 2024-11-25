@@ -94,7 +94,7 @@ class AURequestBuilder {
         auJwtGenerator.setScopes(scopes)
         String jwt = auJwtGenerator.getUserAccessTokenJwt(code)
 
-        RestAssured.baseURI = auConfiguration.getServerBaseURL()
+        RestAssured.baseURI = auConfiguration.getServerAuthorisationServerURL()
         Response response = AURestAsRequestBuilder.buildRequest().contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
                 .body(jwt)
                 .post(AUConstants.TOKEN_ENDPOINT)
