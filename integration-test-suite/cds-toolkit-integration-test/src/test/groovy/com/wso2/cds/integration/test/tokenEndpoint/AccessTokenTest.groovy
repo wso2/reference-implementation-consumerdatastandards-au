@@ -71,8 +71,8 @@ class AccessTokenTest extends AUTest {
         def errorObject = AURequestBuilder.getUserTokenErrorResponse(authorisationCode,
                 auConfiguration.getAppInfoRedirectURL(), auConfiguration.getAppInfoClientID(), true,
                 false)
-        Assert.assertEquals(errorObject.toJSONObject().get(AUConstants.ERROR_DESCRIPTION), "Transport certificate" +
-                " not found in the request")
+        Assert.assertEquals(errorObject.toJSONObject().get(AUConstants.ERROR_DESCRIPTION), "Valid transport " +
+                "certificate not found in the request")
     }
 
     @Test
@@ -247,7 +247,6 @@ class AccessTokenTest extends AUTest {
         Assert.assertTrue(introspectResponse.jsonPath().get("active").equals(false))
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8456
     @Test(dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
     void "CDS-1023_Verify introspection request return cdr_arrangement_id"() {
 
@@ -260,5 +259,91 @@ class AccessTokenTest extends AUTest {
         Assert.assertNotNull(response.jsonPath().get("scope"))
         Assert.assertNotNull(response.jsonPath().get("exp"))
         Assert.assertEquals(response.jsonPath().get("cdr_arrangement_id"), cdrArrangementId)
+    }
+
+    @Test
+    void "CDS-1048_Token Request without client id param in the request body"() {
+
+        doConsentAuthorisation( auConfiguration.getAppInfoClientID())
+        Assert.assertNotNull(authorisationCode)
+
+        def tokenResponse = getUserAccessTokenResponse()
+        user_AccessToken = tokenResponse.tokens.accessToken
+        refreshToken = tokenResponse.tokens.refreshToken
+
+        Assert.assertNotNull(user_AccessToken)
+    }
+
+    @Test (dependsOnMethods = "CDS-1048_Token Request without client id param in the request body")
+    void "CDS-1052_Token introspection Request without client id param in the request body"() {
+
+        def introspectResponseSecondToken = AURequestBuilder.buildIntrospectionWithoutClientIdParam(refreshToken,
+                auConfiguration.getAppInfoClientID(), 0)
+                .post(AUConstants.INTROSPECTION_ENDPOINT)
+
+        Assert.assertTrue(introspectResponseSecondToken.jsonPath().get("active").toString().contains("true"))
+    }
+
+    @Test (dependsOnMethods = "CDS-1052_Token introspection Request without client id param in the request body")
+    void "CDS-1051_Token Revocation Request without client id param in the request body"() {
+
+        // Revoke access Token
+        def revokeResponse = AURequestBuilder
+                .buildRevokeTokenWithoutClientIdParam(user_AccessToken, auConfiguration.getAppInfoClientID())
+                .post(AUConstants.TOKEN_REVOKE_PATH)
+
+        Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_200)
+    }
+
+    @Test
+    void "CDS-1053_Token Request with client id param in the request body similar to sub value"() {
+
+        doConsentAuthorisation( auConfiguration.getAppInfoClientID())
+        Assert.assertNotNull(authorisationCode)
+
+        def tokenResponse = getUserAccessTokenResponse(auConfiguration.getAppInfoClientID())
+        user_AccessToken = tokenResponse.tokens.accessToken
+        refreshToken = tokenResponse.tokens.refreshToken
+
+        Assert.assertNotNull(user_AccessToken)
+    }
+
+    @Test (dependsOnMethods = "CDS-1053_Token Request with client id param in the request body similar to sub value")
+    void "CDS-1057_Token introspection Request with client id param in the request body similar to sub value"() {
+
+        def introspectResponseSecondToken = AURequestBuilder.buildIntrospectionRequest(refreshToken,
+                auConfiguration.getAppInfoClientID(), 0)
+                .post(AUConstants.INTROSPECTION_ENDPOINT)
+
+        Assert.assertTrue(introspectResponseSecondToken.jsonPath().get("active").toString().contains("true"))
+    }
+
+    @Test (dependsOnMethods = "CDS-1057_Token introspection Request with client id param in the request body similar to sub value")
+    void "CDS-1056_Token Revocation Request with client id param in the request body similar to sub value"() {
+
+        // Revoke access Token
+        def revokeResponse = AURequestBuilder
+                .buildRevokeIntrospectionRequest(user_AccessToken, auConfiguration.getAppInfoClientID())
+                .post(AUConstants.TOKEN_REVOKE_PATH)
+
+        Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_200)
+    }
+
+    @Test
+    void "CDS-1058_Token Request with client Id in the request body not similar to client id in the client_assertion"() {
+
+        doConsentAuthorisation( auConfiguration.getAppInfoClientID())
+        Assert.assertNotNull(authorisationCode)
+
+        def tokenResponse = AURequestBuilder.getUserTokenWithClientIdInReqBody(authorisationCode,
+                AUConstants.CODE_VERIFIER, auConfiguration.getAppInfoClientID(), auConfiguration.getAppInfoClientID(1))
+        def response = tokenResponse.toErrorResponse()
+
+        Assert.assertEquals(response.toHTTPResponse().statusCode, AUConstants.STATUS_CODE_401)
+        Assert.assertEquals(response.toHTTPResponse().getAt(AUConstants.ERROR_DESCRIPTION),
+                "Request Parameter 'client_id' does not match the 'sub' claim in the client_assertion")
+        Assert.assertEquals(response.toHTTPResponse().getAt(AUConstants.ERROR), AUConstants.INVALID_CLIENT)
+
+        Assert.assertNotNull(user_AccessToken)
     }
 }

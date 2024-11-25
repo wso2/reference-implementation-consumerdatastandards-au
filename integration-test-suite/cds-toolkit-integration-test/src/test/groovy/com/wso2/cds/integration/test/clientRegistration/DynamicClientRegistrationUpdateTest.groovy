@@ -31,6 +31,9 @@ import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 import org.testng.ITestContext
 
+import java.nio.file.Path
+import java.nio.file.Paths
+
 /**
  * Testcases for DCR Update request validation.
  */
@@ -177,5 +180,50 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
                 .put(registrationPath + clientId)
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_401)
+    }
+
+    @Test
+    void "CDS-22_Update Application with SSA containing redirect uri in localhost value"() {
+
+        Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
+        String filePath = Paths.get(dcrArtifactsPath.getParent().toString(), "ssa_localhost.txt")
+
+        accessToken = getApplicationAccessToken(clientId)
+        Assert.assertNotNull(accessToken)
+
+        AUJWTGenerator aujwtGenerator =new AUJWTGenerator()
+        AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(registrationRequestBuilder
+                        .getAURegularClaims(auConfiguration.getAppDCRSoftwareId(), AUTestUtil.readFileContent(filePath),
+                                AUConstants.LOCALHOST_REDIRECT_URL))
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .put(registrationPath + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_200)
+        Assert.assertEquals(parseResponseBody(registrationResponse, "software_statement"),
+                AUTestUtil.readFileContent(filePath))
+        Assert.assertTrue(parseResponseBody(registrationResponse, "redirect_uris")
+                .contains(AUConstants.LOCALHOST_REDIRECT_URL))
+
+        deleteApplicationIfExists(clientId)
+    }
+
+    @Test
+    void "CDS-23_Update registration details with invalid http method"() {
+
+        accessToken = getApplicationAccessToken(clientId)
+        Assert.assertNotNull(accessToken)
+
+        AUJWTGenerator aujwtGenerator =new AUJWTGenerator()
+        AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
+                .when()
+                .request("COPY", AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_501)
     }
 }

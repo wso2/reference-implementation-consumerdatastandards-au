@@ -100,6 +100,6 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
                 .when()
                 .request(httpMethod.toString(), AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
 
-        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_501)
     }
 }

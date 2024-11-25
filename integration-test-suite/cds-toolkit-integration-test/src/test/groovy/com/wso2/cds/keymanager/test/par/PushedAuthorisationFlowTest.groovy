@@ -368,7 +368,7 @@ class PushedAuthorisationFlowTest extends AUTest {
         Assert.assertEquals(AUTestUtil.parseResponseBody(parResponse, AUConstants.ERROR_DESCRIPTION),
                 "Error retrieving service provider tenant domain for client_id: ${incorrectClientId}")
         Assert.assertEquals(AUTestUtil.parseResponseBody(parResponse, AUConstants.ERROR),
-        "Service provider metadata retrieval failed")
+                "Service provider metadata retrieval failed")
     }
 
     @Test
@@ -516,5 +516,50 @@ class PushedAuthorisationFlowTest extends AUTest {
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         Assert.assertNotNull(requestUri)
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.RESPONSE_EXPIRES_IN))
+    }
+
+    @Test
+    void "CDS-1049_PAR Request without client id param in the request body"() {
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequestWithoutClientId(scopes,
+                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
+        Assert.assertNotNull(requestUri)
+        Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.RESPONSE_EXPIRES_IN))
+    }
+
+    @Test
+    void "CDS-1059_PAR Request with client Id in the request body not similar to client id in the client_assertion"() {
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequestWithDifferentClientIds(scopes,
+                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId,
+                auConfiguration.getAppInfoClientID(), auConfiguration.getAppInfoClientID(1))
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+
+        def errorDesc = AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION)
+        def error = AUTestUtil.parseResponseBody(response, AUConstants.ERROR)
+
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_401)
+        Assert.assertEquals(errorDesc, "Request Parameter 'client_id' does not match the 'sub' claim in the client_assertion")
+        Assert.assertEquals(error, AUConstants.INVALID_CLIENT)
+    }
+
+    @Test
+    void "CDS-1069_PAR Request with valid client Id in the request body and deleted client id in the client_assertion"() {
+
+        def invalidClientId = "qwe23rvdvdfvfd"
+        def response = auAuthorisationBuilder.doPushAuthorisationRequestWithDifferentClientIds(scopes,
+                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId,
+                invalidClientId, auConfiguration.getAppInfoClientID(1))
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+
+        def errorDesc = AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION)
+        def error = AUTestUtil.parseResponseBody(response, AUConstants.ERROR)
+
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(errorDesc, "Error retrieving service provider tenant domain for client_id: $invalidClientId")
+        Assert.assertEquals(error, "Service provider metadata retrieval failed")
     }
 }

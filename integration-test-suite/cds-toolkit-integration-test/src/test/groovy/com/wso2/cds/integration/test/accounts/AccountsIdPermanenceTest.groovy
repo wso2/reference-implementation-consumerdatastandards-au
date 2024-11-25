@@ -149,7 +149,7 @@ class AccountsIdPermanenceTest extends AUTest {
         SoftAssert softAssertion= new SoftAssert()
         softAssertion.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
         softAssertion.assertNotNull(response.getHeader(AUConstants.X_FAPI_INTERACTION_ID))
-        softAssertion.assertEquals(secondConsentedAccount, AUIdEncryptorDecryptor.decrypt(
+        softAssertion.assertEquals(consentedAccount, AUIdEncryptorDecryptor.decrypt(
                 AUTestUtil.parseResponseBody(response, AUConstants.RESPONSE_DATA_SINGLE_ACCOUNTID), secretKey).
                 split(":")[2])
         softAssertion.assertTrue(AUTestUtil.parseResponseBody(response, AUConstants.LINKS_SELF)

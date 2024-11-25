@@ -41,6 +41,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
 
     @Test
     void "TC0202006_Initiate two authorisation consent flows on same browser session"() {
+        def sessionId
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -75,6 +76,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
         automationResponse = getBrowserAutomation(AUConstants.DEFAULT_DELAY, true)
                 .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
                 .addStep { driver, context ->
+                    driver.sessionId = sessionId
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
                     //Select Profile and Accounts
@@ -86,7 +88,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
                     //Click Authorise Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
                 }
-                .execute(true)
+                .execute()
 
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
         Assert.assertNotNull(authorisationCode)

@@ -227,7 +227,7 @@ class AuthorisationFlowTest extends AUTest {
         // Revoke access Token
         def revokeResponse = AURequestBuilder
                 .buildRevokeIntrospectionRequest(userAccessToken, auConfiguration.getAppInfoClientID())
-                .post(AUConstants.REVOKE_PATH)
+                .post(AUConstants.TOKEN_REVOKE_PATH)
 
         Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_200)
 
@@ -288,7 +288,6 @@ class AuthorisationFlowTest extends AUTest {
         Assert.assertEquals(state, stateParam)
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8303
     @Test
     void "OB-1695_Cancel consent authorisation sent with state param in the login page"() {
 
@@ -355,7 +354,7 @@ class AuthorisationFlowTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         String stateParam = authUrl.split("state=")[1]
         Assert.assertEquals(auAuthorisationBuilder.state.toString(), stateParam)
     }
@@ -393,16 +392,16 @@ class AuthorisationFlowTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         Assert.assertTrue(authUrl.contains("state"))
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8303
     @Test
     void "OB-1697_Deny consent authorisation request sent without state param in the display_consent page"() {
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, "")
+                true, "", auConfiguration.getAppInfoClientID(),
+                auConfiguration.getAppInfoRedirectURL(), ResponseType.CODE.toString(), false)
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         String authUrl = doConsentAuthorisationViaRequestUriDenyFlow(scopes, requestUri.toURI(),
@@ -445,7 +444,7 @@ class AuthorisationFlowTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         Assert.assertFalse(authUrl.contains("state"))
     }
 
@@ -488,7 +487,7 @@ class AuthorisationFlowTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         Assert.assertFalse(authUrl.contains("state"))
     }
 
@@ -498,20 +497,11 @@ class AuthorisationFlowTest extends AUTest {
         scopes = []
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
-        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
-
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(),
-                auConfiguration.getAppInfoClientID(), false).toURI().toString()
+        requestUri = response.jsonPath().getString(AUConstants.ERROR_DESCRIPTION)
 
         String errorMessage = "No valid scopes found in the request"
 
-        def automationResponse = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
-                .addStep(new NavigationAutomationStep(authoriseUrl, 10))
-                .execute()
-
-        String url = automationResponse.currentUrl.get()
-        String errorUrl = AUTestUtil.getErrorFromUrl(url)
-        Assert.assertEquals(errorUrl, errorMessage)
+        Assert.assertEquals(requestUri, errorMessage)
     }
 
     @Test (priority = 2)
@@ -525,14 +515,13 @@ class AuthorisationFlowTest extends AUTest {
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
 
-        String errorMessage = "Invalid scopes in the request"
+        String errorMessage = "No valid scopes found in the request"
 
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION), errorMessage)
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8420
     @Test
-    void "OB-1253_Initiate authorisation consent flow only with openid and profile scopes"() {
+    void  "OB-1253_Initiate authorisation consent flow only with openid and profile scopes"() {
 
         scopes = [
                 AUAccountScope.PROFILE
@@ -711,7 +700,7 @@ class AuthorisationFlowTest extends AUTest {
         def authUrl = automation.currentUrl.get()
         def error_description = URLDecoder.decode(authUrl.split("&")[2].split("=")[1], "UTF8")
 
-        Assert.assertTrue(error_description.contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(error_description.contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         String actualRedirectUrl = authUrl.split("#")[0]
         Assert.assertEquals(actualRedirectUrl.toString(), newRedirectUri)
     }
@@ -791,7 +780,7 @@ class AuthorisationFlowTest extends AUTest {
         def authUrl = automation.currentUrl.get()
         def error_description = URLDecoder.decode(authUrl.split("&")[2].split("=")[1], "UTF8")
 
-        Assert.assertTrue(error_description.contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(error_description.contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         String actualRedirectUrl = authUrl.split("#")[0]
         Assert.assertEquals(actualRedirectUrl.toString(), newRedirectUri)
     }
@@ -839,5 +828,25 @@ class AuthorisationFlowTest extends AUTest {
 
         def automation = doAuthorisationFlowNavigation(authoriseUrl, AUAccountProfile.INDIVIDUAL, true)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
+
+    @Test
+    void "CDS-720_Send authorisation request without request_uri"() {
+
+        requestUri = ""
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(),
+                auConfiguration.getAppInfoClientID()).toURI().toString()
+
+        String errorMessage = "Redirect URI is not present in the authorization request"
+
+        def automationResponse = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new NavigationAutomationStep(authoriseUrl, 10))
+                .execute()
+
+        String url = automationResponse.currentUrl.get()
+        String errorUrl
+
+        errorUrl = AUTestUtil.getErrorFromUrl(url)
+        Assert.assertEquals(errorUrl, errorMessage)
     }
 }

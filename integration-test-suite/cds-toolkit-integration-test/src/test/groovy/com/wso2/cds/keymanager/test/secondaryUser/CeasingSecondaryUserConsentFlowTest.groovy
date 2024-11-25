@@ -276,6 +276,14 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 }
                 .execute()
 
+        authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+
+        //Get Access Token
+        responseBody = getUserAccessTokenResponse(clientId)
+        userAccessToken = responseBody.tokens.accessToken
+        cdrArrangementId = responseBody.getCustomParameters().get(AUConstants.CDR_ARRANGEMENT_ID)
+        Assert.assertNotNull(cdrArrangementId)
+
         //Block the sharing status of one account
         response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.BLOCK_ENTITY)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)

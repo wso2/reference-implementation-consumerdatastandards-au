@@ -67,7 +67,7 @@ class RequestObjectValidationTest extends AUTest {
     void "OB-1233_Initiate authorisation consent flow with 'RS256' signature algorithm"() {
 
         String claims = generator.getRequestObjectClaim(scopes, AUConstants.DEFAULT_SHARING_DURATION, true, "",
-        auConfiguration.getAppInfoRedirectURL(), auConfiguration.getAppInfoClientID(),
+                auConfiguration.getAppInfoRedirectURL(), auConfiguration.getAppInfoClientID(),
                 auAuthorisationBuilder.getResponseType().toString(), true,
                 auAuthorisationBuilder.getState().toString())
 
@@ -80,7 +80,6 @@ class RequestObjectValidationTest extends AUTest {
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR), AUConstants.INVALID_REQUEST_OBJECT)
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8457
     @Test (priority = 1)
     void "OB-1234_Initiate authorisation consent flow with 'PS512' signature algorithm"() {
 
@@ -107,8 +106,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString())
 
         String modifiedClaimSet = generator.removeClaimsFromRequestObject(claims, "aud")
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION), AUConstants.MISSING_AUD_VALUE)
@@ -124,8 +124,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString())
 
         String modifiedClaimSet = generator.removeClaimsFromRequestObject(claims, "iss")
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION), AUConstants.MISSING_ISS_VALUE)
@@ -142,7 +143,9 @@ class RequestObjectValidationTest extends AUTest {
 
         String modifiedClaimSet = generator.removeClaimsFromRequestObject(claims, "exp")
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION), AUConstants.MISSING_EXP_VALUE)
@@ -158,7 +161,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString())
 
         String modifiedClaimSet = generator.removeClaimsFromRequestObject(claims, "nbf")
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION), AUConstants.MISSING_NBF_VALUE)
@@ -174,7 +179,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString(), ResponseMode.JWT.toString(),
                 Instant.now().minus(1, ChronoUnit.HOURS))
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(claims)
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -192,7 +199,9 @@ class RequestObjectValidationTest extends AUTest {
                 auConfiguration.getAppInfoClientID(), auAuthorisationBuilder.getResponseType().toString(), true,
                 auAuthorisationBuilder.getState().toString(), ResponseMode.JWT.toString(), time, time)
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(claims)
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -210,7 +219,9 @@ class RequestObjectValidationTest extends AUTest {
                 auConfiguration.getAppInfoClientID(), auAuthorisationBuilder.getResponseType().toString(), true,
                 auAuthorisationBuilder.getState().toString(), ResponseMode.JWT.toString(), time)
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(claims)
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -227,7 +238,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString())
 
         String modifiedClaimSet = generator.removeClaimsFromRequestObject(claims, "redirect_uri")
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -245,7 +258,8 @@ class RequestObjectValidationTest extends AUTest {
 
         String modifiedClaimSet = generator.addClaimsFromRequestObject(claims, "redirect_uri",
                 "https://www.google.com")
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -261,7 +275,8 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getResponseType().toString(), true,
                 auAuthorisationBuilder.getState().toString())
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(claims)
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI))
@@ -275,7 +290,8 @@ class RequestObjectValidationTest extends AUTest {
                 auConfiguration.getAppInfoClientID(), auAuthorisationBuilder.getResponseType().toString(),
                 true, auAuthorisationBuilder.getState().toString())
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(claims)
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -294,8 +310,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString())
 
         String modifiedClaimSet = generator.addClaimsFromRequestObject(claims, "exp", expiryDate)
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -312,8 +329,9 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getState().toString())
 
         String modifiedClaimSet = generator.addClaimsFromRequestObject(claims, "aud", "123")
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
@@ -329,7 +347,8 @@ class RequestObjectValidationTest extends AUTest {
                 auAuthorisationBuilder.getResponseType().toString(), true,
                 auAuthorisationBuilder.getState().toString())
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(claims)
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI))
@@ -345,8 +364,9 @@ class RequestObjectValidationTest extends AUTest {
 
         def audienceValue = AUConstants.PUSHED_AUTHORISATION_BASE_PATH + AUConstants.PAR_ENDPOINT
         String modifiedClaimSet = generator.addClaimsFromRequestObject(claims, "aud", audienceValue)
+        String signedRequest = generator.getSignedAuthRequestObject(modifiedClaimSet).serialize()
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(signedRequest)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI))

@@ -58,6 +58,68 @@ class ConsentAmendmentFlowTest extends AUTest{
     private RefreshToken refreshToken, secondRefreshToken
 
     @Test(groups = "SmokeTest")
+    void "CDS-9771_Verify Consent Amendment flow when both sharing duration and scope has been amended"() {
+
+        // Send Authorisation request
+        doConsentAuthorisation(auConfiguration.getAppInfoClientID(), AUAccountProfile.INDIVIDUAL)
+
+        // Retrieve the user access token by auth code
+        accessTokenResponse = getUserAccessTokenResponse(clientId)
+        cdrArrangementId = accessTokenResponse.getCustomParameters().get(AUConstants.CDR_ARRANGEMENT_ID)
+        userAccessToken = accessTokenResponse.tokens.accessToken
+        refreshToken = accessTokenResponse.tokens.refreshToken
+
+        Assert.assertNotNull(userAccessToken)
+        Assert.assertNotNull(refreshToken)
+        Assert.assertNotNull(cdrArrangementId)
+
+        //remove an existing scope and add a new scope to amend the consent
+        scopes.remove(AUAccountScope.BANK_TRANSACTION_READ)
+        scopes.add(AUAccountScope.BANK_PAYEES_READ)
+
+        //Retrieve and assert the request URI from Push Authorization request
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+                true, cdrArrangementId)
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
+
+        //Consent Amendment Authorisation Flow
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    //Click Confirm Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+
+                    //Click Authorise Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }
+                .execute()
+
+        // Get Code From URL
+        authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+
+        //Generate Token
+        accessTokenResponse2 = getUserAccessTokenResponse(clientId)
+        def cdrArrangementId2 = accessTokenResponse2.getCustomParameters().get(AUConstants.CDR_ARRANGEMENT_ID)
+        secondUserAccessToken = accessTokenResponse2.tokens.accessToken
+        secondRefreshToken = accessTokenResponse2.tokens.refreshToken
+
+        Assert.assertNotNull(secondUserAccessToken)
+        Assert.assertNotNull(secondRefreshToken)
+        Assert.assertEquals(cdrArrangementId, cdrArrangementId2, "Amended CDR id is not original CDR id")
+
+        //Get Account Transaction Details
+        def responseAfterAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(secondUserAccessToken,
+                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+
+        Assert.assertEquals(responseAfterAmendment.statusCode(), AUConstants.STATUS_CODE_200)
+    }
+
+    @Test(groups = "SmokeTest")
     void "CDS-977_Verify Consent Amendment flow when both sharing duration and scope has been amended"() {
 
         // Send Authorisation request
@@ -110,9 +172,17 @@ class ConsentAmendmentFlowTest extends AUTest{
         secondUserAccessToken = accessTokenResponse2.tokens.accessToken
         secondRefreshToken = accessTokenResponse2.tokens.refreshToken
 
-        Assert.assertNotNull(userAccessToken)
         Assert.assertNotNull(secondUserAccessToken)
+        Assert.assertNotNull(secondRefreshToken)
         Assert.assertEquals(cdrArrangementId, cdrArrangementId2, "Amended CDR id is not original CDR id")
+
+        //Get Account Transaction Details
+        def responseAfterAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(secondUserAccessToken,
+                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+
+        Assert.assertEquals(responseAfterAmendment.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
     @Test(groups = "SmokeTest",
@@ -172,7 +242,8 @@ class ConsentAmendmentFlowTest extends AUTest{
     @Test(dependsOnMethods = "CDS-977_Verify Consent Amendment flow when both sharing duration and scope has been amended")
     void "CDS-982_Verify regenerate Access Token using Refresh Token for amended Consent"() {
 
-        AccessTokenResponse userAccessToken = getUserAccessTokenFormRefreshToken(secondRefreshToken)
+        RefreshToken refreshToken = new RefreshToken(secondRefreshToken)
+        AccessTokenResponse userAccessToken = getUserAccessTokenFormRefreshToken(refreshToken)
         Assert.assertNotNull(userAccessToken.tokens.accessToken)
     }
 

@@ -167,8 +167,7 @@ class ConcurrentConsentTest extends AUTest {
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
                 .get("${AUConstants.BULK_ACCOUNT_PATH}")
 
-        //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/7882
-        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_403)
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_401)
 
         //validate token
         def introspectResponse = AURequestBuilder.buildIntrospectionRequest(userAccessToken,
@@ -176,6 +175,36 @@ class ConcurrentConsentTest extends AUTest {
                 .post(AUConstants.INTROSPECTION_ENDPOINT)
 
         Assert.assertTrue((introspectResponse.jsonPath().get("active")).equals(false))
+    }
+
+    //TODO: https://github.com/wso2-enterprise/ob-compliance-toolkit-cds/issues/424
+    @Test (dependsOnMethods = "TC0902001_Revoke consent using cdr management endpoint")
+    void "CDS-147_Invoke cdr management endpoint with previously revoked cdr_arrangement_id"() {
+
+        //revoke sharing arrangement without cdr arrangement id
+        generator = new AUJWTGenerator()
+        String assertionString = generator.getClientAssertionJwt(clientId)
+
+        def bodyContent = [(AUConstants.CLIENT_ID_KEY): (clientId),
+                           (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
+                           (AUConstants.CLIENT_ASSERTION_KEY)     : assertionString,
+                           (AUConstants.CDR_ARRANGEMENT_ID)       : cdrArrangementId]
+
+        revocationResponse = AURestAsRequestBuilder.buildRequest()
+                .contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
+                .formParams(bodyContent)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_CDR_ARRANGEMENT))
+                .post("${AUConstants.CDR_ARRANGEMENT_ENDPOINT}")
+
+        Assert.assertEquals(revocationResponse.statusCode(), AUConstants.STATUS_CODE_422)
+        Assert.assertNotNull(revocationResponse.getHeader(AUConstants.X_FAPI_INTERACTION_ID))
+
+        Assert.assertEquals(AUTestUtil.parseResponseBody(revocationResponse, AUConstants.ERROR_CODE),
+                AUConstants.ERROR_CODE_INVALID_ARRANGEMENT)
+        Assert.assertEquals(AUTestUtil.parseResponseBody(revocationResponse, AUConstants.ERROR_TITLE),
+                AUConstants.INVALID_CONSENT_ARRANGEMENT)
+        Assert.assertEquals(AUTestUtil.parseResponseBody(revocationResponse, AUConstants.ERROR_DETAIL),
+                "invalid cdr-arrangement-id sent in the request")
     }
 
     @Test
@@ -312,5 +341,72 @@ class ConcurrentConsentTest extends AUTest {
                 .post("${AUConstants.CDR_ARRANGEMENT_ENDPOINT}")
 
         Assert.assertEquals(revocationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+    }
+
+    @Test
+    void "CDS-1050_CDR Arrangement Revocation Request without client id param in the request body"() {
+
+        List<AUAccountScope> sharingScope = [ AUAccountScope.BANK_ACCOUNT_BASIC_READ ]
+
+        //authorise sharing arrangement
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(sharingScope, AUConstants.DEFAULT_SHARING_DURATION,
+                true, "")
+        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
+        doConsentAuthorisationViaRequestUri(sharingScope, requestUri.toURI(), clientId, AUAccountProfile.INDIVIDUAL)
+        Assert.assertNotNull(authorisationCode)
+
+        //Generate User Access Token
+        def userAccessTokenResponse = AURequestBuilder.getUserToken(authorisationCode,
+                sharingScope, AUConstants.CODE_VERIFIER)
+        String userAccessToken = userAccessTokenResponse.tokens.accessToken.toString()
+
+        //obtain cdr_arrangement_id from token response
+        String cdrArrangementId = userAccessTokenResponse.getCustomParameters().get(AUConstants.CDR_ARRANGEMENT_ID)
+        Assert.assertNotNull(cdrArrangementId)
+
+        //retrieve consumer data successfully
+        Response response = AURequestBuilder
+                .buildBasicRequest(userAccessToken, AUConstants.CDR_ENDPOINT_VERSION)
+                .header(AUConstants.X_FAPI_AUTH_DATE, AUConstants.DATE)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
+
+        //revoke sharing arrangement
+        def revokeResponse = doRevokeCdrArrangementWithoutClientIdInRequest(auConfiguration.getAppInfoClientID(),
+                cdrArrangementId)
+
+        Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_204)
+
+    }
+
+    @Test
+    void "CDS-146_Invoke cdr management endpoint with invalid cdr_arrangement_id"() {
+
+        //revoke sharing arrangement without cdr arrangement id
+        generator = new AUJWTGenerator()
+        String assertionString = generator.getClientAssertionJwt(clientId)
+
+        def bodyContent = [(AUConstants.CLIENT_ID_KEY): (clientId),
+                           (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
+                           (AUConstants.CLIENT_ASSERTION_KEY)     : assertionString,
+                           (AUConstants.CDR_ARRANGEMENT_ID)       : "123"]
+
+        revocationResponse = AURestAsRequestBuilder.buildRequest()
+                .contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
+                .formParams(bodyContent)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_CDR_ARRANGEMENT))
+                .post("${AUConstants.CDR_ARRANGEMENT_ENDPOINT}")
+
+        Assert.assertEquals(revocationResponse.statusCode(), AUConstants.STATUS_CODE_422)
+        Assert.assertNotNull(revocationResponse.getHeader(AUConstants.X_FAPI_INTERACTION_ID))
+
+        Assert.assertEquals(AUTestUtil.parseResponseBody(revocationResponse, AUConstants.ERROR_CODE),
+                AUConstants.ERROR_CODE_INVALID_ARRANGEMENT)
+        Assert.assertEquals(AUTestUtil.parseResponseBody(revocationResponse, AUConstants.ERROR_TITLE),
+                AUConstants.INVALID_CONSENT_ARRANGEMENT)
+        Assert.assertEquals(AUTestUtil.parseResponseBody(revocationResponse, AUConstants.ERROR_DETAIL),
+                "invalid cdr-arrangement-id sent in the request")
     }
 }

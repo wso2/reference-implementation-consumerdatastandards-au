@@ -170,4 +170,30 @@ class CeasingSecondaryUserManagementTest extends AUTest {
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, "${AUConstants.PAYLOAD_SECONDARY_USERS}." +
                 "${AUConstants.PAYLOAD_PARAM_ACCOUNTS}.${AUConstants.LEGAL_ENTITIES}.${AUConstants.SHARING_STATUS}"))
     }
+
+    @Test
+    void "CDS-636_Block sharing status with incorrect accountId"() {
+
+        response = updateLegalEntityStatus(clientHeader, "1234", userId, legalEntityId, AUConstants.BLOCK_ENTITY)
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
+
+        //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8275
+        Assert.assertEquals(AUTestUtil.parseResponseBody(response, "errorDescription"),
+                "Error occurred while updating the sharing status for a legal entity/entities.")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR), AUConstants.INVALID_REQUEST)
+    }
+
+    @Test
+    void "CDS-637_Block sharing status with incorrect user id"() {
+
+        response = updateLegalEntityStatus(clientHeader, accountID, "abc@gold.com", legalEntityId, AUConstants.BLOCK_ENTITY)
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
+
+        //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8275
+        Assert.assertEquals(AUTestUtil.parseResponseBody(response, "errorDescription"),
+                "Error occurred while updating the sharing status for a legal entity/entities.")
+        Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR), AUConstants.INVALID_REQUEST)
+    }
+
+
 }

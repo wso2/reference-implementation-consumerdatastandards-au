@@ -650,4 +650,17 @@ class AccountsRetrievalRequestHeaderValidationTest extends AUTest {
 
         softAssertion.assertAll()
     }
+
+    @Test
+    void "CDS-32_Retrieve account list without x-fapi-interaction-id"() {
+
+        def response = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
+                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
+                .accept(AUConstants.ACCEPT)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
+        Assert.assertNotNull(response.getHeader(AUConstants.X_FAPI_INTERACTION_ID))
+    }
 }

@@ -24,6 +24,7 @@ import com.wso2.cds.test.framework.constant.ContextConstants
 import com.wso2.cds.test.framework.request_builder.AUJWTGenerator
 import com.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import com.wso2.cds.test.framework.utility.AUTestUtil
+import io.restassured.http.ContentType
 import org.testng.Assert
 import org.testng.annotations.AfterClass
 import org.testng.annotations.BeforeClass
@@ -32,6 +33,8 @@ import org.testng.ITestContext
 
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 /**
  *Test cases to validate DCR create request.
@@ -465,6 +468,51 @@ class DynamicClientRegistrationCreateTest extends AUTest{
     }
 
     @Test
+    void "CDS-1104_Create application with invalid TokenEndpointAuthSigningAlgorithm"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getRegularClaimsWithInvalidTokenAuthSignAlg())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.INVALID_SIGNING_ALG)
+    }
+
+    @Test
+    void "CDS-1105_Create application with invalid Aud"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getClaimsWithInvalidAud())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.INVALID_AUDIENCE_ERROR)
+    }
+
+    @Test
+    void "CDS-1106_Create application without ApplicationType"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getRegularClaimsWithoutApplicationType())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
+        deleteApplicationIfExists(clientId)
+    }
+
+    @Test
     void "CDS-673_DCR registration request with localhost url in the SSA"(ITestContext context) {
 
         Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
@@ -475,7 +523,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         def registrationResponse = AURegistrationRequestBuilder
                 .buildRegistrationRequest(registrationRequestBuilder
                         .getAURegularClaims(auConfiguration.getAppDCRSoftwareId(), AUTestUtil.readFileContent(filePath),
-                        AUConstants.LOCALHOST_REDIRECT_URL))
+                                AUConstants.LOCALHOST_REDIRECT_URL))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -492,5 +540,149 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
         deleteApplicationIfExists(clientId)
     }
+
+    @Test
+    void "CDS-674_DCR registration request with different hostnames for redirect url in SSA"() {
+
+        Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
+        String filePath = Paths.get(dcrArtifactsPath.getParent().toString(), "ssa_differentHostNames.txt")
+
+        jtiVal = String.valueOf(System.currentTimeMillis())
+        AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(registrationRequestBuilder
+                        .getAURegularClaims(auConfiguration.getAppDCRSoftwareId(), AUTestUtil.readFileContent(filePath),
+                                AUConstants.LOCALHOST_REDIRECT_URL))
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERROR_REDIRECT_URL_WITH_DIFF_HOSTNAMES)
+    }
+
+    @Test
+    void "Create application without redirect uri in SSA"() {
+
+        Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
+        String filePath = Paths.get(dcrArtifactsPath.getParent().toString(), "ssa_withoutRedirectUrl.txt")
+
+        jtiVal = String.valueOf(System.currentTimeMillis())
+        AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(registrationRequestBuilder
+                        .getAURegularClaims(auConfiguration.getAppDCRSoftwareId(), AUTestUtil.readFileContent(filePath),
+                                AUConstants.LOCALHOST_REDIRECT_URL))
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERROR_EMPTY_REDIRECT_URL_IN_SSA)
+    }
+
+    @Test
+    void "CDS-1108_Create application with invalid request_object_signing_alg"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getRegularClaimsWithInvalidRequestObjectSigningAlg())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.INVALID_SIGNING_ALG)
+    }
+
+    @Test
+    void "CDS-1109_Create application with invalid id_token_signed_response_alg"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getRegularClaimsWithInvalidIdTokenSigningResponseAlg())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.INVALID_SIGNING_ALG)
+    }
+
+    @Test
+    void "CDS-1110_Create application without id_token_signed_response_alg"() {
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getRegularClaimsWithoutIdTokenSigningResponseAlg())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.ERROR_WITHOUT_IDTOKEN_SINGED_ALG)
+    }
+
+    @Test (priority = 2, groups = "SmokeTest")
+    void "CDS-476_Create application without ID_Token Response Type and verify id_token encryption not Mandatory"() {
+
+        deleteApplicationIfExists(clientId)
+        AUConfigurationService auConfiguration = new AUConfigurationService()
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenEnc())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
+        clientId = parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
+
+        deleteApplicationIfExists(clientId)
+    }
+
+    @Test
+    void "CDS-1111_Create application with unsupported content-type"() {
+
+        jtiVal = String.valueOf(System.currentTimeMillis())
+        AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .contentType(ContentType.JSON)
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_415)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.INVALID_CONTENT_TYPE)
+    }
+
+    @Test
+    void "CDS-1112_Create application with expired Request JWT"() {
+
+        Long expiredDate = LocalDate.now().minusDays(1).atTime(currentTime, 00, 00)
+                .toEpochSecond(ZoneOffset.UTC)
+
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        def registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getExpiredRequestClaims(expiredDate))
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
+                AUConstants.INVALID_CLIENT_METADATA)
+        //TODO: Add Error Description after fixing https://github.com/wso2-enterprise/ob-compliance-toolkit-cds/issues/403
+    }
+
 }
 
