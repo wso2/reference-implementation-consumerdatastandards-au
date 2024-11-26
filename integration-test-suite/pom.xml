@@ -79,9 +79,9 @@
                 <version>${org.testng.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.wso2</groupId>
+                <groupId>org.wso2</groupId>
                 <artifactId>open-banking-test-framework</artifactId>
-                <version>${com.wso2.openbanking.test}</version>
+                <version>${org.wso2.openbanking.test}</version>
                 <scope>compile</scope>
             </dependency>
             <dependency>
@@ -349,7 +349,7 @@
         <com.google.guava.version>31.0.1-jre</com.google.guava.version>
         <com.google.inject.guice.version>4.2.3</com.google.inject.guice.version>
         <com.nimbus.oauth2-oidc-sdk.version>9.35</com.nimbus.oauth2-oidc-sdk.version>
-        <com.wso2.openbanking.test>1.0.0</com.wso2.openbanking.test>
+        <org.wso2.openbanking.test>4.0.0-SNAPSHOT</org.wso2.openbanking.test>
         <com.google.code.gson.version>2.8.9</com.google.code.gson.version>
         <org.jsoup.version>1.15.4</org.jsoup.version>
         <com.auth0.version>3.18.0</com.auth0.version>
