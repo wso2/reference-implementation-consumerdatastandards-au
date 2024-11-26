@@ -409,7 +409,7 @@ class AUConstants extends OBConstants {
     public static final String ERROR_NOT_ALLOWED_TO_ACCESS = "The access token does not allow you to access the requested resource"
     public static final String PARAM_PROFILE_NAME = "profileName"
     public static final String USER_DENIED_THE_CONSENT = "User denied the consent"
-    public static final String USER_SKIP_THE_CONSENT_FLOW = "User skip the consent flow"
+    public static final String USER_SKIP_THE_CONSENT_FLOW = "User skipped the consent flow"
     public static final String CANCEL_ERROR_IN_ACCOUNTS_PAGE = "User skip the consent flow"
 
     public static final String ACTIVE = "active"

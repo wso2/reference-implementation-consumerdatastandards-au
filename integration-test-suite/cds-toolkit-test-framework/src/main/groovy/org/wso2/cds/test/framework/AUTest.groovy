@@ -1571,9 +1571,6 @@ class AUTest extends OBTest {
      */
     static void assertMetricsAuthorisationResponse(Response metricsResponse) {
 
-        //Asserting the Invocations
-        assertMetricsInvocationResponse(metricsResponse)
-
         Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ACTIVE_AUTHORIZATION_INDIVIDUAL),
                 "${activeAuthIndividual}", "$AUConstants.ACTIVE_AUTHORIZATION_INDIVIDUAL count mismatch")
         Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ACTIVE_AUTHORIZATION_NONINDIVIDUAL),

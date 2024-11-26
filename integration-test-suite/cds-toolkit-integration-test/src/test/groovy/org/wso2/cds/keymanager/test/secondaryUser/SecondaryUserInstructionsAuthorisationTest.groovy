@@ -276,7 +276,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         def stateParam = authUrl.split("state=")[1]
         Assert.assertEquals(auAuthorisationBuilder.state.toString(), stateParam)
     }
@@ -306,7 +306,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
         def stateParam = authUrl.split("state=")[1]
         Assert.assertEquals(auAuthorisationBuilder.state.toString(), stateParam)
     }

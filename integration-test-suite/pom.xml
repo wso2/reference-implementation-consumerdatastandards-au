@@ -212,6 +212,11 @@
                 <artifactId>java-jwt</artifactId>
                 <version>${com.auth0.version}</version>
             </dependency>
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>5.1.49</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
