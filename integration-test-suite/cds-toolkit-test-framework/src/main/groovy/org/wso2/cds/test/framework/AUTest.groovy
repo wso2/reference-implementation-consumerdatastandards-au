@@ -1768,9 +1768,9 @@ class AUTest extends OBTest {
         errorCountKeyValuePairs.sort(new Comparator<String>() {
             @Override
             int compare(String o1, String o2) {
-                int key1 = Integer.parseInt(o1.split(":")[0])
-                int key2 = Integer.parseInt(o2.split(":")[0])
-                return Integer.compare(expectedOrderKeys.indexOf(key1), expectedOrderKeys.indexOf(key2))
+                int key1 = Integer.parseInt(o1.split(":")[1])
+                int key2 = Integer.parseInt(o2.split(":")[1])
+                return Integer.compare(key1, key2)
             }
         })
 

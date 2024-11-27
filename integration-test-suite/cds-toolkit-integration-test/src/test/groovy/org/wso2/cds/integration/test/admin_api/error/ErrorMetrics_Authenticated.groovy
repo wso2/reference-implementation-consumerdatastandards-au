@@ -970,7 +970,7 @@ class ErrorMetrics_Authenticated extends AUTest {
 
         def response = AURequestBuilder.buildBasicRequestWithOptionalHeaders(userAccessToken,
                 AUConstants.X_V_HEADER_DIRECT_DEBITS, clientHeader)
-                .contentType(ContentType.TEXT)
+                .contentType(ContentType.XML)
                 .body(requestBody)
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_DIRECT_DEBIT))
                 .post(directDebitRequestUrl)
