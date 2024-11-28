@@ -33,7 +33,7 @@ import org.testng.ITestContext
 class DynamicClientRegistrationRetrieveTest extends AUTest{
 
     @SuppressWarnings('GroovyAccessibility')
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC0101018_Retrieve Application"(ITestContext context) {
 
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
@@ -49,7 +49,7 @@ class DynamicClientRegistrationRetrieveTest extends AUTest{
         AUTestUtil.writeToConfigFile(clientId)
     }
 
-    @Test(priority = 1, dependsOnMethods = "TC0101018_Retrieve Application")
+    @Test(groups = "SmokeTest", priority = 1, dependsOnMethods = "TC0101018_Retrieve Application")
     void "TC0101009_Get access token"() {
 
         accessToken = getApplicationAccessToken(clientId)
@@ -68,7 +68,7 @@ class DynamicClientRegistrationRetrieveTest extends AUTest{
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_401)
     }
 
-    @Test(priority = 2, dependsOnMethods = "TC0101009_Get access token")
+    @Test(groups = "SmokeTest", priority = 2, dependsOnMethods = "TC0101009_Get access token")
     void "TC0102002_Get registration details"() {
 
         def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)

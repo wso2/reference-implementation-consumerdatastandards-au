@@ -40,7 +40,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
     def clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
     private def accessTokenResponse
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC0202006_Initiate two authorisation consent flows on same browser session"() {
         def sessionId
 
@@ -94,7 +94,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
         Assert.assertNotNull(authorisationCode)
     }
 
-    @Test(dependsOnMethods = "TC0202006_Initiate two authorisation consent flows on same browser session")
+    @Test(groups = "SmokeTest", dependsOnMethods = "TC0202006_Initiate two authorisation consent flows on same browser session")
     void "TC0203005_Exchange authorisation code for access token"() {
 
         AccessTokenResponse accessTokenResponse = getUserAccessTokenResponse(auConfiguration.getAppInfoClientID())
@@ -102,7 +102,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
         Assert.assertNotNull(userAccessToken)
     }
 
-    @Test(dependsOnMethods = "TC0203005_Exchange authorisation code for access token")
+    @Test(groups = "SmokeTest", dependsOnMethods = "TC0203005_Exchange authorisation code for access token")
     void "TC0401007_Retrieve bulk accounts list"() {
 
         def response = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,

@@ -36,7 +36,7 @@ class ProductRetrievalValidationTest extends AUTest {
 
     def clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
-    @Test (priority = 1, groups = "SmokeTest")
+    @Test (groups = "SmokeTest", priority = 1)
     void "TC1101001_Retrieve banking products"() {
 
         Response response = AURequestBuilder.buildBasicRequestWithoutAuthorisationHeader(AUConstants.X_V_HEADER_PRODUCTS)
@@ -67,7 +67,7 @@ class ProductRetrievalValidationTest extends AUTest {
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.LINKS_LAST))
     }
 
-    @Test (priority = 1, dependsOnMethods = "TC1101001_Retrieve banking products")
+    @Test (groups = "SmokeTest", priority = 1, dependsOnMethods = "TC1101001_Retrieve banking products")
     void "TC1101002_Retrieve specific banking product details"() {
 
         Response response = AURequestBuilder.buildBasicRequestWithoutAuthorisationHeader(AUConstants.X_V_HEADER_PRODUCTS)

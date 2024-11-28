@@ -33,7 +33,7 @@ import org.testng.annotations.Test
  */
 class ErrorMetrics_Unauthenticated extends AUTest {
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -45,7 +45,7 @@ class ErrorMetrics_Unauthenticated extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test ()
+    @Test (groups = "SmokeTest")
     void "Verify the 400 error count for unauthenticated invocation is listed"() {
 
         Response response = AURestAsRequestBuilder.buildRequest()
@@ -77,7 +77,7 @@ class ErrorMetrics_Unauthenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test ()
+    @Test
     void "Verify the 406 error count for unauthenticated invocation is listed"() {
 
         Response response = AURestAsRequestBuilder.buildRequest()
@@ -110,7 +110,7 @@ class ErrorMetrics_Unauthenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test ()
+    @Test
     void "Verify the 405 error count for unauthenticated invocation is listed"() {
 
         Response response = AURestAsRequestBuilder.buildRequest()

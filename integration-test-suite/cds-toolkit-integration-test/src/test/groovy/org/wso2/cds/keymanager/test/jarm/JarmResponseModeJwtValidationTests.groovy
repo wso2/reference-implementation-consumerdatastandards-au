@@ -37,7 +37,7 @@ class JarmResponseModeJwtValidationTests extends AUTest{
     String responseJwt
     JWTClaimsSet jwtPayload
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-577_Verify authorisation flow with response method jwt and response type code"() {
 
         doConsentAuthorisation(ResponseMode.JWT, ResponseType.CODE, auConfiguration.getAppInfoClientID())

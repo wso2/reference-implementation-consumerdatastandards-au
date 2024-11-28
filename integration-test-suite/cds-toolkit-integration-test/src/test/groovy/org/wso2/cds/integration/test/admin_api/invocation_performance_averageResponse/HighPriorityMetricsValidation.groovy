@@ -42,7 +42,7 @@ class HighPriorityMetricsValidation extends AUTest {
     private String clientId, accessToken, refreshToken
     def clientHeader
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Get User Access Token"() {
 
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
@@ -121,7 +121,7 @@ class HighPriorityMetricsValidation extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Count increase with Get Accounts - customer present invocation"() {
 
         def response = AURequestBuilder

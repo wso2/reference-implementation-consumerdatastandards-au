@@ -42,7 +42,7 @@ class AmendedAuthorisationMetrics extends AUTest {
     public String secondAuthorisationCode, thirdAuthorisationCode = null
     def clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -54,7 +54,7 @@ class AmendedAuthorisationMetrics extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Consent Amendment for Ongoing Single account consent"(){
 
         //Send Authorisation Request for 1st time
@@ -100,7 +100,7 @@ class AmendedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test (priority = 1)
+    @Test (groups = "SmokeTest", priority = 1)
     void "Consent Amendment for Ongoing Business account consent"(){
 
         auConfiguration.setPsuNumber(2)
@@ -148,7 +148,7 @@ class AmendedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test (priority = 2)
+    @Test (groups = "SmokeTest", priority = 2)
     void "Consent Amendment for Joint account consent"(){
 
         automationResponse = doJointAccountConsentAuthorisation(auConfiguration.getAppInfoClientID(), true)
@@ -194,7 +194,7 @@ class AmendedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test (priority = 3)
+    @Test (groups = "SmokeTest", priority = 3)
     void "Consent Amendment for Secondary account consent"(){
 
         auConfiguration.setPsuNumber(1)

@@ -36,7 +36,7 @@ class  AbandonRejectedMetrics extends AUTest {
     private String requestUri
     private def accessTokenResponse
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -48,7 +48,7 @@ class  AbandonRejectedMetrics extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Deny the Consent Flow"() {
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,

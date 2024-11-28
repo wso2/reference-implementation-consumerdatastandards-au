@@ -45,7 +45,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     Response response
     List <String> legalEntityList
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Pre Execution Step"() {
 
         auConfiguration.setPsuNumber(1)
@@ -71,7 +71,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         legalEntityId = registrationResponse.jsonPath().get(AUConstants.DCR_CLAIM_LEGAL_ENTITY_ID)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-643_Verify account is listed under unavailable accounts once the legal entity is restricted by account owner"() {
 
         //Block the sharing status

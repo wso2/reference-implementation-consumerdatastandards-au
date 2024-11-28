@@ -41,7 +41,7 @@ class AbandonPreAuthorisationMetrics extends AUTest {
     private String cdrArrangementId = ""
     private String requestUri
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -53,7 +53,7 @@ class AbandonPreAuthorisationMetrics extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Close Browser Session in Consent Detail Page"() {
 
         //Consent Authorisation Flow

@@ -36,7 +36,7 @@ class JarmResponseModeQueryJwtValidationTests extends AUTest {
     String responseJwt
     JWTClaimsSet jwtPayload
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-587_Verify in query jwt response mode if response_type = code"() {
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,

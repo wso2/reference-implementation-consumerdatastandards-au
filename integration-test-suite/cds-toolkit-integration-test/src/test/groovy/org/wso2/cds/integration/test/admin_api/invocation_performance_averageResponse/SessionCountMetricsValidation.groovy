@@ -32,7 +32,7 @@ import org.testng.annotations.Test
  */
 class SessionCountMetricsValidation extends AUTest{
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         //Initial Metrics Call
@@ -45,7 +45,7 @@ class SessionCountMetricsValidation extends AUTest{
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Count increase upon successful user access token request"() {
 
         //Get User Access Token

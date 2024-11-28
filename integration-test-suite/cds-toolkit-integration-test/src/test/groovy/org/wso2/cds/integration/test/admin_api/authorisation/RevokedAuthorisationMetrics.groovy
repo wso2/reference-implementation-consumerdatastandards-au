@@ -37,7 +37,7 @@ class RevokedAuthorisationMetrics extends AUTest {
     private AccessTokenResponse userAccessToken
     private String requestUri
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -49,7 +49,7 @@ class RevokedAuthorisationMetrics extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Individual Consent"(){
 
         //Send Authorisation Request for 1st time
@@ -89,7 +89,7 @@ class RevokedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Business Consent"(){
 
         auConfiguration.setPsuNumber(2)
@@ -137,7 +137,7 @@ class RevokedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Individual Once off Consent"(){
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SINGLE_ACCESS_CONSENT,
@@ -180,7 +180,7 @@ class RevokedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Business Once off Consent"(){
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SINGLE_ACCESS_CONSENT,

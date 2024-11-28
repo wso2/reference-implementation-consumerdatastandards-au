@@ -44,7 +44,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     def shareableElements
     String accountID, userId
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -101,7 +101,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Cancel Auth flow in Profile Selection Page"() {
 
         //Consent Authorisation Flow
@@ -155,7 +155,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Cancel in Individual Accounts Selection"() {
 
         //Consent Authorisation Flow

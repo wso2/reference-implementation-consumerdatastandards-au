@@ -201,7 +201,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertEquals(userAccessToken.toJSONObject().get("scope"),ACCOUNTS_BASIC_ACCOUNT_DETAIL_OPENID_SCOPE_LIST)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-705_Verify introspection response not returning username field"() {
 
         // Generating a new authorisation code
@@ -227,7 +227,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertNull(introspectResponse.jsonPath().get("username"))
     }
 
-    @Test (dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
+    @Test (groups = "SmokeTest", dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
     void "CDS-718_Send introspection call for user access token"() {
 
         def introspectResponse = AURequestBuilder.buildIntrospectionRequest(user_AccessToken,
@@ -237,7 +237,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertTrue(introspectResponse.jsonPath().get("active").equals(false))
     }
 
-    @Test (dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
+    @Test (groups = "SmokeTest", dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
     void "CDS-718_Send introspection call for id_token"() {
 
         def introspectResponse = AURequestBuilder.buildIntrospectionRequest(idToken,
@@ -247,7 +247,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertTrue(introspectResponse.jsonPath().get("active").equals(false))
     }
 
-    @Test(dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
+    @Test(groups = "SmokeTest", dependsOnMethods = "CDS-705_Verify introspection response not returning username field")
     void "CDS-1023_Verify introspection request return cdr_arrangement_id"() {
 
         def response = AURequestBuilder.buildIntrospectionRequest(refreshToken,
@@ -295,7 +295,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertEquals(revokeResponse.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-1053_Token Request with client id param in the request body similar to sub value"() {
 
         doConsentAuthorisation( auConfiguration.getAppInfoClientID())
@@ -308,7 +308,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertNotNull(user_AccessToken)
     }
 
-    @Test (dependsOnMethods = "CDS-1053_Token Request with client id param in the request body similar to sub value")
+    @Test (groups = "SmokeTest", dependsOnMethods = "CDS-1053_Token Request with client id param in the request body similar to sub value")
     void "CDS-1057_Token introspection Request with client id param in the request body similar to sub value"() {
 
         def introspectResponseSecondToken = AURequestBuilder.buildIntrospectionRequest(refreshToken,
@@ -318,7 +318,7 @@ class AccessTokenTest extends AUTest {
         Assert.assertTrue(introspectResponseSecondToken.jsonPath().get("active").toString().contains("true"))
     }
 
-    @Test (dependsOnMethods = "CDS-1057_Token introspection Request with client id param in the request body similar to sub value")
+    @Test (groups = "SmokeTest", dependsOnMethods = "CDS-1057_Token introspection Request with client id param in the request body similar to sub value")
     void "CDS-1056_Token Revocation Request with client id param in the request body similar to sub value"() {
 
         // Revoke access Token

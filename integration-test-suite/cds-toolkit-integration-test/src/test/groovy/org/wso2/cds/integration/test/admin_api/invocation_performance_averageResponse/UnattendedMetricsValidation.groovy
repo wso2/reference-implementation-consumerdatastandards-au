@@ -38,7 +38,7 @@ class UnattendedMetricsValidation extends AUTest {
     private String encryptedAccount1Id, encryptedAccount2Id, encryptedTransactionId, encryptedPayeeId
     def clientHeader
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Get User Access Token"() {
 
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
@@ -68,7 +68,7 @@ class UnattendedMetricsValidation extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Count increase with Get Customer - Unattended invocation"() {
 
         Response response = AURequestBuilder

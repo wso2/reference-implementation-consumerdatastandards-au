@@ -125,7 +125,7 @@ class ConcurrentConsentTest extends AUTest {
         Assert.assertEquals(secondAccountsResponse.statusCode(), AUConstants.STATUS_CODE_403)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC0902001_Revoke consent using cdr management endpoint"() {
 
         List<AUAccountScope> sharingScope = [ AUAccountScope.BANK_ACCOUNT_BASIC_READ ]

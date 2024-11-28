@@ -111,7 +111,7 @@ class SecondaryUserAmendmentFlow extends AUTest {
                 .execute()
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-427_Verify Consent Amendment if consumer nominated as secondary user for account by providing secondary user instruction"() {
 
         //Consent Authorisation by selecting individual accounts

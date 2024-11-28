@@ -37,7 +37,7 @@ class JarmResponseModeFragmentJwtValidationTests extends AUTest {
     HashMap<String, String> mapPayload
     JWTClaimsSet jwtPayload
 
-    @Test (priority = 1)
+    @Test (groups = "SmokeTest", priority = 1)
     void "CDS-569_Verify response_mode fragment jwt navigates to Authorization Flow"() {
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,

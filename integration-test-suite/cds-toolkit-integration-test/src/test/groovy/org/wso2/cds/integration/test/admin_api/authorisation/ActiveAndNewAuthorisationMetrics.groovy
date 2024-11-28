@@ -34,7 +34,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
 
     private String requestUri
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -46,7 +46,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Authorise New ongoing consent for Individual Profile"(){
 
         doConsentAuthorisation(auConfiguration.getAppInfoClientID(), AUAccountProfile.INDIVIDUAL)
@@ -68,7 +68,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Authorise New ongoing consent for Business Profile"(){
 
         auConfiguration.setPsuNumber(2)
@@ -91,7 +91,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void  "Authorise New once off consent for Individual Profile"(){
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SHORT_SHARING_DURATION,
@@ -119,7 +119,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Authorise New once off consent for Business Profile"(){
 
         auConfiguration.setPsuNumber(2)

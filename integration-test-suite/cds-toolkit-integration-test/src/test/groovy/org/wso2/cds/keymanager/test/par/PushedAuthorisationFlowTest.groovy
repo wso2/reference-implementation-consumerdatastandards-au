@@ -46,7 +46,7 @@ class PushedAuthorisationFlowTest extends AUTest {
     AUJWTGenerator generator = new AUJWTGenerator()
     def refreshToken
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC0205001_Data Recipients Initiate authorisation request using PAR"() {
 
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
@@ -58,14 +58,14 @@ class PushedAuthorisationFlowTest extends AUTest {
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.RESPONSE_EXPIRES_IN))
     }
 
-    @Test(dependsOnMethods = "TC0205001_Data Recipients Initiate authorisation request using PAR")
+    @Test(groups = "SmokeTest", dependsOnMethods = "TC0205001_Data Recipients Initiate authorisation request using PAR")
     void "TC0205002_Initiate consent authorisation flow with pushed authorisation request uri"() {
 
         doConsentAuthorisationViaRequestUri(scopes, requestUri.toURI())
         Assert.assertNotNull(authorisationCode)
     }
 
-    @Test(dependsOnMethods = "TC0205002_Initiate consent authorisation flow with pushed authorisation request uri")
+    @Test(groups = "SmokeTest", dependsOnMethods = "TC0205002_Initiate consent authorisation flow with pushed authorisation request uri")
     void "TC0203013_Generate User access token by code generated from PAR model"() {
 
         AccessTokenResponse userAccessToken = AURequestBuilder.getUserToken(authorisationCode,

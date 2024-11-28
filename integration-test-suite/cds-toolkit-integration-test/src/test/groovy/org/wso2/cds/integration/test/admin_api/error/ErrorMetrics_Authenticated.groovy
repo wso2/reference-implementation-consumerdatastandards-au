@@ -41,7 +41,7 @@ class ErrorMetrics_Authenticated extends AUTest {
     String encryptedAccount1Id, encryptedAccount2Id
     def clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         if(!auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||
@@ -65,7 +65,7 @@ class ErrorMetrics_Authenticated extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Verify the 400 error count for authenticated High priority invocation is listed"() {
 
         //Send DCR Registration request with same Service Provider Name

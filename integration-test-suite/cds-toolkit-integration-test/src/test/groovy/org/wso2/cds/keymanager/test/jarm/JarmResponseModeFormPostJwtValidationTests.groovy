@@ -37,7 +37,7 @@ class JarmResponseModeFormPostJwtValidationTests extends AUTest {
     HashMap<String, String> mapPayload
     JWTClaimsSet jwtPayload
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-582_Verify response_mode form_post jwt navigates to Authorization Flow"() {
 
         def clientId = auConfiguration.getAppInfoClientID()

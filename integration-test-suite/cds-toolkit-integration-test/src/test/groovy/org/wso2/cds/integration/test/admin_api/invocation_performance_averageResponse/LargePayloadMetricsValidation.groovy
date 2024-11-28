@@ -38,7 +38,7 @@ class LargePayloadMetricsValidation extends AUTest {
     private String encryptedAccount1Id, encryptedAccount2Id
     def clientHeader
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Get User Access Token"() {
 
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
@@ -68,7 +68,7 @@ class LargePayloadMetricsValidation extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Count increase with Get Bulk Direct Debits invocation - customer present"() {
 
         Response response = AURequestBuilder

@@ -43,7 +43,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
     AUJWTGenerator generator = new AUJWTGenerator()
     String clientId, softwareId
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Delete Application if exists"() {
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         softwareId = "SP1"
@@ -57,7 +57,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         Assert.assertNotNull(accessToken)
     }
 
-    @Test(priority = 1)
+    @Test(groups = "SmokeTest", priority = 1)
     void "TC0101008_Verify Dynamic client registration test"(ITestContext context){
 
         jtiVal = String.valueOf(System.currentTimeMillis())
@@ -636,7 +636,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
                 AUConstants.ERROR_WITHOUT_IDTOKEN_SINGED_ALG)
     }
 
-    @Test (priority = 2, groups = "SmokeTest")
+    @Test (priority = 2)
     void "CDS-476_Create application without ID_Token Response Type and verify id_token encryption not Mandatory"() {
 
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())

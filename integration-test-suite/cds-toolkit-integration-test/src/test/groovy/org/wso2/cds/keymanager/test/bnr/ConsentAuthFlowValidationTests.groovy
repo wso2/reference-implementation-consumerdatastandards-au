@@ -237,7 +237,7 @@ class ConsentAuthFlowValidationTests extends AUTest{
         Assert.assertEquals(auAuthorisationBuilder.state.toString(), stateParam)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "CDS-588_Verify a Consent cancellation flow after Business Account selection"() {
 
         //Get Authorisation URL
@@ -281,7 +281,7 @@ class ConsentAuthFlowValidationTests extends AUTest{
         Assert.assertEquals(auAuthorisationBuilder.state.toString(), stateParam)
     }
 
-    @Test (priority = 1)
+    @Test (groups = "SmokeTest", priority = 1)
     void "CDS-540_Consent Authorisation after updating nominated representatives permission from view to authorise"() {
 
         auConfiguration.setPsuNumber(3)

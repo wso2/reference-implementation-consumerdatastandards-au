@@ -40,7 +40,7 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     private String requestUri
     private String secondAuthorisationCode = null
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -52,7 +52,7 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Verify Metrics response after abandon the flow without generating token"() {
 
         //Consent Authorisation Flow
@@ -136,7 +136,7 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Verify Metrics response when token request failure due to an error"() {
 
         //Consent Authorisation Flow

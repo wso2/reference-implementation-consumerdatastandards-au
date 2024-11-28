@@ -39,7 +39,7 @@ class CeasingSecondaryUserManagementTest extends AUTest {
     Response response
     List <String> legalEntityList
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Pre Execution Step"() {
 
         auConfiguration.setPsuNumber(4)
@@ -71,7 +71,7 @@ class CeasingSecondaryUserManagementTest extends AUTest {
         altLegalEntityId = AUConstants.ALT_LEGAL_ENTITY
     }
 
-    @Test (priority = 1)
+    @Test (groups = "SmokeTest", priority = 1)
     void "CDS-631_Block the sharing status for a legal entity"() {
 
         response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.BLOCK_ENTITY)

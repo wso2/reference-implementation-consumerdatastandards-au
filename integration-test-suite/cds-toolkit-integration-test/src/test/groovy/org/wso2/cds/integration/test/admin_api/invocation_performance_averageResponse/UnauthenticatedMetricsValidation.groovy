@@ -32,7 +32,7 @@ import org.testng.annotations.Test
  */
 class UnauthenticatedMetricsValidation extends AUTest {
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
@@ -44,7 +44,7 @@ class UnauthenticatedMetricsValidation extends AUTest {
         getInitialMetricsResponse(metricsResponse)
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Count increase with Products Invocation"(){
 
         Response response = AURequestBuilder.buildBasicRequestWithoutAuthorisationHeader(AUConstants.X_V_HEADER_PRODUCTS)

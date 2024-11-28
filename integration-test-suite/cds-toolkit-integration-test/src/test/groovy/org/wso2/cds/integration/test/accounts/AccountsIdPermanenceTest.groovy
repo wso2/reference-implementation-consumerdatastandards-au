@@ -51,7 +51,7 @@ class AccountsIdPermanenceTest extends AUTest {
         generateUserAccessToken()
     }
 
-    @Test(priority = 1, groups = "SmokeTest")
+    @Test(groups = "SmokeTest", priority = 1)
     void "TC1201001_Get Accounts"() {
 
         String bulkAccountRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}"
@@ -88,7 +88,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1203001_Get Balances For Specific Accounts"() {
 
         String requestBody = """
@@ -136,7 +136,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1204001_Get Account Balance"() {
 
         String accBalanceRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/${firstEncryptedAccountId}/balance"
@@ -157,7 +157,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1205001_Get Account Detail"() {
 
         String accountRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/${firstEncryptedAccountId}"
@@ -232,7 +232,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1208001_Get Direct Debits For Account"() {
 
         String directDebitRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/${firstEncryptedAccountId}/direct-debits"
@@ -284,7 +284,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1210001_Get Direct Debits For Specific Accounts"() {
 
         String requestBody = """
@@ -329,7 +329,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1211001_Get Scheduled Payments for Account"() {
 
         String schedulePaymentRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/${firstEncryptedAccountId}/payments/scheduled"
@@ -374,7 +374,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1213001_Get Scheduled Payments For Specific Accounts"() {
 
         String requestBody = """
@@ -432,7 +432,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1206001_Get Transactions For Account"() {
 
         String transactionRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/${firstEncryptedAccountId}/transactions"
@@ -468,7 +468,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1206001_Get Transactions For Account", priority = 1)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1206001_Get Transactions For Account", priority = 1)
     void "TC1207001_Get Transaction Detail"() {
 
         String transactionRequestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/${firstEncryptedAccountId}/" +
@@ -496,7 +496,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC1202001_Get Bulk Balances"() {
 
         String balanceRequestUrl = "${AUConstants.BULK_BALANCES_PATH}"
@@ -621,7 +621,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC1209001_Get Bulk Direct Debits"() {
 
         String directDebitRequestUrl = "${AUConstants.BULK_DIRECT_DEBITS_PATH}"
@@ -688,7 +688,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "TC1212001_Get Scheduled Payments Bulk"() {
 
         String schedulePaymentRequestUrl = "${AUConstants.BULK_SCHEDULE_PAYMENTS_PATH}"
@@ -796,7 +796,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (priority = 2)
+    @Test (groups = "SmokeTest", priority = 2)
     void "TC1214001_Get Payees"() {
 
         String payeeRequestUrl = "${AUConstants.BULK_PAYEES}"
@@ -829,7 +829,7 @@ class AccountsIdPermanenceTest extends AUTest {
         softAssertion.assertAll()
     }
 
-    @Test (dependsOnMethods = "TC1214001_Get Payees", priority = 2)
+    @Test (groups = "SmokeTest", dependsOnMethods = "TC1214001_Get Payees", priority = 2)
     void "TC1215001_Get Payee Detail"() {
 
         String payeeRequestUrl = "${AUConstants.BULK_PAYEES}/${encryptedPayeeId}"

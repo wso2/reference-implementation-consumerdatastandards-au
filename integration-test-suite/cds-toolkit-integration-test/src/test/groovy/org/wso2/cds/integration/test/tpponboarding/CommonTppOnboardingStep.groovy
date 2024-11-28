@@ -37,12 +37,12 @@ class CommonTppOnboardingStep extends AUTest{
     AUJWTGenerator generator = new AUJWTGenerator()
     String clientId
 
-    @BeforeClass
+    @BeforeClass (alwaysRun = true)
     void "Delete Application if exists"() {
         deleteApplicationIfExists()
     }
 
-    @Test
+    @Test (groups = "SmokeTest")
     void "Tpp Onboarding Step"(ITestContext context){
 
         jtiVal = String.valueOf(System.currentTimeMillis())
