@@ -88,8 +88,14 @@ public class CDSBasePrivateKeyJWTClientAuthenticator extends AbstractOAuthClient
                                       OAuthClientAuthnContext oAuthClientAuthnContext)
             throws OAuthClientAuthnException {
 
+        // Checks if assertion is valid before validating the client id against the subject claim
+        boolean isValidAssertion = jwtValidator.isValidAssertion(getSignedJWT(bodyParameters, oAuthClientAuthnContext));
+        if (!isValidAssertion) {
+            return false;
+        }
+
         validateClientIdAgainstSubClaim(httpServletRequest, bodyParameters, oAuthClientAuthnContext);
-        return jwtValidator.isValidAssertion(getSignedJWT(bodyParameters, oAuthClientAuthnContext));
+        return true;
     }
 
     /**
