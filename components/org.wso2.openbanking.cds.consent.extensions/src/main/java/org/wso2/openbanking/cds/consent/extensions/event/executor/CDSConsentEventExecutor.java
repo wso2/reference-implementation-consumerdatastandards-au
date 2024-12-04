@@ -132,9 +132,18 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
             log.debug("Publishing consent data for metrics.");
             HashMap<String, Object> consentData = new HashMap<>();
             consentData.put(CONSENT_ID_KEY, eventData.get(CONSENT_ID));
-            consentData.put(USER_ID_KEY, eventData.get(USER_ID));
             consentData.put(CLIENT_ID_KEY, eventData.get(CLIENT_ID));
             consentData.put(STATUS_KEY, obEvent.getEventType());
+
+            String userId = null;
+            if (consentResource != null) {
+                userId = consentResource.getConsentAttributes()
+                        .get(CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY);
+            }
+
+            if (StringUtils.isBlank(userId)) {
+                userId = (String) eventData.get(USER_ID);
+            }
 
             long expiryTime;
             if (AUTHORIZED_STATE.equalsIgnoreCase(obEvent.getEventType())) {
@@ -148,6 +157,8 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
             } else {
                 expiryTime = 0;
             }
+
+            consentData.put(USER_ID_KEY, userId);
             consentData.put(EXPIRY_TIME_KEY, expiryTime);
             dataPublishingService.publishConsentData(consentData);
         }
