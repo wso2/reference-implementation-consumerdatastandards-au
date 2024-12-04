@@ -6,8 +6,8 @@ This test suite covers all the functional scenarios and use cases of CDS Toolkit
 
 1. Clone the master branch of the [financial-open-banking](https://github.com/wso2-enterprise/financial-open-banking/tree/master) repository.
 2. Goto "integration-test-suite" and build the following modules (These are the base modules of open banking test framework);
-   1. [bfsi-test-framework](https://github.com/wso2-enterprise/financial-open-banking/tree/master/integration-test-suite/bfsi-test-framework)
-   2. [open-banking-test-framework](https://github.com/wso2-enterprise/financial-open-banking/tree/master/integration-test-suite/open-banking-test-framework)
+   1. [bfsi-test-framework](https://github.com/wso2/financial-services-accelerator/tree/main/integration-test-framework/bfsi-test-framework)
+   2. [open-banking-test-framework](https://github.com/wso2/financial-services-accelerator/tree/main/integration-test-framework/open-banking-test-framework)
 
     Command : `mvn clean install`
 
