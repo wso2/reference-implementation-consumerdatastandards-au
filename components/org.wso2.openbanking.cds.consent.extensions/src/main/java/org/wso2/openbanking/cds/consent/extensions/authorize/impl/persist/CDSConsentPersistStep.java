@@ -259,14 +259,7 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                                                     ConsentResource requestedConsent, ConsentData consentData)
             throws ConsentManagementException {
 
-        String userId = consentData.getUserId();
-
-        // Adding a consent attribute to identify the primary user of the consent
-        Map<String, String> consentAttributes = requestedConsent.getConsentAttributes();
-        consentAttributes.put(CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY, userId);
-        requestedConsent.setConsentAttributes(consentAttributes);
-
-        return consentCoreService.createAuthorizableConsent(requestedConsent, userId,
+        return consentCoreService.createAuthorizableConsent(requestedConsent, consentData.getUserId(),
                 CDSConsentExtensionConstants.CREATED_STATUS, CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY,
                 true);
     }
