@@ -67,7 +67,7 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <delete>
+                                <delete failonerror="false">
                                     <fileset dir="${project.basedir}/carbon-home/repository/components/dropins">
                                         <include name="org.wso2.openbanking.cds.identity-*.jar" />
                                     </fileset>

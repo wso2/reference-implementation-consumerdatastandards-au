@@ -90,7 +90,7 @@
                                                 regex="org.wso2.openbanking.cds.gateway-(\d.*?)\.jar$"/>
                                     </fileset>
                                 </copy>
-                                <delete>
+                                <delete failonerror="false">
                                     <fileset dir="${project.basedir}/carbon-home/repository/components/dropins">
                                         <include name="org.wso2.openbanking.cds.metrics-*.jar" />
                                     </fileset>
