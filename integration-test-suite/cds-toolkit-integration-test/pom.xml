@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.wso2.openbanking</groupId>
             <artifactId>cds-toolkit-test-framework</artifactId>
-            <version>${com.wso2.openbanking.test.cds.version}</version>
+            <version>${org.wso2.openbanking.test.cds.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -78,6 +78,21 @@
             <!-- jsoup HTML parser library @ https://jsoup.org/ -->
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.49</version>
         </dependency>
     </dependencies>
 
@@ -163,7 +178,7 @@
     </build>
 
     <properties>
-        <com.wso2.openbanking.test.cds.version>1.0.0</com.wso2.openbanking.test.cds.version>
+        <org.wso2.openbanking.test.cds.version>1.0.0</org.wso2.openbanking.test.cds.version>
     </properties>
 
 </project>
