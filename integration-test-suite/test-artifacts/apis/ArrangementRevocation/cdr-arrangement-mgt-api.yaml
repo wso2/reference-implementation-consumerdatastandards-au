@@ -1,0 +1,101 @@
+swagger: '2.0'
+info:
+  title: CDR Arrangement Management API
+  description:  Data Holder's CDR Arrangement Management API
+  version: '1.0.0'
+basePath: /arrangements/{version}
+schemes:
+  - https
+paths:
+  '/revoke':
+    post:
+      summary: Revoke a sharing arrangement between the data holder and the data recepient
+      tags:
+        - CDR Arrangement
+      consumes:
+        - application/x-www-form-urlencoded
+      produces:
+        - application/json
+      parameters:
+        - name: client_id
+          in: formData
+          description: Client ID
+          required: false
+          type: string
+        - name: client_assertion_type
+          in: formData
+          description: Client Assertion Type
+          required: true
+          type: string
+          enum: ["urn:ietf:params:oauth:client-assertion-type:jwt-bearer"]
+        - name: client_assertion
+          in: formData
+          description: Client Assertion
+          required: true
+          type: string
+        - name: cdr_arrangement_id
+          in: formData
+          description: CDR Arrangement ID to be revoked
+          required: true
+          type: string
+      responses:
+        '204':
+          description: The sharing arrangement has been revoked successfully
+        '400':
+          $ref: '#/responses/400Error'
+        '403':
+          $ref: '#/responses/403Error'
+        '422':
+          $ref: '#/responses/422Error'
+      x-auth-type: None
+      x-throttling-tier: Unlimited
+
+
+responses:
+  400Error:
+    description: "Request failed due to client authentication failure"
+
+  403Error:
+    description: "Request failed due to client is not authorized to perform the management"
+
+  422Error:
+    description: 'Request failed due to  client submitted an invalid arrangement identifier or the identifier could not be found'
+
+
+x-wso2-auth-header: "Authorization"
+x-wso2-cors:
+  corsConfigurationEnabled: false
+  accessControlAllowOrigins:
+    - "*"
+  accessControlAllowCredentials: false
+  accessControlAllowHeaders:
+    - "authorization"
+    - "Access-Control-Allow-Origin"
+    - "Content-Type"
+    - "SOAPAction"
+    - "apikey"
+  accessControlAllowMethods:
+    - "GET"
+    - "PUT"
+    - "POST"
+    - "DELETE"
+    - "PATCH"
+    - "OPTIONS"
+x-wso2-production-endpoints: "#/x-wso2-endpoints/productionEndpoint"
+x-wso2-sandbox-endpoints: "#/x-wso2-endpoints/sandboxEndpoint"
+x-wso2-endpoints:
+  - productionEndpoint:
+      urls:
+        - "https://localhost:9446/cdr-arrangement-management/arrangements/revoke"
+  - sandboxEndpoint:
+      urls:
+        - "https://localhost:9446/cdr-arrangement-management/arrangements/revoke"
+x-wso2-basePath: "/arrangements/1.0.0"
+x-wso2-request-interceptor: java:com.wso2.finance.open.banking.mg.interceptor.OpenBankingInterceptor
+x-wso2-response-interceptor: java:com.wso2.finance.open.banking.mg.interceptor.OpenBankingInterceptor
+x-wso2-transports:
+  - "http"
+  - "https"
+x-wso2-response-cache:
+  enabled: false
+  cacheTimeoutInSeconds: 300
