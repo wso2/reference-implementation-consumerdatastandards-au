@@ -106,7 +106,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     void "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner"() {
 
         //Active the sharing status
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
@@ -163,7 +163,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     void "CDS-646_Retrieve accounts after activating the data sharing for legal entity"() {
 
         //Block the sharing status
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Account Retrieval
@@ -185,7 +185,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         def updateResponse = updateSecondaryUserInstructionPermission(altAccountID, userId, AUConstants.ACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
-        response = updateLegalEntityStatus(clientHeader, altAccountID, userId, legalEntityId, AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, altAccountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
@@ -299,7 +299,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     void "CDS-649_Verify account is listed under unavailable accounts once the legal entity is restricted in consent amendment flow"() {
 
         //Active the sharing status for secondary account 1
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
