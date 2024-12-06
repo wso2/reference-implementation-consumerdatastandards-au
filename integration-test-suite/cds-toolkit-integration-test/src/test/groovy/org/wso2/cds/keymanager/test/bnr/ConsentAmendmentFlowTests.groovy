@@ -89,7 +89,7 @@ class ConsentAmendmentFlowTests extends AUTest {
         //Consent Amendment
         scopes.remove(AUAccountScope.BANK_TRANSACTION_READ)
 
-        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.AMENDED_SHARING_DURATION,
                 true, cdrArrangementId)
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
@@ -104,8 +104,7 @@ class ConsentAmendmentFlowTests extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Verify Account Selection Page
-                        assert authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount3CheckBox())
-                        authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount3CheckBox())
+                        assert authWebDriver.isElementSelected(AUTestUtil.getBusinessAccount2CheckBox())
 
                     } else {
                         assert authWebDriver.isElementDisplayed(AUTestUtil.getSingleAccountXPath())
@@ -122,7 +121,7 @@ class ConsentAmendmentFlowTests extends AUTest {
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
-        doConsentAuthorisationViaRequestUriSingleAccount(scopes, requestUri.toURI(), null, AUAccountProfile.ORGANIZATION_A)
+        doConsentAuthorisationViaRequestUriSingleAccount(scopes, requestUri.toURI(), null, AUAccountProfile.ORGANIZATION_B)
 
         //Get Access Token
         AccessTokenResponse responseBody = getUserAccessTokenResponse(clientId)
@@ -133,7 +132,7 @@ class ConsentAmendmentFlowTests extends AUTest {
         //Consent Amendment
         scopes.remove(AUAccountScope.BANK_TRANSACTION_READ)
 
-        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.AMENDED_SHARING_DURATION,
                 true, cdrArrangementId)
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
@@ -169,6 +168,7 @@ class ConsentAmendmentFlowTests extends AUTest {
     void "CDS-514_Verify a Consent Amendment flow with a Business user account"() {
 
         //Consent Authorisation
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -195,7 +195,7 @@ class ConsentAmendmentFlowTests extends AUTest {
         //Consent Amendment
         scopes.remove(AUAccountScope.BANK_ACCOUNT_DETAIL_READ)
 
-        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
+        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.AMENDED_SHARING_DURATION,
                 true, cdrArrangementId)
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()

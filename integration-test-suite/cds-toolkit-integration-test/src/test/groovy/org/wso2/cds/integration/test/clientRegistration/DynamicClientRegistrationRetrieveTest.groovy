@@ -18,6 +18,7 @@
 
 package org.wso2.cds.integration.test.clientRegistration
 
+import org.testng.annotations.AfterClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.ContextConstants
@@ -76,5 +77,10 @@ class DynamicClientRegistrationRetrieveTest extends AUTest{
                 .get(AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_200)
+    }
+
+    @AfterClass
+    void "Clean up"() {
+        deleteApplicationIfExists(clientId)
     }
 }

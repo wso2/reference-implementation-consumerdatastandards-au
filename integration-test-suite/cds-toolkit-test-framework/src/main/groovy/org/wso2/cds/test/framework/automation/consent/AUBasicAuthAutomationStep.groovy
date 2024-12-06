@@ -63,7 +63,8 @@ class AUBasicAuthAutomationStep implements BrowserAutomationStep {
         //Second Factor Authentication Step
         try{
             if (driver.isElementDisplayed(AUPageObjects.AU_BTN_AUTHENTICATE)) {
-                driver.executeSMSOTP(AUPageObjects.AU_LBL_SMSOTP_AUTHENTICATOR, AUPageObjects.AU_TXT_OTP_CODE_ID, AUConstants.AU_OTP_CODE)
+                driver.executeSMSOTP(AUPageObjects.AU_LBL_SMSOTP_AUTHENTICATOR, AUPageObjects.AU_TXT_OTP_CODE_ID,
+                        AUConstants.AU_OTP_CODE)
                 driver.clickButtonXpath(AUPageObjects.AU_BTN_AUTHENTICATE)
                 driver.waitTimeRange(30)
             }

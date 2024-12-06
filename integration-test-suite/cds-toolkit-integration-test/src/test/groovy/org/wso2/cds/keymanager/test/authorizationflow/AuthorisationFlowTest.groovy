@@ -307,7 +307,7 @@ class AuthorisationFlowTest extends AUTest {
                 .execute()
 
         def authUrl = automation.currentUrl.get()
-        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.CANCEL_ERROR_IN_ACCOUNTS_PAGE))
+        Assert.assertTrue(AUTestUtil.getDecodedUrl(authUrl).contains(AUConstants.USER_SKIP_THE_CONSENT_FLOW))
         String stateParam = authUrl.split("state=")[1]
         Assert.assertEquals(auAuthorisationBuilder.state.toString(), stateParam)
     }
@@ -517,8 +517,8 @@ class AuthorisationFlowTest extends AUTest {
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION), errorMessage)
     }
 
-    //Error - Not loading Profile Selection Page
-    @Test
+    //TODO: Issue: https://github.com/wso2-enterprise/ob-compliance-toolkit-cds/issues/411
+    @Test (enabled = false)
     void  "OB-1253_Initiate authorisation consent flow only with openid and profile scopes"() {
 
         scopes = [

@@ -236,7 +236,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     void "CDS-647_Consent amendment after ceasing the secondary user sharing"() {
 
         //Active the sharing status for secondary account 1
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request

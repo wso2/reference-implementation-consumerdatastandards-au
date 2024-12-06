@@ -19,7 +19,9 @@
 package org.wso2.cds.integration.test.clientRegistration
 
 import org.wso2.cds.test.framework.AUTest
+import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUConstants
+import org.wso2.cds.test.framework.constant.ContextConstants
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
@@ -37,10 +39,20 @@ class MultiTppDcrEndpointTests extends AUTest {
     void setup() {
         auConfiguration.setTppNumber(1)
 
-        //Register Second TPP.
-        def registrationResponse = tppRegistration()
-        clientId = AUTestUtil.parseResponseBody(registrationResponse, "client_id")
+        // Create Application for TPP2
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        AUConfigurationService auConfiguration = new AUConfigurationService()
+
+        def  registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.CREATED)
+        clientId = parseResponseBody(registrationResponse, "client_id")
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
+        AUTestUtil.writeToConfigFile(clientId)
 
         //Write Client Id of TPP2 to config file.
         AUTestUtil.writeToConfigFile(clientId)
