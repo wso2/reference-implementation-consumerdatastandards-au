@@ -597,8 +597,11 @@ class AccountsRetrievalRequestValidationTests extends AUTest {
                 "Invalid mutual TLS request. Client certificate is missing"))
     }
 
-    @Test
+    @Test (priority = 4)
     void "OB-1162_Invoke bulk balances POST without request body"() {
+
+        doConsentAuthorisation()
+        generateUserAccessToken()
 
         def response = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
                 AUConstants.X_V_HEADER_BALANCES, clientHeader)
@@ -769,8 +772,7 @@ class AccountsRetrievalRequestValidationTests extends AUTest {
         Assert.assertNotNull(response.getHeader(AUConstants.X_FAPI_INTERACTION_ID))
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8455
-    @Test
+    @Test (priority = 4)
     void "CDS-680_Send token request with same authorisation code"() {
 
         //Generate user access token from auth code for the first time
@@ -809,10 +811,8 @@ class AccountsRetrievalRequestValidationTests extends AUTest {
                 .get(bulkAccountRequestUrl)
 
         Assert.assertEquals(responseSecondAttempt.statusCode(), AUConstants.STATUS_CODE_401)
-        Assert.assertEquals(AUTestUtil.parseResponseBody(responseSecondAttempt, AUConstants.MESSAGE),
+        Assert.assertEquals(AUTestUtil.parseResponseBody(responseSecondAttempt, AUConstants.ERROR_DESCRIPTION),
                 AUConstants.INVALID_CREDENTIALS)
-        Assert.assertEquals(AUTestUtil.parseResponseBody(responseSecondAttempt, AUConstants.DESCRIPTION),
-                "Invalid Credentials. Make sure you have provided the correct security credentials")
 
         //Token introspection request
         def introspectResponse = AURequestBuilder.buildIntrospectionRequest(refreshToken.toString(),

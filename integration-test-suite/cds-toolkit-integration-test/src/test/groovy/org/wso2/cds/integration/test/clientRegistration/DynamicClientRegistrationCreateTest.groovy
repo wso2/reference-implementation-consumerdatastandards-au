@@ -45,6 +45,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
     @BeforeClass (alwaysRun = true)
     void "Delete Application if exists"() {
+        auConfiguration.setTppNumber(1)
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         softwareId = "SP1"
     }
@@ -414,7 +415,8 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
         clientId = parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
         context.setAttribute(ContextConstants.CLIENT_ID,clientId)
-        deleteApplicationIfExists(context.getAttribute(ContextConstants.CLIENT_ID).toString())
+        AUTestUtil.writeToConfigFile(clientId)
+        deleteApplicationIfExists(clientId)
 
         registrationResponse = AURegistrationRequestBuilder
                 .buildRegistrationRequest(dcr.getAURegularClaims())
@@ -499,7 +501,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
                 AUConstants.INVALID_AUDIENCE_ERROR)
     }
 
-    @Test
+    @Test (priority = 2)
     void "CDS-1106_Create application without ApplicationType"() {
 
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
@@ -515,7 +517,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         deleteApplicationIfExists(clientId)
     }
 
-    @Test
+    @Test (priority = 2)
     void "CDS-673_DCR registration request with localhost url in the SSA"(ITestContext context) {
 
         Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
@@ -533,7 +535,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         def appClientId = AUTestUtil.parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
 
         context.setAttribute(ContextConstants.CLIENT_ID,clientId)
-        AUTestUtil.writeToConfigFile(clientId)
+        AUTestUtil.writeToConfigFile(appClientId)
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
         Assert.assertEquals(parseResponseBody(registrationResponse, "software_statement"),
@@ -637,7 +639,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
     }
 
     @Test (priority = 2)
-    void "CDS-476_Create application without ID_Token Response Type and verify id_token encryption not Mandatory"() {
+    void "CDS-476_Create application without ID_Token Response Type and verify id_token encryption not Mandatory"(ITestContext context) {
 
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         AUConfigurationService auConfiguration = new AUConfigurationService()
@@ -650,6 +652,9 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
         clientId = parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
+
+        context.setAttribute(ContextConstants.CLIENT_ID,clientId)
+        AUTestUtil.writeToConfigFile(clientId)
 
         deleteApplicationIfExists(clientId)
     }

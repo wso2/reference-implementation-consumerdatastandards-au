@@ -476,7 +476,7 @@ class ConsentAuthFlowValidationTests extends AUTest{
     @Test (priority = 1)
     void "CDS-541_Verify same user nominated for multiple accounts"() {
 
-        auConfiguration.setPsuNumber(2)
+        auConfiguration.setPsuNumber(3)
         //Get Authorisation URL
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")

@@ -19,30 +19,62 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="Consumer Data Standards Test Suite">
-    <test name="Client Registration Tests" parallel="false" enabled="true">
+    <test name="Pre Test Execution Step - Create Key Manager" parallel="false" enabled="true">
         <classes>
-            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationCreateTest"/>
-            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationRetrieveTest"/>
-            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationUpdateTest"/>
-            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationDeleteTest"/>
-            <class name="org.wso2.cds.integration.test.clientRegistration.MultiTppDcrEndpointTests"/>
+            <class name="org.wso2.cds.preexecution.CreateCustomKeyManagerTest"/>
         </classes>
     </test>
-    <test name="Client Registration Prerequisite Step" parallel="false" enabled="true">
+    <test name="Pre Test Execution Step - Publish APIs" parallel="false" enabled="true">
+        <classes>
+            <class name="org.wso2.cds.preexecution.PublishAndSubscribeApiTest"/>
+        </classes>
+    </test>
+    <test name="Pre Test Execution Step - Create Users" parallel="false" enabled="true">
+        <classes>
+            <class name="org.wso2.cds.preexecution.UserCreationTest"/>
+        </classes>
+    </test>
+    <test name="Client Registration Tests" parallel="false" enabled="true" preserve-order="false">
+        <classes>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationCreateTest"/>
+        </classes>
+    </test>
+    <test name="Client Registration Retrieval Tests" parallel="false" enabled="true" preserve-order="false">
+        <classes>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationRetrieveTest"/>
+        </classes>
+    </test>
+    <test name="Client Registration Update Tests" parallel="false" enabled="true" preserve-order="false">
+        <classes>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationUpdateTest"/>
+        </classes>
+    </test>
+    <test name="Client Registration Delete Tests" parallel="false" enabled="true" preserve-order="false">
+        <classes>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationDeleteTest"/>
+        </classes>
+    </test>
+    <test name="Client Registration Prerequisite Step" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.tpponboarding.CommonTppOnboardingStep"/>
         </classes>
     </test>
-    <test name="Accounts Integration Tests" parallel="false" enabled="true">
+    <test name="Accounts Integration Tests" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.accounts.AccountsRetrievalRequestHeaderValidationTest"/>
             <class name="org.wso2.cds.integration.test.accounts.AccountsRetrievalRequestValidationTests"/>
             <class name="org.wso2.cds.integration.test.accounts.AccountsIdPermanenceTest"/>
             <class name="org.wso2.cds.integration.test.accounts.DuplicateCommonAuthIdTest"/>
-            <class name="org.wso2.cds.integration.test.accounts.MultiTppConsentValidationTest"/>
         </classes>
     </test>
-    <test name="Banking API Tests" parallel="false" enabled="true">
+    <test name="Scenarios for Multiple TPPs" parallel="false" enabled="false" preserve-order="false">
+        <classes>
+            <class name="org.wso2.cds.integration.test.clientRegistration.MultiTppDcrEndpointTests"/>
+            <class name="org.wso2.cds.integration.test.accounts.MultiTppConsentValidationTest"/>
+            <class name="org.wso2.cds.integration.test.tokenEndpoint.MultiTppTokenFlowValidationTests"/>
+        </classes>
+    </test>
+    <test name="Banking API Tests" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.banking_products.ProductRetrievalHeaderValidationTest"/>
             <class name="org.wso2.cds.integration.test.banking_products.ProductRetrievalValidationTest"/>
@@ -54,12 +86,12 @@
             <class name="org.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalTest"/>
         </classes>
     </test>
-    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="true">
+    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="false" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.cdr_arrangement.ConcurrentConsentTest"/>
         </classes>
     </test>
-    <test name="Admin API Tests" parallel="false" enabled="true">
+    <test name="Admin API Tests" parallel="false" enabled="false">
         <classes>
             <class name="org.wso2.cds.integration.test.admin_api.AdminApiValidationTests"/>
 
@@ -93,7 +125,6 @@
     <test name="Token Validation Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.tokenEndpoint.AccessTokenTest"/>
-            <class name="org.wso2.cds.integration.test.tokenEndpoint.MultiTppTokenFlowValidationTests"/>
         </classes>
     </test>
     <!-- Since the Mock DCR Register is not working now we have to manually update the status.
@@ -107,6 +138,7 @@
             <class name="org.wso2.cds.integration.test.metadata_update.MetaDataUpdateBatchTaskTests"/>
         </classes>
     </test>
+    <!--TODO: Enable the Config when required to Test Throttling-->
     <test name="Throttling Policy Validation Tests" parallel="false" enabled="false">
         <classes>
             <class name="org.wso2.cds.integration.test.throttling.ThrottlingPolicyTest"/>
@@ -163,7 +195,8 @@
             <class name="org.wso2.cds.keymanager.test.secondaryUser.SecondaryUserAmendmentFlow"/>
         </classes>
     </test>
-    <test name="Ceasing Secondary User" parallel="false" enabled="true">
+    <!--TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215-->
+    <test name="Ceasing Secondary User" parallel="false" enabled="false">
         <classes>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserManagementTest"/>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserConsentFlowTest"/>

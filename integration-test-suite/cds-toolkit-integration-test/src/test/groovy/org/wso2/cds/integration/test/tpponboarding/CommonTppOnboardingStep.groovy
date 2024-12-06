@@ -39,6 +39,7 @@ class CommonTppOnboardingStep extends AUTest{
 
     @BeforeClass (alwaysRun = true)
     void "Delete Application if exists"() {
+        auConfiguration.setTppNumber(0)
         deleteApplicationIfExists()
     }
 
