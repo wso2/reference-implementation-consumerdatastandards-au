@@ -1,0 +1,55 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release-version:
+        description: "Release version (e.g., 1.0.1). A tag will be created with the format v<release-version>"
+        required: true
+      snapshot-version:
+        description: "Snapshot version (e.g., 1.0.2-SNAPSHOT). Snapshot version for the next development iteration."
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+
+      - name: Configure Git user as workflow triggerer
+        run: |
+          git config user.name "${{ github.actor }}"
+          git config user.email "${{ github.actor }}@users.noreply.github.com"
+
+      - name: Remove -SNAPSHOT for release
+        run: |
+          echo "Updating versions to release version..."
+          mvn versions:set -DnewVersion=${{ github.event.inputs.release-version }} -DprocessAllModules
+          mvn versions:commit
+          git commit -am "Prepare for the release ${{ github.event.inputs.release-version }}"
+
+      - name: Create a Git tag for the release
+        run: |
+          echo "Creating a Git tag for the release..."
+          git tag v${{ github.event.inputs.release-version }}
+
+      - name: Increment to SNAPSHOT version
+        run: |
+          echo "Incrementing to the next development version..."
+          mvn versions:set -DnewVersion=${{ github.event.inputs.snapshot-version }} -DprocessAllModules
+          mvn versions:commit
+          git commit -am "Prepare for the development iteration ${{ github.event.inputs.snapshot-version }}"
+
+      - name: Push changes and tags
+        run: |
+          echo "Pushing version update and tags to the repository..."
+          git push origin main
+          git push origin --tags
