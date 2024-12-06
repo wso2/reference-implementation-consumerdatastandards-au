@@ -296,5 +296,24 @@ class AUConfigurationService extends OBConfigurationService {
     String getOracleSid() {
         return configuration.get(AUConfigConstants.DATA_BASE_CONFIGURATION + "." + AUConfigConstants.ORACLE_DB_SID)
     }
-}
 
+    /**
+     * Get Provisioning Enabled
+     */
+    boolean isProvisioning() {
+        if (configuration.get(AUConfigConstants.PROVISIONING + "." + AUConfigConstants.PROVISIONING_ENABLED).equals("true")) {
+            return true
+        } else {
+            return false
+        }
+    }
+
+    /**
+     * Get Provisioning File Path
+     */
+    String getProvisionFilePath() {
+        return configuration.get(AUConfigConstants.PROVISIONING + "." + AUConfigConstants.PROVISIONING_FILE_PATH)
+    }
+
+
+}

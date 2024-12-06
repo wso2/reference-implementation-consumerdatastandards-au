@@ -118,7 +118,7 @@
 
                 <!-- Software Product ID -->
                 <!--Sample Values: jFQuQ4eQbNCMSqdCog21nF -->
-                <SoftwareId>DCR.SoftwareId</SoftwareId>
+                <SoftwareId>AppConfig1.DCR.SoftwareId</SoftwareId>
 
                 <!-- SSA Redirect Uri -->
                 <!--Sample Values: https://www.google.com/redirects/redirect1 -->
@@ -172,6 +172,7 @@
                     <!--Absolute path + file name of keystore file.-->
                     <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                     AU/sample-client-resources/transport-keystore/transport.jks-->
+                    <Location>AppConfig2.Transport.KeyStore.Location</Location>
 
                     <!--Sample Values: jks -->
                     <Type>AppConfig2.Transport.KeyStore.Type</Type>
@@ -189,14 +190,14 @@
 
                 <!-- Software Product ID -->
                 <!--Sample Values: SP1 -->
-                <SoftwareId>DCR.SoftwareId</SoftwareId>
+                <SoftwareId>AppConfig2.DCR.SoftwareId</SoftwareId>
 
                 <!-- SSA Redirect Uri -->
                 <!--Sample Values: https://www.google.com/redirects/redirect1 -->
-                <RedirectUri>AppConfig1.DCR.RedirectUri</RedirectUri>
+                <RedirectUri>AppConfig2.DCR.RedirectUri</RedirectUri>
 
                 <!--Sample Values: https://www.google.com/redirects/redirect2 -->
-                <AlternateRedirectUri>AppConfig1.DCR.AlternateRedirectUri</AlternateRedirectUri>
+                <AlternateRedirectUri>AppConfig2.DCR.AlternateRedirectUri</AlternateRedirectUri>
             </DCR>
 
             <!-- Application Info -->
@@ -244,21 +245,21 @@
         <!-- Individual PSU Info -->
         <PSUInfo>
             <Credentials>
-                <User>psu1@wso2.com</User>
+                <User>psu@wso2.com</User>
                 <Password>wso2123</Password>
             </Credentials>
         </PSUInfo>
         <!-- Business User 1-->
         <PSUInfo>
             <Credentials>
-                <User>nominatedUser1@wso2.com</User>
+                <User>nominatedUser2@wso2.com</User>
                 <Password>wso2123</Password>
             </Credentials>
         </PSUInfo>
         <!-- Business User 2 (Multiple NR)-->
         <PSUInfo>
             <Credentials>
-                <User>nominatedUser2@wso2.com</User>
+                <User>nominatedUser1@wso2.com</User>
                 <Password>wso2123</Password>
             </Credentials>
         </PSUInfo>
