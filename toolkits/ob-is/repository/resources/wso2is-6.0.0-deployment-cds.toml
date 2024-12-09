@@ -168,6 +168,7 @@ skip_db_schema_creation = true
 
 [oauth]
 allowed_scopes = ["OB.*", "profile"]
+keep_oidc_scopes_in_consent_url = true
 
 [oauth.token_renewal]
 renew_refresh_token = false

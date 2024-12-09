@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="Consumer Data Standards Smoke Test Suite">
+    <test name="Client Registration Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationCreateTest"/>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationRetrieveTest"/>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationUpdateTest"/>
+            <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationDeleteTest"/>
+        </classes>
+    </test>
+    <test name="Client Registration Prerequisite Step" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.tpponboarding.CommonTppOnboardingStep"/>
+        </classes>
+    </test>
+    <test name="Accounts Integration Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.accounts.AccountsIdPermanenceTest"/>
+            <class name="org.wso2.cds.integration.test.accounts.DuplicateCommonAuthIdTest"/>
+        </classes>
+    </test>
+    <test name="Banking API Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.banking_products.ProductRetrievalValidationTest"/>
+        </classes>
+    </test>
+    <test name="Common API Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalTest"/>
+        </classes>
+    </test>
+    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.cdr_arrangement.ConcurrentConsentTest"/>
+        </classes>
+    </test>
+    <test name="Admin API Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.admin_api.AdminApiValidationTests"/>
+
+            <!--Authorisation Metrics-->
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.ActiveAndNewAuthorisationMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AmendedAuthorisationMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.RevokedAuthorisationMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AbandonPreIdentificationMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AbandonPreAuthenticationMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AbandonPreAccountSelectionMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AbandonPreAuthorisationMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AbandonRejectedMetrics"/>
+            <class name="org.wso2.cds.integration.test.admin_api.authorisation.AbandonFailedTokenExchangeMetrics"/>
+
+            <!--Invocation/Performance and Average response Metrics-->
+            <class name="org.wso2.cds.integration.test.admin_api.invocation_performance_averageResponse.HighPriorityMetricsValidation"/>
+            <class name="org.wso2.cds.integration.test.admin_api.invocation_performance_averageResponse.LargePayloadMetricsValidation"/>
+            <class name="org.wso2.cds.integration.test.admin_api.invocation_performance_averageResponse.LowPriorityMetricsValidation"/>
+            <class name="org.wso2.cds.integration.test.admin_api.invocation_performance_averageResponse.UnattendedMetricsValidation"/>
+            <class name="org.wso2.cds.integration.test.admin_api.invocation_performance_averageResponse.UnauthenticatedMetricsValidation"/>
+            <class name="org.wso2.cds.integration.test.admin_api.invocation_performance_averageResponse.SessionCountMetricsValidation"/>
+
+            <!--Error Metrics-->
+            <class name="org.wso2.cds.integration.test.admin_api.error.ErrorMetrics_Authenticated"/>
+            <class name="org.wso2.cds.integration.test.admin_api.error.ErrorMetrics_Unauthenticated"/>
+        </classes>
+    </test>
+    <test name="Token Validation Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.tokenEndpoint.AccessTokenTest"/>
+        </classes>
+    </test>
+    <test name="CX Validation Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.integration.test.authflow.AuthorisationFlowCXValidationTest"/>
+            <class name="org.wso2.cds.integration.test.authflow.AuthorisationFlowUIValidationTest"/>
+            <class name="org.wso2.cds.integration.test.authflow.UserAuthenticationFlowValidationTest"/>
+            <class name="org.wso2.cds.integration.test.authflow.ConsentAmendmentFlowUIValidationTest"/>
+        </classes>
+    </test>
+
+    <!-- Key Manager Validation Tests-->
+    <test name="Authorisation Flow Validation Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.authorizationflow.AuthorisationFlowTest"/>
+            <class name="org.wso2.cds.keymanager.test.authorizationflow.ConsentAmendmentFlowTest"/>
+        </classes>
+    </test>
+    <test name="Pushed Authorisation Flow Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.par.PushedAuthorisationFlowTest"/>
+        </classes>
+    </test>
+    <test name="JWT Response Management" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.jarm.JarmResponseModeFormPostJwtValidationTests"/>
+            <class name="org.wso2.cds.keymanager.test.jarm.JarmResponseModeFragmentJwtValidationTests"/>
+            <class name="org.wso2.cds.keymanager.test.jarm.JarmResponseModeJwtValidationTests"/>
+            <class name="org.wso2.cds.keymanager.test.jarm.JarmResponseModeQueryJwtValidationTests"/>
+        </classes>
+    </test>
+    <test name="Business Nominated User Representative Tests" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.bnr.BnrEndToEndTest"/>
+            <class name="org.wso2.cds.keymanager.test.bnr.ConsentAmendmentFlowTests"/>
+            <class name="org.wso2.cds.keymanager.test.bnr.ConsentAuthFlowValidationTests"/>
+            <class name="org.wso2.cds.keymanager.test.bnr.UserNominationManagementTests"/>
+        </classes>
+    </test>
+    <test name="Disclosure Option Management Service" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.doms.DisclosureOptionManagementServiceTest"/>
+        </classes>
+    </test>
+    <test name="Secondary User Instructions" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.secondaryUser.SecondaryUserInstructionsAuthorisationTest"/>
+            <class name="org.wso2.cds.keymanager.test.secondaryUser.SecondaryUserAmendmentFlow"/>
+        </classes>
+    </test>
+    <test name="Ceasing Secondary User" parallel="false" enabled="true">
+        <method-selectors>
+            <method-selector>
+                <script language="beanshell">
+                    <![CDATA[whatGroup = System.getProperty("groupToRun");
+                        (groups.containsKey("SmokeTest") && groups.containsKey(whatGroup));
+                    ]]>
+                </script>
+            </method-selector>
+        </method-selectors>
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserManagementTest"/>
+            <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserConsentFlowTest"/>
+        </classes>
+    </test>
+</suite>

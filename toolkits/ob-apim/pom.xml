@@ -25,7 +25,7 @@
     <parent>
         <groupId>org.wso2.openbanking</groupId>
         <artifactId>open-banking-toolkit-cds-modules</artifactId>
-        <version>1.0.6-SNAPSHOT</version>
+        <version>1.1.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -90,7 +90,7 @@
                                                 regex="org.wso2.openbanking.cds.gateway-(\d.*?)\.jar$"/>
                                     </fileset>
                                 </copy>
-                                <delete>
+                                <delete failonerror="false">
                                     <fileset dir="${project.basedir}/carbon-home/repository/components/dropins">
                                         <include name="org.wso2.openbanking.cds.metrics-*.jar" />
                                     </fileset>

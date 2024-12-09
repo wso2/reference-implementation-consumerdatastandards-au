@@ -93,7 +93,7 @@ select CDR_ARRANGEMENT_ID as CONSENT_ID, CLIENT_ID, USER_ID
 insert into CountableConsentAuthStream;
 
 -- Filter revoked authorizations that should be counted
-from ConsentInputStream[STATUS == "Revoked"]#window.unique:first(CDR_ARRANGEMENT_ID) as I join CONSENT_RAW_DATA as T
+from ConsentInputStream[str:equalsIgnoreCase(STATUS, "Revoked")]#window.unique:first(CDR_ARRANGEMENT_ID) as I join CONSENT_RAW_DATA as T
 on I.CDR_ARRANGEMENT_ID == T.CONSENT_ID
 select I.CDR_ARRANGEMENT_ID as CONSENT_ID, T.CLIENT_ID as CLIENT_ID, T.USER_ID as USER_ID, T.STATUS as CURRENT_STATUS
 having CURRENT_STATUS == "authorized"

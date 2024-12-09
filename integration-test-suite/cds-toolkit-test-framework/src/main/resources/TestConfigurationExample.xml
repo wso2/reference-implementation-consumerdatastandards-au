@@ -71,11 +71,11 @@
             <!-- Application Keystore -->
             <KeyStore>
                 <!--Absolute path + file name of JKS keystore file-->
-                <!--Sample Values:  {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                 AU/sample-client-resources/signing-keystore/signing.jks -->
                 <Location>AppConfig1.KeyStore.Location</Location>
 
-                <!--Sample Values: tpp6-signing -->
+                <!--Sample Values: tpp7-signing -->
                 <Alias>AppConfig1.KeyStore.Alias</Alias>
 
                 <!--Sample Values: wso2carbon -->
@@ -84,7 +84,7 @@
                 <!--Sample Values: https://wso2.com -->
                 <DomainName>AppConfig1.KeyStore.DomainName</DomainName>
 
-                <!--Sample Values: h3ZCF0VrzgXgnHCqbHbKXzzfjTg -->
+                <!--Sample Values: 7eJ8S_ZgvlYxFAFSghV9xMJROvk -->
                 <SigningKid>AppConfig1.KeyStore.SigningKid</SigningKid>
             </KeyStore>
 
@@ -98,7 +98,7 @@
 
                 <KeyStore>
                     <!--Absolute path + file name of keystore file.-->
-                    <!--Sample Values:  {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                    <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                     AU/sample-client-resources/transport-keystore/transport.jks-->
                     <Location>AppConfig1.Transport.KeyStore.Location</Location>
 
@@ -112,12 +112,12 @@
 
             <!-- DCR Configurations -->
             <DCR>
-                <!--Sample Values:  {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                 AU/sample-client-resources/ssa.txt -->
                 <SSAPath>AppConfig1.DCR.SSAPath</SSAPath>
 
                 <!-- Software Product ID -->
-                <!--Sample Values: oQ4KoaavpOuoE7rvQsZEOV -->
+                <!--Sample Values: jFQuQ4eQbNCMSqdCog21nF -->
                 <SoftwareId>DCR.SoftwareId</SoftwareId>
 
                 <!-- SSA Redirect Uri -->
@@ -144,11 +144,11 @@
             <!-- Application Keystore -->
             <KeyStore>
                 <!--Absolute path + file name of JKS keystore file-->
-                <!--Sample Values:  {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                 AU/sample-client-resources/signing-keystore/signing.jks -->
                 <Location>AppConfig2.KeyStore.Location</Location>
 
-                <!--Sample Values: tpp6-signing -->
+                <!--Sample Values: tpp7-signing -->
                 <Alias>AppConfig2.KeyStore.Alias</Alias>
 
                 <!--Sample Value: wso2carbon -->
@@ -157,7 +157,7 @@
                 <!--Sample Values: https://wso2.com -->
                 <DomainName>AppConfig2.KeyStore.DomainName</DomainName>
 
-                <!--Sample Values: h3ZCF0VrzgXgnHCqbHbKXzzfjTg -->
+                <!--Sample Values: 7eJ8S_ZgvlYxFAFSghV9xMJROvk -->
                 <SigningKid>AppConfig2.KeyStore.SigningKid</SigningKid>
             </KeyStore>
 
@@ -170,7 +170,7 @@
                 true-->
                 <KeyStore>
                     <!--Absolute path + file name of keystore file.-->
-                    <!--Sample Values:  {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                    <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                     AU/sample-client-resources/transport-keystore/transport.jks-->
 
                     <!--Sample Values: jks -->
@@ -183,12 +183,12 @@
 
             <!-- DCR Configurations -->
             <DCR>
-                <!--Sample Values:  {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
                 AU/sample-client-resources/ssa2.txt -->
                 <SSAPath>AppConfig2.DCR.SSAPath</SSAPath>
 
                 <!-- Software Product ID -->
-                <!--Sample Values: app8 -->
+                <!--Sample Values: SP1 -->
                 <SoftwareId>DCR.SoftwareId</SoftwareId>
 
                 <!-- SSA Redirect Uri -->
@@ -321,15 +321,15 @@
         <BrowserPreference>BrowserAutomation.BrowserPreference</BrowserPreference>
         <!--Sample Values: true/false -->
         <HeadlessEnabled>BrowserAutomation.HeadlessEnabled</HeadlessEnabled>
-        <!--Sample Values: {Path to reference-implementation-consumerdatastandards-au}/integration-test-suite/test-artifacts/selenium-libs/ubuntu/geckodriver -->
+        <!--Sample Values: {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/selenium-libs/ubuntu/geckodriver -->
         <WebDriverLocation>BrowserAutomation.WebDriverLocation</WebDriverLocation>
     </BrowserAutomation>
 
     <ConsentApi>
-        <!--Sample Values: https://<IS_HOST>:9446/oauth2/token -->
+        <!--Sample Values: https://<IS_HOST>:8243/token -->
         <AudienceValue>ConsentApi.AudienceValue</AudienceValue>
 
-        <!--Sample Values: https://<IS_HOST>:9446/oauth2/revoke -->
+        <!--Sample Values: https://<IS_HOST>:8243/revoke -->
         <RevocationAudienceValue>ConsentApi.RevocationAudienceValue</RevocationAudienceValue>
     </ConsentApi>
 
@@ -428,5 +428,24 @@
     <ProfileSelection>
         <Enabled>ProfileSelection.Enabled</Enabled>
     </ProfileSelection>
+
+    <DataBaseConfiguration>
+        <!--Sample Value: mysql/mssql/postgresql/oracle -->
+        <DBType>DataBaseConfiguration.DBType</DBType>
+        <!--Sample Value: <DB SERVER HOSTNAME/IP> -->
+        <DBServerHost>DataBaseConfiguration.DBServerHost</DBServerHost>
+        <!--Sample Value: <DB USERNAME> -->
+        <DBUsername>DataBaseConfiguration.DBUsername</DBUsername>
+        <!--Sample Value: <DB PASSWORD> -->
+        <DBPassword>DataBaseConfiguration.DBPassword</DBPassword>
+        <!--Sample Value for mysql: com.mysql.jdbc.Driver -->
+        <!--Sample Value for mssql: com.microsoft.sqlserver.jdbc.SQLServerDriver -->
+        <!--Sample Value for oracle: oracle.jdbc.driver.OracleDriver -->
+        <!--Sample Value for postgresql: org.postgresql.Driver -->
+        <DBDriverClass>DataBaseConfiguration.DBDriverClass</DBDriverClass>
+        <!-- Configure the following tag only for Oracle DB -->
+        <!--Sample Value: ORCLCDB -->
+        <OracleDBSID>DataBaseConfiguration.OracleDBSID</OracleDBSID>
+    </DataBaseConfiguration>
 
 </Configurations>

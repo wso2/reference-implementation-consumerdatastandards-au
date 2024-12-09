@@ -19,7 +19,9 @@
 package org.wso2.openbanking.cds.consent.extensions.event.executor;
 
 import com.wso2.openbanking.accelerator.common.event.executor.model.OBEvent;
+import com.wso2.openbanking.accelerator.common.exception.ConsentManagementException;
 import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.AuthorizationResource;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentResource;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.models.DetailedConsentResource;
 import com.wso2.openbanking.accelerator.data.publisher.common.util.OBDataPublisherUtil;
@@ -41,10 +43,13 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import org.wso2.carbon.base.ServerConfiguration;
 import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
+import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 import org.wso2.openbanking.cds.identity.utils.CDSIdentityUtil;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -62,17 +67,26 @@ import static org.powermock.api.mockito.PowerMockito.when;
 @PowerMockIgnore("jdk.internal.reflect.*")
 public class CDSConsentEventExecutorTests extends PowerMockTestCase {
 
+    public static final String USER_ID_PRIMARY = "test-primary-user-id";
+    public static final String AUTH_ID_PRIMARY = "test-primary-auth-id";
+
     private static ByteArrayOutputStream outContent;
     private static Logger logger = null;
     private static PrintStream printStream;
+    private AuthorizationResource authResource;
 
     @BeforeClass
-    public void beforeTests() {
+    public void beforeTests() throws ConsentManagementException {
 
         outContent = new ByteArrayOutputStream();
         printStream = new PrintStream(outContent);
         System.setOut(printStream);
         logger = LogManager.getLogger(CDSConsentEventExecutorTests.class);
+
+        authResource = new AuthorizationResource();
+        authResource.setAuthorizationID(AUTH_ID_PRIMARY);
+        authResource.setUserID(USER_ID_PRIMARY);
+        authResource.setAuthorizationType(CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY);
     }
 
     @Test
@@ -110,6 +124,7 @@ public class CDSConsentEventExecutorTests extends PowerMockTestCase {
 
         DetailedConsentResource detailedConsentResource = new DetailedConsentResource();
         detailedConsentResource.setConsentAttributes(consentAttributes);
+        detailedConsentResource.setAuthorizationResources(new ArrayList<>(Arrays.asList(authResource)));
 
         consentDataMap.put("ConsentResource", consentResource);
         consentDataMap.put("DetailedConsentResource", detailedConsentResource);
@@ -160,6 +175,7 @@ public class CDSConsentEventExecutorTests extends PowerMockTestCase {
 
         DetailedConsentResource detailedConsentResource = new DetailedConsentResource();
         detailedConsentResource.setConsentAttributes(consentAttributes);
+        detailedConsentResource.setAuthorizationResources(new ArrayList<>(Arrays.asList(authResource)));
 
         consentDataMap.put("ConsentResource", consentResource);
         consentDataMap.put("DetailedConsentResource", detailedConsentResource);
