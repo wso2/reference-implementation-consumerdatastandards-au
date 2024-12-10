@@ -590,7 +590,7 @@ class AUConstants extends OBConstants {
     public static final String CALLBACK_MISMATCH = "Callback url mismatch"
     public static final String LOCALHOST = "localhost"
 
-    public static String REPORTING_DBNAME = "mig_openbank_ob_reporting_statsdb"
+    public static String REPORTING_DBNAME = "openbank_ob_reporting_statsdb"
     public static String UNAUTHENTICATED = "Unauthenticated"
     public static String HIGH_PRIORITY = "High Priority"
     public static String LOW_PRIORITY = "Low Priority"
