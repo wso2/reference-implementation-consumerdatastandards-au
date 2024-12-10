@@ -350,7 +350,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
-    @Test
+    @Test(priority = 2)
     void "CDS-650_Verify Consent amendment flow after changing DOMS status to no-sharing"() {
 
         //Consent Authorisation

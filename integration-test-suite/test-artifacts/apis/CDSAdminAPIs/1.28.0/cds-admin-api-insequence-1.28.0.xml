@@ -1,0 +1,28 @@
+<!--
+ ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com). All Rights Reserved.
+ ~
+ ~ This software is the property of WSO2 LLC. and its suppliers, if any.
+ ~ Dissemination of any information or reproduction of any material contained
+ ~ herein in any form is strictly forbidden, unless permitted by WSO2 expressly.
+ ~ You may not alter or remove any copyright or other notice from copies of this content.
+ ~
+-->
+
+<sequence xmlns="http://ws.apache.org/ns/synapse" name="cds-admin-api-insequence-1.28.0.xml">
+
+    <!--Appending Basic Auth Header-->
+    <header name="Authorization" scope="transport" action="remove" />
+    <header name="Authorization" value="Basic YWRtaW5Ad3NvMi5jb206d3NvMjEyMw==" scope="transport"/>
+
+    <property name="endpointURI" expression="get-property('To')"/>
+    <filter regex=".*metrics.*" source="$ctx:endpointURI">
+        <then>
+            <property name="pathParam" value="get-property('To')" />
+            <header name="To" value="https://localhost:9443/api/openbanking/metricsendpoint/admin" />
+        </then>
+        <else>
+            <header name="To" value="https://localhost:9446/api/openbanking/metadata-mgt/admin" />
+        </else>
+    </filter>
+
+</sequence>
