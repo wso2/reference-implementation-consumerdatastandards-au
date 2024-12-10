@@ -610,8 +610,7 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                 String permissionStatus = accountMetadataService.getAccountMetadataByKey(accountID, userId,
                         CDSConsentExtensionConstants.BNR_PERMISSION);
                 if (StringUtils.isNotBlank(permissionStatus) &&
-                        !(CDSConsentExtensionConstants.BNR_AUTHORIZE_PERMISSION.equals(permissionStatus) ||
-                                CDSConsentExtensionConstants.BNR_REVOKE_PERMISSION.equals(permissionStatus))) {
+                        !(CDSConsentExtensionConstants.BNR_AUTHORIZE_PERMISSION.equals(permissionStatus))) {
 
                     return false;
                 }
