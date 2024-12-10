@@ -72,7 +72,7 @@ export const ProfileMain = ({consent, infoLabel, appicationName, logoURL}) => {
                     </a>
                 </div>
                 {consent.currentStatus.toLowerCase() ===
-                specConfigurations.status.authorised.toLowerCase() && isNotExpired() && consent.can_revoke_by_bnr ? (
+                specConfigurations.status.authorised.toLowerCase() && isNotExpired() && consent.can_revoke ? (
                     <div className="actionButtons">
                         <div className="actionBtnDiv">
                             <Link
