@@ -77,6 +77,8 @@ public class CDSConsentExtensionConstants {
     public static final String CONSENT_EXPIRY = "consent_expiration";
     public static final String ACCOUNT_MASKING_ENABLED = "account_masking_enabled";
     public static final String USER_ID_KEY_NAME = "userID";
+    public static final String USER_IDS_QUERY_PARAM_NAME = "userIDs";
+    public static final String CONSENT_IDS_QUERY_PARAM_NAME = "consentIDs";
     public static final String CONSENT_STATUS_REVOKED = "revoked";
     public static final String CONSENT_ATTRIBUTES = "consentAttributes";
     public static final String INCLUDE_SHARING_DATES = "includeSharingDates";
@@ -141,6 +143,7 @@ public class CDSConsentExtensionConstants {
     public static final String BNR_AUTHORIZE_PERMISSION = "AUTHORIZE";
     public static final String BNR_VIEW_PERMISSION = "VIEW";
     public static final String BNR_REVOKE_PERMISSION = "REVOKE";
+    public static final String CAN_REVOKE = "can_revoke";
 
     //Multi Profile Constants
     public static final String INDIVIDUAL_PROFILE_TYPE = "Individual";
