@@ -131,15 +131,12 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                 final String userID = validateAndGetQueryParam(queryParams, USER_ID);
                 DetailedConsentResource detailedConsentResource = this.consentCoreService.getDetailedConsent(consentID);
                 if (detailedConsentResource != null) {
-                    ArrayList<String> userIDs = (ArrayList<String>) consentAdminData.getQueryParams()
-                            .get(CDSConsentExtensionConstants.USER_ID_KEY_NAME);
-                    // userIDs can be null or empty when the request comes from a CustomerCareOfficer
-                    if (userIDs != null && !userIDs.isEmpty()) {
-                        String userId = userIDs.get(0);
-                        if (!canRevokeByBNR(detailedConsentResource, userId)) {
+                    String userId = validateAndGetQueryParam(queryParams,
+                            CDSConsentExtensionConstants.USER_ID_KEY_NAME);
+                    // userId can be null when the request comes from a CustomerCareOfficer
+                    if (userId != null && (!canRevokeByBNR(detailedConsentResource, userId))) {
                             throw new ConsentException(ResponseStatus.FORBIDDEN,
                                     "User is not authorized to revoke the consent");
-                        }
                     }
                     if (StringUtils.isNotBlank(userID) && !isPrimaryUserRevoking(detailedConsentResource, userID)) {
                         // Deactivate consent mappings as secondary consent holder
