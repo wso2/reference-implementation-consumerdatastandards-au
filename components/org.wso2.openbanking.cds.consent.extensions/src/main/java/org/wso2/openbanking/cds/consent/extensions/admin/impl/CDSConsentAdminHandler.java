@@ -54,8 +54,10 @@ import org.wso2.openbanking.cds.consent.extensions.util.PermissionsEnum;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY;
@@ -110,6 +112,11 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                 throw new OpenBankingRuntimeException("Error while adding sharing dates to permissions", e);
             }
         }
+
+        if (consentAdminData.getQueryParams().containsKey(CDSConsentExtensionConstants.CONSENT_IDS_QUERY_PARAM_NAME)) {
+            addBNRRevokeStatus(consentAdminData);
+        }
+
     }
 
     @Override
@@ -124,6 +131,13 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                 final String userID = validateAndGetQueryParam(queryParams, USER_ID);
                 DetailedConsentResource detailedConsentResource = this.consentCoreService.getDetailedConsent(consentID);
                 if (detailedConsentResource != null) {
+                    String userId = validateAndGetQueryParam(queryParams,
+                            CDSConsentExtensionConstants.USER_ID_KEY_NAME);
+                    // userId can be null when the request comes from a CustomerCareOfficer
+                    if (userId != null && (!canRevokeByBNR(detailedConsentResource, userId))) {
+                            throw new ConsentException(ResponseStatus.FORBIDDEN,
+                                    "User is not authorized to revoke the consent");
+                    }
                     if (StringUtils.isNotBlank(userID) && !isPrimaryUserRevoking(detailedConsentResource, userID)) {
                         // Deactivate consent mappings as secondary consent holder
                         deactivateAccountMappings(detailedConsentResource, userID);
@@ -519,6 +533,91 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
             }
         }
         return false;
+    }
+
+    private void addBNRRevokeStatus(ConsentAdminData consentAdminData) {
+
+        JSONObject responsePayload = consentAdminData.getResponsePayload();
+        JSONArray consentData = (JSONArray) responsePayload.get(CDSConsentExtensionConstants.DATA);
+        ArrayList<String> userIDs = (ArrayList<String>) consentAdminData.getQueryParams()
+                .get(CDSConsentExtensionConstants.USER_IDS_QUERY_PARAM_NAME);
+        if (userIDs == null || userIDs.isEmpty()) {
+            // Customer care officer scenario
+            consentData.forEach(consent -> {
+                JSONObject consentObject = (JSONObject) consent;
+                consentObject.put(CDSConsentExtensionConstants.CAN_REVOKE, true);
+            });
+        } else {
+            String userId = userIDs.get(0);
+            consentData.forEach(consent -> {
+                JSONObject consentObject = (JSONObject) consent;
+                consentObject.put(CDSConsentExtensionConstants.CAN_REVOKE, canRevokeByBNR(consentAdminData, userId));
+            });
+        }
+    }
+
+    private boolean canRevokeByBNR(DetailedConsentResource detailedConsentResource, String userId) {
+
+        Set<String> activeAccountIDs = new HashSet<>();
+        for (ConsentMappingResource consentMappingResource : detailedConsentResource.getConsentMappingResources()) {
+            if (consentMappingResource.getMappingStatus().equals(CDSConsentExtensionConstants.ACTIVE_STATUS)) {
+                activeAccountIDs.add(consentMappingResource.getAccountID());
+            }
+        }
+
+        return canRevokeByBNR(activeAccountIDs, userId);
+    }
+
+    private boolean canRevokeByBNR(ConsentAdminData consentAdminData, String userId) {
+
+        Set<String> activeAccountIDs = new HashSet<>();
+
+        for (Object item : (JSONArray) consentAdminData.getResponsePayload().
+                get(CDSConsentExtensionConstants.DATA)) {
+            JSONObject itemJSONObject = (JSONObject) item;
+            JSONArray consentMappingResourcesArray = (JSONArray) itemJSONObject.
+                    get(CDSConsentExtensionConstants.CONSENT_MAPPING_RESOURCES);
+            for (Object consentMappingResource : consentMappingResourcesArray) {
+                JSONObject consentMappingResourceObject = (JSONObject) consentMappingResource;
+                if (consentMappingResourceObject.getAsString(CDSConsentExtensionConstants.MAPPING_STATUS).
+                        equals(CDSConsentExtensionConstants.ACTIVE_STATUS)) {
+                    activeAccountIDs.add(consentMappingResourceObject.getAsString(
+                            CDSConsentExtensionConstants.ACCOUNT_ID));
+                }
+            }
+        }
+        return canRevokeByBNR(activeAccountIDs, userId);
+    }
+
+    private boolean canRevokeByBNR(Set<String> activeAccountIDs, String userId) {
+
+        if (activeAccountIDs.isEmpty()) {
+            return true;
+        }
+
+        AccountMetadataServiceImpl accountMetadataService = AccountMetadataServiceImpl.getInstance();
+
+        /*
+         * For all the active accounts, if the user has AUTHORIZE permission for BNR, then the user can
+         * revoke that consent. (i.e. For any given active account in consent mappings, if the user does not have
+         * AUTHORIZE permission, he/she cannot revoke the consent)
+         */
+        for (String accountID : activeAccountIDs) {
+            try {
+                String permissionStatus = accountMetadataService.getAccountMetadataByKey(accountID, userId,
+                        CDSConsentExtensionConstants.BNR_PERMISSION);
+                if (StringUtils.isNotBlank(permissionStatus) &&
+                        !(CDSConsentExtensionConstants.BNR_AUTHORIZE_PERMISSION.equals(permissionStatus))) {
+
+                    return false;
+                }
+            } catch (OpenBankingException e) {
+                log.error(e.getMessage());
+                throw new OpenBankingRuntimeException("Error while getting BNR permissions.", e);
+            }
+        }
+
+        return true;
     }
 
     public void updateDOMSStatusForConsentData(ConsentAdminData consentAdminData) {
