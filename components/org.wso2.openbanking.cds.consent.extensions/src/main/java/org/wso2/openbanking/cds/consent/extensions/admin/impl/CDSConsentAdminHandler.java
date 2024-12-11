@@ -601,9 +601,9 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
         AccountMetadataServiceImpl accountMetadataService = AccountMetadataServiceImpl.getInstance();
 
         /*
-         * For all the active accounts, if the user has AUTHORIZE or REVOKE permission for BNR, then the user can
+         * For all the active accounts, if the user has AUTHORIZE permission for BNR, then the user can
          * revoke that consent. (i.e. For any given active account in consent mappings, if the user does not have
-         * AUTHORIZE or REVOKE permission, he/she cannot revoke the consent)
+         * AUTHORIZE permission, he/she cannot revoke the consent)
          */
         for (String accountID : activeAccountIDs) {
             try {
