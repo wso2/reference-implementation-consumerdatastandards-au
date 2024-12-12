@@ -214,12 +214,8 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
 
     @Override
     public String getJSPPath() {
-        // If profile is already selected, skip the profile selection page
-        if (StringUtils.isBlank(preSelectedProfileId)) {
-            return "/ob_cds_profile_selection.jsp";
-        } else {
-            return "/ob_cds_account_selection.jsp";
-        }
+        // Moving the logic of determining the 1st page (profile selection or account selection) to ob_cds.jsp file
+        return "/ob_cds.jsp";
     }
 
     /**

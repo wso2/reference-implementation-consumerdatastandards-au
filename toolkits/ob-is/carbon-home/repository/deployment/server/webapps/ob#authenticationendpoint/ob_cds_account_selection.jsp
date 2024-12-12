@@ -23,62 +23,22 @@
 <jsp:include page="includes/consent_top.jsp"/>
 <%@ page import ="javax.servlet.RequestDispatcher"%>
 <%@ page import="org.owasp.encoder.Encode" %>
-<%
-    String preSelectedProfileId = (String) request.getAttribute("preSelectedProfileId");
-    String selectedProfileId = (preSelectedProfileId == null || "".equals(preSelectedProfileId)) ?
-            request.getParameter("selectedProfileId") : preSelectedProfileId;
-    boolean isConsentAmendment = request.getAttribute("isConsentAmendment") != null ?
-            (boolean) request.getAttribute("isConsentAmendment") : false;
-    Object nameClaims = request.getAttribute("nameClaims");
-    String nameClaimsString = nameClaims != null ? (String) nameClaims : "";
-    session.setAttribute("nameClaims", nameClaimsString);
-    Object contactClaims = request.getAttribute("contactClaims");
-    String contactClaimsString = contactClaims != null ? (String) contactClaims : "";
-    session.setAttribute("contactClaims", contactClaimsString);
+<%@ page import ="static org.wso2.openbanking.cds.consent.extensions.util.CDSConsentExtensionsUtil.getAttribute"%>
 
-    if (session.getAttribute("profiles_data") == null || isConsentAmendment) {
-        session.setAttribute("profiles_data", request.getAttribute("profiles_data"));
-    }
-    if (session.getAttribute("configParamsMap") == null || isConsentAmendment) {
-        session.setAttribute("configParamsMap", request.getAttribute("data_requested"));
-    }
-    if (session.getAttribute("newConfigParamsMap") == null || isConsentAmendment) {
-        session.setAttribute("newConfigParamsMap", request.getAttribute("new_data_requested"));
-    }
-    if (session.getAttribute("business_data_cluster") == null || isConsentAmendment) {
-        session.setAttribute("business_data_cluster", request.getAttribute("business_data_cluster"));
-    }
-    if (session.getAttribute("new_business_data_cluster") == null || isConsentAmendment) {
-        session.setAttribute("new_business_data_cluster", request.getAttribute("new_business_data_cluster"));
-    }
-    if (session.getAttribute("skipAccounts") == null || isConsentAmendment) {
-        session.setAttribute("skipAccounts", request.getAttribute("customerScopesOnly"));
-    }
-    
+<%
+
+    String preSelectedProfileId = (String) getAttribute(request, session, "preSelectedProfileId", null);
+    String selectedProfileId = (preSelectedProfileId == null || "".equals(preSelectedProfileId)) ?
+            (String) getAttribute(request, session, "selectedProfileId", null) : preSelectedProfileId;
+    session.setAttribute("selectedProfileId", selectedProfileId);
+
     boolean skipAccounts = (boolean) session.getAttribute("skipAccounts");
     if (skipAccounts) {
-    	RequestDispatcher requestDispatcher = request.getRequestDispatcher("/oauth2_authz_consent.do");
-        request.setAttribute("sessionDataKeyConsent", Encode.forHtmlAttribute(
-                String.valueOf(session.getAttribute("sessionDataKeyConsent"))));
-        request.setAttribute("isConsentAmendment", isConsentAmendment);
-        Object isSharingDurationUpdated = request.getAttribute("isSharingDurationUpdated") != null ?
-                request.getAttribute("isSharingDurationUpdated") : session.getAttribute("isSharingDurationUpdated");
-        request.setAttribute("isSharingDurationUpdated", isSharingDurationUpdated);
-        request.setAttribute("accountsArry[]", "unavailable");
-        request.setAttribute("accNames", "");
-        Object app = request.getAttribute("app") != null ? request.getAttribute("app") : session.getAttribute("app");
-        request.setAttribute("app", app);
-        Object spFullName = request.getAttribute("sp_full_name") != null ?
-                request.getAttribute("sp_full_name") : session.getAttribute("sp_full_name");
-        request.setAttribute("spFullName", spFullName);
-        request.setAttribute("selectedProfileId", selectedProfileId);
-        request.setAttribute("selectedProfileName", session.getAttribute("selectedProfileName"));
-        Object consentExpiryDateTime = request.getAttribute("consent_expiration") != null ?
-                request.getAttribute("consent_expiration") : session.getAttribute("consent_expiration");
-        request.setAttribute("consent-expiry-date", consentExpiryDateTime);
-        request.setAttribute("sharing_duration_value", session.getAttribute("sharing_duration_value"));
-        requestDispatcher.forward(request, response);
+        session.setAttribute("accountsArry[]", "unavailable");
+        session.setAttribute("accNames", "");
+        response.sendRedirect("oauth2_authz_consent.do");
     }
+
 %>
 
 <div class="row data-container">
@@ -98,7 +58,7 @@
             <div>
                 <c:if test="${not empty accounts_data}">
                     <%--Get account ids for the selected profile--%>
-                    <c:set var="selectedProfileId" scope="session" value="<%=selectedProfileId%>"/>
+                    <c:set var="selectedProfileId" scope="session" value="${selectedProfileId}"/>
                     <c:forEach items="${profiles_data}" var="profile">
                         <c:if test="${profile['profileId'] eq selectedProfileId}">
                             <c:set var="profileAccountIds" value="${profile['accountIds']}" />
@@ -183,15 +143,15 @@
                     <input type="hidden" name="sessionDataKeyConsent" value="${sessionDataKeyConsent}"/>
                     <input type="hidden" name="consent" id="consent" value="deny"/>
                     <input type="hidden" name="app" id="app" value="${app}"/>
-                    <input type="hidden" name="spFullName" id="app" value="${sp_full_name}"/>
+                    <input type="hidden" name="sp_full_name" id="app" value="${sp_full_name}"/>
                     <input type="hidden" name="accountsArry[]" id="account" value=""/>
                     <input type="hidden" name="accNames" id="accountName" value=""/>
                     <input type="hidden" name="accDisplayNames" id="accountDisplayName" value=""/>
                     <input type="hidden" name="type" id="type" value="accounts"/>
-                    <input type="hidden" name="consent-expiry-date" id="consentExp" value="${consent_expiration}"/>
+                    <input type="hidden" name="consent_expiration" id="consentExp" value="${consent_expiration}"/>
                     <input type="hidden" name="isConsentAmendment" id="isConsentAmendment" value="${isConsentAmendment}"/>
                     <input type="hidden" name="isSharingDurationUpdated" id="isSharingDurationUpdated" value="${isSharingDurationUpdated}"/>
-                    <input type="hidden" name="selectedProfileId" id="selectedProfileId" value="<%=selectedProfileId%>"/>
+                    <input type="hidden" name="selectedProfileId" id="selectedProfileId" value="${selectedProfileId}"/>
                     <input type="hidden" name="selectedProfileName" id="selectedProfileName" value="${selectedProfileName}"/>
                     <input type="hidden" name="sharing_duration_value" id="sharing_duration_value" value="${sharing_duration_value}"/>
                 </div>
