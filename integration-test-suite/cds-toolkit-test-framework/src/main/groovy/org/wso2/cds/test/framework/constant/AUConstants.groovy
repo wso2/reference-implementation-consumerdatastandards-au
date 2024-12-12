@@ -65,8 +65,8 @@ class AUConstants extends OBConstants {
     public static final String GET_STAT = "/admin/metrics"
     public static final String X_FAPI_FINANCIAL_ID = "x-fapi-financial-id"
     public static final String USERNAME = "admin@wso2.com"
-    public static final String PASSWORD = "wso2123"
-    public static final String ACCESS_TOKEN = "token"
+    public static final String ADMIN_PASSWORD = "wso2123"
+    public static final String ACCESS_TOKEN = "access_token"
     public static final String CONTENT = "application/x-www-form-urlencoded"
     public static final String CODE = "code"
     public static final String ERROR_INVALID_SOFTWARE_PRODUCT = "Invalid Software Product"
@@ -75,7 +75,7 @@ class AUConstants extends OBConstants {
     public static final long SINGLE_ACCESS_CONSENT = 0
     public static final long ONE_YEAR_DURATION = 31536200
     public static final long NEGATIVE_DURATION = -3000
-    public static final long AMENDED_SHARING_DURATION = 3000
+    public static final long AMENDED_SHARING_DURATION = 150000
     public static final long SHORT_SHARING_DURATION = 84600
     static final long NEGATIVE_SHARING_DURATION = -3000
     public static final long SHARING_DURATION_24H = 86400
@@ -487,7 +487,7 @@ class AUConstants extends OBConstants {
     public static final String ERROR_UNSUPPORTED_RESPONSE = "Unsupported response_type value. Only code response type is allowed."
     public static final String DCR_CLAIM_LEGAL_ENTITY_ID = "legal_entity_id"
     public static final String DCR_CLAIM_LEGAL_ENTITY_NAME = "legal_entity_name"
-    public static final String SAMPLE_LEGAL_ENTITY_ID = "TPP7"
+    public static final String SAMPLE_LEGAL_ENTITY_ID = "TPP2"
     public static final String SAMPLE_LEGAL_ENTITY_NAME = "Mock Company Pty Ltd."
     public static final String AlternateAccountId = "30080098763501"
     public static final CodeVerifier CODE_VERIFIER = new CodeVerifier()
@@ -606,8 +606,16 @@ class AUConstants extends OBConstants {
     public static final String ERROR_CODE_INVALID_ARRANGEMENT = "urn:au-cds:error:cds-all:Authorisation/InvalidArrangement"
     public static final String INVALID_CONSENT_ARRANGEMENT = "Invalid Arrangement ID"
     public static TOKEN_ENDPOINT = "/oauth2/token"
+    public static final String REST_API_ADMIN_ENDPOINT = "/api/am/admin/v4/";
 
     public static MESSAGE = "message"
     public static DESCRIPTION = "description"
+    public static REST_API_CLIENT_REGISTRATION_ENDPOINT = "/client-registration/v0.17/register"
+    public static final String REST_API_PUBLISHER_ENDPOINT = "/api/am/publisher/v4/apis/"
+    public static final String REST_API_STORE_ENDPOINT = "/api/am/store/v1/"
+    public static final String REST_API_SCIM2_ENDPOINT = "/scim2"
+    public static final String CONTENT_TYPE_APPLICATION_SCIM_JSON = "application/scim+json"
+    public static final String SUBSCRIBER_ROLE = "Internal/subscriber"
+
 }
 
