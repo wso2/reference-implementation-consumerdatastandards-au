@@ -579,6 +579,9 @@ allowed_values = ["A256GCM", "A128CBC-HS256"]
 [open_banking.dcr.registration.token_endpoint_auth_signing_alg]
 required = true
 
+[open_banking.dcr.registration.software_statement]
+unmodifiable_metadata = ["iss", "org_id", "software_id", "software_roles", "legal_entity_id", "legal_entity_name"]
+
 [open_banking.data_publishing]
 enable = false
 username="$ref{super_admin.username}@carbon.super"
