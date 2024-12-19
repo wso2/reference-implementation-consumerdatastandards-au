@@ -91,6 +91,16 @@
         <url-pattern>/ob_cds_account_selection.do</url-pattern>
     </servlet-mapping>
 
+    <servlet-mapping>
+        <servlet-name>ob_cds_profile_selection.do</servlet-name>
+        <url-pattern>/ob_cds_profile_selection.do</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>ob_cds.do</servlet-name>
+        <url-pattern>/ob_cds.do</url-pattern>
+    </servlet-mapping>
+
     <servlet>
         <servlet-name>retry.do</servlet-name>
         <jsp-file>/generic-exception-response.jsp</jsp-file>
@@ -104,6 +114,16 @@
     <servlet>
         <servlet-name>ob_cds_account_selection.do</servlet-name>
         <jsp-file>/ob_cds_account_selection.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>ob_cds_profile_selection.do</servlet-name>
+        <jsp-file>/ob_cds_profile_selection.jsp</jsp-file>
+    </servlet>
+
+    <servlet>
+        <servlet-name>ob_cds.do</servlet-name>
+        <jsp-file>/ob_cds.jsp</jsp-file>
     </servlet>
 
     <servlet-mapping>

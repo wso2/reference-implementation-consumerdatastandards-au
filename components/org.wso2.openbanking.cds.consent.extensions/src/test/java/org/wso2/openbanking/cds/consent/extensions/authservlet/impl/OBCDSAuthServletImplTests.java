@@ -184,6 +184,6 @@ public class OBCDSAuthServletImplTests extends PowerMockTestCase {
     @Test
     public void testGetJSPPath() {
         String jspPath = obCdsAuthServlet.getJSPPath();
-        Assert.assertEquals(jspPath, "/ob_cds_profile_selection.jsp");
+        Assert.assertEquals(jspPath, "/ob_cds.jsp");
     }
 }
