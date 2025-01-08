@@ -389,7 +389,7 @@ class AccountsRetrievalRequestHeaderValidationTest extends AUTest {
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_TITLE), AUConstants
                 .INVALID_FIELD)
         Assert.assertTrue(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DETAIL).contains(
-                "Schema validation failed in the Request: Instance value (\"TRANS\") not found in enum"))
+                "Schema validation failed in the Request: Instance value (\"TANS\") not found in enum"))
         Assert.assertNotNull(response.getHeader(AUConstants.X_FAPI_INTERACTION_ID))
     }
 

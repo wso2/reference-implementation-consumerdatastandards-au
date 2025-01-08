@@ -217,4 +217,28 @@ class AUPageObjects {
     public static LBL_UNAVAILABLE_ACCOUNT = "//h4[contains(text(),'Accounts Unavailable To Share')]/following-sibling::div/"
     public static POPUP_UNAVAILABLE_ACCOUNTS = "//p[@id='UnavailableAccountPopover']"
     public static LBL_WHY_CANT_SHARE = "//h4[contains(text(),'Accounts Unavailable To Share')]/following-sibling::div/p[2]"
+
+    static final String TXT_USERNAME = "//input[@id='txtUserName']"
+    static final String TXT_PASSWORD = "//input[@id='txtPassword']"
+    static final String BTN_SIGNIN = "//input[@value='Sign-in']"
+
+    static final String LNK_SP_LIST =
+            "//li[text()='Service Providers']/following-sibling::li//a[contains(@href,'list_service_providers_menu')]"
+    static final String BTN_EDIT_SP = "//table[@id='ServiceProviders']/tbody/tr[1]/td[1]/following-sibling::td[2]/a[contains(@title,'Edit Service Providers')]"
+    static final String CHK_UPLOAD_SP_CERT = "//input[@id='choose_upload_certificate']"
+    static final String TXT_UPLOAD_CERT = "//textarea[@id='sp-certificate']"
+    static final String BTN_UPDATE = "//input[@value='Update']"
+
+    static final String LNK_ADD_USER_AND_ROLE = "//a[contains(@href,'user_mgt_menu_add')]"
+    static final String LNK_ADD_NEW_USER = "//a[text()='Add New User']"
+    static final String LNK_ADD_NEW_ROLE = "//a[text()='Add New Role']"
+
+    static final String TXT_NEW_USER_NAME = "//input[@name='username']"
+    static final String TXT_NEW_USER_PASSWORD = "//input[@name='password']"
+    static final String TXT_NEW_USER_CONFIRM_PASSWORD = "//input[@id='password-repeat']"
+    static final String BTN_NEXT = "//input[contains(@value,'Next')]"
+    static final String CHK_SUBSCRIBER_ROLE = "//input[@type='checkbox' and @value='Internal/subscriber']"
+    static final String BTN_FINISH = "//input[@value='Finish']"
+    static final String LBL_MESSAGE_BOX = "//div[@id='messagebox-info']/p"
+    static final String BTN_MESSAGEBOX_OK = "//div[@class='ui-dialog-buttonpane']/button[text()='OK']"
 }

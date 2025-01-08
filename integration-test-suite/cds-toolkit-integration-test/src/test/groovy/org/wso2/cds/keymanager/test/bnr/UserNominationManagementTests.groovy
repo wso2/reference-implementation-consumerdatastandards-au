@@ -302,7 +302,7 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(deleteResponse.statusCode(), AUConstants.OK)
     }
 
-    @Test
+    @Test (priority = 1)
     void "CDS-600_Verify the Delete BU end point with NR who has REVOKE Permission"() {
 
         def shareableElements = AUTestUtil.getSharableAccountsList(getSharableBankAccounts())

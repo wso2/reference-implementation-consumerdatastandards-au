@@ -86,5 +86,8 @@ class AUConfigConstants {
     public static final String DB_PASSWORD = "DBPassword"
     public static final String DB_DRIVER_CLASS = "DBDriverClass"
     public static final String ORACLE_DB_SID = "OracleDBSID"
+    public static final String PROVISIONING = "Provisioning"
+    public static final String PROVISIONING_ENABLED = "Enabled"
+    public static final String PROVISIONING_FILE_PATH = "FilePath"
 }
 
