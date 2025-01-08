@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -54,6 +54,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 
 /**
@@ -186,8 +187,7 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                     Map<String, Object> additionalAmendmentData = new HashMap<>();
                     if (nonPrimaryAccountIdAgainstUsersObj != null && userIdAgainstNonPrimaryAccountsObj != null) {
                         additionalAmendmentData = bindNonPrimaryAccountUsersToConsent(consentResource, consentData,
-                                (Map<String, Map<String, String>>) nonPrimaryAccountIdAgainstUsersObj,
-                                (Map<String, ArrayList<String>>) userIdAgainstNonPrimaryAccountsObj, true);
+                                (Map<String, Map<String, List<String>>>) userIdAgainstNonPrimaryAccountsObj, true);
                     }
                     consentCoreService.amendDetailedConsent(cdrArrangementId, consentResource.getReceipt(),
                             validityPeriod, authResorceId, accountIdsMapWithPermissions,
@@ -239,8 +239,7 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                     // bind user consented accounts with the created consent for non-primary users
                     if (nonPrimaryAccountIdAgainstUsersObj != null && userIdAgainstNonPrimaryAccountsObj != null) {
                         bindNonPrimaryAccountUsersToConsent(consentResource, consentData,
-                                (Map<String, Map<String, String>>) nonPrimaryAccountIdAgainstUsersObj,
-                                (Map<String, ArrayList<String>>) userIdAgainstNonPrimaryAccountsObj, false);
+                                (Map<String, Map<String, List<String>>>) userIdAgainstNonPrimaryAccountsObj, false);
                     }
                 }
 
@@ -447,19 +446,18 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
     }
 
     @Generated(message = "Excluding from code coverage since it requires a service call")
-    private Map<String, Object> bindNonPrimaryAccountUsersToConsent(ConsentResource consentResource,
-                                                    ConsentData consentData,
-                                                    Map<String, Map<String, String>> nonPrimaryAccountIdAgainstUsers,
-                                                    Map<String, ArrayList<String>> userIdAgainstNonPrimaryAccounts,
-                                                    boolean isConsentAmendment)
-            throws ConsentManagementException {
+    private Map<String, Object> bindNonPrimaryAccountUsersToConsent(
+            ConsentResource consentResource,
+            ConsentData consentData,
+            Map<String, Map<String, List<String>>> userIdAgainstNonPrimaryAccounts,
+            boolean isConsentAmendment) throws ConsentManagementException {
 
         List<String> addedUserAuthTypeMappings = new ArrayList<>();
         // add primary user to already added users auth type mapping list
         addedUserAuthTypeMappings.add(consentData.getUserId() + ":" +
                 CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY);
         // Users who have already stored as auth resources
-        Map<String, AuthorizationResource> reAuthorizableResources = new HashMap<>();
+        List<String> reAuthorizableResources = new ArrayList<>();
         // Users who need to store as auth resources
         Map<String, List<String>> authorizableResources = new HashMap<>();
 
@@ -468,23 +466,19 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                 : consentData.getConsentId();
         DetailedConsentResource detailedConsent = consentCoreService.getDetailedConsent(consentId);
 
-        for (Entry<String, Map<String, String>> entry : nonPrimaryAccountIdAgainstUsers.entrySet()) {
-            Map<String, String> userIdList = entry.getValue();
-            for (Entry userEntry : userIdList.entrySet()) {
-                String userId = userEntry.getKey().toString();
-                String authType = userEntry.getValue().toString();
+        for (Map.Entry<String, Map<String, List<String>>> userEntry : userIdAgainstNonPrimaryAccounts.entrySet()) {
+
+            final String userId = userEntry.getKey();
+            for (Map.Entry<String, List<String>> accountEntry : userEntry.getValue().entrySet()) {
+                final String authType = accountEntry.getKey();
                 String userAuthTypeMapping = userId + ":" + authType;
                 if (StringUtils.isNotBlank(userId) && !addedUserAuthTypeMappings.contains(userAuthTypeMapping)) {
 
-                    if (isConsentAmendment) {
-                        for (AuthorizationResource authResource : detailedConsent.getAuthorizationResources()) {
-                            if (userId.equals(authResource.getUserID())) {
-                                reAuthorizableResources.put(userId, authResource);
-                            }
-                        }
+                    if (isConsentAmendment && isReauthorizable(userId, accountEntry.getValue(), detailedConsent)) {
+                        reAuthorizableResources.add(userId);
                     }
 
-                    if (!reAuthorizableResources.containsKey(userId)) {
+                    if (!reAuthorizableResources.contains(userId)) {
                         authorizableResources.computeIfAbsent(userId, k -> new ArrayList<>()).add(authType);
                     }
 
@@ -498,11 +492,11 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
     }
 
     @Generated(message = "Excluding from code coverage since it requires a service call")
-    private Map<String, Object> createNewAuthResources(String consentId, ConsentResource consentResource,
-                                                       Map<String, List<String>> authorizableResources,
-                                                       Map<String, ArrayList<String>> userIdAgainstNonPrimaryAccounts,
-                                                       boolean isConsentAmendment)
-            throws ConsentManagementException {
+    private Map<String, Object> createNewAuthResources(
+            String consentId, ConsentResource consentResource,
+            Map<String, List<String>> authorizableResources,
+            Map<String, Map<String, List<String>>> userIdAgainstNonPrimaryAccounts,
+            boolean isConsentAmendment) throws ConsentManagementException {
 
         Map<String, Object> additionalAmendmentData = new HashMap<>();
         Map<String, AuthorizationResource> secondaryUserAuthResources = new HashMap<>();
@@ -522,15 +516,23 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                     // AuthorizationResources, ConsentMappingResources against the userId and returned.
                     secondaryUserAuthResources.put(userId, secondaryAuthResource);
 
-                    for (String accountId : userIdAgainstNonPrimaryAccounts.get(userId)) {
+                    for (String accountId : userIdAgainstNonPrimaryAccounts.get(userId).get(authType)) {
                         mappingResources.add(getSecondaryConsentMappingResource(accountId));
                     }
                     secondaryUserAccountMappings.put(userId, mappingResources);
                 } else {
-                    AuthorizationResource authorizationResource = consentCoreService
-                            .createConsentAuthorization(secondaryAuthResource);
+                    final AuthorizationResource authorizationResource =
+                            consentCoreService.createConsentAuthorization(secondaryAuthResource);
+
+                    if (log.isDebugEnabled()) {
+                        log.debug(String.format("Inserting consented accounts for authorizationId: %s, " +
+                                        "consentId: %s, authType %s", authorizationResource.getAuthorizationID(),
+                                consentResource.getConsentID(), authType));
+                    }
+
                     consentCoreService.bindUserAccountsToConsent(consentResource, userId,
-                            authorizationResource.getAuthorizationID(), userIdAgainstNonPrimaryAccounts.get(userId),
+                            authorizationResource.getAuthorizationID(),
+                            new ArrayList<>(userIdAgainstNonPrimaryAccounts.get(userId).get(authType)),
                             CDSConsentExtensionConstants.AUTHORIZED_STATUS,
                             CDSConsentExtensionConstants.AUTHORIZED_STATUS);
                 }
@@ -673,5 +675,48 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
 
         CDSDataPublishingService.getCDSDataPublishingService()
                 .publishAbandonedConsentFlowData(abandonedConsentFlowData);
+    }
+
+    /**
+     * Checks if the given mapping resource is re-authorizable based on the user ID and account IDs.
+     *
+     * @param newUserId                the ID of the user to check.
+     * @param newlyConsentedAccountIDs the list of account IDs to validate.
+     * @param detailedConsent          the detailed consent object containing authorization and mapping resources.
+     * @return true if the resource is re-authorizable, false otherwise.
+     */
+    private boolean isReauthorizable(String newUserId, List<String> newlyConsentedAccountIDs,
+                                     DetailedConsentResource detailedConsent) {
+
+        final List<String> existingUserIDs = detailedConsent.getAuthorizationResources().stream()
+                .map(AuthorizationResource::getUserID).collect(Collectors.toList());
+
+        if (!existingUserIDs.contains(newUserId)) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("authorize user %s for consent %s", newUserId, detailedConsent.getConsentID()));
+            }
+            return false;
+        }
+
+        final List<String> existingAuthIDs = detailedConsent.getAuthorizationResources().stream()
+                .filter(auth -> auth.getUserID().equals(newUserId))
+                .map(AuthorizationResource::getAuthorizationID)
+                .collect(Collectors.toList());
+
+        final List<String> existingAccountIDs = detailedConsent.getConsentMappingResources().stream()
+                .filter(mapping -> existingAuthIDs.contains(mapping.getAuthorizationID()))
+                .map(ConsentMappingResource::getAccountID)
+                .collect(Collectors.toList());
+
+        // Return false if any accountID matches an authorization ID
+        if (existingAccountIDs.stream().noneMatch(newlyConsentedAccountIDs::contains)) {
+            if (log.isDebugEnabled()) {
+                log.debug(String.format("authorize user %s for consent %s",
+                        newUserId, detailedConsent.getConsentID()));
+            }
+            return false;
+        }
+
+        return true;
     }
 }
