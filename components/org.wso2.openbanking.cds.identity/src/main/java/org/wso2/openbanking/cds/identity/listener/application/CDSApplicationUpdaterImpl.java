@@ -75,8 +75,6 @@ public class CDSApplicationUpdaterImpl extends ApplicationUpdaterImpl {
                 clientId = inboundAuthRequestConfigs.getInboundAuthKey();
             }
             if (!StringUtils.isEmpty(clientId)) {
-
-
                 consentCoreService.revokeExistingApplicableConsents(clientId, null, CDR_ACCOUNTS, AUTHORIZED,
                         REVOKED, true);
                 log.debug("Applicable tokens and consents revoked successfully.");
