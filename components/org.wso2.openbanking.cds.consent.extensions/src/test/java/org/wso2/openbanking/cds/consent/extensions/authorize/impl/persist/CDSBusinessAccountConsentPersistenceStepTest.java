@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -165,8 +165,8 @@ public class CDSBusinessAccountConsentPersistenceStepTest extends PowerMockTestC
 
         verify(consentPersistDataMock).addMetadata(eq(CDSConsentExtensionConstants.
                 USER_ID_AGAINST_NON_PRIMARY_ACCOUNTS_MAP), usersWithMultipleBusinessAccountsCaptor.capture());
-        Map<String, List<String>> usersWithMultipleJointAccountsCaptorValue =
-                (Map<String, List<String>>) usersWithMultipleBusinessAccountsCaptor.getValue();
+        Map<String, Map<String, List<String>>> usersWithMultipleJointAccountsCaptorValue =
+                (Map<String, Map<String, List<String>>>) usersWithMultipleBusinessAccountsCaptor.getValue();
 
         assertTrue(jointAccountIdWithUsersCaptorValue.containsKey("business-account-id"));
         assertTrue(jointAccountIdWithUsersCaptorValue.get("business-account-id").
@@ -177,8 +177,8 @@ public class CDSBusinessAccountConsentPersistenceStepTest extends PowerMockTestC
         assertTrue(usersWithMultipleJointAccountsCaptorValue.containsKey("nominatedUser2@wso2.com@carbon.super"));
         assertTrue(usersWithMultipleJointAccountsCaptorValue.containsKey("user2@wso2.com@carbon.super"));
         assertTrue(usersWithMultipleJointAccountsCaptorValue.get("nominatedUser3@wso2.com@carbon.super")
-                .contains("business-account-id"));
+                .get(CDSConsentExtensionConstants.NOMINATED_REPRESENTATIVE).contains("business-account-id"));
         assertTrue(usersWithMultipleJointAccountsCaptorValue.get("user1@wso2.com@carbon.super")
-                .contains("business-account-id"));
+                .get(CDSConsentExtensionConstants.BUSINESS_ACCOUNT_OWNER).contains("business-account-id"));
     }
 }
