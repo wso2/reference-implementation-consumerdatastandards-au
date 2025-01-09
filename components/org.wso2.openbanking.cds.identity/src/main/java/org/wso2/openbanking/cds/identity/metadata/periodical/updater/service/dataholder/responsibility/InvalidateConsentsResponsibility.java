@@ -74,9 +74,6 @@ public class InvalidateConsentsResponsibility implements DataHolderResponsibilit
     @Override
     public void perform() {
 
-        final String userId = String.format("%s@%s", serviceProvider.getOwner().getUserName(),
-                serviceProvider.getOwner().getTenantDomain());
-
         for (InboundAuthenticationRequestConfig config :
                 this.serviceProvider.getInboundAuthenticationConfig().getInboundAuthenticationRequestConfigs()) {
 
@@ -84,7 +81,7 @@ public class InvalidateConsentsResponsibility implements DataHolderResponsibilit
                 LOG.debug("Revoking consent and relevant tokens. consentId: " + config.getInboundAuthKey());
 
                 ServiceHolder.getInstance().getConsentCoreService()
-                        .revokeExistingApplicableConsents(config.getInboundAuthKey(), userId,
+                        .revokeExistingApplicableConsents(config.getInboundAuthKey(), null,
                                 CONSENT_TYPE, APPLICABLE_STATUS_TO_REVOKE, REVOKED_CONSENT_STATUS, true);
 
                 LOG.debug("Consent of consentId " + config.getInboundAuthKey()
