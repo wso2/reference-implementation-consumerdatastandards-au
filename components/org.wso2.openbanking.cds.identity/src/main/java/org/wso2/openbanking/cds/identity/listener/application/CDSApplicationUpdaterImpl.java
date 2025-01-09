@@ -74,11 +74,8 @@ public class CDSApplicationUpdaterImpl extends ApplicationUpdaterImpl {
             if (inboundAuthRequestConfigs != null) {
                 clientId = inboundAuthRequestConfigs.getInboundAuthKey();
             }
-            if (!userName.contains(CARBON_SUPER_TENANT_DOMAIN)) {
-                userName = userName + CARBON_SUPER_TENANT_DOMAIN;
-            }
             if (!StringUtils.isEmpty(clientId)) {
-                consentCoreService.revokeExistingApplicableConsents(clientId, userName, CDR_ACCOUNTS, AUTHORIZED,
+                consentCoreService.revokeExistingApplicableConsents(clientId, null, CDR_ACCOUNTS, AUTHORIZED,
                         REVOKED, true);
                 log.debug("Applicable tokens and consents revoked successfully.");
             }
