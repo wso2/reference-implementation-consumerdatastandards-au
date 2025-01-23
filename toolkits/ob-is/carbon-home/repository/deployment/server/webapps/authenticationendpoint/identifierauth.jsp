@@ -45,7 +45,9 @@
         %>
 	    <jsp:include page="extensions/toolkit-data-extension.jsp"/>
 	    <%
-        callbackURL = request.getAttribute("callbackURL").toString(); 
+	    if (request.getAttribute("callbackURL") != null) {
+	        callbackURL = request.getAttribute("callbackURL").toString();
+	    }
      }
 %>
 
