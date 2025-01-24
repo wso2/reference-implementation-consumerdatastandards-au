@@ -296,10 +296,13 @@
             var minsDisplay = mins > 0 ? mins + (mins == 1 ? " minute " : " minutes ") : "";
 
             var value;
-            if (sharingDurationValue < 86400) {
+            if (sharingDurationValue < 3600) {
+                value = minsDisplay;
+            } else if (sharingDurationValue < 86400) {
                 if (hoursDisplay == "") {
                     finalOutput = "Your data will be accessible for the next 1 hour";
                 } else {
+                    var mins = minsDisplay.substring(0,2);
                     if (minsDisplay == "60 minutes ") {
                         var hour = hoursDisplay.substring(0,2);
                         if (hour > 0) {
@@ -307,8 +310,10 @@
                         } else {
                             value = "1 hour ";
                         }
-                    } else {
+                    } else if (mins == 0) {
                         value = hoursDisplay;
+                    } else {
+                        value = hoursDisplay + "and " + minsDisplay;
                     }
                 }
             } else {
