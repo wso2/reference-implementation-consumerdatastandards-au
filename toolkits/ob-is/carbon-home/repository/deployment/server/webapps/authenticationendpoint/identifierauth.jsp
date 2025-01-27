@@ -59,6 +59,7 @@
 			for (int i = 0; i < cookies.length; i++) {
 				if (CALLBACK_URL.equals(cookies[i].getName())) {
 					callbackURL = URLDecoder.decode(cookies[i].getValue(), "UTF-8");
+					break;
 				}
 			}
 		}
