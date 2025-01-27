@@ -34,7 +34,9 @@ if (!clientId.equals("null")) {
     spClientName = sessionDetails.getSPProperty(clientId, "client_name");
 }
 
-spDetails = spOrgName + "," + spClientName;
+if (spOrgName != null && spClientName != null) {
+    spDetails = spOrgName + "," + spClientName;
+}
 
 if (!requestUri.equals("null")) {
     callbackURL = sessionDetails.getRedirectUri(requestUri);
