@@ -19,21 +19,6 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="Consumer Data Standards Test Suite">
-    <test name="Pre Test Execution Step - Create Key Manager" parallel="false" enabled="true">
-        <classes>
-            <class name="org.wso2.cds.preexecution.CreateCustomKeyManagerTest"/>
-        </classes>
-    </test>
-    <test name="Pre Test Execution Step - Publish APIs" parallel="false" enabled="true">
-        <classes>
-            <class name="org.wso2.cds.preexecution.PublishAndSubscribeApiTest"/>
-        </classes>
-    </test>
-    <test name="Pre Test Execution Step - Create Users" parallel="false" enabled="true">
-        <classes>
-            <class name="org.wso2.cds.preexecution.UserCreationTest"/>
-        </classes>
-    </test>
     <test name="Client Registration Tests" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationCreateTest"/>
@@ -52,11 +37,6 @@
     <test name="Client Registration Delete Tests" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationDeleteTest"/>
-        </classes>
-    </test>
-    <test name="Client Registration Prerequisite Step" parallel="false" enabled="true" preserve-order="false">
-        <classes>
-            <class name="org.wso2.cds.integration.test.tpponboarding.CommonTppOnboardingStep"/>
         </classes>
     </test>
     <test name="Accounts Integration Tests" parallel="false" enabled="true" preserve-order="false">
@@ -86,12 +66,12 @@
             <class name="org.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalTest"/>
         </classes>
     </test>
-    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="false" preserve-order="false">
+    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.cdr_arrangement.ConcurrentConsentTest"/>
         </classes>
     </test>
-    <test name="Admin API Tests" parallel="false" enabled="false">
+    <test name="Admin API Tests" parallel="false" enabled="true" preserve-order="false">
         <classes>
             <class name="org.wso2.cds.integration.test.admin_api.AdminApiValidationTests"/>
 
