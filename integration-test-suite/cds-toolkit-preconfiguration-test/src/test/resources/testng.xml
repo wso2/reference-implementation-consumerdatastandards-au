@@ -19,23 +19,23 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="Consumer Data Standards Test Suite">
-    <test name="Pre Test Execution Step - Create Key Manager" parallel="true" enabled="false">
+    <test name="Pre Test Execution Step - Create Key Manager" parallel="true" enabled="true">
         <classes>
             <class name="org.wso2.cds.preexecution.CreateCustomKeyManagerTest"/>
         </classes>
     </test>
-    <test name="Pre Test Execution Step - Publish APIs" parallel="true" enabled="false">
+    <test name="Pre Test Execution Step - Publish APIs" parallel="true" enabled="true">
         <classes>
             <class name="org.wso2.cds.preexecution.PublishAndSubscribeApiTest"/>
         </classes>
     </test>
-    <test name="Pre Test Execution Step - Create Users" parallel="true" enabled="false">
+    <test name="Pre Test Execution Step - Create Users" parallel="true" enabled="true">
         <classes>
             <class name="org.wso2.cds.preexecution.UserCreationTest"/>
         </classes>
     </test>
 
-    <test name="Pre Test Execution Step - Client Registration" parallel="false" enabled="false" preserve-order="true">
+    <test name="Pre Test Execution Step - Client Registration" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.tpponboarding.CommonTppOnboardingStep"/>
         </classes>
