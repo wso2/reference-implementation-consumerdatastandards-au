@@ -19,36 +19,6 @@
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
 <suite name="Consumer Data Standards Smoke Test Suite">
-    <test name="Pre Test Execution Step - Create Key Manager" parallel="false" enabled="false">
-        <groups>
-            <run>
-                <include name="SmokeTest" />
-            </run>
-        </groups>
-        <classes>
-            <class name="org.wso2.cds.preexecution.CreateCustomKeyManagerTest"/>
-        </classes>
-    </test>
-    <test name="Pre Test Execution Step - Publish APIs" parallel="false" enabled="false">
-        <groups>
-            <run>
-                <include name="SmokeTest" />
-            </run>
-        </groups>
-        <classes>
-            <class name="org.wso2.cds.preexecution.PublishAndSubscribeApiTest"/>
-        </classes>
-    </test>
-    <test name="Pre Test Execution Step - Create Users" parallel="false" enabled="false">
-        <groups>
-            <run>
-                <include name="SmokeTest" />
-            </run>
-        </groups>
-        <classes>
-            <class name="org.wso2.cds.preexecution.UserCreationTest"/>
-        </classes>
-    </test>
     <test name="Client Registration Tests" parallel="false" enabled="false" preserve-order="false">
         <groups>
             <run>
@@ -87,16 +57,6 @@
         </groups>
         <classes>
             <class name="org.wso2.cds.integration.test.clientRegistration.DynamicClientRegistrationDeleteTest"/>
-        </classes>
-    </test>
-    <test name="Client Registration Prerequisite Step" parallel="false" enabled="false">
-        <groups>
-            <run>
-                <include name="SmokeTest" />
-            </run>
-        </groups>
-        <classes>
-            <class name="org.wso2.cds.integration.test.tpponboarding.CommonTppOnboardingStep"/>
         </classes>
     </test>
     <test name="Accounts Integration Tests" parallel="false" enabled="false">
