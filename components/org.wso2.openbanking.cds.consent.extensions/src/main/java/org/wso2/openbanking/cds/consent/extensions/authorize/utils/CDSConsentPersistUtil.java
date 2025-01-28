@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024-2025, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -53,7 +53,7 @@ public class CDSConsentPersistUtil {
             ConsentPersistData consentPersistData) {
 
         Map<String, Map<String, String>> currentNonPrimaryAccountIdUsersMap = new HashMap<>();
-        Map<String, List<String>> currentUserIdNonPrimaryAccountsMap = new HashMap<>();
+        Map<String, Map<String, List<String>>> currentUserIdNonPrimaryAccountsMap = new HashMap<>();
 
         //Get existing non-primary account data from consentPersistData
         if (consentPersistData.getMetadata().get(CDSConsentExtensionConstants.
@@ -67,8 +67,8 @@ public class CDSConsentPersistUtil {
 
         if (consentPersistData.getMetadata().get(CDSConsentExtensionConstants.
                 USER_ID_AGAINST_NON_PRIMARY_ACCOUNTS_MAP) != null) {
-            currentUserIdNonPrimaryAccountsMap = (Map<String, List<String>>) consentPersistData.getMetadata().
-                    get(CDSConsentExtensionConstants.USER_ID_AGAINST_NON_PRIMARY_ACCOUNTS_MAP);
+            currentUserIdNonPrimaryAccountsMap = (Map<String, Map<String, List<String>>>) consentPersistData
+                    .getMetadata().get(CDSConsentExtensionConstants.USER_ID_AGAINST_NON_PRIMARY_ACCOUNTS_MAP);
         } else {
             log.debug("UserIds against non-primary accountId map not available in consentPersistData. " +
                     "Creating new map");
@@ -85,15 +85,26 @@ public class CDSConsentPersistUtil {
 
         // Update user against accounts map
         // Get UserId against non-primary accounts Map from current persistence Step
-        Map<String, List<String>> userIdNonPrimaryAccountsMap = getUserIdAgainstAccountsMap(
-                nonPrimaryAccountIdUsersMap);
-        for (Map.Entry<String, List<String>> entry : userIdNonPrimaryAccountsMap.entrySet()) {
-            final String userId = entry.getKey();
-            final List<String> nonPrimaryAccounts = entry.getValue();
-            if (currentUserIdNonPrimaryAccountsMap.containsKey(userId)) {
-                currentUserIdNonPrimaryAccountsMap.get(userId).addAll(nonPrimaryAccounts);
-            } else {
-                currentUserIdNonPrimaryAccountsMap.put(userId, nonPrimaryAccounts);
+        Map<String, Map<String, List<String>>> userIdNonPrimaryAccountsMap =
+                getUserIdAgainstAccountsMap(nonPrimaryAccountIdUsersMap);
+
+        for (Map.Entry<String, Map<String, List<String>>> userAndAccounts : userIdNonPrimaryAccountsMap.entrySet()) {
+            final String userId = userAndAccounts.getKey();
+            for (Map.Entry<String, List<String>> authTypeAndNonPrimaryAccount : userAndAccounts.getValue().entrySet()) {
+                final String authType = authTypeAndNonPrimaryAccount.getKey();
+                final List<String> nonPrimaryAccounts = authTypeAndNonPrimaryAccount.getValue();
+
+                if (currentUserIdNonPrimaryAccountsMap.containsKey(userId)) {
+                    if (currentUserIdNonPrimaryAccountsMap.get(userId).containsKey(authType)) {
+                        currentUserIdNonPrimaryAccountsMap.get(userId).get(authType).addAll(nonPrimaryAccounts);
+                    } else {
+                        currentUserIdNonPrimaryAccountsMap.get(userId).put(authType, nonPrimaryAccounts);
+                    }
+                } else {
+                    currentUserIdNonPrimaryAccountsMap.put(userId, new HashMap<String, List<String>>() { {
+                        put(authType, nonPrimaryAccounts);
+                    }});
+                }
             }
         }
 
@@ -110,19 +121,27 @@ public class CDSConsentPersistUtil {
      * @param accountIdUserMap Map of accountId against userIds
      * @return a map of userId against a list of accountIds
      */
-    private static Map<String, List<String>> getUserIdAgainstAccountsMap(Map<String,
-            Map<String, String>> accountIdUserMap) {
+    private static Map<String, Map<String, List<String>>> getUserIdAgainstAccountsMap(
+            Map<String, Map<String, String>> accountIdUserMap) {
 
-        Map<String, List<String>> userIdAccountsMap = new HashMap<>();
-        for (Map.Entry<String, Map<String, String>> entry : accountIdUserMap.entrySet()) {
-            final String accountId = entry.getKey();
-            final List<String> userIdList = new ArrayList<>(entry.getValue().keySet());
-            for (String userId : userIdList) {
+        Map<String, Map<String, List<String>>> userIdAccountsMap = new HashMap<>();
+        for (Map.Entry<String, Map<String, String>> accountIdUsers : accountIdUserMap.entrySet()) {
+            final String accountId = accountIdUsers.getKey();
+            for (Map.Entry<String, String> userIdAndAuthType : accountIdUsers.getValue().entrySet()) {
+                final String userId = userIdAndAuthType.getKey();
+                final String authType = userIdAndAuthType.getValue();
+
                 if (userIdAccountsMap.containsKey(userId)) {
-                    userIdAccountsMap.get(userId).add(accountId);
+                    if (userIdAccountsMap.get(userId).containsKey(authType)) {
+                        userIdAccountsMap.get(userId).get(authType).add(accountId);
+                    } else {
+                        userIdAccountsMap.get(userId)
+                                .put(authType, new ArrayList<>(Collections.singletonList(accountId)));
+                    }
                 } else {
-                    userIdAccountsMap.put(userId, new ArrayList<>(Collections.
-                            singletonList(accountId)));
+                    userIdAccountsMap.put(userId, new HashMap<String, List<String>>() { {
+                        put(authType, new ArrayList<>(Collections.singletonList(accountId)));
+                    }});
                 }
             }
         }

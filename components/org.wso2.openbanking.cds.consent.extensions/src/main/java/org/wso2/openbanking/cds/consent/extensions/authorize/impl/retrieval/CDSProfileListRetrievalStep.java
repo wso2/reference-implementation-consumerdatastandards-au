@@ -82,10 +82,10 @@ public class CDSProfileListRetrievalStep implements ConsentRetrievalStep {
         String customerTypeSelectionMethod = openBankingCDSConfigParser.getBNRCustomerTypeSelectionMethod();
         if (CustomerTypeSelectionMethodEnum.CUSTOMER_UTYPE.toString().equals(customerTypeSelectionMethod)) {
             customerType = CDSConsentCommonUtil.getCustomerType(consentData);
-        } else if (CustomerTypeSelectionMethodEnum.COOKIE_DATA.toString().equals(customerTypeSelectionMethod)) {
-            //ToDo: Implement cookie data based customer type selection.
-            customerType = null;
         }
+
+        /* CustomerTypeSelectionMethodEnum.COOKIE_DATA related behaviour moved to
+        OBCDSAuthServletImpl.updateRequestAttribute method */
 
         Map<String, String> profileMap = new HashMap<>();
         Map<String, List<String>> profileIdAccountsMap = new HashMap<>();

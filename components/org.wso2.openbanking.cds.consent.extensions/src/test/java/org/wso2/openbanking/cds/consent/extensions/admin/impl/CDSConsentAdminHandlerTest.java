@@ -116,19 +116,19 @@ public class CDSConsentAdminHandlerTest extends PowerMockTestCase {
         mapping1.setMappingID(MAPPING_ID_1);
         mapping1.setAccountID(JOINT_ACCOUNT_ID);
         mapping1.setAuthorizationID(AUTH_ID_PRIMARY);
-        mapping1.setMappingStatus("true");
+        mapping1.setMappingStatus("active");
 
         ConsentMappingResource mapping2 = new ConsentMappingResource();
         mapping2.setMappingID(MAPPING_ID_2);
         mapping2.setAccountID("test-regular-account-id");
         mapping2.setAuthorizationID(AUTH_ID_PRIMARY);
-        mapping2.setMappingStatus("true");
+        mapping2.setMappingStatus("active");
 
         ConsentMappingResource mapping3 = new ConsentMappingResource();
         mapping3.setMappingID(MAPPING_ID_3);
         mapping3.setAccountID(JOINT_ACCOUNT_ID);
         mapping3.setAuthorizationID(AUTH_ID_SECONDARY);
-        mapping3.setMappingStatus("true");
+        mapping3.setMappingStatus("active");
 
         detailedConsentResource = new DetailedConsentResource();
         detailedConsentResource.setAuthorizationResources(new ArrayList<>(Arrays.asList(authResource1, authResource2)));
@@ -164,6 +164,10 @@ public class CDSConsentAdminHandlerTest extends PowerMockTestCase {
         ConsentAdminData consentAdminDataMock = mock(ConsentAdminData.class);
         when(consentAdminDataMock.getQueryParams()).thenReturn(queryParams);
 
+        this.accountMetadataServiceMock = mock(AccountMetadataServiceImpl.class);
+        mockStatic(AccountMetadataServiceImpl.class);
+        when(AccountMetadataServiceImpl.getInstance()).thenReturn(accountMetadataServiceMock);
+
         uut.handleRevoke(consentAdminDataMock);
 
         ArgumentCaptor<ArrayList> argumentCaptor = ArgumentCaptor.forClass(ArrayList.class);
@@ -184,6 +188,10 @@ public class CDSConsentAdminHandlerTest extends PowerMockTestCase {
 
         ConsentAdminData consentAdminDataMock = mock(ConsentAdminData.class);
         when(consentAdminDataMock.getQueryParams()).thenReturn(queryParams);
+
+        this.accountMetadataServiceMock = mock(AccountMetadataServiceImpl.class);
+        mockStatic(AccountMetadataServiceImpl.class);
+        when(AccountMetadataServiceImpl.getInstance()).thenReturn(accountMetadataServiceMock);
 
         uut.handleRevoke(consentAdminDataMock);
 

@@ -23,7 +23,7 @@ export const specConfigurations = {
   status: {
     authorised: 'authorized',
     expired: 'Expired',
-    revoked: 'revoked',
+    revoked: 'Revoked',
   },
   consent: {
     // if consent is in `authorised` state, `expirationTimeAttribute` parameter from consent data
@@ -112,37 +112,35 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'You granted consent on',
+        title: 'Consent granted date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Your consent will expire on',
+        title: 'Consent expiration date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'validityPeriod',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'Sharing period',
+        title: 'Sharing period : ',
         type: keyDateTypes.dateRange,
         dateParameterKey: 'createdTimestamp,validityPeriod',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'How often your data will be shared',
-        type: keyDateTypes.text,
-        dateParameterKey: '',
-        dateFormat: '',
-        text: 'Ongoing',
+        title: 'Data sharing : ',
+        type: keyDateTypes.value,
+        valueParameterKey: 'consentAttributes.sharing_duration_value'
       },
     ],
     accountsInfoLabel: 'Accounts',
     dataSharedLabel: 'Data we are sharing',
     accreditation: {
       accreditationLabel: 'Accreditation',
-      accreditWebsite: 'is an accredited data recipient. You can check their accreditation at',
-      accreditWebsiteLinkText: 'website',
+      accreditWebsite: 'is an accredited data recipient. You can check their accreditation',
+      accreditWebsiteLinkText: ' here',
       accreditWebsiteLink: 'https://www.cdr.gov.au/find-a-provider',
       accreditDR: 'Accrediated Data Recipient:',
     },
@@ -191,13 +189,13 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'When you gave consent',
+        title: 'Consent granted date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'When consent was expired',
+        title: 'Consent expired date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'consentAttributes.ExpirationDateTime',
         dateFormat: 'DD MMM YYYY',
@@ -208,8 +206,8 @@ export const account_lang = [
     accreditation: {
       accreditationLabel: 'Accreditation',
       accreditWebsite:
-        'is an accredited API consumer application. You can check their accrediation on at',
-      accreditWebsiteLinkText: 'website',
+        'is an accredited API consumer application. You can check their accrediation',
+      accreditWebsiteLinkText: ' here',
       accreditWebsiteLink: 'https://www.cdr.gov.au/find-a-provider',
       accreditDR: 'Accredited Data Recipient:',
     },
@@ -258,13 +256,13 @@ export const account_lang = [
     keyDatesInfoLabel: 'Key Dates',
     keyDates: [
       {
-        title: 'When you gave consent',
+        title: 'Consent granted date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'createdTimestamp',
         dateFormat: 'DD MMM YYYY',
       },
       {
-        title: 'You cancelled your consent on',
+        title: 'Consent revoked date : ',
         type: keyDateTypes.date,
         dateParameterKey: 'updatedTimestamp',
         dateFormat: 'DD MMM YYYY',
@@ -274,8 +272,8 @@ export const account_lang = [
     dataSharedLabel: 'Data we shared',
     accreditation: {
       accreditationLabel: 'Accreditation',
-      accreditWebsite: 'is an accredited data recipient. You can check their accrediation on at',
-      accreditWebsiteLinkText: 'website',
+      accreditWebsite: 'is an accredited data recipient. You can check their accrediation',
+      accreditWebsiteLinkText: ' here',
       accreditWebsiteLink: 'https://www.cdr.gov.au/find-a-provider',
       accreditDR: 'Accredited Data Recipient:',
     },

@@ -26,11 +26,23 @@ String state = Encode.forHtmlAttribute(request.getParameter("state"));
 
 String spDetails = null;
 String callbackURL = null;
+String spOrgName = null;
+String spClientName = null;
 
-String spOrgName = sessionDetails.getSPProperty(clientId, "org_name");
-String spClientName = sessionDetails.getSPProperty(clientId, "client_name");
-spDetails = spOrgName + "," + spClientName;
-callbackURL = sessionDetails.getRedirectUri(requestUri);
+if (!clientId.equals("null")) {
+    spOrgName = sessionDetails.getSPProperty(clientId, "org_name");
+    spClientName = sessionDetails.getSPProperty(clientId, "client_name");
+}
+
+if (spOrgName != null && spClientName != null) {
+    spDetails = spOrgName + "," + spClientName;
+}
+
+if (!requestUri.equals("null")) {
+    callbackURL = sessionDetails.getRedirectUri(requestUri);
+}
+
+
 request.setAttribute("spDetails",spDetails);
 request.setAttribute("callbackURL",callbackURL);
 request.setAttribute("state", state);

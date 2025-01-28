@@ -31,6 +31,7 @@ import org.wso2.carbon.identity.oauth2.client.authentication.OAuthClientAuthnExc
 import org.wso2.carbon.identity.oauth2.util.OAuth2Util;
 import org.wso2.openbanking.cds.identity.authenticator.util.CDSJWTValidator;
 import org.wso2.openbanking.cds.identity.authenticator.util.Constants;
+import org.wso2.openbanking.cds.identity.utils.CDSIdentityConstants;
 
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -87,8 +88,14 @@ public class CDSBasePrivateKeyJWTClientAuthenticator extends AbstractOAuthClient
                                       OAuthClientAuthnContext oAuthClientAuthnContext)
             throws OAuthClientAuthnException {
 
+        // Checks if assertion is valid before validating the client id against the subject claim
+        boolean isValidAssertion = jwtValidator.isValidAssertion(getSignedJWT(bodyParameters, oAuthClientAuthnContext));
+        if (!isValidAssertion) {
+            return false;
+        }
+
         validateClientIdAgainstSubClaim(httpServletRequest, bodyParameters, oAuthClientAuthnContext);
-        return jwtValidator.isValidAssertion(getSignedJWT(bodyParameters, oAuthClientAuthnContext));
+        return true;
     }
 
     /**
@@ -182,13 +189,7 @@ public class CDSBasePrivateKeyJWTClientAuthenticator extends AbstractOAuthClient
 
     private List<String> populateMandatoryClaims() {
 
-        List<String> mandatoryClaims = new ArrayList<>();
-        mandatoryClaims.add(Constants.ISSUER_CLAIM);
-        mandatoryClaims.add(Constants.SUBJECT_CLAIM);
-        mandatoryClaims.add(Constants.AUDIENCE_CLAIM);
-        mandatoryClaims.add(Constants.EXPIRATION_TIME_CLAIM);
-        mandatoryClaims.add(Constants.JWT_ID_CLAIM);
-        return mandatoryClaims;
+        return CDSIdentityConstants.MANDATORY_ASSERTION_PARAMS_LIST;
     }
 
     /**

@@ -1,5 +1,5 @@
 <%--
- ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~ Copyright (c) 2024-2025, WSO2 LLC. (https://www.wso2.com).
  ~
  ~ WSO2 LLC. licenses this file to you under the Apache License,
  ~ Version 2.0 (the "License"); you may not use this file except
@@ -45,7 +45,29 @@
         %>
 	    <jsp:include page="extensions/toolkit-data-extension.jsp"/>
 	    <%
-        callbackURL = request.getAttribute("callbackURL").toString(); 
+     }
+
+     final String CALLBACK_URL = "callbackURL";
+     final String SP_DETAILS = "spDetails";
+
+     if (request.getAttribute(CALLBACK_URL) != null) {
+        callbackURL = request.getAttribute(CALLBACK_URL).toString();
+        response.addCookie(new Cookie(CALLBACK_URL, URLEncoder.encode(callbackURL, "UTF-8")));
+     } else {
+        Cookie[] cookies = request.getCookies();
+		if (cookies != null) {
+			for (int i = 0; i < cookies.length; i++) {
+				if (CALLBACK_URL.equals(cookies[i].getName())) {
+					callbackURL = URLDecoder.decode(cookies[i].getValue(), "UTF-8");
+					break;
+				}
+			}
+		}
+     }
+
+     Object spDetails = request.getAttribute(SP_DETAILS);
+     if (spDetails != null) {
+         response.addCookie(new Cookie(SP_DETAILS, URLEncoder.encode(spDetails.toString(), "UTF-8")));
      }
 %>
 

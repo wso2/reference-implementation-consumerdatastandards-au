@@ -18,6 +18,12 @@
 
 package org.wso2.openbanking.cds.identity.utils;
 
+import org.wso2.openbanking.cds.identity.authenticator.util.Constants;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Identity Constants Class.
  */
@@ -42,5 +48,9 @@ public class CDSIdentityConstants {
     public static final String JWT_RESPONSE_MODE = "jwt";
     public static final String UNSUPPORTED_RESPONSE_TYPE_ERROR = "unsupported_response_type";
     public static final String SESSION_DATA_KEY_PARAMETER = "sessionDataKey";
+    public static final List<String> MANDATORY_ASSERTION_PARAMS_LIST = Collections
+            .unmodifiableList(Arrays.asList(Constants.ISSUER_CLAIM, Constants.SUBJECT_CLAIM, Constants.AUDIENCE_CLAIM,
+                    Constants.EXPIRATION_TIME_CLAIM, Constants.JWT_ID_CLAIM));
+    public static final String CLIENT_ASSERTION = "client_assertion";
 
 }

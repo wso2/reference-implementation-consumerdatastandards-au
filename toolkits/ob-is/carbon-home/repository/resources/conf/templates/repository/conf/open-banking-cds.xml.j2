@@ -211,6 +211,11 @@
         {% else %}
         <CustomerTypeSelectionMethod>profile_selection</CustomerTypeSelectionMethod>
         {% endif %}
+        {% if open_banking_cds.bnr.customer_type_selection_cookie_name is defined %}
+        <CustomerTypeSelectionCookieName>{{open_banking_cds.bnr.customer_type_selection_cookie_name}}</CustomerTypeSelectionCookieName>
+        {% else %}
+        <CustomerTypeSelectionCookieName>customerProfile</CustomerTypeSelectionCookieName>
+        {% endif %}
         {% if open_banking_cds.bnr.prioritize_sharable_accounts_response is defined %}
         <PrioritizeSharableAccountsResponse>{{open_banking_cds.bnr.prioritize_sharable_accounts_response}}</PrioritizeSharableAccountsResponse>
         {% else %}
@@ -232,6 +237,11 @@
         <Enable>{{open_banking_cds.secondary_user_accounts.enable}}</Enable>
         {% else %}
         <Enable>false</Enable>
+        {% endif %}
+        {% if open_banking_cds.secondary_user_accounts.selectable_without_account_metadata is defined %}
+        <SelectableWithoutAccountMetadata>{{open_banking_cds.secondary_user_accounts.selectable_without_account_metadata}}</SelectableWithoutAccountMetadata>
+        {% else %}
+        <SelectableWithoutAccountMetadata>false</SelectableWithoutAccountMetadata>
         {% endif %}
         {% if open_banking_cds.secondary_user_accounts.ceasing_secondary_user_sharing_enable is defined %}
         <CeasingSecondaryUserSharingEnabled>{{open_banking_cds.secondary_user_accounts.ceasing_secondary_user_sharing_enable}}</CeasingSecondaryUserSharingEnabled>

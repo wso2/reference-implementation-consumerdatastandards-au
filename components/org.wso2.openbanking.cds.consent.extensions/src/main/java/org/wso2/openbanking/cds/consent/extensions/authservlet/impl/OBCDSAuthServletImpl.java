@@ -29,9 +29,12 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.common.utils.CommonConstants;
+import org.wso2.openbanking.cds.consent.extensions.authorize.utils.CustomerTypeSelectionMethodEnum;
 import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 import org.wso2.openbanking.cds.consent.extensions.util.CDSConsentExtensionsUtil;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -90,6 +94,39 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
             httpServletRequest.setAttribute(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID,
                     dataSet.get(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID));
             preSelectedProfileId = (String) dataSet.get(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID);
+        }
+
+        // Get Customer Type Selection Method from config
+        String customerTypeSelectionMethod = OpenBankingCDSConfigParser.getInstance()
+                .getBNRCustomerTypeSelectionMethod();
+        if (CustomerTypeSelectionMethodEnum.COOKIE_DATA.toString().equals(customerTypeSelectionMethod)) {
+            String preSelectedProfileIdFromCookie = null;
+            String customerTypeCookieName = OpenBankingCDSConfigParser.getInstance()
+                    .getBNRCustomerTypeSelectionCookieName();
+
+            Cookie[] cookies = httpServletRequest.getCookies();
+            for (Cookie cookie : cookies) {
+                if (customerTypeCookieName.equalsIgnoreCase(cookie.getName())) {
+                    preSelectedProfileIdFromCookie = cookie.getValue();
+                    break;
+                }
+            }
+
+            if (StringUtils.isNotBlank(preSelectedProfileIdFromCookie)) {
+                if (log.isDebugEnabled()) {
+                    log.debug(String.format("Retrieved customer profile %s from cookie.",
+                            preSelectedProfileIdFromCookie));
+                }
+
+                // Setting profile ID as a request attribute when profile selection data is sent using cookies
+                try {
+                    httpServletRequest.setAttribute(CDSConsentExtensionConstants.PRE_SELECTED_PROFILE_ID,
+                            URLEncoder.encode(preSelectedProfileIdFromCookie, "UTF-8"));
+                    preSelectedProfileId = preSelectedProfileIdFromCookie;
+                } catch (UnsupportedEncodingException e) {
+                    log.error("Unable to encode the profile selection cookie value", e);
+                }
+            }
         }
 
         //Consent amendment flow
@@ -177,12 +214,8 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
 
     @Override
     public String getJSPPath() {
-        // If profile is already selected, skip the profile selection page
-        if (StringUtils.isBlank(preSelectedProfileId)) {
-            return "/ob_cds_profile_selection.jsp";
-        } else {
-            return "/ob_cds_account_selection.jsp";
-        }
+        // Moving the logic of determining the 1st page (profile selection or account selection) to ob_cds.jsp file
+        return "/ob_cds.jsp";
     }
 
     /**
@@ -192,10 +225,9 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
      * @param data:    data map
      */
     private void updateIndividualPersonalAccountAttributes(JSONObject account, Map<String, Object> data) {
-        if ((account != null && account.getBoolean(CDSConsentExtensionConstants.IS_ELIGIBLE)) &&
-                (CDSConsentExtensionConstants.INDIVIDUAL_PROFILE_TYPE.equalsIgnoreCase(
+        if (CDSConsentExtensionConstants.INDIVIDUAL_PROFILE_TYPE.equalsIgnoreCase(
                         account.getString(CDSConsentExtensionConstants.CUSTOMER_ACCOUNT_TYPE))
-                        && !account.getBoolean(CDSConsentExtensionConstants.IS_JOINT_ACCOUNT_RESPONSE))) {
+                        && !account.getBoolean(CDSConsentExtensionConstants.IS_JOINT_ACCOUNT_RESPONSE)) {
             data.put(CDSConsentExtensionConstants.IS_SELECTABLE, true);
         }
     }
@@ -207,9 +239,8 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
      * @param data:    data map
      */
     private void updateBusinessAccountAttributes(JSONObject account, Map<String, Object> data) {
-        if ((account != null && account.getBoolean(CDSConsentExtensionConstants.IS_ELIGIBLE)) &&
-                (CDSConsentExtensionConstants.BUSINESS_PROFILE_TYPE.equalsIgnoreCase(
-                        account.getString(CDSConsentExtensionConstants.CUSTOMER_ACCOUNT_TYPE)))) {
+        if (CDSConsentExtensionConstants.BUSINESS_PROFILE_TYPE.equalsIgnoreCase(
+                        account.getString(CDSConsentExtensionConstants.CUSTOMER_ACCOUNT_TYPE))) {
             boolean isSelectable = true;
             if (isConsentAmendment) {
                 try {
@@ -236,7 +267,7 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
     }
 
     private void updateJointAccountAttributes(JSONObject account, Map<String, Object> data) {
-        if (account != null && (account.getBoolean(CDSConsentExtensionConstants.IS_JOINT_ACCOUNT_RESPONSE))
+        if (account.getBoolean(CDSConsentExtensionConstants.IS_JOINT_ACCOUNT_RESPONSE)
                 && !account.getBoolean(CDSConsentExtensionConstants.IS_SECONDARY_ACCOUNT_RESPONSE)) {
 
             // Check the eligibility of the joint account for data sharing
@@ -279,7 +310,7 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
      * @param data:    data map
      */
     private void updateSecondaryAccountAttributes(JSONObject account, Map<String, Object> data) {
-        if (account != null && account.getBoolean(CDSConsentExtensionConstants.IS_SECONDARY_ACCOUNT_RESPONSE)) {
+        if (account.getBoolean(CDSConsentExtensionConstants.IS_SECONDARY_ACCOUNT_RESPONSE)) {
             data.put(CDSConsentExtensionConstants.IS_SECONDARY_ACCOUNT, true);
 
             // secondaryAccountPrivilegeStatus depicts whether the user has granted permission to share data from
@@ -348,27 +379,31 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
 
     private List<Map<String, Object>> getAccountsDataMap(JSONArray accountsArray) {
 
-        List<Map<String, Object>> accountsData = new ArrayList<>();
+        final List<Map<String, Object>> accountsData = new ArrayList<>();
         for (int accountIndex = 0; accountIndex < accountsArray.length(); accountIndex++) {
-            Map<String, Object> data = new HashMap<>();
-            JSONObject account = accountsArray.getJSONObject(accountIndex);
-            String accountId = account.getString(CDSConsentExtensionConstants.ACCOUNT_ID);
-            String accountIdToDisplay = account.has(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE)
-                    ? account.getString(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE) : accountId;
-            String displayName = account.getString(CDSConsentExtensionConstants.DISPLAY_NAME);
-            String isPreSelectedAccount = "false";
-            updateIndividualPersonalAccountAttributes(account, data);
-            updateBusinessAccountAttributes(account, data);
-            updateJointAccountAttributes(account, data);
-            updateSecondaryAccountAttributes(account, data);
+            final JSONObject account = accountsArray.getJSONObject(accountIndex);
+            final Map<String, Object> data = new HashMap<>();
 
-            if (account.has(CDSConsentExtensionConstants.IS_PRE_SELECTED_ACCOUNT)) {
-                isPreSelectedAccount = account.getString(CDSConsentExtensionConstants.IS_PRE_SELECTED_ACCOUNT);
+            if (this.isEligibleAccount(account)) {
+                updateIndividualPersonalAccountAttributes(account, data);
+                updateBusinessAccountAttributes(account, data);
+                updateJointAccountAttributes(account, data);
+                updateSecondaryAccountAttributes(account, data);
             }
+
+            final String accountId = account.getString(CDSConsentExtensionConstants.ACCOUNT_ID);
             data.put(CDSConsentExtensionConstants.ACCOUNT_ID, accountId);
+
+            final String accountIdToDisplay = account.has(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE)
+                    ? account.getString(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE) : accountId;
             data.put(CDSConsentExtensionConstants.ACCOUNT_ID_DISPLAYABLE, accountIdToDisplay);
-            data.put(CDSConsentExtensionConstants.DISPLAY_NAME, displayName);
-            data.put(CDSConsentExtensionConstants.IS_PRE_SELECTED_ACCOUNT, isPreSelectedAccount);
+
+            data.put(CDSConsentExtensionConstants.DISPLAY_NAME,
+                    account.getString(CDSConsentExtensionConstants.DISPLAY_NAME));
+
+            data.put(CDSConsentExtensionConstants.IS_PRE_SELECTED_ACCOUNT,
+                    account.optString(CDSConsentExtensionConstants.IS_PRE_SELECTED_ACCOUNT, "false"));
+
             accountsData.add(data);
         }
         return accountsData;
@@ -405,4 +440,8 @@ public class OBCDSAuthServletImpl implements OBAuthServletInterface {
         return profileDataList;
     }
 
+    private boolean isEligibleAccount(JSONObject account) {
+
+        return account != null && account.getBoolean(CDSConsentExtensionConstants.IS_ELIGIBLE);
+    }
 }

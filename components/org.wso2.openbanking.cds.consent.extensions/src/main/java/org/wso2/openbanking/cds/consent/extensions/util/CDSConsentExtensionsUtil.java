@@ -26,10 +26,14 @@ import com.wso2.openbanking.accelerator.consent.extensions.common.ConsentExcepti
 import com.wso2.openbanking.accelerator.consent.extensions.common.ResponseStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants;
 import org.wso2.openbanking.cds.consent.extensions.validate.utils.CDSConsentValidatorUtil;
 
 import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 /**
  * Util class for CDSConsentExtensions.
@@ -38,6 +42,7 @@ public class CDSConsentExtensionsUtil {
 
     private static final Log log = LogFactory.getLog(CDSConsentValidatorUtil.class);
     private static AccountMetadataService accountMetadataService = AccountMetadataServiceImpl.getInstance();
+    private static OpenBankingCDSConfigParser cdsConfigParser = OpenBankingCDSConfigParser.getInstance();
 
     /**
      * Get secondary user instruction data.
@@ -57,7 +62,7 @@ public class CDSConsentExtensionsUtil {
                 return CDSConsentExtensionConstants.ACTIVE_STATUS
                         .equalsIgnoreCase(accountMetadata.get(CDSConsentExtensionConstants.INSTRUCTION_STATUS));
             } else {
-                return false;
+                return cdsConfigParser.isSecondaryAccountsSelectableWithoutAccountMetadata();
             }
         } catch (OpenBankingException e) {
             log.error("Error occurred while retrieving account metadata for account id : " + accountId, e);
@@ -114,5 +119,39 @@ public class CDSConsentExtensionsUtil {
             throw new ConsentException(ResponseStatus.INTERNAL_SERVER_ERROR,
                     "Error occurred while retrieving account metadata");
         }
+    }
+
+    /**
+     * Retrieves an attribute from the request scope first and falls back to the session scope
+     * if not found in the request. If the attribute is not found in either scope, a default
+     * value is returned.
+     *
+     * @param request       the HttpServletRequest object to check for the attribute.
+     * @param session       the HttpSession object to check for the attribute if not found in the request.
+     * @param attributeName the name of the attribute to retrieve.
+     * @param defaultValue  the default value to return if the attribute is not found in both the request and session.
+     * @return the value of the attribute as an Object, or the default value if the attribute is not found.
+     */
+    public static Object getAttribute(HttpServletRequest request, HttpSession session, String attributeName,
+                                Object defaultValue) {
+        // Check in the request first
+        Object requestAttribute = request.getAttribute(attributeName);
+        if (requestAttribute != null) {
+            return requestAttribute;
+        }
+
+        String requestParameter = request.getParameter(attributeName);
+        if (requestParameter != null) {
+            return requestParameter;
+        }
+
+        // Fallback to session if not found in the request
+        Object sessionAttribute = session.getAttribute(attributeName);
+        if (sessionAttribute != null) {
+            return sessionAttribute;
+        }
+
+        // Return the default value if not found
+        return defaultValue;
     }
 }

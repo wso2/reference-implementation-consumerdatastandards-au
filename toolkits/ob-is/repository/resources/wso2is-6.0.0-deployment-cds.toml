@@ -168,6 +168,7 @@ skip_db_schema_creation = true
 
 [oauth]
 allowed_scopes = ["OB.*", "profile"]
+keep_oidc_scopes_in_consent_url = true
 
 [oauth.token_renewal]
 renew_refresh_token = false
@@ -542,6 +543,15 @@ display = "ob-identifier-first"
 name = "SMSAuthentication"
 step = 2
 
+[open_banking.dcr.registration.iat]
+required = true
+
+[open_banking.dcr.registration.exp]
+required = true
+
+[open_banking.dcr.registration.jti]
+required = true
+
 [open_banking.dcr.registration.grant_types]
 allowed_values = ["authorization_code", "refresh_token", "client_credentials"]
 
@@ -568,6 +578,9 @@ allowed_values = ["A256GCM", "A128CBC-HS256"]
 
 [open_banking.dcr.registration.token_endpoint_auth_signing_alg]
 required = true
+
+[open_banking.dcr.registration.software_statement]
+unmodifiable_metadata = ["iss", "org_id", "software_id", "software_roles", "legal_entity_id", "legal_entity_name"]
 
 [open_banking.data_publishing]
 enable = false
@@ -955,12 +968,14 @@ class = "com.wso2.openbanking.accelerator.identity.token.validators.MTLSEnforcem
 
 [open_banking_cds.bnr]
 customer_type_selection_method="profile_selection" # values: profile_selection, customer_utype, cookie_data
+customer_type_selection_cookie_name="customerProfile"
 prioritize_sharable_accounts_response=true
 enable_consent_revocation=true
 validate_accounts_on_retrieval=true
 
 [open_banking_cds.secondary_user_accounts]
 enable = true
+selectable_without_account_metadata = false
 ceasing_secondary_user_sharing_enable = true
 
 [open_banking_cds.disclosure_options_management]

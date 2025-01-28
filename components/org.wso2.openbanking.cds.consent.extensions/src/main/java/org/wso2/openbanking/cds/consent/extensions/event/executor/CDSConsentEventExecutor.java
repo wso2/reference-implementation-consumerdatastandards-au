@@ -20,11 +20,14 @@ package org.wso2.openbanking.cds.consent.extensions.event.executor;
 
 import com.wso2.openbanking.accelerator.common.event.executor.OBEventExecutor;
 import com.wso2.openbanking.accelerator.common.event.executor.model.OBEvent;
+import com.wso2.openbanking.accelerator.common.exception.ConsentManagementException;
 import com.wso2.openbanking.accelerator.common.exception.OpenBankingException;
 import com.wso2.openbanking.accelerator.common.util.Generated;
+import com.wso2.openbanking.accelerator.consent.mgt.dao.models.AuthorizationResource;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.models.ConsentResource;
 import com.wso2.openbanking.accelerator.consent.mgt.dao.models.DetailedConsentResource;
 import com.wso2.openbanking.accelerator.consent.mgt.service.constants.ConsentCoreServiceConstants;
+import com.wso2.openbanking.accelerator.consent.mgt.service.impl.ConsentCoreServiceImpl;
 import com.wso2.openbanking.accelerator.identity.util.HTTPClientUtils;
 import com.wso2.openbanking.accelerator.identity.util.IdentityCommonHelper;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
@@ -71,6 +74,7 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
 
     private static final Log log = LogFactory.getLog(CDSConsentEventExecutor.class);
     private CDSDataPublishingService dataPublishingService = CDSDataPublishingService.getCDSDataPublishingService();
+    private ConsentCoreServiceImpl consentCoreService = new ConsentCoreServiceImpl();
     private static final String DATA_RECIPIENT_CDR_ARRANGEMENT_REVOCATION_PATH = "/arrangements/revoke";
     private static final String REVOKED_STATE = "revoked";
     private static final String EXPIRED_STATE = "expired";
@@ -130,24 +134,27 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
                 AUTHORIZED_STATE.equalsIgnoreCase(obEvent.getEventType())) {
 
             log.debug("Publishing consent data for metrics.");
+
+            String consentId = (String) eventData.get(CONSENT_ID);
+            String primaryUserId;
+            try {
+                primaryUserId = getPrimaryUserForConsent(detailedConsentResource, consentId);
+            } catch (ConsentManagementException e) {
+                log.error("Error while trying to retrieve consent data", e);
+                return;
+            }
+
+            if (StringUtils.isBlank(primaryUserId)) {
+                return;
+            }
+
+            long expiryTime = getExpiryTime(obEvent, consentResource, detailedConsentResource);
+
             HashMap<String, Object> consentData = new HashMap<>();
-            consentData.put(CONSENT_ID_KEY, eventData.get(CONSENT_ID));
-            consentData.put(USER_ID_KEY, eventData.get(USER_ID));
+            consentData.put(CONSENT_ID_KEY, consentId);
+            consentData.put(USER_ID_KEY, primaryUserId);
             consentData.put(CLIENT_ID_KEY, eventData.get(CLIENT_ID));
             consentData.put(STATUS_KEY, obEvent.getEventType());
-
-            long expiryTime;
-            if (AUTHORIZED_STATE.equalsIgnoreCase(obEvent.getEventType())) {
-                if (consentResource != null) {
-                    expiryTime = consentResource.getValidityPeriod();
-                } else if (detailedConsentResource != null) {
-                    expiryTime = detailedConsentResource.getValidityPeriod();
-                } else {
-                    expiryTime = OffsetDateTime.now(ZoneOffset.UTC).toEpochSecond();
-                }
-            } else {
-                expiryTime = 0;
-            }
             consentData.put(EXPIRY_TIME_KEY, expiryTime);
             dataPublishingService.publishConsentData(consentData);
         }
@@ -194,6 +201,42 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
             addToPublishedEventIdentifierQueue(eventIdentifier);
         }
 
+    }
+
+    private String getPrimaryUserForConsent(DetailedConsentResource detailedConsentResource, String consentId)
+            throws ConsentManagementException {
+
+        String primaryUser = null;
+        if (detailedConsentResource == null) {
+            detailedConsentResource = this.consentCoreService.getDetailedConsent(consentId);
+        }
+
+        ArrayList<AuthorizationResource> authorizationResources = detailedConsentResource.getAuthorizationResources();
+        for (AuthorizationResource authorizationResource : authorizationResources) {
+            if (CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY
+                    .equalsIgnoreCase(authorizationResource.getAuthorizationType())) {
+                primaryUser = authorizationResource.getUserID();
+            }
+        }
+        return primaryUser;
+    }
+
+    private static long getExpiryTime(OBEvent obEvent, ConsentResource consentResource,
+                                      DetailedConsentResource detailedConsentResource) {
+
+        long expiryTime;
+        if (AUTHORIZED_STATE.equalsIgnoreCase(obEvent.getEventType())) {
+            if (consentResource != null) {
+                expiryTime = consentResource.getValidityPeriod();
+            } else if (detailedConsentResource != null) {
+                expiryTime = detailedConsentResource.getValidityPeriod();
+            } else {
+                expiryTime = OffsetDateTime.now(ZoneOffset.UTC).toEpochSecond();
+            }
+        } else {
+            expiryTime = 0;
+        }
+        return expiryTime;
     }
 
     /**

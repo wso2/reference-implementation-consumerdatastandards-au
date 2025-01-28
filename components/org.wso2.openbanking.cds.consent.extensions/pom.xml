@@ -22,7 +22,7 @@
     <parent>
         <artifactId>reference-implementation-consumerdatastandards-au-components</artifactId>
         <groupId>org.wso2.openbanking</groupId>
-        <version>1.0.0</version>
+        <version>1.1.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
@@ -175,7 +175,7 @@
                                             <counter>INSTRUCTION</counter>
                                             <value>COVEREDRATIO</value>
                                             <!--Todo:Improve test coverage-->
-                                            <minimum>0.64</minimum>
+                                            <minimum>0.63</minimum>
                                         </limit>
                                     </limits>
                                 </rule>

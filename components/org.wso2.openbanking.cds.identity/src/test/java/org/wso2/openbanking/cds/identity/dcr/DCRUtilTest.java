@@ -128,6 +128,16 @@ public class DCRUtilTest {
 
         initiateData();
         CDSRegistrationRequest cdsRegistrationRequest = new CDSRegistrationRequest(registrationRequest);
+
+        mockStatic(OpenBankingConfigParser.class);
+        openBankingConfigParser = mock(OpenBankingConfigParser.class);
+        when(OpenBankingConfigParser.getInstance()).thenReturn(openBankingConfigParser);
+        PowerMockito.when(OpenBankingConfigParser.getInstance()
+                .getSoftwareEnvIdentificationSSAPropertyValueForSandbox()).thenReturn("sandbox");
+        PowerMockito.when(OpenBankingConfigParser.getInstance()
+                .getSoftwareEnvIdentificationSSAPropertyName()).thenReturn("software_environment");
+        when(openBankingConfigParser.getConfiguration()).thenReturn(new HashMap<>());
+
         try {
             ValidationUtils.validateRequest(cdsRegistrationRequest);
         } catch (DCRValidationException e) {
@@ -144,6 +154,16 @@ public class DCRUtilTest {
 
         initiateData();
         CDSRegistrationRequest cdsRegistrationRequest = new CDSRegistrationRequest(registrationRequest);
+
+        mockStatic(OpenBankingConfigParser.class);
+        openBankingConfigParser = mock(OpenBankingConfigParser.class);
+        when(OpenBankingConfigParser.getInstance()).thenReturn(openBankingConfigParser);
+        PowerMockito.when(OpenBankingConfigParser.getInstance()
+                .getSoftwareEnvIdentificationSSAPropertyValueForSandbox()).thenReturn("sandbox");
+        PowerMockito.when(OpenBankingConfigParser.getInstance()
+                .getSoftwareEnvIdentificationSSAPropertyName()).thenReturn("software_environment");
+        when(openBankingConfigParser.getConfiguration()).thenReturn(new HashMap<>());
+
         try {
             ValidationUtils.validateRequest(cdsRegistrationRequest);
         } catch (DCRValidationException e) {
@@ -160,6 +180,16 @@ public class DCRUtilTest {
 
         initiateData();
         CDSRegistrationRequest cdsRegistrationRequest = new CDSRegistrationRequest(registrationRequest);
+
+        mockStatic(OpenBankingConfigParser.class);
+        openBankingConfigParser = mock(OpenBankingConfigParser.class);
+        when(OpenBankingConfigParser.getInstance()).thenReturn(openBankingConfigParser);
+        PowerMockito.when(OpenBankingConfigParser.getInstance()
+                .getSoftwareEnvIdentificationSSAPropertyValueForSandbox()).thenReturn("sandbox");
+        PowerMockito.when(OpenBankingConfigParser.getInstance()
+                .getSoftwareEnvIdentificationSSAPropertyName()).thenReturn("software_environment");
+        when(openBankingConfigParser.getConfiguration()).thenReturn(new HashMap<>());
+
         try {
             ValidationUtils.validateRequest(cdsRegistrationRequest);
         } catch (DCRValidationException e) {

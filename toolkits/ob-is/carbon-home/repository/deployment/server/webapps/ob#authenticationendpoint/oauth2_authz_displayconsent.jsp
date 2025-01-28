@@ -25,29 +25,38 @@
 <%@ page import="java.time.LocalDateTime" %>
 <%@ page import="java.time.OffsetDateTime" %>
 <%@ page import="java.time.ZoneOffset" %>
+<%@ page import ="static org.wso2.openbanking.cds.consent.extensions.util.CDSConsentExtensionsUtil.getAttribute"%>
+
 <jsp:include page="includes/consent_top.jsp"/>
 
 <%
-    String sessionDataKeyConsent = getRequestAttribute(request, "sessionDataKeyConsent");
-    String isConsentAmendment = getRequestAttribute(request, "isConsentAmendment");
-    String isSharingDurationUpdated = getRequestAttribute(request, "isSharingDurationUpdated");
-    String accounts = getRequestAttribute(request, "accountsArry[]");
-    String[] accountDisplayNameList = null;
-    String accounNames = getRequestAttribute(request, "accNames");
-    String appName = getRequestAttribute(request, "app");
-    String spFullName = getRequestAttribute(request, "spFullName");
-    String consentId = request.getParameter("id");
-    String userName = request.getParameter("user");
-    String selectedProfileId = getRequestAttribute(request, "selectedProfileId");
-    String selectedProfileName = getRequestAttribute(request, "selectedProfileName");
-    String[] accountList = accounNames.split(":");
-    String consentExpiryDateTime = getRequestAttribute(request, "consent-expiry-date");
+
+    String accounts = (String) getAttribute(request, session, "accountsArry[]", null);
+    session.setAttribute("accounts", accounts);
+
+    String accountNames = (String) getAttribute(request, session, "accNames", null);
+    String[] accountList = accountNames.split(":");
+    session.setAttribute("accountList", accountList);
+
+    String userName = (String) getAttribute(request, session, "user", null);
+    session.setAttribute("userName", userName);
+
+    String selectedProfileName = (String) getAttribute(request, session, "selectedProfileName", null);
+    session.setAttribute("selectedProfileName", selectedProfileName);
+
+    String consentExpiryDateTime = (String) getAttribute(request, session, "consent_expiration", null);
+
     String consentExpiryDate = consentExpiryDateTime.split("T")[0];
+    session.setAttribute("consentExpiryDate", consentExpiryDate);
+
     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd");
     LocalDateTime now = LocalDateTime.now();
     String currentDate = dtf.format(now);
+    session.setAttribute("currentDate", currentDate);
+
     Map<String, List<String>> consentData;
     Map<String, List<String>> newConsentData;
+    String selectedProfileId = (String) getAttribute(request, session, "selectedProfileId", null);
     if ("individual_profile".equalsIgnoreCase(selectedProfileId)) {
         consentData = (Map<String, List<String>>) session.getAttribute("configParamsMap");
         newConsentData = (Map<String, List<String>>) session.getAttribute("newConfigParamsMap");
@@ -55,10 +64,10 @@
         consentData = (Map<String, List<String>>) session.getAttribute("business_data_cluster");
         newConsentData = (Map<String, List<String>>) session.getAttribute("new_business_data_cluster");
     }
+    session.setAttribute("consentData", consentData);
+    session.setAttribute("newConsentData", newConsentData);
     session.setAttribute("configParamsMap", consentData);
     session.setAttribute("newConfigParamsMap", newConsentData);
-    session.setAttribute("isConsentAmendment", isConsentAmendment);
-    session.setAttribute("isSharingDurationUpdated", isSharingDurationUpdated);
 
     boolean isSharedWithinDay = true;
     if (!"Single use consent".equals(consentExpiryDateTime)) {
@@ -69,16 +78,20 @@
         }
     }
     session.setAttribute("isSharedWithinDay", isSharedWithinDay);
-    String nameClaims = (String) session.getAttribute("nameClaims");
-    String contactClaims = (String) session.getAttribute("contactClaims");
-    boolean skipAccounts = (boolean) session.getAttribute("skipAccounts");
+
     int sharingDurationValue = 0;
-    if (getRequestAttribute(request, "sharing_duration_value") != null) {
-        sharingDurationValue = Integer.parseInt(getRequestAttribute(request, "sharing_duration_value"));
+    if (getAttribute(request, session, "sharing_duration_value", null) != null) {
+        sharingDurationValue = Integer.parseInt(getAttribute(request, session, "sharing_duration_value", null).toString());
+        session.setAttribute("sharingDurationValue", sharingDurationValue);
     }
+
+    boolean skipAccounts = (boolean) session.getAttribute("skipAccounts");
+    String[] accountDisplayNameList = null;
     if (!skipAccounts) {
-        accountDisplayNameList = getRequestAttribute(request, "accDisplayNames").split(":");
+        accountDisplayNameList = ((String) getAttribute(request, session, "accDisplayNames", null)).split(":");
+        session.setAttribute("accountDisplayNameList", accountDisplayNameList);
     }
+
 %>
 
 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -88,7 +101,7 @@
         <div class="login-form">
             <div class="form-group ui form">
                 <div class="col-md-12 ui box">
-                    <h3 class="ui header"><strong><%=spFullName%>
+                    <h3 class="ui header"><strong>${sp_full_name}
                     </strong> requests account details on your account.</h3>
     
                     <% if (!skipAccounts) { %>
@@ -103,8 +116,8 @@
                                     %>
                                         <li>
                                             <strong><% out.println(accountList[i]); %></strong><br>
-                                            <span class ="accountIdClass" id="<% out.println(accountDisplayNameList[i]);%>">
-                                                <small><% out.println(accountDisplayNameList[i]);%></small>
+                                            <span class ="accountIdClass" id="${accountDisplayNameList[i]}">
+                                                <small>${accountDisplayNameList[i]}</small>
                                             </span>
                                         </li><br>
                                     <%
@@ -117,7 +130,7 @@
                     <h4 class="section-heading-5 ui subheading">Data requested:</h4>
 
                     <!--Display requested data-->
-                    <c:forEach items="<%=consentData%>" var="record">
+                    <c:forEach items="${consentData}" var="record">
                         <div class="padding" style="border:1px solid #555;">
                             <button type="button" class="collapsible">${record.key}</button>
                             <div class="content">
@@ -138,7 +151,7 @@
                     </c:forEach>
                     <!--Display newly added requested data (Upon consent Amendment)-->
                     <c:if test="${not empty newConfigParamsMap}">
-                        <c:forEach items="<%=newConsentData%>" var="record">
+                        <c:forEach items="${newConsentData}" var="record">
                             <div class="padding" style="border:1px solid #555;">
                                 <button type="button" class="collapsible">${record.key}
                                     <span style="border: 1px solid #1b2c8f;color:#1b2c8f;font-weight:bold;background-color:#f4f5fd">New</span>
@@ -150,11 +163,11 @@
                                         </c:forEach>
                                     </ul>
                                     <c:if test="${(record.key eq 'Name')}">
-                                        <u class="ui body col-md-12"> Updated claims & scopes : <%=nameClaims%>
+                                        <u class="ui body col-md-12"> Updated claims & scopes : ${nameClaims}
                                         </u>
                                     </c:if>
                                     <c:if test="${(record.key eq 'Contact Details')}">
-                                        <u class="ui body col-md-12"> Updated claims : <%=contactClaims%> </u>
+                                        <u class="ui body col-md-12"> Updated claims : ${contactClaims} </u>
                                     </c:if>
                                     <c:if test="${(record.key eq 'Account name, type, and balance') ||
                                     (record.key eq 'Account balance and details') || (record.key eq 'Transaction details')
@@ -175,7 +188,7 @@
                             <c:when test="${!isSharedWithinDay}">
                                 <div class="padding-top ui subheading">
                                     Your data will be shared for the given sharing period :
-                                    <button type="button" class="collapsible" id="consent-expiry-date"> <%=currentDate%> - <%=consentExpiryDate%>
+                                    <button type="button" class="collapsible" id="consent-expiry-date"> ${currentDate} - ${consentExpiryDate}
                                         <c:if test="${isConsentAmendment && isSharingDurationUpdated}">
                                             <span style="border: 1px solid #1b2c8f;color:#1b2c8f;font-weight:bold;background-color:#f4f5fd">New</span>
                                         </c:if>
@@ -204,12 +217,12 @@
 
                      <div class="padding-top ui subheading">Where to manage this arrangement :
                         <h5 class="section-heading-5 padding-left ui subheading">
-                            <span> You can review and manage this arrangement on the Data Sharing dashboard by going to Settings>Data Sharing on the <%=spFullName%> website or app.</span>
+                            <span> You can review and manage this arrangement on the Data Sharing dashboard by going to Settings>Data Sharing on the ${sp_full_name} website or app.</span>
                         </h5>
                     </div>
                     <div class="padding-top ui subheading">If you want to stop sharing this data :
                         <h5 class="section-heading-5 padding-left ui subheading">
-                            <span> You can request us to stop sharing your data on your Data Sharing dashboard or by writing to <%=spFullName%> email.</span>
+                            <span> You can request us to stop sharing your data on your Data Sharing dashboard or by writing to ${sp_full_name} email.</span>
                         </h5>
                     </div>
                     <div class="ui">
@@ -217,7 +230,7 @@
                         If you want to stop sharing data, you can request us to stop sharing data on your data sharing
                         dashboard.
                         </br>
-                        Do you confirm that we can share your data with <%=spFullName%>?
+                        Do you confirm that we can share your data with ${sp_full_name}?
                     </div>
                 </div>
             </div>
@@ -233,15 +246,15 @@
                                onclick="javascript: approvedAU(); return false;"
                                value="Authorise"/>
                         <input type="hidden" id="hasApprovedAlways" name="hasApprovedAlways" value="false"/>
-                        <input type="hidden" name="sessionDataKeyConsent" value="<%=sessionDataKeyConsent%>"/>
+                        <input type="hidden" name="sessionDataKeyConsent" value="${sessionDataKeyConsent}"/>
                         <input type="hidden" name="consent" id="consent" value="deny"/>
-                        <input type="hidden" name="app" id="app" value="<%=appName%>"/>
+                        <input type="hidden" name="app" id="app" value="${app}"/>
                         <input type="hidden" name="type" id="type" value="accounts"/>
-                        <input type="hidden" name="accounts[]" id="account" value="<%=accounts%>">
-                        <input type="hidden" name="spFullName" id="spFullName" value="<%=spFullName%>"/>
-                        <input type="hidden" name="user" id="user" value="<%=userName%>"/>
-                        <input type="hidden" name="selectedProfileId" id="selectedProfileId" value="<%=selectedProfileId%>"/>
-                        <input type="hidden" name="selectedProfileName" id="selectedProfileName" value="<%=selectedProfileName%>"/>
+                        <input type="hidden" name="accounts[]" id="account" value="${accounts}">
+                        <input type="hidden" name="spFullName" id="spFullName" value="${sp_full_name}"/>
+                        <input type="hidden" name="user" id="user" value="${userName}"/>
+                        <input type="hidden" name="selectedProfileId" id="selectedProfileId" value="${selectedProfileId}"/>
+                        <input type="hidden" name="selectedProfileName" id="selectedProfileName" value="${selectedProfileName}"/>
                     </div>
                 </div>
             </div>
@@ -264,8 +277,8 @@
 
 <script>
     $(document).ready(function(){
-        var consentExpiryDate = "<%=consentExpiryDateTime%>";
-        var sharingDurationValue = "<%=sharingDurationValue%>";
+        var consentExpiryDate = "${consent_expiration}";
+        var sharingDurationValue = "${sharingDurationValue}";
         var output = "";
         var finalOutput = "";
 
@@ -283,10 +296,13 @@
             var minsDisplay = mins > 0 ? mins + (mins == 1 ? " minute " : " minutes ") : "";
 
             var value;
-            if (sharingDurationValue < 86400) {
+            if (sharingDurationValue < 3600) {
+                value = minsDisplay;
+            } else if (sharingDurationValue < 86400) {
                 if (hoursDisplay == "") {
                     finalOutput = "Your data will be accessible for the next 1 hour";
                 } else {
+                    var mins = minsDisplay.substring(0,2);
                     if (minsDisplay == "60 minutes ") {
                         var hour = hoursDisplay.substring(0,2);
                         if (hour > 0) {
@@ -294,8 +310,10 @@
                         } else {
                             value = "1 hour ";
                         }
-                    } else {
+                    } else if (mins == 0) {
                         value = hoursDisplay;
+                    } else {
+                        value = hoursDisplay + "and " + minsDisplay;
                     }
                 }
             } else {
@@ -342,23 +360,7 @@
         }
       });
     }
+
 </script>
 
 <jsp:include page="includes/consent_bottom.jsp"/>
-<%!
-    /**
-     * Method to retrieve request attributes from request attributes or request parameters.
-     *
-     * @param request http servlet request
-     * @param attributeName attribute name
-     * @return attribute value
-     */
-    private String getRequestAttribute(HttpServletRequest request, String attributeName) {
-
-        if (request.getAttribute(attributeName) != null) {
-            return String.valueOf(request.getAttribute(attributeName));
-        } else {
-            return request.getParameter(attributeName);
-        }
-    }
-%>

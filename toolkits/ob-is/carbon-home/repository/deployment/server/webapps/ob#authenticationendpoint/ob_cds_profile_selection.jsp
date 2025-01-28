@@ -21,23 +21,9 @@
 
 <jsp:include page="includes/consent_top.jsp"/>
 <%
-    session.setAttribute("accounts_data", request.getAttribute("accounts_data"));
-    session.setAttribute("profiles_data", request.getAttribute("profiles_data"));
-    session.setAttribute("sp_full_name", request.getAttribute("sp_full_name"));
-    session.setAttribute("redirectURL", request.getAttribute("redirectURL"));
-    session.setAttribute("consent_expiration", request.getAttribute("consent_expiration"));
-    session.setAttribute("account_masking_enabled", request.getAttribute("account_masking_enabled"));
-    session.setAttribute("isConsentAmendment", request.getAttribute("isConsentAmendment"));
-    session.setAttribute("skipAccounts", request.getAttribute("customerScopesOnly"));
-    session.setAttribute("isSharingDurationUpdated", request.getAttribute("isSharingDurationUpdated"));
-    session.setAttribute("app", request.getAttribute("app"));
-    session.setAttribute("configParamsMap", request.getAttribute("data_requested"));
-    session.setAttribute("newConfigParamsMap", request.getAttribute("new_data_requested"));
-    session.setAttribute("business_data_cluster", request.getAttribute("business_data_cluster"));
-    session.setAttribute("new_business_data_cluster", request.getAttribute("new_business_data_cluster"));
-    session.setAttribute("state", request.getAttribute("state"));
-    session.setAttribute("sharing_duration_value", request.getAttribute("sharing_duration_value"));
+
     String popoverTemplate = "<div class='popover dark-bg' role='tooltip'><div class='arrow'></div><h6 class='popover-title dark-bg'></h6><div class='popover-content'></div></div>";
+
 %>
 <div class="row data-container">
     <div class="clearfix"></div>
@@ -63,7 +49,7 @@
                             <label for="${record['profileName']}">
                                 <input type="radio" id="${record['profileName']}" name="optProfiles"
                                     value="${record['profileId']}" data-profile-name="${record['profileName']}"
-                                onclick="setSelectedProfile()"/>
+                                onclick="setSelectedProfile()" required/>
                                 ${record['profileName']}
                             </label>
                             <br/>
@@ -178,6 +164,7 @@
         selectedProfileIdInput.value = selectedProfileId;
         selectedProfileNameInput.value = selectedProfileName;
     }
+
 </script>
 
 <jsp:include page="includes/consent_bottom.jsp"/>

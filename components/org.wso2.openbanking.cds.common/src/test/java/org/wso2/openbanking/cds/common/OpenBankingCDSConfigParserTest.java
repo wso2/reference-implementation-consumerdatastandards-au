@@ -248,6 +248,13 @@ public class OpenBankingCDSConfigParserTest {
     }
 
     @Test(priority = 8)
+    public void testIsSecondaryAccountsSelectableWithoutAccountMetadata() {
+        String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
+        OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);
+        Assert.assertFalse(openBankingCDSConfigParser.isSecondaryAccountsSelectableWithoutAccountMetadata());
+    }
+
+    @Test(priority = 8)
     public void testIsCeasingSecondaryUserSharingEnabled() {
         String dummyConfigFile = absolutePathForTestResources + "/open-banking-cds.xml";
         OpenBankingCDSConfigParser openBankingCDSConfigParser = OpenBankingCDSConfigParser.getInstance(dummyConfigFile);

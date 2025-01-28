@@ -656,6 +656,17 @@ public class OpenBankingCDSConfigParser {
     }
 
     /**
+     * Get the customer type selection cookie name for cookie_data method.
+     *
+     * @return configured value
+     */
+    public String getBNRCustomerTypeSelectionCookieName() {
+
+        return getConfigElementFromKey(CommonConstants.CUSTOMER_TYPE_SELECTION_COOKIE_NAME) == null ? "" :
+                ((String) getConfigElementFromKey(CommonConstants.CUSTOMER_TYPE_SELECTION_COOKIE_NAME)).trim();
+    }
+
+    /**
      * Get secondary user accounts enabled status.
      *
      * @return boolean
@@ -663,6 +674,23 @@ public class OpenBankingCDSConfigParser {
     public boolean getSecondaryUserAccountsEnabled() {
 
         Object config = getConfigElementFromKey(CommonConstants.SECONDARY_USER_ACCOUNTS_ENABLED);
+        if (config != null) {
+            return Boolean.parseBoolean((String) config);
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * Get secondary user accounts selectable without account metadata status.
+     * This indicates whether the secondary user accounts can be selected when there is no account metadata
+     * available for the given account and user combination.
+     *
+     * @return boolean
+     */
+    public boolean isSecondaryAccountsSelectableWithoutAccountMetadata() {
+
+        Object config = getConfigElementFromKey(CommonConstants.SELECTABLE_WITHOUT_ACCOUNT_METADATA);
         if (config != null) {
             return Boolean.parseBoolean((String) config);
         } else {
