@@ -59,9 +59,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Close Browser Session in Profile Selection Page"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -104,9 +106,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Cancel Auth flow in Profile Selection Page"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -158,9 +162,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Cancel in Individual Accounts Selection"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -215,12 +221,14 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 3)
     void "Cancel in Business Accounts Selection"() {
+
+        auConfiguration.setPsuNumber(2)
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -235,11 +243,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
 
                     //Select Profile and Accounts
                     if (auConfiguration.getProfileSelectionEnabled()) {
-                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
 
                         //Verify user navigates to Accounts selection page
-                        authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount1CheckBox())
+                        authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount2CheckBox())
 
                         //Click on Cancel
                         authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CANCEL_XPATH)
@@ -276,9 +284,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Close Browser Session in Account Selection Page"() {
 
+        auConfiguration.setPsuNumber(2)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -293,11 +303,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
 
                     //Select Profile and Accounts
                     if (auConfiguration.getProfileSelectionEnabled()) {
-                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
 
                         //Verify user navigates to Accounts selection page
-                        authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount1CheckBox())
+                        authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount2CheckBox())
                     }
                 }
                 .execute()
@@ -322,8 +332,10 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 1)
     void "Cancel in Individual Accounts Selection in amendment flow"() {
+
+        auConfiguration.setPsuNumber(0)
 
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
@@ -395,11 +407,12 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 3)
     void "Cancel in Business Accounts Selection in amendment flow"() {
 
+        auConfiguration.setPsuNumber(2)
         //Send Authorisation Request for 1st time
-        doConsentAuthorisation(clientId, AUAccountProfile.ORGANIZATION_A)
+        doConsentAuthorisation(clientId, AUAccountProfile.ORGANIZATION_B)
 
         //Generate User Access Token
         userAccessToken = AURequestBuilder.getUserToken(authorisationCode, AUConstants.CODE_VERIFIER,
@@ -431,7 +444,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Verify user navigates to Accounts selection page
-                        authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount1CheckBox())
+                        authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount2CheckBox())
 
                         //Click on Cancel
                         authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CANCEL_XPATH)
@@ -472,6 +485,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Close Browser Session in Account Selection Page in amendment flow"() {
 
+        auConfiguration.setPsuNumber(0)
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
 
@@ -536,9 +550,10 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Verify abandonment of consent after going back from Account Selection Page by clicking on browser back button"() {
 
+        auConfiguration.setPsuNumber(0)
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -588,9 +603,10 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Verify abandonment of consent after going back from Profile Selection Page by clicking on browser back button"() {
 
+        auConfiguration.setPsuNumber(2)
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -605,7 +621,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
 
                     //Select Profile and Accounts
                     if (auConfiguration.getProfileSelectionEnabled()) {
-                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
 
                         // Navigate back and close the browser
                         driver.navigate().back()
@@ -636,6 +652,8 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Verify successful consent flow which does not have account scope"() {
 
+        auConfiguration.setPsuNumber(0)
+
         scopes = [
                 AUAccountScope.BANK_PAYEES_READ,
                 AUAccountScope.BANK_CUSTOMER_BASIC_READ,
@@ -665,6 +683,8 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Verify abandonment of consent flow in Consent Details Page for consent without account scope"() {
 
+        auConfiguration.setPsuNumber(0)
+
         scopes = [
                 AUAccountScope.BANK_PAYEES_READ,
                 AUAccountScope.BANK_CUSTOMER_BASIC_READ,
@@ -673,7 +693,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -716,7 +736,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test(priority = 4)
     void "Verify successful secondary user consent flow"() {
 
         auConfiguration.setPsuNumber(1)
@@ -733,7 +753,7 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
 
         //Secondary Consent Authorisation
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -759,9 +779,11 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
     @Test
     void "Verify abandonment in profile selection page when authorising multiple consents on same browser session"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 

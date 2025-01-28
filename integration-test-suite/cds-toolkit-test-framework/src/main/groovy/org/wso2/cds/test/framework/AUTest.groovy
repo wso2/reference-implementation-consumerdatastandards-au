@@ -18,12 +18,16 @@
 
 package org.wso2.cds.test.framework
 
+import com.fasterxml.jackson.databind.JsonNode
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.nimbusds.oauth2.sdk.ResponseMode
 import com.nimbusds.oauth2.sdk.ResponseType
 import com.nimbusds.oauth2.sdk.token.RefreshToken
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.wso2.cds.test.framework.constant.AUAccountProfile
 import org.wso2.cds.test.framework.constant.AUAccountScope
 import org.wso2.cds.test.framework.constant.AUConfigConstants
@@ -62,6 +66,11 @@ import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import com.google.gson.Gson
+
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+import java.util.stream.Collectors
 
 /**
  * Class for defining common methods that needed in test classes.
@@ -159,10 +168,8 @@ class AUTest extends OBTest {
     List<String> getApplicationScope() {
         if (this.DCRScopes == null) {
             this.DCRScopes = [
-                    AUAccountScope.BANK_ACCOUNT_BASIC_READ.getScopeString(),
-                    AUAccountScope.BANK_TRANSACTION_READ.getScopeString(),
-                    AUAccountScope.BANK_CUSTOMER_DETAIL_READ.getScopeString(),
-                    AUAccountScope.CDR_REGISTRATION.getScopeString()
+                    AUAccountScope.CDR_REGISTRATION.getScopeString(),
+                    AUAccountScope.OPENID.getScopeString()
             ]
         }
         return this.DCRScopes
@@ -203,7 +210,7 @@ class AUTest extends OBTest {
      * @param clientId
      * @param profiles
      */
-    void doConsentAuthorisation(ResponseMode responseMode, ResponseType responseType = ResponseType.CODE_IDTOKEN, String clientId = null,
+    void doConsentAuthorisation(ResponseMode responseMode, ResponseType responseType = ResponseType.CODE, String clientId = null,
                                 AUAccountProfile profiles = AUAccountProfile.INDIVIDUAL, boolean isStateParamPresent = true) {
 
         def response
@@ -335,7 +342,7 @@ class AUTest extends OBTest {
      * @param clientId
      */
     void deleteApplicationIfExists(String clientId = auConfiguration.getAppInfoClientID()) {
-        if (clientId) {
+        if (!clientId.equalsIgnoreCase("Application.ClientID")) {
             String token = getApplicationAccessToken(clientId)
 
             if (token) {
@@ -671,10 +678,12 @@ class AUTest extends OBTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
                         if (profiles == AUAccountProfile.ORGANIZATION_A) {
                             //Select Business Profile
+                            authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
                             authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                         }
                         else {
                             //Select Individual Profile
+                            authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
                             authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                         }
                     }
@@ -1484,12 +1493,26 @@ class AUTest extends OBTest {
         String assertionString = generator.getClientAssertionJwt(AUConstants.ADMIN_API_ISSUER,
                 AUConstants.ADMIN_API_AUDIENCE)
 
-        def metricsResponse = AURequestBuilder.buildBasicRequest(assertionString, AUConstants.X_V_HEADER_METRICS)
-                .contentType(ContentType.JSON)
-                .header(AUConstants.X_MIN_HEADER, AUConstants.X_V_MIN_HEADER_METRICS)
-                .queryParam(AUConstants.PERIOD, period)
-                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ADMIN))
-                .get("${AUConstants.CDS_ADMIN_PATH}${AUConstants.ADMIN_METRICS}")
+        def scheduler = Executors.newSingleThreadScheduledExecutor()
+        def metricsResponse
+        def latch = new CountDownLatch(1) // Latch to wait for the scheduled task to complete
+
+        scheduler.schedule({
+            try {
+                metricsResponse = AURequestBuilder.buildBasicRequest(assertionString, AUConstants.X_V_HEADER_METRICS)
+                        .contentType(ContentType.JSON)
+                        .header(AUConstants.X_MIN_HEADER, AUConstants.X_V_MIN_HEADER_METRICS)
+                        .queryParam(AUConstants.PERIOD, period)
+                        .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ADMIN))
+                        .get("${AUConstants.CDS_ADMIN_PATH}${AUConstants.ADMIN_METRICS}")
+            } finally {
+                latch.countDown() // Signal that the task is complete
+                scheduler.shutdown() // Shutdown the scheduler
+            }
+        }, 30, TimeUnit.SECONDS)
+
+        // Wait for the scheduled task to complete
+        latch.await()
 
         return metricsResponse
     }
@@ -1731,59 +1754,84 @@ class AUTest extends OBTest {
      */
     static String getErrorsMetrics(String metricsResponse, int modifiedErrorCode) {
 
-        String updatedKeyValuePairsString = ""
+        // Parse the input string into a Map
+        Map<String, Integer> errorMap = parseMetricsString(metricsResponse)
 
-        // Parse the metrics response and extract the key-value pairs
-        List<String> errorCountKeyValuePairs = AUTestUtil.parseKeyValuePairs(metricsResponse)
+        updateOrAddErrorCode(errorMap, modifiedErrorCode.toString(), 1)
 
-        // Define the expected order based on keys
-        List<Integer> expectedOrderKeys = Arrays.asList(400, 422, 401, 500,  403, 415, 404, 406)
+        // Generate the updated metrics string
+        String updatedMetricsString = generateMetricsString(errorMap)
+        System.out.println("Updated JSON Response:")
+        System.out.println(updatedMetricsString)
 
-        // Flag to track if the modifiedErrorCode is found in the existing error list
-        boolean isStatusCodePresent = false
-
-        // Iterate through each key-value pair
-        for (int i = 0; i < errorCountKeyValuePairs.size(); i++) {
-
-            String[] keyValue = errorCountKeyValuePairs.get(i).split(":")
-            int key = Integer.parseInt(keyValue[0])
-            int value = Integer.parseInt(keyValue[1])
-
-            // If new error code exist in the existing error Metrics list; Increase the value of the particular
-            // error code by 1 and Update the KeyValue Pair
-            if (key == modifiedErrorCode) {
-                value += 1
-                errorCountKeyValuePairs.set(i, modifiedErrorCode + ":" + value)
-                isStatusCodePresent = true
-                break
-            }
-        }
-
-        // If modifiedErrorCode is not found in the existing list, add it with value 1
-        if (!isStatusCodePresent) {
-            errorCountKeyValuePairs.add(modifiedErrorCode + ":1")
-        }
-
-        // Sort the list according to your desired order
-        errorCountKeyValuePairs.sort(new Comparator<String>() {
-            @Override
-            int compare(String o1, String o2) {
-                int key1 = Integer.parseInt(o1.split(":")[1])
-                int key2 = Integer.parseInt(o2.split(":")[1])
-                return Integer.compare(key1, key2)
-            }
-        })
-
-        // Convert the sorted list to a string array
-        String[] sortedArray = errorCountKeyValuePairs.toArray(new String[0])
-
-        // Output the sorted array
-        for (String element : sortedArray) {
-            // Convert the list to a string
-            updatedKeyValuePairsString = "[" + String.join(", ", errorCountKeyValuePairs) + "]"
-        }
-        return updatedKeyValuePairsString
+        updatedMetricsString
     }
+
+    /**
+     * Parse the metrics string into a map.
+     * @param metricsInput
+     * @return
+     */
+    private static Map<String, Integer> parseMetricsString(String metricsInput) {
+
+        Map<String, Integer> errorMap = new HashMap<>()
+
+        try {
+            // Check for null or empty input
+            if (metricsInput == null || metricsInput.isEmpty()) {
+                System.err.println("Metrics input is null or empty. Returning empty array.");
+                return new HashMap<>(); // Return an empty map
+            }
+
+            // Remove square brackets and split entries
+            metricsInput = metricsInput.replaceAll("[\\[\\]]", "");
+            String[] entries = metricsInput.split(", ");
+
+            for (String entry : entries) {
+                String[] parts = entry.split(":");
+                if (parts.length != 2) {
+                    System.err.println("Invalid entry format: " + entry);
+                    continue; // Skip invalid entries
+                }
+                errorMap.put(parts[0], Integer.parseInt(parts[1]));
+            }
+        } catch (Exception e) {
+            System.err.println("Error parsing metrics string: " + e.getMessage());
+            return new HashMap<>(); // Return an empty map in case of an error
+        }
+
+        return errorMap;
+    }
+
+    /**
+     * Update the error count in the map.
+     * @param errorMap
+     * @param errorCode
+     * @param incrementBy
+     */
+    private static void updateOrAddErrorCode(Map<String, Integer> errorMap, String errorCode, int incrementBy) {
+
+        if(!errorCode.equalsIgnoreCase(AUConstants.STATUS_CODE_405.toString())) {
+            // Add the error code with the default value of 1 if it doesn't exist, or update it
+            errorMap.put(errorCode, errorMap.getOrDefault(errorCode, 0) + incrementBy)
+        }
+
+    }
+
+    /**
+     * Sort the map by key in ascending order and format it back into a string.
+     * @param errorMap
+     * @return
+     */
+    private static String generateMetricsString(Map<String, Integer> errorMap) {
+        // Sort the map by keys (error codes) in ascending order and format it back into a string
+        return errorMap.entrySet()
+                .stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> entry.getKey() + ":" + entry.getValue())
+                .collect(Collectors.joining(", ", "[", "]"))
+    }
+
 
     /**
      * Assert Metrics Error Response.
@@ -1791,12 +1839,19 @@ class AUTest extends OBTest {
      */
     void assertMetricsErrorResponse(Response metricsResponse) {
 
-        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_UNAUTH_CURRENTDAY),
-                "${unauthErrorCurrentDay}", "$AUConstants.ERROR_UNAUTH_CURRENTDAY count mismatch")
-        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AUTH_CURRENTDAY),
-                "${authErrorCurrentDay}", "$AUConstants.ERROR_AUTH_CURRENTDAY count mismatch")
-        Assert.assertEquals(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AGGREGATE_CURRENTDAY),
-                "${aggErrorCurrentDay}", "$AUConstants.ERROR_AGGREGATE_CURRENTDAY count mismatch")
+        Map<String, Integer> actualUnauthErrors = parseMetricsString(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_UNAUTH_CURRENTDAY));
+        Map<String, Integer> actualAuthErrors = parseMetricsString(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AUTH_CURRENTDAY));
+        Map<String, Integer> actualAggErrors = parseMetricsString(AUTestUtil.parseResponseBody(metricsResponse, AUConstants.ERROR_AGGREGATE_CURRENTDAY));
+
+        // Parse the expected response into a map
+        Map<String, Integer> expectedUnauthErrors = parseMetricsString(unauthErrorCurrentDay);
+        Map<String, Integer> expectedAuthErrors = parseMetricsString(authErrorCurrentDay);
+        Map<String, Integer> expectedAggErrors = parseMetricsString(aggErrorCurrentDay);
+
+        // Assert that the maps are equal
+        Assert.assertEquals(actualUnauthErrors, expectedUnauthErrors, "Unauthenticated errors count mismatch");
+        Assert.assertEquals(actualAuthErrors, expectedAuthErrors, "Authenticated errors count mismatch");
+        Assert.assertEquals(actualAggErrors, expectedAggErrors, "Aggregate errors count mismatch");
     }
 
     /**

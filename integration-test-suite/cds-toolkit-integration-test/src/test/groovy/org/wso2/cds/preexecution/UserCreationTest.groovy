@@ -75,7 +75,25 @@ class UserCreationTest extends AUTest {
     @Test (dependsOnMethods = ["Create PSU"], groups = "SmokeTest")
     void "Assign Subscriber Role to the user"() {
 
-        if (!userName.equalsIgnoreCase(auConfiguration.getUserKeyManagerAdminName())) {
+        if(userName.equalsIgnoreCase(auConfiguration.getUserPublisherName())){
+            roleName = AUConstants.PUBLISHER_ROLE
+
+            //Get Internal/publisher role Id
+            roleId = restApiUserCreationRequestBuilder.getRoleId(roleName)
+
+            //Assign publisher role to the created user
+            def response = restApiUserCreationRequestBuilder.assignUserRoles(roleName, roleId, userInfoList)
+
+            Assert.assertEquals(response.statusCode(), HTTPResponse.SC_OK)
+
+            //Verify Assigned User Role
+            def responseUserRole = restApiUserCreationRequestBuilder.getUserDetails(userId)
+
+            Assert.assertEquals(responseUserRole.statusCode(), HTTPResponse.SC_OK)
+            Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
+                    .contains(roleId))
+
+        } else if (!userName.equalsIgnoreCase(auConfiguration.getUserKeyManagerAdminName())) {
             roleName = AUConstants.SUBSCRIBER_ROLE
 
             //Get Internal/subscriber role Id

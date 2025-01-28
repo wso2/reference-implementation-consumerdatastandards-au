@@ -32,7 +32,7 @@ import java.nio.charset.Charset
  */
 class RESTApiAccessTokenGeneration {
 
-    private AUConfigurationService auConfiguration
+    private static AUConfigurationService auConfiguration
     String clientId
     String clientSecret
 
@@ -48,7 +48,7 @@ class RESTApiAccessTokenGeneration {
         def response = AURestAsRequestBuilder.buildRequest()
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY,
-                generateBasicHeader(auConfiguration.getUserPublisherName(), auConfiguration.getUserPublisherPWD()))
+                generateBasicHeader(auConfiguration.getUserKeyManagerAdminName(), auConfiguration.getUserKeyManagerAdminPWD()))
                 .body(getDCRPayload())
                 .post(dcrEndpoint.toString())
 
@@ -91,7 +91,7 @@ class RESTApiAccessTokenGeneration {
              {
              "callbackUrl":"www.google.lk",
              "clientName":"rest_api_publisher",
-             "owner":"admin@wso2.com",
+             "owner":"${auConfiguration.getUserKeyManagerAdminName()}",
              "grantType":"client_credentials password refresh_token",
              "saasApp":true
              }

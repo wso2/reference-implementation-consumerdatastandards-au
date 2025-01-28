@@ -57,6 +57,7 @@ class AmendedAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Consent Amendment for Ongoing Single account consent"(){
 
+        auConfiguration.setPsuNumber(0)
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
 
@@ -151,6 +152,7 @@ class AmendedAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest", priority = 2)
     void "Consent Amendment for Joint account consent"(){
 
+        auConfiguration.setPsuNumber(0)
         automationResponse = doJointAccountConsentAuthorisation(auConfiguration.getAppInfoClientID(), true)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
 
@@ -250,6 +252,7 @@ class AmendedAuthorisationMetrics extends AUTest {
     @Test (priority = 4)
     void "Consent Amendment with sharing duration less than 1 hr"(){
 
+        auConfiguration.setPsuNumber(0)
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
 
@@ -295,6 +298,7 @@ class AmendedAuthorisationMetrics extends AUTest {
     @Test (priority = 5)
     void "Amend onceoff consent to an ongoing consent"(){
 
+        auConfiguration.setPsuNumber(0)
         //Send Authorisation Request for 1st time
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SHORT_SHARING_DURATION,
                 true, "", clientId)
@@ -343,6 +347,7 @@ class AmendedAuthorisationMetrics extends AUTest {
     @Test  (priority = 6)
     void "Amendment of Consent More than once create multiple records"(){
 
+        auConfiguration.setPsuNumber(0)
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
 
@@ -371,11 +376,11 @@ class AmendedAuthorisationMetrics extends AUTest {
 
         //Consent Amendment - 2nd Time
         //remove an existing scope and add a new scope to amend the consent
-        scopes.remove(AUAccountScope.BANK_TRANSACTION_READ)
+        scopes.remove(AUAccountScope.BANK_CUSTOMER_DETAIL_READ)
 
         //Retrieve the third authorization code
         thirdAuthorisationCode = doConsentAmendmentAuthorisation(scopes, cdrArrangementId2,
-                AUConstants.DEFAULT_SHARING_DURATION, auConfiguration.getAppInfoClientID())
+                AUConstants.AMENDED_SHARING_DURATION, auConfiguration.getAppInfoClientID())
         Assert.assertNotNull(thirdAuthorisationCode)
 
         //Retrieve the third user access token and assert the CDR arrangement ID is the same.
@@ -394,6 +399,7 @@ class AmendedAuthorisationMetrics extends AUTest {
         Assert.assertEquals(metricsResponse.getHeader(AUConstants.X_V_HEADER).toInteger(), AUConstants.X_V_HEADER_METRICS)
 
         //New OnceOff Individual count increased and Amendment count increased by 1.
+        activeAuthIndividual = activeAuthIndividual + 1
         newAuthCurrentDayOnceOffIndividual = newAuthCurrentDayOnceOffIndividual + 1
         amendedCurrentDayIndividual = amendedCurrentDayIndividual + 2
 

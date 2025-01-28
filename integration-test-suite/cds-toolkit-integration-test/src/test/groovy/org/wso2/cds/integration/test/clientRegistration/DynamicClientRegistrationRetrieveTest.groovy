@@ -19,6 +19,7 @@
 package org.wso2.cds.integration.test.clientRegistration
 
 import org.testng.annotations.AfterClass
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.ContextConstants
@@ -34,9 +35,9 @@ import org.testng.ITestContext
 class DynamicClientRegistrationRetrieveTest extends AUTest{
 
     @SuppressWarnings('GroovyAccessibility')
-    @Test (groups = "SmokeTest")
+    @BeforeClass (alwaysRun = true)
     void "TC0101018_Retrieve Application"(ITestContext context) {
-
+        auConfiguration.setTppNumber(1)
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
 
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
@@ -50,7 +51,7 @@ class DynamicClientRegistrationRetrieveTest extends AUTest{
         AUTestUtil.writeToConfigFile(clientId)
     }
 
-    @Test(groups = "SmokeTest", priority = 1, dependsOnMethods = "TC0101018_Retrieve Application")
+    @Test(groups = "SmokeTest", priority = 1)
     void "TC0101009_Get access token"() {
 
         accessToken = getApplicationAccessToken(clientId)
@@ -79,8 +80,10 @@ class DynamicClientRegistrationRetrieveTest extends AUTest{
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
-    @AfterClass
-    void "Clean up"() {
+    @AfterClass (alwaysRun = true)
+    void deleteApplication(){
+        auConfiguration.setTppNumber(1)
         deleteApplicationIfExists(clientId)
+        Assert.assertEquals(deletionResponse.statusCode(), AUConstants.STATUS_CODE_204)
     }
 }

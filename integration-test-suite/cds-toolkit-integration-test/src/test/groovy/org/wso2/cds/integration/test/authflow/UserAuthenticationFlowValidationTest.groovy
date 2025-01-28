@@ -75,7 +75,7 @@ class UserAuthenticationFlowValidationTest extends AUTest {
 
                     authWebDriver.clickButtonXpath(AUPageObjects.AU_BTN_AUTHENTICATE)
                     driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS)
-                    Assert.assertTrue(authWebDriver.isElementDisplayed(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION))
+                    Assert.assertTrue(authWebDriver.isElementDisplayed(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION))
                 }
         automation.execute()
     }

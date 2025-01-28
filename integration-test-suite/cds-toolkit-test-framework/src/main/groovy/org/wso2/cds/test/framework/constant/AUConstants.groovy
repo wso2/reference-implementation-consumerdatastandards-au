@@ -616,6 +616,7 @@ class AUConstants extends OBConstants {
     public static final String REST_API_SCIM2_ENDPOINT = "/scim2"
     public static final String CONTENT_TYPE_APPLICATION_SCIM_JSON = "application/scim+json"
     public static final String SUBSCRIBER_ROLE = "Internal/subscriber"
+    public static final String PUBLISHER_ROLE = "Internal/publisher"
 
 }
 

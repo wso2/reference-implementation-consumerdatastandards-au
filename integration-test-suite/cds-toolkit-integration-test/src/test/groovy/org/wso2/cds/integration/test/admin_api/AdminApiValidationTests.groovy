@@ -26,7 +26,9 @@ import org.testng.Assert
 import org.testng.annotations.Test
 
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
@@ -385,7 +387,7 @@ class AdminApiValidationTests extends AUTest {
         Assert.assertEquals(response.getHeader(AUConstants.X_V_HEADER).toInteger(), AUConstants.X_V_HEADER_METRICS)
         def requestTime = AUTestUtil.parseResponseBody(response, "data.requestTime")
 
-        utcTime = LocalDateTime.now(ZoneOffset.UTC)
+        utcTime = LocalDateTime.now(ZoneId.of("Asia/Colombo"))
 
         if(AUTestUtil.getHostname().equalsIgnoreCase(AUConstants.LOCALHOST)) {
             // Get the response UTC time

@@ -59,9 +59,11 @@ class AbandonPreAuthenticationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Close browser session in OTP page"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -111,9 +113,11 @@ class AbandonPreAuthenticationMetrics extends AUTest {
     @Test
     void "Authenticate consent flow with incorrect OTP but proceed again with correct OTP"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -146,7 +150,7 @@ class AbandonPreAuthenticationMetrics extends AUTest {
                     driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS)
 
                     //Select Profile and Accounts
-                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_A)
+                    selectProfileAndAccount(authWebDriver, AUAccountProfile.INDIVIDUAL)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -181,6 +185,8 @@ class AbandonPreAuthenticationMetrics extends AUTest {
 
     @Test
     void "Close browser session in OTP page during amendment flow"() {
+
+        auConfiguration.setPsuNumber(0)
 
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
@@ -250,9 +256,11 @@ class AbandonPreAuthenticationMetrics extends AUTest {
     @Test
     void "Verify abandonment of consent flow after going back to login page by clicking on browser back button"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 

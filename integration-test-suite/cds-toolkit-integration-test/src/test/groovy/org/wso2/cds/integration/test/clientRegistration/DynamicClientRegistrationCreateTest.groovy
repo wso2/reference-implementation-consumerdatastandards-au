@@ -17,6 +17,7 @@
  */
 package org.wso2.cds.integration.test.clientRegistration
 
+import org.testng.annotations.AfterClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUConstants
@@ -692,5 +693,11 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         //TODO: Add Error Description after fixing https://github.com/wso2-enterprise/ob-compliance-toolkit-cds/issues/403
     }
 
+    @AfterClass (alwaysRun = true)
+    void deleteApplication(){
+        auConfiguration.setTppNumber(1)
+        deleteApplicationIfExists(clientId)
+        Assert.assertEquals(deletionResponse.statusCode(), AUConstants.STATUS_CODE_204)
+    }
 }
 

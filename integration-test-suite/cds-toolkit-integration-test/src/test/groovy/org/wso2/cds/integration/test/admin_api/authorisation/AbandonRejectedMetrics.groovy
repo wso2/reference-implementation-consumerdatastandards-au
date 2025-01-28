@@ -51,6 +51,8 @@ class  AbandonRejectedMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Deny the Consent Flow"() {
 
+        auConfiguration.setPsuNumber(0)
+
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -62,7 +64,6 @@ class  AbandonRejectedMetrics extends AUTest {
         Assert.assertEquals(authFlowError, AUConstants.USER_DENIED_THE_CONSENT)
 
         //Verify Metrics Response
-        sleep(AUConstants.ABANDON_WAIT_TIME)
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
 
         Assert.assertEquals(metricsResponse.statusCode(), AUConstants.STATUS_CODE_200)
@@ -82,6 +83,8 @@ class  AbandonRejectedMetrics extends AUTest {
 
     @Test
     void "Deny the Consent Flow in amendment flow"() {
+
+        auConfiguration.setPsuNumber(0)
 
         // Send Authorisation request
         doConsentAuthorisation()

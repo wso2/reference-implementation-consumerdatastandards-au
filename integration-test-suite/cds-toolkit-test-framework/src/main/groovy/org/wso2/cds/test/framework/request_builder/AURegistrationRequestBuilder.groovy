@@ -68,7 +68,7 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
             if (auConfiguration.getMockCDREnabled()) {
                 SSA = AUMockCDRIntegrationUtil.getSSAFromMockCDRRegister(AUConstants.MOCK_ADR_BRAND_ID_1, softwareProductId)
             } else {
-                SSA = AUConstants.DCR_SSA
+                SSA = new File(auConfiguration.getAppDCRSSAPath()).text
             }
         }
         return SSA
@@ -281,8 +281,8 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .removeKeyValue(AUConstants.REDIRECT_URIS_KEY).getClaimsJsonAsString()
     }
 
-    String getRegularClaimsWithFieldsNotSupported() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getRegularClaimsWithFieldsNotSupported(String softID, String ssa) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
                 .addCustomValue("adr_name", "ADR").getClaimsJsonAsString()

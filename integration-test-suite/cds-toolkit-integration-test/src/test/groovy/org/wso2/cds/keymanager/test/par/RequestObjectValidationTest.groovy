@@ -19,9 +19,11 @@
 package org.wso2.cds.keymanager.test.par
 
 import com.nimbusds.oauth2.sdk.ResponseMode
+import io.restassured.response.Response
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
+import org.wso2.cds.test.framework.utility.AURestAsRequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
 import org.testng.Assert
 import org.testng.annotations.Test
@@ -331,7 +333,7 @@ class RequestObjectValidationTest extends AUTest {
     }
 
     @Test
-    void "CDS-717_Send PAR request by passing resource path as the aud value"() {
+    void "CDS-717_Send PAR request by passing resource path as the aud value in request object"() {
 
         String claims = generator.getRequestObjectClaim(scopes, AUConstants.DEFAULT_SHARING_DURATION, true, "",
                 auConfiguration.getAppInfoRedirectURL(), auConfiguration.getAppInfoClientID(),
@@ -343,7 +345,39 @@ class RequestObjectValidationTest extends AUTest {
 
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(modifiedClaimSet)
 
-        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
-        Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI))
+        Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
+        Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
+                AUConstants.INVALID_AUDIENCE)
+    }
+
+    @Test
+    void "Send PAR request by passing resource path as the aud value in client assertion"() {
+
+        clientId = auConfiguration.getAppInfoClientID()
+
+        String claims = generator.getRequestObjectClaim(scopes, AUConstants.DEFAULT_SHARING_DURATION, true, "",
+                auConfiguration.getAppInfoRedirectURL(), clientId,
+                auAuthorisationBuilder.getResponseType().toString(), true,
+                auAuthorisationBuilder.getState().toString())
+
+        def audienceValueForClientAssertion = AUConstants.PUSHED_AUTHORISATION_BASE_PATH + AUConstants.PAR_ENDPOINT
+        String assertionString = generator.getClientAssertionJwt(clientId, audienceValueForClientAssertion)
+
+        def bodyContent = [
+                (AUConstants.CLIENT_ID_KEY)            : (clientId),
+                (AUConstants.CLIENT_ASSERTION_TYPE_KEY): (AUConstants.CLIENT_ASSERTION_TYPE),
+                (AUConstants.CLIENT_ASSERTION_KEY)     : assertionString,
+        ]
+
+        String signedRequest = generator.getSignedAuthRequestObject(claims).serialize()
+
+        Response parResponse = AURestAsRequestBuilder.buildRequest()
+                    .contentType(AUConstants.ACCESS_TOKEN_CONTENT_TYPE)
+                    .formParams(bodyContent)
+                    .formParams(AUConstants.REQUEST_KEY, signedRequest)
+                    .baseUri(AUConstants.PUSHED_AUTHORISATION_BASE_PATH)
+                    .post(AUConstants.PAR_ENDPOINT)
+
+        Assert.assertEquals(parResponse.statusCode(), AUConstants.STATUS_CODE_201)
     }
 }

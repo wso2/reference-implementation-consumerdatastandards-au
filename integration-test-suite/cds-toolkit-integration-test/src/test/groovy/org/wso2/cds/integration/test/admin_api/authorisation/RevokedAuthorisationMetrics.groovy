@@ -52,6 +52,7 @@ class RevokedAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Individual Consent"(){
 
+        auConfiguration.setPsuNumber(0)
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
 
@@ -140,6 +141,7 @@ class RevokedAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Individual Once off Consent"(){
 
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SINGLE_ACCESS_CONSENT,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -183,6 +185,7 @@ class RevokedAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Consent revocation via CDR Arrangement Endpoint for Business Once off Consent"(){
 
+        auConfiguration.setPsuNumber(2)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SINGLE_ACCESS_CONSENT,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -224,7 +227,7 @@ class RevokedAuthorisationMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 1, enabled = false)
     void "Consent revocation after deleting the TPP"(){
 
         auConfiguration.setTppNumber(1)

@@ -30,6 +30,9 @@ import org.testng.Assert
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
+
 /**
  * Test Cases for Failed Token Exchange Metrics in Abandon Flow.
  */
@@ -39,6 +42,7 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     private String cdrArrangementId = ""
     private String requestUri
     private String secondAuthorisationCode = null
+    def scheduler = Executors.newSingleThreadScheduledExecutor()
 
     @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
@@ -55,9 +59,11 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Verify Metrics response after abandon the flow without generating token"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -93,9 +99,11 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     @Test
     void "Verify Metrics response when Auth code expired before the Token Exchange"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
-                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+                AUConstants.DEFAULT_SHARING_DURATION, true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -139,9 +147,11 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Verify Metrics response when token request failure due to an error"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         doConsentAuthorisationViaRequestUri(scopes, requestUri.toURI(), auConfiguration.getAppInfoClientID(),
@@ -183,8 +193,10 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     @Test
     void "Verify metrics response when there is an error in token call in consent amendment"() {
 
+        auConfiguration.setPsuNumber(0)
+
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
-                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+                AUConstants.DEFAULT_SHARING_DURATION, true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -250,8 +262,10 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
     @Test
     void "Verify metrics response when abandon without generating token in amendment flow"() {
 
+        auConfiguration.setPsuNumber(0)
+
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -308,11 +322,13 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
         assertMetricsAuthorisationResponse(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 1)
     void "Auth code expired before the Token Exchange in amendment flow"() {
 
+        auConfiguration.setPsuNumber(0)
+
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -348,7 +364,7 @@ class  AbandonFailedTokenExchangeMetrics extends AUTest {
 
         TokenErrorResponse errorResponse = AURequestBuilder.getUserTokenErrorResponse(secondAuthorisationCode,
                 auConfiguration.getAppInfoRedirectURL(), auConfiguration.getAppInfoClientID(), true, true,
-                auConfiguration.getCommonSigningAlgorithm(), auAuthorisationBuilder.getCodeVerifier())
+                auConfiguration.getCommonSigningAlgorithm(), AUConstants.CODE_VERIFIER)
         Assert.assertEquals(errorResponse.toJSONObject().get(AUConstants.ERROR_DESCRIPTION),
                 AUConstants.CODE_EXPIRE_ERROR_MSG)
 

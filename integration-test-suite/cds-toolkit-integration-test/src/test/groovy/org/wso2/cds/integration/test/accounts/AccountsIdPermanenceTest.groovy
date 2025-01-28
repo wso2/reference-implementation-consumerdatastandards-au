@@ -43,7 +43,7 @@ class AccountsIdPermanenceTest extends AUTest {
     String encryptedTransactionId
     String encryptedPayeeId
     private String secretKey = auConfiguration.getIDPermanence()
-    private String userId = auConfiguration.getUserKeyManagerAdminName() + "@" + auConfiguration.getCommonTenantDomain()
+    private String userId = auConfiguration.getUserPSUName() + "@" + auConfiguration.getCommonTenantDomain()
 
     @BeforeClass(alwaysRun = true)
     void "Get User Access Token"() {

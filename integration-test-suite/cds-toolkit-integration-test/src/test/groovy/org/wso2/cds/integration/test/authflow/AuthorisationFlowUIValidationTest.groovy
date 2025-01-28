@@ -54,7 +54,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Select Individual Profile
-                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                     }
 
@@ -105,7 +105,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Select Individual Profile
-                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                     }
 
@@ -146,6 +146,8 @@ class AuthorisationFlowUIValidationTest extends AUTest {
     @Test
     void "TC0203005_Verify the permissions of a consent with bank accounts basic read scope"() {
 
+        auConfiguration.setPsuNumber(2)
+
         List<AUAccountScope> scopes = [AUAccountScope.BANK_ACCOUNT_BASIC_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -159,7 +161,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
                     //Select Profile and Accounts
-                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_A, true)
+                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_B, true)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -184,6 +186,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
     @Test
     void "TC0203006_Verify the permissions of a consent with bank accounts detail read scope"() {
 
+        auConfiguration.setPsuNumber(2)
         List<AUAccountScope> scopes = [AUAccountScope.BANK_ACCOUNT_DETAIL_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -197,7 +200,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
                     //Select Profile and Accounts
-                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_A, true)
+                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_B, true)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -235,6 +238,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
     @Test
     void "TC0203007_Verify the permissions of a consent with bank transactions read scope"() {
 
+        auConfiguration.setPsuNumber(2)
         List<AUAccountScope> scopes = [AUAccountScope.BANK_TRANSACTION_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -248,7 +252,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
                     //Select Profile and Accounts
-                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_A, true)
+                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_B, true)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -280,6 +284,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
     @Test
     void "TC0203008_Verify the permissions of a consent with bank regular_payments read scope"() {
 
+        auConfiguration.setPsuNumber(2)
         List<AUAccountScope> scopes = [AUAccountScope.BANK_REGULAR_PAYMENTS_READ]
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -293,7 +298,7 @@ class AuthorisationFlowUIValidationTest extends AUTest {
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
                     //Select Profile and Accounts
-                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_A, true)
+                    selectProfileAndAccount(authWebDriver, AUAccountProfile.ORGANIZATION_B, true)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)

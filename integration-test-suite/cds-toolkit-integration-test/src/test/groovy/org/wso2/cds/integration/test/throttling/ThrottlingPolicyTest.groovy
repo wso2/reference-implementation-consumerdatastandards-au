@@ -200,7 +200,7 @@ class ThrottlingPolicyTest extends AUTest{
     }
 
     @Test (invocationCount = 20, enabled = true)
-    void "Throttle requests by Unattended-SessionTPS policy"() {
+    void "Throttle requests by Unattended-SessionsPerDayPerCustomerPerDR policy"() {
 
         doConsentAuthorisation()
         generateUserAccessToken()

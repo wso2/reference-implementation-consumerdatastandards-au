@@ -38,7 +38,6 @@ class CustomerRecipientCountValidationTests extends AUTest {
     private AccessTokenResponse accessTokenResponse
     private String cdrArrangementId = ""
     private String clientId, accessToken, requestUri
-    File xmlFile = new File(System.getProperty("user.dir").toString().concat("/../../resources/test-config.xml"))
 
     @BeforeClass
     void "Initial Metrics Request"() {
@@ -55,20 +54,22 @@ class CustomerRecipientCountValidationTests extends AUTest {
         auConfiguration.setTppNumber(1)
         jtiVal = String.valueOf(System.currentTimeMillis())
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def softwareId = auConfiguration.getAppDCRSoftwareId()
+        def ssa = new File(auConfiguration.getAppDCRSSAPath()).text
 
         //Create New Application
         if(auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||
                 auConfiguration.getAppInfoClientID().equalsIgnoreCase("AppConfig2.Application.ClientID")) {
 
             Response registrationResponse = AURegistrationRequestBuilder
-                    .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                    .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(softwareId, ssa))
                     .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
             clientId = AUTestUtil.parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
 
             Assert.assertEquals(registrationResponse.statusCode(), AUConstants.CREATED)
             clientId = AUTestUtil.parseResponseBody(registrationResponse, "client_id")
-            AUTestUtil.writeXMLContent(xmlFile.toString(), "Application", "ClientID", clientId, 1)
+            AUTestUtil.writeToConfigFile(clientId)
         }
     }
 
@@ -87,10 +88,11 @@ class CustomerRecipientCountValidationTests extends AUTest {
     @Test
     void "Verify the count equals to the PSU count with active authorisations"() {
 
-        auConfiguration.setPsuNumber(1)
+        auConfiguration.setPsuNumber(0)
+        auConfiguration.setTppNumber(1)
 
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
-                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+                AUConstants.DEFAULT_SHARING_DURATION, true, "", auConfiguration.getAppInfoClientID())
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -99,7 +101,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
         Assert.assertNotNull(authorisationCode)
 
         //Get User Access Token
-        accessTokenResponse = AURequestBuilder.getUserToken(authorisationCode, auAuthorisationBuilder.getCodeVerifier(),
+        accessTokenResponse = AURequestBuilder.getUserToken(authorisationCode, AUConstants.CODE_VERIFIER,
                 auConfiguration.getAppInfoClientID())
         accessToken = accessTokenResponse.getTokens().accessToken
         cdrArrangementId = accessTokenResponse.getCustomParameters().get("cdr_arrangement_id")
@@ -139,11 +141,11 @@ class CustomerRecipientCountValidationTests extends AUTest {
     void "Verify the count unchanged when there is at least one active authorisation exist"() {
 
         //Create Consent
-        auConfiguration.setPsuNumber(1)
+        auConfiguration.setPsuNumber(0)
         auConfiguration.setTppNumber(1)
 
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
-                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+                AUConstants.DEFAULT_SHARING_DURATION, true, "", auConfiguration.getAppInfoClientID())
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -165,7 +167,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
 
         //Same TPP and PSU Create another consent
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, cdrArrangementId, auConfiguration.getAppInfoClientID())
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         doConsentAuthorisationViaRequestUri(scopes, requestUri.toURI(), auConfiguration.getAppInfoClientID(),
@@ -194,7 +196,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
         //Delete DCR Request
         def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
-                .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
+                .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_204)
 

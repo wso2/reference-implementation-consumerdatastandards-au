@@ -288,7 +288,7 @@ class UserNominationManagementTests extends AUTest {
         def shareableElements = AUTestUtil.getSharableAccountsList(getSharableBankAccounts())
 
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String accountOwnerUserID = shareableElements[AUConstants.ACCOUNT_OWNER_USER_ID]
+        String accountOwnerUserID = "user1@wso2.com@carbon.super"
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
         //Change Permission from Authorise to VIEW
@@ -308,8 +308,18 @@ class UserNominationManagementTests extends AUTest {
         def shareableElements = AUTestUtil.getSharableAccountsList(getSharableBankAccounts())
 
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String accountOwnerUserID = shareableElements[AUConstants.ACCOUNT_OWNER_USER_ID]
+        String accountOwnerUserID = "user1@wso2.com@carbon.super"
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
+
+        //Update the Business User endpoint with the relevant Permission Status
+        def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
+
+        //Change Permission from Authorise to REVOKE
+        updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the relevant Permission Status
         def deleteResponse = deleteSingleBusinessUser(clientHeader, accountID, accountOwnerUserID,

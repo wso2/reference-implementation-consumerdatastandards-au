@@ -235,7 +235,7 @@ class RESTApiPublishRequestBuilder {
         return """
             [{
                 "revisionUuid": "$revisionId",
-                "name": "Production and Sandbox",
+                "name": "Default",
                 "vhost": "$apimHostname",
                 "displayOnDevportal": true
             }]

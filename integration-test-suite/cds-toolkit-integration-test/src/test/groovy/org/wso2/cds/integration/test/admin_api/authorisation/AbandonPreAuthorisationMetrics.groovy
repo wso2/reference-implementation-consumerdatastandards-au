@@ -56,9 +56,11 @@ class AbandonPreAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Close Browser Session in Consent Detail Page"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -104,9 +106,11 @@ class AbandonPreAuthorisationMetrics extends AUTest {
     @Test
     void "Verify consent abandon by going back from consent details page"() {
 
+        auConfiguration.setPsuNumber(0)
+
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -152,6 +156,8 @@ class AbandonPreAuthorisationMetrics extends AUTest {
 
     @Test
     void "Close Browser Session in Consent Detail Page in amendment flow"() {
+
+        auConfiguration.setPsuNumber(0)
 
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()
@@ -215,6 +221,8 @@ class AbandonPreAuthorisationMetrics extends AUTest {
 
     @Test
     void "Verify consent abandon by going back from consent details page in amendment flow"() {
+
+        auConfiguration.setPsuNumber(0)
 
         //Send Authorisation Request for 1st time
         doConsentAuthorisation()

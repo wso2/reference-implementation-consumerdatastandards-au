@@ -41,6 +41,8 @@ class CustomerDetailsRetrievalHeaderValidationTests extends AUTest {
     @BeforeClass(alwaysRun = true)
     void "Get User Access Token"() {
 
+        auConfiguration.setTppNumber(0)
+
         scopes = [
                 AUAccountScope.BANK_CUSTOMER_BASIC_READ,
                 AUAccountScope.BANK_CUSTOMER_DETAIL_READ
