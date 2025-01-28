@@ -28,6 +28,7 @@
             for (int i = 0; i < cookies.length; i++) {
                 if ("spDetails".equals(cookies[i].getName())) {
                     spDetails = URLDecoder.decode(cookies[i].getValue(), "UTF-8");
+                    break;
                 }
             }
         }
