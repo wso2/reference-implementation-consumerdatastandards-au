@@ -60,10 +60,14 @@ jobs:
       - name: 📝 Get versions
         run: |
           echo "Current Branch: ${{ github.ref }}"
-          echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')" >> $GITHUB_ENV
-          echo "RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')" >> $GITHUB_ENV"
-          echo "NEXT_VERSION=$(echo ${RELEASE_VERSION} | awk -F. -v OFS=. '{$NF += 1 ; print}')" >> $GITHUB_ENV"
-          echo "NEXT_SNAPSHOT_VERSION=$NEXT_VERSION-SNAPSHOT" >> $GITHUB_ENV"
+          CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+          RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')
+          NEXT_VERSION=$(echo ${RELEASE_VERSION} | awk -F. -v OFS=. '{$NF += 1 ; print}')
+          NEXT_SNAPSHOT_VERSION="${NEXT_VERSION}-SNAPSHOT"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "NEXT_SNAPSHOT_VERSION=$NEXT_SNAPSHOT_VERSION" >> $GITHUB_ENV
           
 
       - name: 📝 Change version to RELEASE_VERSION
