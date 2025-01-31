@@ -23,7 +23,7 @@
     <parent>
         <artifactId>reference-implementation-consumerdatastandards-au</artifactId>
         <groupId>org.wso2.openbanking</groupId>
-        <version>1.1.6-SNAPSHOT</version>
+        <version>1.1.5</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,7 +36,7 @@
         <dependency>
             <groupId>com.wso2.openbanking.accelerator</groupId>
             <artifactId>consentmgr</artifactId>
-            <version>3.2.36-SNAPSHOT</version>
+            <version>${accelerator.project.version.range}</version>
             <type>war</type>
         </dependency>
     </dependencies>
