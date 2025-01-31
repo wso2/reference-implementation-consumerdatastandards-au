@@ -54,6 +54,7 @@ jobs:
 
       - name: 👤 Set up Git user
         run: |
+          echo "Current Branch: ${{ github.ref }}"
           git config user.name ${{ env.BOT_USERNAME }}}
           git config user.email ${{ env.BOT_EMAIL }}}
 
