@@ -22,13 +22,6 @@ name: 🚀 Release
 
 on:
   workflow_dispatch:
-    inputs:
-      release-version:
-        description: "Release version (e.g., 1.0.1). A tag will be created with the format v<release-version>"
-        required: false
-      snapshot-version:
-        description: "Snapshot version (e.g., 1.0.2-SNAPSHOT). Snapshot version for the next development iteration."
-        required: false
 
 env:
   GH_TOKEN: ${{ secrets.RELEASE_BOT_TOKEN }}
@@ -54,8 +47,8 @@ jobs:
 
       - name: 👤 Set up Git user
         run: |
-          git config user.name ${{ env.BOT_USERNAME }}}
-          git config user.email ${{ env.BOT_EMAIL }}}
+          git config user.name ${{ env.BOT_USERNAME }}
+          git config user.email ${{ env.BOT_EMAIL }}
 
       - name: 📝 Get versions
         run: |
@@ -79,7 +72,7 @@ jobs:
           echo "Next Snapshot Version=${{ env.NEXT_SNAPSHOT_VERSION }}"
           mvn versions:set -DnewVersion=${{ env.RELEASE_VERSION }} -DprocessAllModules
           mvn versions:commit
-          git commit -am "Prepare for the release ${{ env.RELEASE_VERSION }}"
+          git commit -am "[Release] Prepare for the release ${{ env.RELEASE_VERSION }}"
 
       - name: 📣 Create a Git tag with the provided release-version
         run: |
@@ -91,7 +84,7 @@ jobs:
           echo "Incrementing to the next development version..."
           mvn versions:set -DnewVersion=${{ env.NEXT_SNAPSHOT_VERSION }} -DprocessAllModules
           mvn versions:commit
-          git commit -am "Prepare for the development iteration ${{ env.NEXT_SNAPSHOT_VERSION }}"
+          git commit -am "[Release] Prepare for the development iteration ${{ env.NEXT_SNAPSHOT_VERSION }}"
 
       - name: 🚀 Push changes and tags
         run: |
