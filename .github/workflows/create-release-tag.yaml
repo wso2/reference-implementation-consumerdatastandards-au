@@ -60,8 +60,8 @@ jobs:
       - name: 📝 Get versions
         run: |
           echo "Current Branch: ${{ github.ref }}"
-          echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
-          echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+          echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')"
+          echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')" >> $GITHUB_ENV
           echo "Current Version=${{ env.CURRENT_VERSION }}"
           echo "RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')" >> $GITHUB_ENV"
           echo "Release Version=${{ env.RELEASE_VERSION }}"
