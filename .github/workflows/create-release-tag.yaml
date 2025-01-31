@@ -60,6 +60,7 @@ jobs:
       - name: 📝 Get versions
         run: |
           echo "Current Branch: ${{ github.ref }}"
+          echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)"
           echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
           echo "Current Version=${{ env.CURRENT_VERSION }}"
           echo "RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')" >> $GITHUB_ENV"
