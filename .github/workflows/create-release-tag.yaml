@@ -62,17 +62,18 @@ jobs:
           echo "Current Branch: ${{ github.ref }}"
           echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')"
           echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')" >> $GITHUB_ENV
-          echo "Current Version=${{ env.CURRENT_VERSION }}"
           echo "RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')" >> $GITHUB_ENV"
-          echo "Release Version=${{ env.RELEASE_VERSION }}"
           echo "NEXT_VERSION=$(echo ${RELEASE_VERSION} | awk -F. -v OFS=. '{$NF += 1 ; print}')" >> $GITHUB_ENV"
-          echo "Next Version=${{ env.NEXT_VERSION }}"
-          echo "NEXT_SNAPSHOT_VERSION=${{ env.NEXT_VERSION }}-SNAPSHOT" >> $GITHUB_ENV"
-          echo "Next Snapshot Version=${{ env.NEXT_SNAPSHOT_VERSION }}"
+          echo "NEXT_SNAPSHOT_VERSION=$NEXT_VERSION-SNAPSHOT" >> $GITHUB_ENV"
+          
 
       - name: 📝 Change version to RELEASE_VERSION
         run: |
           echo "Updating versions to release version..."
+          echo "Current Version=${{ env.CURRENT_VERSION }}"
+          echo "Release Version=${{ env.RELEASE_VERSION }}"
+          echo "Next Version=${{ env.NEXT_VERSION }}"
+          echo "Next Snapshot Version=${{ env.NEXT_SNAPSHOT_VERSION }}"
           mvn versions:set -DnewVersion=${{ env.RELEASE_VERSION }} -DprocessAllModules
           mvn versions:commit
           git commit -am "Prepare for the release ${{ env.RELEASE_VERSION }}"
