@@ -61,6 +61,8 @@ jobs:
         run: |
           echo "Current Branch: ${{ github.ref }}"
           echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')"
+          echo "FOO=1234" >> $GITHUB_ENV
+          echo "${{ env.FOO }}"
           ls
           pwd
           echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')" >> $GITHUB_ENV
