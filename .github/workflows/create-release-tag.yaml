@@ -60,11 +60,6 @@ jobs:
       - name: 📝 Get versions
         run: |
           echo "Current Branch: ${{ github.ref }}"
-          echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')"
-          echo "FOO=1234" >> $GITHUB_ENV
-          echo "${{ env.FOO }}"
-          ls
-          pwd
           echo "CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')" >> $GITHUB_ENV
           echo "RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')" >> $GITHUB_ENV"
           echo "NEXT_VERSION=$(echo ${RELEASE_VERSION} | awk -F. -v OFS=. '{$NF += 1 ; print}')" >> $GITHUB_ENV"
