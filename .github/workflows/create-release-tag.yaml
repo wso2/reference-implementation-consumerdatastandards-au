@@ -61,13 +61,13 @@ jobs:
         run: |
           echo "Current Branch: ${{ github.ref }}"
           echo "CURRENT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
-          echo "CURRENT_VERSION="${{ env.CURRENT_VERSION }}
+          echo "Current Version=${{ env.CURRENT_VERSION }}"
           echo "RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')" >> $GITHUB_ENV"
-          echo "RELEASE_VERSION="${{ env.RELEASE_VERSION }}
+          echo "Release Version=${{ env.RELEASE_VERSION }}"
           echo "NEXT_VERSION=$(echo ${RELEASE_VERSION} | awk -F. -v OFS=. '{$NF += 1 ; print}')" >> $GITHUB_ENV"
-          echo "NEXT_VERSION="${{ env.NEXT_VERSION }}
-          echo "NEXT_SNAPSHOT_VERSION='${NEXT_VERSION}-SNAPSHOT'" >> $GITHUB_ENV"
-          echo "NEXT_SNAPSHOT_VERSION="${{ env.NEXT_SNAPSHOT_VERSION }}
+          echo "Next Version=${{ env.NEXT_VERSION }}"
+          echo "NEXT_SNAPSHOT_VERSION=${{ env.NEXT_VERSION }}-SNAPSHOT" >> $GITHUB_ENV"
+          echo "Next Snapshot Version=${{ env.NEXT_SNAPSHOT_VERSION }}"
 
       - name: 📝 Change version to RELEASE_VERSION
         run: |
