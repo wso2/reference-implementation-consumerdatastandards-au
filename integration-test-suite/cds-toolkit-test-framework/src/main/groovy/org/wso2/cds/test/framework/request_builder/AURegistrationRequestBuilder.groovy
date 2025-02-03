@@ -142,8 +142,8 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .removeKeyValue(AUConstants.AUDIENCE_KEY).getClaimsJsonAsString()
     }
 
-    String getRegularClaimsWithNonMatchingRedirectUri() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getRegularClaimsWithNonMatchingRedirectUri(String softID = getSoftwareID(), String ssa = getSSA()) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .addCustomRedirectURI(new JSONArray().put("https://www.google.com/redirects/non-matching-redirect"))
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc().getClaimsJsonAsString()
@@ -190,14 +190,14 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .removeKeyValue(AUConstants.SOFTWARE_STATEMENT_KEY).getClaimsJsonAsString()
     }
 
-    String getClaimsWithoutIdTokenAlg() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getClaimsWithoutIdTokenAlg(String softID = getSoftwareID(), String ssa = getSSA()) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseEnc().getClaimsJsonAsString()
     }
 
-    String getClaimsWithoutIdTokenEnc() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getClaimsWithoutIdTokenEnc(String softID = getSoftwareID(), String ssa = getSSA()) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().getClaimsJsonAsString()
     }
@@ -223,8 +223,8 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .getClaimsJsonAsString()
     }
 
-    String getRegularClaimsWithGivenJti(String jti) {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getRegularClaimsWithGivenJti(String jti, String softID = getSoftwareID(), String ssa = getSSA()) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
                 .addCustomValue(AUConstants.DCR_CLAIM_LEGAL_ENTITY_ID, AUConstants.SAMPLE_LEGAL_ENTITY_ID)
@@ -260,8 +260,8 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .addApplicationType("Mobile").getClaimsJsonAsString()
     }
 
-    String getRegularClaimsWithoutRequestObjectSigningAlg() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getRegularClaimsWithoutRequestObjectSigningAlg(String softID = getSoftwareID(), String ssa = getSSA()) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
                 .removeKeyValue(AUConstants.REQUEST_OBJECT_SIGNING_ALG_KEY).getClaimsJsonAsString()
@@ -274,8 +274,8 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .getClaimsJsonAsString()
     }
 
-    String getRegularClaimsWithoutRedirectUris() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getRegularClaimsWithoutRedirectUris(String softID, String ssa) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
                 .removeKeyValue(AUConstants.REDIRECT_URIS_KEY).getClaimsJsonAsString()
@@ -302,8 +302,8 @@ class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
                 .addAudience("https://obiam:9446/client-registration").getClaimsJsonAsString()
     }
 
-    String getRegularClaimsWithoutApplicationType() {
-        return regularClaims.addIssuer(getSoftwareID()).addSoftwareStatement(getSSA())
+    String getRegularClaimsWithoutApplicationType(String softID, String ssa) {
+        return regularClaims.addIssuer(softID).addSoftwareStatement(ssa)
                 .removeKeyValue(AUConstants.RESPONSE_TYPES_KEY).addResponseType(ResponseType.CODE.toString())
                 .addIDTokenEncResponseAlg().addIDTokenEncResponseEnc()
                 .removeKeyValue(AUConstants.APPLICATION_TYPE_KEY).getClaimsJsonAsString()
