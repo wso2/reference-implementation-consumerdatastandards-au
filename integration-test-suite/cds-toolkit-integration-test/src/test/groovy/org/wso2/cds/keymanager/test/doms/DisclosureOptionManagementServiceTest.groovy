@@ -50,6 +50,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Initial Consent Authorisation"() {
 
+        auConfiguration.setTppNumber(0)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Joint Accounts and Single Account List
         jointAccountIdList = AUTestUtil.getJointAccountIds(getSharableBankAccounts())

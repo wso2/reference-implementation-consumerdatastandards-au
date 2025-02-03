@@ -42,6 +42,7 @@ class CeasingSecondaryUserManagementTest extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Pre Execution Step"() {
 
+        auConfiguration.setTppNumber(0)
         auConfiguration.setPsuNumber(4)
         accountOwnerId = auConfiguration.getUserPSUName()
 

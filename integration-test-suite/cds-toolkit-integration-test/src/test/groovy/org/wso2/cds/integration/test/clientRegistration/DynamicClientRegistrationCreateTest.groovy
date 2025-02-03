@@ -43,12 +43,15 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
     AUJWTGenerator generator = new AUJWTGenerator()
     String clientId, softwareId
+    String commonSoftwareId, softwareStatement
 
     @BeforeClass (alwaysRun = true)
     void "Delete Application if exists"() {
         auConfiguration.setTppNumber(1)
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         softwareId = "SP1"
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
     }
 
     @Test(priority = 1,dependsOnMethods = "TC0101008_Verify Dynamic client registration test")
@@ -65,7 +68,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         jtiVal = String.valueOf(System.currentTimeMillis())
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -86,7 +89,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -94,8 +97,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         Assert.assertEquals(parseResponseBody(registrationResponse, AUConstants.ERROR),
                 AUConstants.INVALID_CLIENT_METADATA)
         Assert.assertTrue(parseResponseBody(registrationResponse, AUConstants.ERROR_DESCRIPTION).
-                contains("Application with the name " + AUConstants.DCR_SOFTWARE_PRODUCT_ID +
-                        " already exist in the system"))
+                contains("Application with the name " + commonSoftwareId + " already exist in the system"))
 
         deleteApplicationIfExists(context.getAttribute(ContextConstants.CLIENT_ID).toString())
     }
@@ -119,7 +121,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getRegularClaimsWithNonMatchingRedirectUri())
+                .buildRegistrationRequest(dcr.getRegularClaimsWithNonMatchingRedirectUri(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -210,7 +212,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
 
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenAlg())
+                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenAlg(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -231,7 +233,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
 
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenEnc())
+                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenEnc(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -299,7 +301,8 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         jtiVal = String.valueOf(System.currentTimeMillis())
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithGivenJti(jtiVal))
+                .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithGivenJti(jtiVal, commonSoftwareId,
+                softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -308,7 +311,8 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         clientId = parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
 
         registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithGivenJti(jtiVal))
+                .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithGivenJti(jtiVal,
+                        commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -407,7 +411,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
 
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getRegularClaimsWithoutRequestObjectSigningAlg())
+                .buildRegistrationRequest(dcr.getRegularClaimsWithoutRequestObjectSigningAlg(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -420,7 +424,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         deleteApplicationIfExists(clientId)
 
         registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .buildRegistrationRequest(dcr.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -439,7 +443,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getRegularClaimsWithoutRedirectUris())
+                .buildRegistrationRequest(dcr.getRegularClaimsWithoutRedirectUris(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -509,7 +513,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
 
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getRegularClaimsWithoutApplicationType())
+                .buildRegistrationRequest(dcr.getRegularClaimsWithoutApplicationType(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -550,6 +554,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
     @Test
     void "CDS-674_DCR registration request with different hostnames for redirect url in SSA"() {
 
+        auConfiguration.setTppNumber(1)
         Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
         String filePath = Paths.get(dcrArtifactsPath.getParent().toString(), "ssa_differentHostNames.txt")
 
@@ -647,7 +652,7 @@ class DynamicClientRegistrationCreateTest extends AUTest{
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
 
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenEnc())
+                .buildRegistrationRequest(dcr.getClaimsWithoutIdTokenEnc(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 

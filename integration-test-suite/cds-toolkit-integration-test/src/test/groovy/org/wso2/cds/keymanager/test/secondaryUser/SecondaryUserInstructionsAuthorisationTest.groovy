@@ -43,6 +43,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
     @BeforeClass(alwaysRun = true)
     void "Provide User Permissions"() {
 
+        auConfiguration.setTppNumber(0)
         auConfiguration.setPsuNumber(1)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Sharable Account List and Secondary User with Authorize Permission

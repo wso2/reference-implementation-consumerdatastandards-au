@@ -34,15 +34,20 @@ import org.testng.ITestContext
  */
 class DynamicClientRegistrationRetrieveTest extends AUTest{
 
+    String commonSoftwareId, softwareStatement
+
     @SuppressWarnings('GroovyAccessibility')
     @BeforeClass (alwaysRun = true)
     void "TC0101018_Retrieve Application"(ITestContext context) {
         auConfiguration.setTppNumber(1)
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
+
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
 
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
                 .post( AUConstants.DCR_REGISTRATION_ENDPOINT)
 

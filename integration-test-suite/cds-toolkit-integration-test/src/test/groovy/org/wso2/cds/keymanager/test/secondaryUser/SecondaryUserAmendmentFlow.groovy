@@ -43,6 +43,7 @@ class SecondaryUserAmendmentFlow extends AUTest {
     @BeforeClass(alwaysRun = true)
     void "Provide User Permissions"() {
 
+        auConfiguration.setTppNumber(0)
         auConfiguration.setPsuNumber(1)
         clientId = auConfiguration.getAppInfoClientID()
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"

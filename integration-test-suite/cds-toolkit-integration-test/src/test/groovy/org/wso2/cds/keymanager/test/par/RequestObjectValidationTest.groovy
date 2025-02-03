@@ -20,6 +20,7 @@ package org.wso2.cds.keymanager.test.par
 
 import com.nimbusds.oauth2.sdk.ResponseMode
 import io.restassured.response.Response
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
@@ -37,6 +38,11 @@ import java.time.temporal.ChronoUnit
 class RequestObjectValidationTest extends AUTest {
 
     AUJWTGenerator generator = new AUJWTGenerator()
+
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @Test
     void "OB-1231_Initiate push authorisation flow without request object parameter"() {

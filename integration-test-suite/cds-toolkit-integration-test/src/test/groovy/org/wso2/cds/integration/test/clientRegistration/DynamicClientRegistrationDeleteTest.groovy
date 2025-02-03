@@ -36,18 +36,22 @@ import org.testng.ITestContext
 class DynamicClientRegistrationDeleteTest extends AUTest {
 
     private String invalidClientId = "invalidclientid"
+    String commonSoftwareId, softwareStatement
 
-    @Test(groups = "SmokeTest")
+    @Test(groups = "SmokeTest", alwaysRun = true)
     void "TC0101009_Verify Get Application Access Token"(ITestContext context){
 
         auConfiguration.setTppNumber(1)
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
+
         // retrieve from context using key
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
         AUConfigurationService auConfiguration = new AUConfigurationService()
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
 
         def  registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .buildRegistrationRequest(dcr.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -108,12 +112,5 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
                 .request(httpMethod.toString(), AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_501)
-    }
-
-    @AfterClass
-    void deleteApplication(){
-        auConfiguration.setTppNumber(1)
-        deleteApplicationIfExists(clientId)
-        Assert.assertEquals(deletionResponse.statusCode(), AUConstants.STATUS_CODE_204)
     }
 }

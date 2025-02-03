@@ -21,6 +21,7 @@ package org.wso2.cds.keymanager.test.jarm
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.oauth2.sdk.ResponseMode
 import com.nimbusds.oauth2.sdk.ResponseType
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.utility.AUTestUtil
@@ -32,9 +33,10 @@ import org.testng.annotations.Test
  */
 class JarmResponseModeQueryJwtValidationTests extends AUTest {
 
-    String authResponseUrl
-    String responseJwt
-    JWTClaimsSet jwtPayload
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @Test (groups = "SmokeTest")
     void "CDS-587_Verify in query jwt response mode if response_type = code"() {

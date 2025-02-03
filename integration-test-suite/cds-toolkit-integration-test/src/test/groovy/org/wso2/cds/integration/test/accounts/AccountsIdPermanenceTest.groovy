@@ -186,6 +186,7 @@ class AccountsIdPermanenceTest extends AUTest {
     @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1205003_Get Not Consented Account Details"() {
 
+        auConfiguration.setTppNumber(0)
         clientId = auConfiguration.getAppInfoClientID()
 
         //Authorise consent by selecting single account

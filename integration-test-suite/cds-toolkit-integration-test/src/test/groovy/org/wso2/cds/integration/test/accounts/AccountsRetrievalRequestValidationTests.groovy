@@ -775,6 +775,7 @@ class AccountsRetrievalRequestValidationTests extends AUTest {
     @Test (priority = 4)
     void "CDS-680_Send token request with same authorisation code"() {
 
+        auConfiguration.setTppNumber(0)
         //Generate user access token from auth code for the first time
         doConsentAuthorisation()
         AccessTokenResponse accessTokenResponse = getUserAccessTokenResponse(clientId)

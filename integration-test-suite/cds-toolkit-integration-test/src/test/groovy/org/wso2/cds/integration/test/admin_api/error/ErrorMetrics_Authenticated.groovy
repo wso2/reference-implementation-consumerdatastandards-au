@@ -44,6 +44,8 @@ class ErrorMetrics_Authenticated extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
+        auConfiguration.setProperty(0)
+        auConfiguration.setTppNumber(0)
         if(!auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||
                 !auConfiguration.getAppInfoClientID().equalsIgnoreCase("AppConfig.Application.ClientID") ) {
 

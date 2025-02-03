@@ -19,9 +19,12 @@
 package org.wso2.cds.integration.test.admin_api.customerAndRecipientCount
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
+import org.testng.ITestContext
 import org.wso2.cds.test.framework.AUTest
+import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUAccountProfile
 import org.wso2.cds.test.framework.constant.AUConstants
+import org.wso2.cds.test.framework.constant.ContextConstants
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
@@ -51,6 +54,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
         //Assign Metrics to Variables
         getInitialMetricsResponse(metricsResponse)
 
+        auConfiguration.setPsuNumber(0)
         auConfiguration.setTppNumber(1)
         jtiVal = String.valueOf(System.currentTimeMillis())
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
@@ -85,7 +89,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test
+    @Test (priority = 1)
     void "Verify the count equals to the PSU count with active authorisations"() {
 
         auConfiguration.setPsuNumber(0)
@@ -118,7 +122,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test (dependsOnMethods = "Verify the count equals to the PSU count with active authorisations")
+    @Test (priority = 1, dependsOnMethods = "Verify the count equals to the PSU count with active authorisations")
     void "Verify the count after revoking consent"() {
 
         //revoke sharing arrangement
@@ -137,7 +141,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test
+    @Test (priority = 2)
     void "Verify the count unchanged when there is at least one active authorisation exist"() {
 
         //Create Consent
@@ -184,17 +188,35 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test (dependsOnMethods = "Verify the count unchanged when there is at least one active authorisation exist")
-    void "Verify the count after deleting App via DCR API"() {
+    @Test (priority = 2, dependsOnMethods = "Verify the count unchanged when there is at least one active authorisation exist")
+    void "Verify the count after deleting App via DCR API"(ITestContext context) {
 
         //Get Application Access Token
         auConfiguration.setTppNumber(1)
+
+        deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
+
+        // retrieve from context using key
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        AUConfigurationService auConfiguration = new AUConfigurationService()
+        deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
+
+        def  registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        clientId = parseResponseBody(registrationResponse, "client_id")
+        context.setAttribute(ContextConstants.CLIENT_ID,clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
+        AUTestUtil.writeToConfigFile(clientId)
 
         accessToken = getApplicationAccessToken(auConfiguration.getAppInfoClientID())
         Assert.assertNotNull(accessToken)
 
         //Delete DCR Request
-        def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
+        registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
                 .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
 

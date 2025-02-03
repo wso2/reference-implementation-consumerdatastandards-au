@@ -35,6 +35,8 @@ class UnauthenticatedMetricsValidation extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
+        auConfiguration.setProperty(0)
+        auConfiguration.setTppNumber(0)
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
 
         Assert.assertEquals(metricsResponse.statusCode(), AUConstants.STATUS_CODE_200)

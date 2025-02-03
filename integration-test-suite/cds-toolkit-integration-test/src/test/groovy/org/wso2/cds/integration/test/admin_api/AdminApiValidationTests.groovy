@@ -18,6 +18,7 @@
 
 package org.wso2.cds.integration.test.admin_api
 
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
@@ -36,6 +37,11 @@ import java.time.format.DateTimeParseException
  * Admin API Validation Tests.
  */
 class AdminApiValidationTests extends AUTest {
+
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @Test
     void "TC1001001_Retrieve critical update to the metadata for Accredited Data Recipients"() {
