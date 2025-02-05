@@ -479,7 +479,8 @@ class AccountsRetrievalRequestHeaderValidationTest extends AUTest {
     @Test
     void "TC0301039_Retrieve account list without access token"() {
 
-        def response = AURequestBuilder.buildBasicRequestWithoutAuthorisationHeader(AUConstants.X_V_HEADER_ACCOUNTS)
+        def response = AURestAsRequestBuilder.buildRequest()
+                .header(AUConstants.X_V_HEADER, AUConstants.X_V_HEADER_ACCOUNTS)
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
                 .get("${AUConstants.BULK_ACCOUNT_PATH}")
 
