@@ -80,6 +80,10 @@ export const DetailedAgreement = ({ match }) => {
     return getDisplayName(appInfo, consent.clientId);
   });
 
+  useEffect(() => {
+    setApplicationName(getDisplayName(appInfo, consent.clientId));
+  }, [appInfo]);
+
   const [dataRecipientName, setAccrediationName] = useState(() => {
     return getValueFromApplicationInfo(
       specConfigurations.application.displayDataRecipientNameAttribute,
