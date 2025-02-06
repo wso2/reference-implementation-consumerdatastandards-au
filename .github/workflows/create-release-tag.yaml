@@ -1,55 +1,95 @@
-name: Release
+# -------------------------------------------------------------------------------------
+#
+# Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+#
+# WSO2 LLC. licenses this file to you under the Apache License,
+# Version 2.0 (the "License"); you may not use this file except
+# in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing,
+# software distributed under the License is distributed on an
+# "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+# KIND, either express or implied. See the License for the
+# specific language governing permissions and limitations
+# under the License.
+#
+# --------------------------------------------------------------------------------------
+
+name: 🚀 Release
 
 on:
   workflow_dispatch:
-    inputs:
-      release-version:
-        description: "Release version (e.g., 1.0.1). A tag will be created with the format v<release-version>"
-        required: true
-      snapshot-version:
-        description: "Snapshot version (e.g., 1.0.2-SNAPSHOT). Snapshot version for the next development iteration."
-        required: true
+
+env:
+  GH_TOKEN: ${{ secrets.RELEASE_BOT_TOKEN }}
+  BOT_USERNAME: ${{ secrets.RELEASE_BOT_USER_NAME }}
+  BOT_EMAIL: ${{ secrets.RELEASE_BOT_EMAIL }}
 
 jobs:
   release:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: ⬇️ Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ env.GH_TOKEN }}
+          fetch-depth: 0
 
-      - name: Set up Java
+      - name: ☕ Set up JDK 11
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '11'
 
-      - name: Configure Git user as workflow triggerer
+      - name: 👤 Set up Git user
         run: |
-          git config user.name "${{ github.actor }}"
-          git config user.email "${{ github.actor }}@users.noreply.github.com"
+          git config user.name ${{ env.BOT_USERNAME }}
+          git config user.email ${{ env.BOT_EMAIL }}
 
-      - name: Remove -SNAPSHOT for release
+      - name: 📝 Get versions
+        run: |
+          echo "Current Branch: ${{ github.ref }}"
+          CURRENT_VERSION=$(grep -m 1 '<version>' pom.xml | sed 's/.*<version>\(.*\)<\/version>.*/\1/')
+          echo "CURRENT_VERSION=$CURRENT_VERSION" >> $GITHUB_ENV
+          RELEASE_VERSION=$(echo "$CURRENT_VERSION" | sed 's/-SNAPSHOT//')
+          NEXT_VERSION=$(echo ${RELEASE_VERSION} | awk -F. -v OFS=. '{$NF += 1 ; print}')
+          NEXT_SNAPSHOT_VERSION="${NEXT_VERSION}-SNAPSHOT"
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          echo "NEXT_VERSION=$NEXT_VERSION" >> $GITHUB_ENV
+          echo "NEXT_SNAPSHOT_VERSION=$NEXT_SNAPSHOT_VERSION" >> $GITHUB_ENV
+
+
+      - name: 📝 Change version to RELEASE_VERSION
         run: |
           echo "Updating versions to release version..."
-          mvn versions:set -DnewVersion=${{ github.event.inputs.release-version }} -DprocessAllModules
+          echo "Current Version=${{ env.CURRENT_VERSION }}"
+          echo "Release Version=${{ env.RELEASE_VERSION }}"
+          echo "Next Version=${{ env.NEXT_VERSION }}"
+          echo "Next Snapshot Version=${{ env.NEXT_SNAPSHOT_VERSION }}"
+          mvn versions:set -DnewVersion=${{ env.RELEASE_VERSION }} -DprocessAllModules
           mvn versions:commit
-          git commit -am "Prepare for the release ${{ github.event.inputs.release-version }}"
+          git commit -am "[Release] Prepare for the release ${{ env.RELEASE_VERSION }}"
 
-      - name: Create a Git tag for the release
+      - name: 📣 Create a Git tag with the provided release-version
         run: |
           echo "Creating a Git tag for the release..."
-          git tag v${{ github.event.inputs.release-version }}
+          git tag v${{ env.RELEASE_VERSION }}
 
-      - name: Increment to SNAPSHOT version
+      - name: 📝 Change version to provided snapshot-version
         run: |
           echo "Incrementing to the next development version..."
-          mvn versions:set -DnewVersion=${{ github.event.inputs.snapshot-version }} -DprocessAllModules
+          mvn versions:set -DnewVersion=${{ env.NEXT_SNAPSHOT_VERSION }} -DprocessAllModules
           mvn versions:commit
-          git commit -am "Prepare for the development iteration ${{ github.event.inputs.snapshot-version }}"
+          git commit -am "[Release] Prepare for the development iteration ${{ env.NEXT_SNAPSHOT_VERSION }}"
 
-      - name: Push changes and tags
+      - name: 🚀 Push changes and tags
         run: |
           echo "Pushing version update and tags to the repository..."
-          git push origin main
+          git push origin ${{ github.ref }}
           git push origin --tags
+        env:
+          GITHUB_TOKEN: ${{ env.GH_TOKEN }}
