@@ -62,7 +62,7 @@ class AuthorisationFlowCXValidationTest extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Select Individual Profile
-                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                     }
 
@@ -114,7 +114,7 @@ class AuthorisationFlowCXValidationTest extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Select Individual Profile
-                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                        authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                     }
 

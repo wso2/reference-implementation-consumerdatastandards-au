@@ -55,6 +55,8 @@ class AbandonPreIdentificationMetrics extends AUTest {
 
         //Assign Metrics to Variables
         getInitialMetricsResponse(metricsResponse)
+
+        auConfiguration.setPsuNumber(0)
     }
 
     @Test (groups = "SmokeTest")
@@ -62,7 +64,7 @@ class AbandonPreIdentificationMetrics extends AUTest {
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -118,7 +120,7 @@ class AbandonPreIdentificationMetrics extends AUTest {
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -163,7 +165,7 @@ class AbandonPreIdentificationMetrics extends AUTest {
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -237,7 +239,7 @@ class AbandonPreIdentificationMetrics extends AUTest {
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -423,7 +425,7 @@ class AbandonPreIdentificationMetrics extends AUTest {
 
         //Consent Authorisation Flow
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 

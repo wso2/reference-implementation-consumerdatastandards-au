@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
+<!--
+ ~ Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+<Configurations>
+
+    <!-- Common Configurations -->
+    <Common>
+        <!--Sample Values: 3.0.0 -->
+        <SolutionVersion>3.0.0</SolutionVersion>
+
+        <!--Sample Values: 1.3.0 -->
+        <ApiVersion>Common.ApiVersion</ApiVersion>
+
+        <!--Access token expire time in seconds-->
+        <!--Sample Values: 30 -->
+        <AccessTokenExpireTime>30</AccessTokenExpireTime>
+
+        <!--Sample Values: carbon.super -->
+        <TenantDomain>carbon.super</TenantDomain>
+
+        <!--Sample Values: PS256 -->
+        <SigningAlgorithm>PS256</SigningAlgorithm>
+    </Common>
+
+    <!-- Provisioning Info -->
+    <Provisioning>
+        <!--Sample Value: true/false (Enable if you want to publish and subscribe API via test cases in
+           common.integration.test package.)-->
+        <Enabled>true</Enabled>
+
+        <!--Sample Value: <Path to financial-open-banking>/open-banking-test-suite/accelerator-tests/
+        ob-gateway-integration-tests/common.integration.test/src/test/resources/provisioningFiles/
+        api-config-provisioning.yaml-->
+        <ProvisionFilePath>{TestSuiteDirectoryPath}/integration-test-suite/cds-toolkit-test-framework/src/main/resources/provisioningFiles/api-config-provisioning.yaml</ProvisionFilePath>
+    </Provisioning>
+
+    <!-- Server Info -->
+    <Server>
+        <!--Sample Values: https://<AM_HOST>:8243 -->
+        <BaseURL>https://{AM_HOST}:8243</BaseURL>
+
+        <!--Sample Values: https://<AM_HOST>:9443 -->
+        <GatewayURL>https://{AM_HOST}:9443</GatewayURL>
+
+        <!--Sample Values: https://<IS_HOST>:9446 -->
+        <AuthorisationServerURL>https://{IS_HOST}:9446</AuthorisationServerURL>
+
+        <!--Sample Value: http://<SHARABLE_ACCOUNT_ENDPOINT>:9763 -->
+        <SharableAccountsURL>http://{AM_HOST}:9763</SharableAccountsURL>
+    </Server>
+
+    <!-- Application List -->
+    <ApplicationConfigList>
+        <!-- Application 1 Details -->
+        <AppConfig>
+            <!-- Application Keystore -->
+            <KeyStore>
+                <!--Absolute path + file name of JKS keystore file-->
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                AU/sample-client-resources/signing-keystore/signing.jks -->
+                <Location>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/DynamicClientRegistration/AU/sample-client-resources/signing-keystore/signing.jks</Location>
+
+                <!--Sample Values: signing -->
+                <Alias>signing</Alias>
+
+                <!--Sample Values: wso2carbon -->
+                <Password>wso2carbon</Password>
+
+                <!--Sample Values: https://wso2.com -->
+                <DomainName>https://wso2.com</DomainName>
+
+                <!--Sample Values: cIYo-5zX4OTWZpHrmmiZDVxACJM -->
+                <SigningKid>cIYo-5zX4OTWZpHrmmiZDVxACJM</SigningKid>
+            </KeyStore>
+
+            <!-- Transport Keystore and Truststore -->
+            <!--This Keystore and the Truststore will be used during the SSL handshake-->
+            <Transport>
+                <!--Sample Values: true -->
+                <MTLSEnabled>true</MTLSEnabled>
+                <!--A keystore and a truststore needs to be configured in the following section if MTLSEnabled is set to
+                true-->
+
+                <KeyStore>
+                    <!--Absolute path + file name of keystore file.-->
+                    <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                    AU/sample-client-resources/transport-keystore/transport.jks-->
+                    <Location>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/DynamicClientRegistration/AU/sample-client-resources/transport-keystore/transport.jks</Location>
+
+                    <!--Sample Values: jks -->
+                    <Type>jks</Type>
+
+                    <!--Sample Values: wso2carbon -->
+                    <Password>wso2carbon</Password>
+                </KeyStore>
+            </Transport>
+
+            <!-- DCR Configurations -->
+            <DCR>
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                AU/sample-client-resources/ssa.txt -->
+                <SSAPath>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/DynamicClientRegistration/AU/sample-client-resources/ssa.txt</SSAPath>
+
+                <!-- Software Product ID -->
+                <!--Sample Values: SP2 -->
+                <SoftwareId>SP2</SoftwareId>
+
+                <!-- SSA Redirect Uri -->
+                <!--Sample Values: https://www.google.com/redirects/redirect1 -->
+                <RedirectUri>https://www.google.com/redirects/redirect1</RedirectUri>
+
+                <!--Sample Values: https://www.google.com/redirects/redirect2 -->
+                <AlternateRedirectUri>https://www.google.com/redirects/redirect2</AlternateRedirectUri>
+            </DCR>
+
+            <!-- Application Info -->
+            <Application>
+                <ClientID>_EgYN9rlScVnrYAzBBQSACjQYgca</ClientID>
+
+                <ClientSecret>AppConfig1.Application.ClientSecret</ClientSecret>
+
+                <!--Sample Values: https://www.google.com/redirects/redirect1 -->
+                <RedirectURL>https://www.google.com/redirects/redirect1</RedirectURL>
+            </Application>
+        </AppConfig>
+
+        <!-- Application 2 Details -->
+        <AppConfig>
+            <!-- Application Keystore -->
+            <KeyStore>
+                <!--Absolute path + file name of JKS keystore file-->
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                AU/sample-client-resources/signing-keystore/signing.jks -->
+                <Location>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/DynamicClientRegistration/AU/sample-client-resources-2/signing-keystore/signing.jks</Location>
+
+                <!--Sample Values: signing -->
+                <Alias>signing</Alias>
+
+                <!--Sample Value: wso2carbon -->
+                <Password>wso2carbon</Password>
+
+                <!--Sample Values: https://wso2.com -->
+                <DomainName>https://wso2.com</DomainName>
+
+                <!--Sample Values: cIYo-5zX4OTWZpHrmmiZDVxACJM -->
+                <SigningKid>cIYo-5zX4OTWZpHrmmiZDVxACJM</SigningKid>
+            </KeyStore>
+
+            <!-- Transport Keystore and Truststore -->
+            <!--This Keystore and the Truststore will be used during the SSL handshake-->
+            <Transport>
+                <!--Sample Value: true -->
+                <MTLSEnabled>true</MTLSEnabled>
+                <!--A keystore and a truststore needs to be configured in the following section if MTLSEnabled is set to
+                true-->
+                <KeyStore>
+                    <!--Absolute path + file name of keystore file.-->
+                    <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                    AU/sample-client-resources/transport-keystore/transport.jks-->
+                    <Location>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/DynamicClientRegistration/AU/sample-client-resources-2/transport-keystore/transport.jks</Location>
+
+                    <!--Sample Values: jks -->
+                    <Type>jks</Type>
+
+                    <!--Sample Value: wso2carbon -->
+                    <Password>wso2carbon</Password>
+                </KeyStore>
+            </Transport>
+
+            <!-- DCR Configurations -->
+            <DCR>
+                <!--Sample Values:  {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/DynamicClientRegistration/
+                AU/sample-client-resources/ssa2.txt -->
+                <SSAPath>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/DynamicClientRegistration/AU/sample-client-resources-2/ssa.txt</SSAPath>
+
+                <!-- Software Product ID -->
+                <!--Sample Values: SP3 -->
+                <SoftwareId>SP3</SoftwareId>
+
+                <!-- SSA Redirect Uri -->
+                <!--Sample Values: https://www.google.com/redirects/redirect1 -->
+                <RedirectUri>https://www.google.com/redirects/redirect1</RedirectUri>
+
+                <!--Sample Values: https://www.google.com/redirects/redirect2 -->
+                <AlternateRedirectUri>https://www.google.com/redirects/redirect2</AlternateRedirectUri>
+            </DCR>
+
+            <!-- Application Info -->
+            <Application>
+                <ClientID>AppConfig2.Application.ClientID</ClientID>
+                <ClientSecret>AppConfig2.Application.ClientSecret</ClientSecret>
+
+                <!--Sample Value: https://www.google.com/redirects/redirect1 -->
+                <RedirectURL>https://www.google.com/redirects/redirect1</RedirectURL>
+            </Application>
+        </AppConfig>
+
+    </ApplicationConfigList>
+
+    <Transport>
+        <Truststore>
+            <!--Absolute path + file name of truststore file. We can point the product client-truststore.jks here.-->
+            <!--Sample Values: /wso2am-4.0.0/repository/resources/security/client-truststore.jk-->
+            <Location>{TestSuiteDirectoryPath}/integration-test-suite/test-artifacts/am-certs/client-truststore.jks</Location>
+
+            <!--Sample Values: jks -->
+            <Type>jks</Type>
+
+            <!--Sample Values: wso2carbon -->
+            <Password>wso2carbon</Password>
+        </Truststore>
+    </Transport>
+    <!-- PSU_INFO List - Can Add Multiple PSUInfo sets as required-->
+    <PSUList>
+        <!-- Common PSU Info -->
+        <PSUInfo>
+            <Credentials>
+                <User>user1@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+        <!-- Individual PSU Info -->
+        <PSUInfo>
+            <Credentials>
+                <User>psu@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+        <!-- Business User 1-->
+        <PSUInfo>
+            <Credentials>
+                <User>nominatedUser2@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+        <!-- Business User 2 (Multiple NR)-->
+        <PSUInfo>
+            <Credentials>
+                <User>nominatedUser1@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+        <!-- Account Owner-->
+        <PSUInfo>
+            <Credentials>
+                <User>amy@gold.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+        <!-- API Publisher-->
+        <PSUInfo>
+            <Credentials>
+                <User>publisher@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+    </PSUList>
+
+    <!-- Publisher Info -->
+    <PublisherInfo>
+        <!--Sample Values: admin@wso2.com -->
+        <User>publisher@wso2.com</User>
+
+        <!--Sample Values: wso2123 -->
+        <Password>wso2123</Password>
+    </PublisherInfo>
+    <!-- PSU Info -->
+
+    <TPPInfo>
+        <!--Sample Values: admin@wso2.com -->
+        <User>user1@wso2.com</User>
+
+        <!--Sample Values: wso2123 -->
+        <Password>wso2123</Password>
+    </TPPInfo>
+
+    <!-- Customer Care Info -->
+    <CustomerCareInfo>
+        <!--Sample Values: ann@gold.com -->
+        <User>ann@gold.com</User>
+
+        <!--Sample Values: wso2123 -->
+        <Password>wso2123</Password>
+    </CustomerCareInfo>
+
+    <!-- Basic Auth Info -->
+    <BasicAuthInfo>
+        <!--Sample Values: admin@wso2.com -->
+        <User>admin@wso2.com</User>
+
+        <!--Sample Values: wso2123 -->
+        <Password>wso2123</Password>
+    </BasicAuthInfo>
+
+    <KeyManagerAdmin>
+        <!--Sample Values: admin@wso2.com -->
+        <User>admin@wso2.com</User>
+
+        <!--Sample Values: wso2123 -->
+        <Password>wso2123</Password>
+    </KeyManagerAdmin>
+
+    <!-- Browser Automation -->
+    <BrowserAutomation>
+        <!--Sample Values: chrome/firefox-->
+        <BrowserPreference>firefox</BrowserPreference>
+        <!--Sample Values: true/false -->
+        <HeadlessEnabled>BrowserAutomation.HeadlessEnabled</HeadlessEnabled>
+        <!--Sample Values: {Path to ob-compliance-toolkit-cds}/integration-test-suite/test-artifacts/selenium-libs/ubuntu/geckodriver -->
+        <WebDriverLocation>BrowserAutomation.WebDriverLocation</WebDriverLocation>
+    </BrowserAutomation>
+
+    <ConsentApi>
+        <!--Sample Values: https://<IS_HOST>:9446/oauth2/token -->
+        <AudienceValue>https://{IS_HOST}:9446/oauth2/token</AudienceValue>
+
+        <!--Sample Values: https://<IS_HOST>:9446/oauth2/revoke -->
+        <RevocationAudienceValue>https://{IS_HOST}:9446/oauth2/revoke</RevocationAudienceValue>
+    </ConsentApi>
+
+    <InternalApiContext>
+        <!--Sample Values: /api/openbanking/consent-mgt -->
+        <Consent-Mgt>/api/openbanking/consent-mgt</Consent-Mgt>
+
+    </InternalApiContext>
+
+    <!--ID performance Info-->
+    <IdPermanence>
+        <!--Sample Values: wso2 -->
+        <SecretKey>wso2</SecretKey>
+    </IdPermanence>
+
+    <!--Enable Profile Selection-->
+    <ProfileSelection>
+        <Enabled>true</Enabled>
+    </ProfileSelection>
+
+    <DataBaseConfiguration>
+        <!--Sample Value: mysql/mssql/postgresql/oracle -->
+        <DBType>DataBaseConfiguration.DBType</DBType>
+        <!--Sample Value: <DB SERVER HOSTNAME/IP> -->
+        <DBServerHost>DataBaseConfiguration.DBServerHost</DBServerHost>
+        <!--Sample Value: <DB USERNAME> -->
+        <DBUsername>DataBaseConfiguration.DBUsername</DBUsername>
+        <!--Sample Value: <DB PASSWORD> -->
+        <DBPassword>DataBaseConfiguration.DBPassword</DBPassword>
+        <!--Sample Value for mysql: com.mysql.jdbc.Driver -->
+        <!--Sample Value for mssql: com.microsoft.sqlserver.jdbc.SQLServerDriver -->
+        <!--Sample Value for oracle: oracle.jdbc.driver.OracleDriver -->
+        <!--Sample Value for postgresql: org.postgresql.Driver -->
+        <DBDriverClass>DataBaseConfiguration.DBDriverClass</DBDriverClass>
+        <!-- Configure the following tag only for Oracle DB -->
+        <!--Sample Value: ORCLCDB -->
+        <OracleDBSID>DataBaseConfiguration.OracleDBSID</OracleDBSID>
+    </DataBaseConfiguration>
+
+</Configurations>

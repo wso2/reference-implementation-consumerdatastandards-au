@@ -36,9 +36,14 @@ import org.testng.ITestContext
 class DynamicClientRegistrationDeleteTest extends AUTest {
 
     private String invalidClientId = "invalidclientid"
+    String commonSoftwareId, softwareStatement
 
-    @Test(groups = "SmokeTest")
+    @Test(groups = "SmokeTest", alwaysRun = true)
     void "TC0101009_Verify Get Application Access Token"(ITestContext context){
+
+        auConfiguration.setTppNumber(1)
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
 
         // retrieve from context using key
         AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
@@ -46,7 +51,7 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
 
         def  registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .buildRegistrationRequest(dcr.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
                 .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
@@ -63,6 +68,7 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
     @Test(dependsOnMethods = "TC0101009_Verify Get Application Access Token")
     void "TC0104001_Delete application with invalid client id"() {
 
+        auConfiguration.setTppNumber(1)
         def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
                 .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + invalidClientId)
@@ -73,6 +79,10 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
     @Test(groups = "SmokeTest", dependsOnMethods = "TC0101009_Verify Get Application Access Token", priority = 2)
     void "TC0104002_Delete application"() {
 
+        auConfiguration.setTppNumber(1)
+
+        accessToken = getApplicationAccessToken(clientId)
+        Assert.assertNotNull(accessToken)
         def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
                 .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
@@ -84,6 +94,7 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
             dataProviderClass = ConsentDataProviders.class)
     void "CDS-707_Send DCR request with supported http methods"(httpMethod) {
 
+        auConfiguration.setTppNumber(1)
         def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
                 .request(httpMethod.toString(), AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
@@ -95,15 +106,11 @@ class DynamicClientRegistrationDeleteTest extends AUTest {
             dataProviderClass = ConsentDataProviders.class)
     void "CDS-713_Send DCR request with unsupported http methods"(httpMethod) {
 
+        auConfiguration.setTppNumber(1)
         def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
                 .request(httpMethod.toString(), AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_501)
-    }
-
-    @AfterClass
-    void "Clean up"() {
-        deleteApplicationIfExists(clientId)
     }
 }

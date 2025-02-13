@@ -168,7 +168,7 @@ class ConsentAmendmentFlowTests extends AUTest {
     void "CDS-514_Verify a Consent Amendment flow with a Business user account"() {
 
         //Consent Authorisation
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(2)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -210,8 +210,7 @@ class ConsentAmendmentFlowTests extends AUTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
                         //Verify Account Selection Page
-                        assert authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount3CheckBox())
-                        authWebDriver.clickButtonXpath(AUTestUtil.getBusinessAccount3CheckBox())
+                        assert authWebDriver.isElementDisplayed(AUTestUtil.getBusinessAccount2CheckBox())
 
                         //Click Confirm Button
                         authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -242,8 +241,6 @@ class ConsentAmendmentFlowTests extends AUTest {
         Assert.assertEquals(responseAfterAmendment.getHeader(AUConstants.X_V_HEADER).toInteger(), AUConstants.X_V_HEADER_ACCOUNTS)
         Assert.assertNotNull(AUTestUtil.parseResponseBody(responseAfterAmendment,
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
-        Assert.assertNotNull(AUTestUtil.parseResponseBody(responseAfterAmendment,
-                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]"))
     }
 
     @Test

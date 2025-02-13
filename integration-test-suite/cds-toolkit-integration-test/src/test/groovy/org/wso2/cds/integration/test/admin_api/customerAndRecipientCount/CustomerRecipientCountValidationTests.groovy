@@ -19,9 +19,12 @@
 package org.wso2.cds.integration.test.admin_api.customerAndRecipientCount
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
+import org.testng.ITestContext
 import org.wso2.cds.test.framework.AUTest
+import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUAccountProfile
 import org.wso2.cds.test.framework.constant.AUConstants
+import org.wso2.cds.test.framework.constant.ContextConstants
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
@@ -38,7 +41,6 @@ class CustomerRecipientCountValidationTests extends AUTest {
     private AccessTokenResponse accessTokenResponse
     private String cdrArrangementId = ""
     private String clientId, accessToken, requestUri
-    File xmlFile = new File(System.getProperty("user.dir").toString().concat("/../../resources/test-config.xml"))
 
     @BeforeClass
     void "Initial Metrics Request"() {
@@ -52,23 +54,26 @@ class CustomerRecipientCountValidationTests extends AUTest {
         //Assign Metrics to Variables
         getInitialMetricsResponse(metricsResponse)
 
+        auConfiguration.setPsuNumber(0)
         auConfiguration.setTppNumber(1)
         jtiVal = String.valueOf(System.currentTimeMillis())
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        def softwareId = auConfiguration.getAppDCRSoftwareId()
+        def ssa = new File(auConfiguration.getAppDCRSSAPath()).text
 
         //Create New Application
         if(auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||
                 auConfiguration.getAppInfoClientID().equalsIgnoreCase("AppConfig2.Application.ClientID")) {
 
             Response registrationResponse = AURegistrationRequestBuilder
-                    .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                    .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(softwareId, ssa))
                     .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
 
             clientId = AUTestUtil.parseResponseBody(registrationResponse, AUConstants.CLIENT_ID)
 
             Assert.assertEquals(registrationResponse.statusCode(), AUConstants.CREATED)
             clientId = AUTestUtil.parseResponseBody(registrationResponse, "client_id")
-            AUTestUtil.writeXMLContent(xmlFile.toString(), "Application", "ClientID", clientId, 1)
+            AUTestUtil.writeToConfigFile(clientId)
         }
     }
 
@@ -84,13 +89,14 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test
+    @Test (priority = 1)
     void "Verify the count equals to the PSU count with active authorisations"() {
 
-        auConfiguration.setPsuNumber(1)
+        auConfiguration.setPsuNumber(0)
+        auConfiguration.setTppNumber(1)
 
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
-                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+                AUConstants.DEFAULT_SHARING_DURATION, true, "", auConfiguration.getAppInfoClientID())
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -99,7 +105,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
         Assert.assertNotNull(authorisationCode)
 
         //Get User Access Token
-        accessTokenResponse = AURequestBuilder.getUserToken(authorisationCode, auAuthorisationBuilder.getCodeVerifier(),
+        accessTokenResponse = AURequestBuilder.getUserToken(authorisationCode, AUConstants.CODE_VERIFIER,
                 auConfiguration.getAppInfoClientID())
         accessToken = accessTokenResponse.getTokens().accessToken
         cdrArrangementId = accessTokenResponse.getCustomParameters().get("cdr_arrangement_id")
@@ -116,7 +122,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test (dependsOnMethods = "Verify the count equals to the PSU count with active authorisations")
+    @Test (priority = 1, dependsOnMethods = "Verify the count equals to the PSU count with active authorisations")
     void "Verify the count after revoking consent"() {
 
         //revoke sharing arrangement
@@ -135,15 +141,15 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test
+    @Test (priority = 2)
     void "Verify the count unchanged when there is at least one active authorisation exist"() {
 
         //Create Consent
-        auConfiguration.setPsuNumber(1)
+        auConfiguration.setPsuNumber(0)
         auConfiguration.setTppNumber(1)
 
         def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
-                AUConstants.DEFAULT_SHARING_DURATION, true, cdrArrangementId)
+                AUConstants.DEFAULT_SHARING_DURATION, true, "", auConfiguration.getAppInfoClientID())
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
 
@@ -165,7 +171,7 @@ class CustomerRecipientCountValidationTests extends AUTest {
 
         //Same TPP and PSU Create another consent
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, cdrArrangementId)
+                true, cdrArrangementId, auConfiguration.getAppInfoClientID())
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_201)
         doConsentAuthorisationViaRequestUri(scopes, requestUri.toURI(), auConfiguration.getAppInfoClientID(),
@@ -182,19 +188,37 @@ class CustomerRecipientCountValidationTests extends AUTest {
                 "${recipientCount}", "$AUConstants.DATA_RECIPIENT_COUNT count mismatch")
     }
 
-    @Test (dependsOnMethods = "Verify the count unchanged when there is at least one active authorisation exist")
-    void "Verify the count after deleting App via DCR API"() {
+    @Test (priority = 2, dependsOnMethods = "Verify the count unchanged when there is at least one active authorisation exist")
+    void "Verify the count after deleting App via DCR API"(ITestContext context) {
 
         //Get Application Access Token
         auConfiguration.setTppNumber(1)
+
+        deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
+
+        // retrieve from context using key
+        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        AUConfigurationService auConfiguration = new AUConfigurationService()
+        deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
+
+        def  registrationResponse = AURegistrationRequestBuilder
+                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .when()
+                .post(AUConstants.DCR_REGISTRATION_ENDPOINT)
+
+        clientId = parseResponseBody(registrationResponse, "client_id")
+        context.setAttribute(ContextConstants.CLIENT_ID,clientId)
+
+        Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_201)
+        AUTestUtil.writeToConfigFile(clientId)
 
         accessToken = getApplicationAccessToken(auConfiguration.getAppInfoClientID())
         Assert.assertNotNull(accessToken)
 
         //Delete DCR Request
-        def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
+        registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
                 .when()
-                .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + clientId)
+                .delete(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
 
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_204)
 

@@ -19,6 +19,7 @@
 package org.wso2.cds.integration.test.tokenEndpoint
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUAccountScope
 import org.wso2.cds.test.framework.constant.AUConstants
@@ -49,6 +50,11 @@ class AccessTokenTest extends AUTest {
     private final String ACCOUNTS_BASIC_ACCOUNT_DETAIL_OPENID_SCOPE_LIST = "bank:accounts.basic:read bank:" +
             "accounts.detail:read openid"
     private AccessTokenResponse userAccessToken
+
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @Test
     void "OB-1264-Invoke token endpoint for user access token without private-key JWT client authentication"() {

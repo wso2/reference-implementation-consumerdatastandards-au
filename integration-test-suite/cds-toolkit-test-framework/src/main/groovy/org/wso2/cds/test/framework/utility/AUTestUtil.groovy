@@ -516,6 +516,7 @@ class AUTestUtil extends OBTestUtil {
         String userDirectory = System.getProperty("user.dir")
         String filePathInTarget = userDirectory + "/target/classes/${AUConstants.CONFIG_FILE_NAME}"
         String configFilePath = Paths.get(filePathInTarget).toString()
+        writeXMLContent(filePathInTarget, "Application", "ClientID", clientId, auConfiguration.getTppNumber())
         writeXMLContent(configFilePath, "Application", "ClientID", clientId, auConfiguration.getTppNumber())
     }
 

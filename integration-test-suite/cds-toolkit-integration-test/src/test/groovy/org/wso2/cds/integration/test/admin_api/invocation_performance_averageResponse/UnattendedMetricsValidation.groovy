@@ -41,6 +41,8 @@ class UnattendedMetricsValidation extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Get User Access Token"() {
 
+        auConfiguration.setProperty(0)
+        auConfiguration.setTppNumber(0)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
         if(!auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||

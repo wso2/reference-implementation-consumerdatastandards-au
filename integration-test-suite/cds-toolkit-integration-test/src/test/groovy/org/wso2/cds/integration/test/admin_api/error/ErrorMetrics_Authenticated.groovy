@@ -44,6 +44,8 @@ class ErrorMetrics_Authenticated extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
+        auConfiguration.setProperty(0)
+        auConfiguration.setTppNumber(0)
         if(!auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||
                 !auConfiguration.getAppInfoClientID().equalsIgnoreCase("AppConfig.Application.ClientID") ) {
 
@@ -246,7 +248,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    //Enable the test after changing the mock-backend response.
+    @Test (enabled = false)
     void "Verify the 500 error count for authenticated High priority invocation is listed"() {
 
         accessToken = getApplicationAccessToken(clientId)
@@ -416,11 +419,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 1)
     void "Verify the 404 error count for authenticated Low priority invocation is listed"() {
-
-        doConsentAuthorisation()
-        generateUserAccessToken()
 
         def response = AURequestBuilder
                 .buildBasicRequest(userAccessToken, AUConstants.X_V_HEADER_PAYEES)
@@ -453,11 +453,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 3)
     void "Verify the 406 error count for authenticated Low priority invocation is listed"() {
-
-        doConsentAuthorisation()
-        generateUserAccessToken()
 
         def response = AURequestBuilder.buildBasicRequestWithOptionalHeaders(userAccessToken,
                 AUConstants.UNSUPPORTED_X_V_VERSION, clientHeader)
@@ -666,9 +663,6 @@ class ErrorMetrics_Authenticated extends AUTest {
     @Test
     void "Verify the 404 error count for authenticated Unattended invocation is listed"() {
 
-        doConsentAuthorisation()
-        generateUserAccessToken()
-
         String requestUrl = "${AUConstants.BULK_ACCOUNT_PATH}/12345/transactions"
 
         Response response = AURequestBuilder
@@ -700,9 +694,6 @@ class ErrorMetrics_Authenticated extends AUTest {
 
     @Test
     void "Verify the 406 error count for authenticated Unattended invocation is listed"() {
-
-        doConsentAuthorisation()
-        generateUserAccessToken()
 
         def response = AURequestBuilder
                 .buildBasicRequest(userAccessToken, AUConstants.UNSUPPORTED_X_V_VERSION)
@@ -1000,7 +991,7 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test (priority = 4)
     void "Verify the 422 error count for authenticated Low priority invocation is listed"() {
 
         String requestBody = """

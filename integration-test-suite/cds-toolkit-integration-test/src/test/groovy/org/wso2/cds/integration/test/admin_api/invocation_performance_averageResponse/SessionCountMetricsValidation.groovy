@@ -35,6 +35,8 @@ class SessionCountMetricsValidation extends AUTest{
     @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
+        auConfiguration.setProperty(0)
+        auConfiguration.setTppNumber(0)
         //Initial Metrics Call
         def metricsResponse = getMetrics(AUConstants.PERIOD_CURRENT)
 

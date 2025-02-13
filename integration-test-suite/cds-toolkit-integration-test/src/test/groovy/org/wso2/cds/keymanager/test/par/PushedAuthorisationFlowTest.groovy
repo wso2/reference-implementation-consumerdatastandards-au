@@ -20,6 +20,7 @@ package org.wso2.cds.keymanager.test.par
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import com.nimbusds.oauth2.sdk.ResponseType
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
@@ -45,6 +46,11 @@ class PushedAuthorisationFlowTest extends AUTest {
     def clientId = auConfiguration.getAppInfoClientID()
     AUJWTGenerator generator = new AUJWTGenerator()
     def refreshToken
+
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @Test (groups = "SmokeTest")
     void "TC0205001_Data Recipients Initiate authorisation request using PAR"() {

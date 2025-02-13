@@ -42,21 +42,25 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     private String registrationPath = AUConstants.DCR_REGISTRATION_ENDPOINT
     private String invalidClientId = "invalidclientid"
     private String softwareId = "SP1"
+    private String commonSoftwareId, softwareStatement
 
     @BeforeClass(alwaysRun = true)
-    void "Initialize Test Suite"(ITestContext context) {
+    void "Create new Application"(ITestContext context) {
 
-        AURegistrationRequestBuilder dcr = new AURegistrationRequestBuilder()
+        auConfiguration.setTppNumber(1)
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
+
+        AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
 
         deleteApplicationIfExists(auConfiguration.getAppInfoClientID())
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(dcr.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .when()
-                .post(registrationPath)
+                .post( AUConstants.DCR_REGISTRATION_ENDPOINT)
 
-        clientId = parseResponseBody(registrationResponse, "client_id")
+        clientId = AUTestUtil.parseResponseBody(registrationResponse, "client_id")
         context.setAttribute(ContextConstants.CLIENT_ID,clientId)
-
         AUTestUtil.writeToConfigFile(clientId)
 
         accessToken = getApplicationAccessToken(clientId)
@@ -66,6 +70,7 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     @Test
     void "TC0103001_Update registration details with invalid client id"() {
 
+        auConfiguration.setTppNumber(1)
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
                 .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithNewRedirectUri())
@@ -79,13 +84,17 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     @Test(groups = "SmokeTest")
     void "TC0103002_Update registration details"() {
 
+        auConfiguration.setTppNumber(1)
         accessToken = getApplicationAccessToken(clientId)
         Assert.assertNotNull(accessToken)
+
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
 
         AUJWTGenerator aujwtGenerator =new AUJWTGenerator()
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
                 .when()
                 .put(registrationPath + clientId)
@@ -96,6 +105,7 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     @Test
     void "OB-1167_Update registration details without SSA"() {
 
+        auConfiguration.setTppNumber(1)
         AUJWTGenerator aujwtGenerator = new AUJWTGenerator()
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
@@ -112,9 +122,13 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     @Test
     void "OB-1168_Update registration details with fields not supported by data holder brand"() {
 
+        auConfiguration.setTppNumber(1)
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
+
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithFieldsNotSupported())
+                .buildRegistrationRequest(registrationRequestBuilder.getRegularClaimsWithFieldsNotSupported(commonSoftwareId, softwareStatement))
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
                 .when()
                 .put(registrationPath + clientId)
@@ -130,8 +144,10 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
         Assert.assertNull(parseResponseBody(retrievalResponse, "adr_name"))
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     void "OB-1169_Update registration details with a access token bound only to CDR Authorization scopes"() {
+
+        auConfiguration.setTppNumber(1)
 
         scopes = [
                 AUAccountScope.BANK_ACCOUNT_BASIC_READ.getScopeString(),
@@ -145,7 +161,7 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
         AUJWTGenerator aujwtGenerator = new AUJWTGenerator()
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
                 .when()
                 .put(registrationPath + clientId)
@@ -153,9 +169,10 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_403)
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     void "OB-1170_Update registration details without access token"() {
 
+        auConfiguration.setTppNumber(1)
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
                 .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
@@ -165,17 +182,21 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_401)
     }
 
-    @Test(priority = 3)
+    @Test(priority = 4)
     void "OB-1171_Update registration details with invalid access token"() {
 
+        auConfiguration.setTppNumber(1)
         accessToken = getApplicationAccessToken(clientId)
         Assert.assertNotNull(accessToken)
+
+        commonSoftwareId = auConfiguration.getAppDCRSoftwareId()
+        softwareStatement = new File(auConfiguration.getAppDCRSSAPath()).text
 
         deleteApplicationIfExists(clientId)
 
         AURegistrationRequestBuilder registrationRequestBuilder = new AURegistrationRequestBuilder()
         def registrationResponse = AURegistrationRequestBuilder
-                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims())
+                .buildRegistrationRequest(registrationRequestBuilder.getAURegularClaims(commonSoftwareId, softwareStatement))
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, "${AUConstants.AUTHORIZATION_BEARER_TAG}${accessToken}")
                 .when()
                 .put(registrationPath + clientId)
@@ -186,6 +207,7 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     @Test
     void "CDS-22_Update Application with SSA containing redirect uri in localhost value"() {
 
+        auConfiguration.setTppNumber(1)
         Path dcrArtifactsPath = Paths.get(auConfiguration.getAppDCRSSAPath())
         String filePath = Paths.get(dcrArtifactsPath.getParent().toString(), "ssa_localhost.txt")
 
@@ -224,6 +246,7 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
     @Test
     void "CDS-23_Update registration details with invalid http method"() {
 
+        auConfiguration.setTppNumber(1)
         accessToken = getApplicationAccessToken(clientId)
         Assert.assertNotNull(accessToken)
 
@@ -238,8 +261,10 @@ class DynamicClientRegistrationUpdateTest extends AUTest{
         Assert.assertEquals(registrationResponse.statusCode(), AUConstants.STATUS_CODE_501)
     }
 
-    @AfterClass
-    void "Clean up"() {
+    @AfterClass (alwaysRun = true)
+    void deleteApplication(){
+        auConfiguration.setTppNumber(1)
         deleteApplicationIfExists(clientId)
+        Assert.assertEquals(deletionResponse.statusCode(), AUConstants.STATUS_CODE_204)
     }
 }

@@ -21,6 +21,7 @@ package org.wso2.cds.keymanager.test.jarm
 import com.nimbusds.jwt.JWTClaimsSet
 import com.nimbusds.oauth2.sdk.ResponseMode
 import com.nimbusds.oauth2.sdk.ResponseType
+import org.testng.annotations.BeforeClass
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.utility.AUTestUtil
@@ -32,10 +33,10 @@ import org.testng.annotations.Test
  */
 class JarmResponseModeFormPostJwtValidationTests extends AUTest {
 
-    String authResponseUrl
-    String responseJwt
-    HashMap<String, String> mapPayload
-    JWTClaimsSet jwtPayload
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @Test (groups = "SmokeTest")
     void "CDS-582_Verify response_mode form_post jwt navigates to Authorization Flow"() {

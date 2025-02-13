@@ -40,9 +40,12 @@ class JwtSecuredAuthorizationResponseValidationTests extends AUTest {
     String authResponseUrl
     String responseJwt
     JWTClaimsSet jwtPayload
-    String clientId
     JWSHeader jwtHeaders
 
+    @BeforeClass
+    void "setTppNumber"() {
+        auConfiguration.setTppNumber(0)
+    }
 
     @BeforeClass (alwaysRun = true)
     void "Send Authorisation Request"() {

@@ -44,6 +44,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
     void "TC0202006_Initiate two authorisation consent flows on same browser session"() {
         def sessionId
 
+        auConfiguration.setTppNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -97,6 +98,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
     @Test(groups = "SmokeTest", dependsOnMethods = "TC0202006_Initiate two authorisation consent flows on same browser session")
     void "TC0203005_Exchange authorisation code for access token"() {
 
+        auConfiguration.setTppNumber(0)
         AccessTokenResponse accessTokenResponse = getUserAccessTokenResponse(auConfiguration.getAppInfoClientID())
         userAccessToken = accessTokenResponse.tokens.accessToken
         Assert.assertNotNull(userAccessToken)
@@ -105,6 +107,7 @@ class DuplicateCommonAuthIdTest extends AUTest {
     @Test(groups = "SmokeTest", dependsOnMethods = "TC0203005_Exchange authorisation code for access token")
     void "TC0401007_Retrieve bulk accounts list"() {
 
+        auConfiguration.setTppNumber(0)
         def response = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
                 AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))

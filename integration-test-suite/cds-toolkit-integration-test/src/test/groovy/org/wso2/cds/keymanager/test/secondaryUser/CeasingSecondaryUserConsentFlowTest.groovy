@@ -41,13 +41,13 @@ import java.nio.charset.Charset
 class CeasingSecondaryUserConsentFlowTest extends AUTest {
 
     def shareableElements, clientHeader
-    String accountID, userId, legalEntityId, altLegalEntityId
+    String accountID, userId, legalEntityId
     Response response
-    List <String> legalEntityList
 
     @BeforeClass (alwaysRun = true)
     void "Pre Execution Step"() {
 
+        auConfiguration.setTppNumber(0)
         auConfiguration.setPsuNumber(1)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Sharable Account List and Secondary User with Authorize Permission

@@ -181,7 +181,7 @@
     </build>
 
     <properties>
-        <org.wso2.openbanking.test.cds.version>1.0.0</org.wso2.openbanking.test.cds.version>
+        <org.wso2.openbanking.test.cds.version>1.1.5</org.wso2.openbanking.test.cds.version>
     </properties>
 
 </project>

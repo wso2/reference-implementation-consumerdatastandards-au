@@ -43,7 +43,7 @@ class AccountsIdPermanenceTest extends AUTest {
     String encryptedTransactionId
     String encryptedPayeeId
     private String secretKey = auConfiguration.getIDPermanence()
-    private String userId = auConfiguration.getUserKeyManagerAdminName() + "@" + auConfiguration.getCommonTenantDomain()
+    private String userId = auConfiguration.getUserPSUName() + "@" + auConfiguration.getCommonTenantDomain()
 
     @BeforeClass(alwaysRun = true)
     void "Get User Access Token"() {
@@ -186,6 +186,7 @@ class AccountsIdPermanenceTest extends AUTest {
     @Test (dependsOnMethods = "TC1201001_Get Accounts", priority = 1)
     void "TC1205003_Get Not Consented Account Details"() {
 
+        auConfiguration.setTppNumber(0)
         clientId = auConfiguration.getAppInfoClientID()
 
         //Authorise consent by selecting single account

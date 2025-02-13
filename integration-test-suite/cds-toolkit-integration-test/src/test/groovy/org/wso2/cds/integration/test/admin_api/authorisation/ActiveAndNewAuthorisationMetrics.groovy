@@ -49,6 +49,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void "Authorise New ongoing consent for Individual Profile"(){
 
+        auConfiguration.setPsuNumber(0)
         doConsentAuthorisation(auConfiguration.getAppInfoClientID(), AUAccountProfile.INDIVIDUAL)
         generateUserAccessToken()
 
@@ -94,6 +95,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
     @Test (groups = "SmokeTest")
     void  "Authorise New once off consent for Individual Profile"(){
 
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SHORT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -151,6 +153,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
     @Test
     void "Authorise New once off consent for Individual Profile with 0 sharing duration"(){
 
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SINGLE_ACCESS_CONSENT,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -179,6 +182,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
     @Test
     void "Authorise New once off consent for Individual Profile with 24hr sharing duration"(){
 
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SHARING_DURATION_24H,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -207,6 +211,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
     @Test
     void "Authorise New ongoing consent for Individual Profile - joint account"(){
 
+        auConfiguration.setPsuNumber(0)
         automationResponse = doJointAccountConsentAuthorisation(auConfiguration.getAppInfoClientID(), true)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
 
@@ -232,6 +237,7 @@ class ActiveAndNewAuthorisationMetrics extends AUTest {
     @Test
     void "Authorise New onceoff consent for Individual Profile - joint account"(){
 
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.SHORT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)

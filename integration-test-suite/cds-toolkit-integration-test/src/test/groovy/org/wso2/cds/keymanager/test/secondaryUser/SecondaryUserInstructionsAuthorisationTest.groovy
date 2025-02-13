@@ -43,6 +43,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
     @BeforeClass(alwaysRun = true)
     void "Provide User Permissions"() {
 
+        auConfiguration.setTppNumber(0)
         auConfiguration.setPsuNumber(1)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Sharable Account List and Secondary User with Authorize Permission
@@ -111,7 +112,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
                 .when()
                 .get(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
 
-        String adrName = registrationResponse.jsonPath().get("org_name") + ", " + registrationResponse.jsonPath().get("client_name")
+        String adrName = "Mock Company Inc., Mock Software 1"
 
         //Send Authorisation Request via PAR
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,

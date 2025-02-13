@@ -116,7 +116,7 @@ class AURequestBuilder {
 
     static RequestSpecification buildBasicRequestWithoutAuthorisationHeader(int xv_header) {
 
-        return AURestAsRequestBuilder.buildRequest()
+        return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.X_V_HEADER, xv_header)
     }
 

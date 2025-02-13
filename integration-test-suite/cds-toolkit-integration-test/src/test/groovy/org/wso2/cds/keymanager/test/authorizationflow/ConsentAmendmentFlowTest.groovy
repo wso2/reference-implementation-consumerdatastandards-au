@@ -72,6 +72,14 @@ class ConsentAmendmentFlowTest extends AUTest{
         Assert.assertNotNull(refreshToken)
         Assert.assertNotNull(cdrArrangementId)
 
+        //Get Account Transaction Details
+        def responseBeforeAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
+                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
+                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+
+        Assert.assertEquals(responseBeforeAmendment.statusCode(), AUConstants.STATUS_CODE_200)
+
         //remove an existing scope and add a new scope to amend the consent
         scopes.remove(AUAccountScope.BANK_TRANSACTION_READ)
         scopes.add(AUAccountScope.BANK_PAYEES_READ)
