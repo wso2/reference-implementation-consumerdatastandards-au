@@ -18,6 +18,8 @@
 
 package org.wso2.openbanking.cds.consent.extensions.event.executor;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.wso2.openbanking.accelerator.common.event.executor.OBEventExecutor;
 import com.wso2.openbanking.accelerator.common.event.executor.model.OBEvent;
 import com.wso2.openbanking.accelerator.common.exception.ConsentManagementException;
@@ -65,7 +67,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.TimeUnit;
 
 /**
  * CDS event executor implementation to execute consent state change related events.
@@ -96,7 +98,9 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
     private static final String USER_ID_KEY = "userId";
     private static final String STATUS_KEY = "status";
     private static final String EXPIRY_TIME_KEY = "expiryTime";
-    private static final ConcurrentLinkedDeque<String> publishedEventIdentifierQueue = new ConcurrentLinkedDeque<>();
+
+    private static final Cache<String, Boolean> publishedEventIdentifierCache =
+            CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MINUTES).maximumSize(20).build();
 
     @Override
     public void processEvent(OBEvent obEvent) {
@@ -171,12 +175,17 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
             ConsentStatusEnum consentStatus = getConsentStatusForEventType(eventType);
             AuthorisationFlowTypeEnum authFlowType = getAuthFlowTypeForEventType(eventType);
             String eventIdentifier = getEventIdentifier(consentResource, detailedConsentResource, eventType);
-            if (eventIdentifier != null && publishedEventIdentifierQueue.contains(eventIdentifier)) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Skipping authorisation data publishing for event identifier: " + eventIdentifier +
-                            " as it has already been published.");
+            if (eventIdentifier != null) {
+                synchronized (publishedEventIdentifierCache) {
+                    if (publishedEventIdentifierCache.getIfPresent(eventIdentifier) != null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Skipping authorisation data publishing for event identifier: " +
+                                    eventIdentifier + " as it has already been published.");
+                        }
+                        return;
+                    }
+                    publishedEventIdentifierCache.put(eventIdentifier, Boolean.TRUE);
                 }
-                return;
             }
 
             String customerProfile = null;
@@ -198,7 +207,6 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
                     consentStatus, authFlowType, customerProfile, consentDurationType);
 
             dataPublishingService.publishAuthorisationData(authorisationData);
-            addToPublishedEventIdentifierQueue(eventIdentifier);
         }
 
     }
@@ -431,24 +439,6 @@ public class CDSConsentEventExecutor implements OBEventExecutor {
         } else {
             return AuthorisationFlowTypeEnum.UNCLASSIFIED;
         }
-    }
-
-    /**
-     * Add the event identifier to the published data queue.
-     * If the queue is full, oldest key is removed.
-     * 20 keys are maintained in the queue to handle simultaneous consent state change events.
-     *
-     * @param eventIdentifier request uri key coming as a consent attribute + event type to identify a unique event.
-     */
-    private void addToPublishedEventIdentifierQueue(String eventIdentifier) {
-
-        if (StringUtils.isBlank(eventIdentifier)) {
-            return;
-        }
-        if (publishedEventIdentifierQueue.size() >= 20) {
-            publishedEventIdentifierQueue.pollFirst();
-        }
-        publishedEventIdentifierQueue.addLast(eventIdentifier);
     }
 
     private String getEventIdentifier(ConsentResource consentResource, DetailedConsentResource detailedConsentResource,
