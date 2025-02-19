@@ -65,7 +65,7 @@ group by CONSENT_STATUS, AUTH_FLOW_TYPE, CUSTOMER_PROFILE, CONSENT_DURATION_TYPE
 aggregate by TIMESTAMP every seconds...month;
 
 -- Filter authorisations that should be counted
-from AuthorisationMetricsInputStream#window.unique:first(CONSENT_ID, CONSENT_STATUS, AUTH_FLOW_TYPE, CUSTOMER_PROFILE, CONSENT_DURATION_TYPE)
+from AuthorisationMetricsInputStream
 select *
 insert into CountableAuthorisationMetricsInputStream;
 
