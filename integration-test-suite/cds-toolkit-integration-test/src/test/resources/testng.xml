@@ -156,14 +156,6 @@
             <class name="org.wso2.cds.keymanager.test.jarm.JwtSecuredAuthorizationResponseValidationTests"/>
         </classes>
     </test>
-    <test name="Business Nominated User Representative Tests" parallel="false" enabled="false">
-        <classes>
-            <class name="org.wso2.cds.keymanager.test.bnr.BnrEndToEndTest"/>
-            <class name="org.wso2.cds.keymanager.test.bnr.ConsentAmendmentFlowTests"/>
-            <class name="org.wso2.cds.keymanager.test.bnr.ConsentAuthFlowValidationTests"/>
-            <class name="org.wso2.cds.keymanager.test.bnr.UserNominationManagementTests"/>
-        </classes>
-    </test>
     <test name="Disclosure Option Management Service" parallel="false" enabled="false">
         <classes>
             <class name="org.wso2.cds.keymanager.test.doms.DisclosureOptionManagementServiceTest"/>
@@ -180,6 +172,18 @@
         <classes>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserManagementTest"/>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserConsentFlowTest"/>
+        </classes>
+    </test>
+    <!--
+        Note: Ensure that the following test group is executed last.
+        After these tests are completed, clear the openbank_openbankingdb.OB_ACCOUNT_METADATA table.
+    -->
+    <test name="Business Nominated User Representative Tests" parallel="false" enabled="false">
+        <classes>
+            <class name="org.wso2.cds.keymanager.test.bnr.BnrEndToEndTest"/>
+            <class name="org.wso2.cds.keymanager.test.bnr.ConsentAmendmentFlowTests"/>
+            <class name="org.wso2.cds.keymanager.test.bnr.ConsentAuthFlowValidationTests"/>
+            <class name="org.wso2.cds.keymanager.test.bnr.UserNominationManagementTests"/>
         </classes>
     </test>
 </suite>

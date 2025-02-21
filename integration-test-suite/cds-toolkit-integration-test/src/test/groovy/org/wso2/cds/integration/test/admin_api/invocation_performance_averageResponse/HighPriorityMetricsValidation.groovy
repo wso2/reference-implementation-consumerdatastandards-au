@@ -45,7 +45,7 @@ class HighPriorityMetricsValidation extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Get User Access Token"() {
 
-        auConfiguration.setProperty(0)
+        auConfiguration.setPsuNumber(0)
         auConfiguration.setTppNumber(0)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 

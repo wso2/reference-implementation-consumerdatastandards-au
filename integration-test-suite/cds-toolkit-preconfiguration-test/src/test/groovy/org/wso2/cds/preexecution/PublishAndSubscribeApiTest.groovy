@@ -23,7 +23,6 @@ import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
-import org.wso2.cds.test.framework.request_builder.RESTAPISubscriptionRequestBuilder
 import org.wso2.cds.test.framework.request_builder.RESTApiAccessTokenGeneration
 import org.wso2.cds.test.framework.request_builder.RESTApiPublishRequestBuilder
 import org.wso2.cds.test.framework.utility.AURestAsRequestBuilder

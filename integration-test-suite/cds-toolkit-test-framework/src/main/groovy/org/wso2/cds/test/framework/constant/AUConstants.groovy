@@ -458,7 +458,7 @@ class AUConstants extends OBConstants {
     public static final String ERROR_INVALID_CLIENT_ID = "Cannot find an application associated with the given consumer key"
     public static final String UNABLE_TO_DECODE_JWT = "Unable to decode JWT."
     public static final String MISSING_REDIRECT_URL_VALUE= "Mandatory parameter redirect_uri, not found in the request"
-    public static final String CALLBACK_NOT_MATCH = "callback.not.match"
+    public static final String CALLBACK_NOT_MATCH = "Registered callback does not match with the provided url."
     public static final String INVALID_CDR_ARRANGEMENT_ID = "Invalid cdr_arrangement_id"
     public static final String INVALID_AUDIENCE = "Invalid audience value in the request"
 
