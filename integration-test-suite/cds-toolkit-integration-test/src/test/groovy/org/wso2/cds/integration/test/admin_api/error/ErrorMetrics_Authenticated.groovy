@@ -44,7 +44,7 @@ class ErrorMetrics_Authenticated extends AUTest {
     @BeforeClass (alwaysRun = true)
     void "Initial Metrics Request"() {
 
-        auConfiguration.setProperty(0)
+        auConfiguration.setPsuNumber(0)
         auConfiguration.setTppNumber(0)
         if(!auConfiguration.getAppInfoClientID().equalsIgnoreCase("") ||
                 !auConfiguration.getAppInfoClientID().equalsIgnoreCase("AppConfig.Application.ClientID") ) {
@@ -141,7 +141,7 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test(priority = 5)
     void "Verify the 403 error count for authenticated High priority invocation is listed"() {
 
         scopes = [
@@ -343,7 +343,7 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test(priority = 5)
     void "Verify the 403 error count for authenticated Low priority invocation is listed"() {
 
         scopes = [
@@ -591,7 +591,7 @@ class ErrorMetrics_Authenticated extends AUTest {
         assertTierBasedMetrics(metricsResponse)
     }
 
-    @Test
+    @Test(priority = 5)
     void "Verify the 403 error count for authenticated Unattended invocation is listed"()  {
 
         scopes = [
