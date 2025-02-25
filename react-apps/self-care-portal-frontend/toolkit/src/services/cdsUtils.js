@@ -60,9 +60,11 @@ export function generatePDF(consent, applicationName, consentStatus) {
   const permissionCategories = document.getElementsByClassName('clusterLabelText');
   const permissions = document.getElementsByClassName('permissionsUL');
   const accountIDs = document.getElementsByClassName('permittedAccount');
+  const secondaryAccountIDs = document.getElementsByClassName('permittedSecondaryAccount');
 
   let contents = [];
   let accounts = [];
+  let secondaryAccounts = [];
 
   try {
 
@@ -80,6 +82,10 @@ export function generatePDF(consent, applicationName, consentStatus) {
 
     for (let i = 0; i < accountIDs.length; i++) {
       accounts.push(accountIDs[i].innerHTML);
+    }
+
+    for (let i = 0; i < secondaryAccountIDs.length; i++) {
+      secondaryAccounts.push(secondaryAccountIDs[i].innerHTML);
     }
 
   } catch (e) {
@@ -100,6 +106,10 @@ export function generatePDF(consent, applicationName, consentStatus) {
   }
   if (accounts.length > 0) {
     pdf.text(x, y, 'Accounts : ' + accounts.join(', '));
+    y += 10;
+  }
+  if (secondaryAccounts.length > 0) {
+    pdf.text(x, y, 'Secondary Accounts : ' + secondaryAccounts.join(', '));
     y += 10;
   }
   pdf.text(x, y, 'Data we are sharing on : ');
