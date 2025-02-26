@@ -629,7 +629,7 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
     /**
      * Method to update account mappings based on given consent.
      *
-     * @param existingDetailedConsent        - existing detailed consent
+     * @param existingDetailedConsent  - existing detailed consent
      * @throws ConsentException - ConsentException
      */
     private void updateAccountMappings(DetailedConsentResource existingDetailedConsent)
