@@ -147,14 +147,16 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                         accountIdsMapWithPermissions = getCDSAccountIDsMapWithPermissions(accountIdList);
                     }
 
+                    DetailedConsentResource existingConsent = consentCoreService.getDetailedConsent(cdrArrangementId);
                     // Revoke existing tokens
                     revokeTokens(cdrArrangementId, userId);
                     // Activate account mappings which were deactivated when revoking tokens
-                    activateAccountMappings(cdrArrangementId);
+                    updateAccountMappings(existingConsent);
 
                     // Update account mapping permissions
                     ArrayList<ConsentMappingResource> existingConsentMappingResources =
-                            consentCoreService.getDetailedConsent(cdrArrangementId).getConsentMappingResources();
+                            existingConsent.getConsentMappingResources();
+
                     Map<String, String> updatableAccountMappingPermissions = new HashMap<>();
                     for (ConsentMappingResource consentMappingResource : existingConsentMappingResources) {
                         String accountId = consentMappingResource.getAccountID();
@@ -625,27 +627,26 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
     }
 
     /**
-     * Method to activate the account mappings for a given cdrArrangementId.
+     * Method to update account mappings based on given consent.
      *
-     * @param cdrArrangementId - cdr-arrangement-id
+     * @param existingDetailedConsent        - existing detailed consent
      * @throws ConsentException - ConsentException
      */
-    private void activateAccountMappings(String cdrArrangementId) throws ConsentException {
+    private void updateAccountMappings(DetailedConsentResource existingDetailedConsent)
+            throws ConsentException {
 
-        ArrayList<String> consentMappingIdList = new ArrayList<>();
         try {
-            DetailedConsentResource consentResource = consentCoreService.getDetailedConsent(cdrArrangementId);
-            List<ConsentMappingResource> consentMappingResourceList = consentResource.getConsentMappingResources();
-            if (consentMappingResourceList != null) {
-                for (ConsentMappingResource consentMappingResource : consentMappingResourceList) {
-                    consentMappingIdList.add(consentMappingResource.getMappingID());
-                }
-                consentCoreService.updateAccountMappingStatus(consentMappingIdList,
-                        ConsentCoreServiceConstants.ACTIVE_MAPPING_STATUS);
+            List<ConsentMappingResource> consentMappingResourceList =
+                    existingDetailedConsent.getConsentMappingResources();
+            for (ConsentMappingResource consentMappingResource : consentMappingResourceList) {
+                ArrayList<String> accountMappingID = new ArrayList<>();
+                accountMappingID.add(consentMappingResource.getMappingID());
+                consentCoreService.updateAccountMappingStatus(accountMappingID,
+                        consentMappingResource.getMappingStatus());
             }
         } catch (ConsentManagementException e) {
-            log.error(String.format("Error occurred while activating account mappings. %s", e.getMessage()));
-            throw new ConsentException(ResponseStatus.INTERNAL_SERVER_ERROR, "Error while activating account " +
+            log.error(String.format("Error occurred while updating account mappings. %s", e.getMessage()));
+            throw new ConsentException(ResponseStatus.INTERNAL_SERVER_ERROR, "Error while updating account " +
                     "mappings for the consent");
         }
     }
