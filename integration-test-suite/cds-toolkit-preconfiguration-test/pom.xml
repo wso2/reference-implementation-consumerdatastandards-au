@@ -22,13 +22,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>cds-toolkit-preconfiguration-test</artifactId>
-    <version>1.1.5</version>
     <packaging>jar</packaging>
 
     <parent>
         <groupId>org.wso2.openbanking</groupId>
         <artifactId>integration-test-suite</artifactId>
-        <version>1.1.5</version>
+        <version>1.1.7-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -36,13 +35,11 @@
         <dependency>
             <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>${org.apache.groovy.version}</version>
             <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.wso2.openbanking</groupId>
             <artifactId>cds-toolkit-test-framework</artifactId>
-            <version>${org.wso2.openbanking.test.cds.version}</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -92,7 +89,6 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.49</version>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>
@@ -107,7 +103,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <version>4.10</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -202,10 +197,6 @@
             </resource>
         </resources>
     </build>
-
-    <properties>
-        <org.wso2.openbanking.test.cds.version>1.1.5</org.wso2.openbanking.test.cds.version>
-    </properties>
 
 </project>
 

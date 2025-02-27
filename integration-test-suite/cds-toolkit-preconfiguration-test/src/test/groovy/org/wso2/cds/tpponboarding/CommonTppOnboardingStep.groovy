@@ -27,7 +27,6 @@ import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.ContextConstants
 import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
-import org.wso2.cds.test.framework.request_builder.RESTAPISubscriptionRequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
 
 /**

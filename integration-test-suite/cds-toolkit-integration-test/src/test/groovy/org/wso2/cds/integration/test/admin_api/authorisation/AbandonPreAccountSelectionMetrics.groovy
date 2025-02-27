@@ -832,6 +832,8 @@ class AbandonPreAccountSelectionMetrics extends AUTest {
         if (AUConstants.X_V_HEADER_METRICS == 4) {
             abandonedCurrentDay = abandonedCurrentDay + 1
         } else {
+            abandonedCurrentDay = abandonedCurrentDay + 1
+            abandonedPreAccountSelectionCurrentDay = abandonedPreAccountSelectionCurrentDay + 1
             highPriorityCurrentDay = highPriorityCurrentDay + 3
             unattendedCurrentDay = unattendedCurrentDay + 1
         }
