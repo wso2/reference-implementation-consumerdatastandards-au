@@ -548,10 +548,10 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
             secondaryUserAccountMappings.put(userId, secondaryUserAccountMappingsMap);
         }
         if (!secondaryUserAuthResources.isEmpty() && !secondaryUserAccountMappings.isEmpty()) {
-            additionalAmendmentData
-                    .put(ConsentCoreServiceConstants.ADDITIONAL_AUTHORIZATION_RESOURCES, secondaryUserAuthResources);
-            additionalAmendmentData
-                    .put(ConsentCoreServiceConstants.ADDITIONAL_MAPPING_RESOURCES, secondaryUserAccountMappings);
+            additionalAmendmentData.put(ConsentCoreServiceConstants.ADDITIONAL_AUTHORIZATION_RESOURCES_LIST,
+                            secondaryUserAuthResources);
+            additionalAmendmentData.put(ConsentCoreServiceConstants.ADDITIONAL_MAPPING_RESOURCES_WITH_AUTH_TYPES,
+                            secondaryUserAccountMappings);
         }
         return additionalAmendmentData;
     }
