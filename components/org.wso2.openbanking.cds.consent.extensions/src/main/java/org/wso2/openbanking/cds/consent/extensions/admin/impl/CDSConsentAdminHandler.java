@@ -361,34 +361,43 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
         ArrayList<ConsentMappingResource> mappingArray = detailedConsentResource.getConsentMappingResources();
 
         Map<String, AuthorizationResource> authResourceMap = new HashMap<>();
-        Map<String, String> userAuthTypeMap = new HashMap<>();
-        for (AuthorizationResource resource : authArray) {
-            authResourceMap.put(resource.getAuthorizationID(), resource);
-            userAuthTypeMap.put(resource.getUserID(), resource.getAuthorizationType());
-        }
-        Map<String, JSONArray> userAccountsDataMap = new HashMap<>();
-        for (ConsentMappingResource resource : mappingArray) {
-            if (resource.getMappingStatus().equalsIgnoreCase("active")) {
-                String userId = authResourceMap.get(resource.getAuthorizationID()).getUserID();
-                JSONArray accountsArray;
-                if (userAccountsDataMap.containsKey(userId)) {
-                    accountsArray = userAccountsDataMap.get(userId);
-                } else {
-                    accountsArray = new JSONArray();
-                }
-                accountsArray.add(resource.getAccountID());
-                userAccountsDataMap.put(userId, accountsArray);
+        Map<String, Set<String>> availableUserAuthTypesMap = new HashMap<>();
+        for (AuthorizationResource authorizationResource : authArray) {
+            authResourceMap.put(authorizationResource.getAuthorizationID(), authorizationResource);
+            if (availableUserAuthTypesMap.containsKey(authorizationResource.getUserID())) {
+                availableUserAuthTypesMap.get(authorizationResource.getUserID())
+                        .add(authorizationResource.getAuthorizationType());
+            } else {
+                Set<String> authTypes = new HashSet<>();
+                authTypes.add(authorizationResource.getAuthorizationType());
+                availableUserAuthTypesMap.put(authorizationResource.getUserID(), authTypes);
             }
         }
-
-        JSONArray userList = new JSONArray();
-        for (Map.Entry<String, JSONArray> userAccountsData : userAccountsDataMap.entrySet()) {
-            JSONObject user = new JSONObject();
-            String userId = userAccountsData.getKey();
-            user.appendField("userId", userId);
-            user.appendField("authType", userAuthTypeMap.get(userId));
-            user.appendField("accountList", userAccountsData.getValue());
-            userList.add(user);
+        JSONObject userList = new JSONObject();
+        for (Map.Entry<String, Set<String>> userAuthType : availableUserAuthTypesMap.entrySet()) {
+            String userId = userAuthType.getKey();
+            Set<String> authTypes = userAuthType.getValue();
+            JSONArray userAuthTypeAccountsArray = new JSONArray();
+            for (String authType : authTypes) {
+                JSONArray accountsArray = new JSONArray();
+                for (ConsentMappingResource mappingResource : mappingArray) {
+                    if (mappingResource.getMappingStatus().equalsIgnoreCase("active") &&
+                            authResourceMap.get(mappingResource.getAuthorizationID()).getUserID().equals(userId) &&
+                            authResourceMap.get(mappingResource.getAuthorizationID()).getAuthorizationType()
+                                    .equals(authType)) {
+                        accountsArray.add(mappingResource.getAccountID());
+                    }
+                }
+                if (!accountsArray.isEmpty()) {
+                    JSONObject userAuthTypeAccountsObject = new JSONObject();
+                    userAuthTypeAccountsObject.appendField("authType", authType);
+                    userAuthTypeAccountsObject.appendField("accountList", accountsArray);
+                    userAuthTypeAccountsArray.add(userAuthTypeAccountsObject);
+                }
+            }
+            if (!userAuthTypeAccountsArray.isEmpty()) {
+                userList.appendField(userId, userAuthTypeAccountsArray);
+            }
         }
         consentResource.appendField("userList", userList);
         return consentResource;
