@@ -477,10 +477,10 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
                 if (StringUtils.isNotBlank(userId) && !addedUserAuthTypeMappings.contains(userAuthTypeMapping)) {
 
                     if (isConsentAmendment && isReauthorizable(userId, accountEntry.getValue(), detailedConsent)) {
-                        reAuthorizableResources.add(userId);
+                        reAuthorizableResources.add(userAuthTypeMapping);
                     }
 
-                    if (!reAuthorizableResources.contains(userId)) {
+                    if (!reAuthorizableResources.contains(userAuthTypeMapping)) {
                         authorizableResources.computeIfAbsent(userId, k -> new ArrayList<>()).add(authType);
                     }
 
