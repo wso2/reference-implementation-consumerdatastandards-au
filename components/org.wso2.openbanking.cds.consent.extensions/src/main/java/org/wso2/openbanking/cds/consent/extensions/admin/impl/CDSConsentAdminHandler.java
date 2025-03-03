@@ -251,10 +251,9 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
      */
     private boolean isPrimaryUserRevoking(DetailedConsentResource detailedConsentResource, String userID) {
         for (AuthorizationResource authorizationResource : detailedConsentResource.getAuthorizationResources()) {
-            if (userID.equals(authorizationResource.getUserID()) &&
-                    (AUTH_RESOURCE_TYPE_PRIMARY.equals(authorizationResource.getAuthorizationType()) ||
-                            NOMINATED_REPRESENTATIVE.equals(authorizationResource.getAuthorizationType()))) {
-                return true;
+            if (userID.equals(authorizationResource.getUserID())) {
+                return AUTH_RESOURCE_TYPE_PRIMARY.equals(authorizationResource.getAuthorizationType()) ||
+                        NOMINATED_REPRESENTATIVE.equals(authorizationResource.getAuthorizationType());
             }
         }
         return true;
