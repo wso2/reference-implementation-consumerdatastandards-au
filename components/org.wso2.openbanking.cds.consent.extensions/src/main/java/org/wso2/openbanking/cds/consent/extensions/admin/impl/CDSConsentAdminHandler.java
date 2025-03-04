@@ -377,7 +377,7 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
         for (Map.Entry<String, Set<String>> userAuthType : availableUserAuthTypesMap.entrySet()) {
             String userId = userAuthType.getKey();
             Set<String> authTypes = userAuthType.getValue();
-            JSONArray accountsJSONObject = new JSONArray();
+            JSONArray accountsJSONArray = new JSONArray();
             for (String authType : authTypes) {
                 JSONArray accountIds = new JSONArray();
                 JSONObject authTypeVsAccountsJSONObject = new JSONObject();
@@ -394,12 +394,12 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                     authTypeVsAccountsJSONObject.put("accountList", accountIds);
                 }
                 if (!authTypeVsAccountsJSONObject.isEmpty()) {
-                    accountsJSONObject.add(authTypeVsAccountsJSONObject);
+                    accountsJSONArray.add(authTypeVsAccountsJSONObject);
                 }
             }
             JSONObject userAccountsJSONObject = new JSONObject();
             userAccountsJSONObject.put("userId", userId);
-            userAccountsJSONObject.put("accounts", accountsJSONObject);
+            userAccountsJSONObject.put("accounts", accountsJSONArray);
             userList.add(userAccountsJSONObject);
         }
         consentResource.appendField("userList", userList);
