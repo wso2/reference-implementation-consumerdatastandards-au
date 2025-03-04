@@ -373,31 +373,34 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
                 availableUserAuthTypesMap.put(authorizationResource.getUserID(), authTypes);
             }
         }
-        JSONObject userList = new JSONObject();
+        JSONArray userList = new JSONArray();
         for (Map.Entry<String, Set<String>> userAuthType : availableUserAuthTypesMap.entrySet()) {
             String userId = userAuthType.getKey();
             Set<String> authTypes = userAuthType.getValue();
-            JSONArray userAuthTypeAccountsArray = new JSONArray();
+            JSONArray accountsJSONArray = new JSONArray();
             for (String authType : authTypes) {
-                JSONArray accountsArray = new JSONArray();
+                JSONArray accountIds = new JSONArray();
+                JSONObject authTypeVsAccountsJSONObject = new JSONObject();
                 for (ConsentMappingResource mappingResource : mappingArray) {
                     if (mappingResource.getMappingStatus().equalsIgnoreCase("active") &&
                             authResourceMap.get(mappingResource.getAuthorizationID()).getUserID().equals(userId) &&
                             authResourceMap.get(mappingResource.getAuthorizationID()).getAuthorizationType()
                                     .equals(authType)) {
-                        accountsArray.add(mappingResource.getAccountID());
+                        accountIds.add(mappingResource.getAccountID());
                     }
                 }
-                if (!accountsArray.isEmpty()) {
-                    JSONObject userAuthTypeAccountsObject = new JSONObject();
-                    userAuthTypeAccountsObject.appendField("authType", authType);
-                    userAuthTypeAccountsObject.appendField("accountList", accountsArray);
-                    userAuthTypeAccountsArray.add(userAuthTypeAccountsObject);
+                if (!accountIds.isEmpty()) {
+                    authTypeVsAccountsJSONObject.put("authType", authType);
+                    authTypeVsAccountsJSONObject.put("accountList", accountIds);
+                }
+                if (!authTypeVsAccountsJSONObject.isEmpty()) {
+                    accountsJSONArray.add(authTypeVsAccountsJSONObject);
                 }
             }
-            if (!userAuthTypeAccountsArray.isEmpty()) {
-                userList.appendField(userId, userAuthTypeAccountsArray);
-            }
+            JSONObject userAccountsJSONObject = new JSONObject();
+            userAccountsJSONObject.put("userId", userId);
+            userAccountsJSONObject.put("accounts", accountsJSONArray);
+            userList.add(userAccountsJSONObject);
         }
         consentResource.appendField("userList", userList);
         return consentResource;
