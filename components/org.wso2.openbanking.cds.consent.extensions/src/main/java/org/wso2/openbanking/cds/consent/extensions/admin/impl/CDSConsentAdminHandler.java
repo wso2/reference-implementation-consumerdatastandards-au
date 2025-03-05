@@ -62,6 +62,7 @@ import java.util.stream.Collectors;
 
 import static org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY;
 import static org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants.CONSENT_STATUS_REVOKED;
+import static org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionConstants.NOMINATED_REPRESENTATIVE;
 import static org.wso2.openbanking.cds.consent.extensions.util.DataClusterSharingDateUtil.getSharingDateMap;
 
 /**
@@ -251,7 +252,8 @@ public class CDSConsentAdminHandler implements ConsentAdminHandler {
     private boolean isPrimaryUserRevoking(DetailedConsentResource detailedConsentResource, String userID) {
         for (AuthorizationResource authorizationResource : detailedConsentResource.getAuthorizationResources()) {
             if (userID.equals(authorizationResource.getUserID())) {
-                return AUTH_RESOURCE_TYPE_PRIMARY.equals(authorizationResource.getAuthorizationType());
+                return AUTH_RESOURCE_TYPE_PRIMARY.equals(authorizationResource.getAuthorizationType()) ||
+                        NOMINATED_REPRESENTATIVE.equals(authorizationResource.getAuthorizationType());
             }
         }
         return true;
