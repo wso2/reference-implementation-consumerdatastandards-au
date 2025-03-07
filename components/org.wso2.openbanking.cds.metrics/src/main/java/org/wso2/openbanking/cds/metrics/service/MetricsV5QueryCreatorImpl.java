@@ -161,10 +161,10 @@ public class MetricsV5QueryCreatorImpl implements MetricsQueryCreator {
     @Override
     public String getRejectionMetricsQuery() {
 
-        return "from API_INVOCATION_RAW_DATA on str:contains(API_NAME, 'ConsumerDataStandards') " +
-                "select count(STATUS_CODE) as throttleOutCount, TIMESTAMP, CONSUMER_ID group by TIMESTAMP, " +
-                "CONSUMER_ID having STATUS_CODE == 429 and TIMESTAMP > " + fromTimestampEpochSecond + " and " +
-                "TIMESTAMP < " + toTimestampEpochSecond + ";";
+        return "from API_INVOCATION_RAW_DATA on str:contains(API_NAME, 'ConsumerDataStandards') and " +
+                "STATUS_CODE == 429 and TIMESTAMP > " + fromTimestampEpochSecond + " and TIMESTAMP < " +
+                toTimestampEpochSecond + " select count(STATUS_CODE) as throttledOutCount, TIMESTAMP, CONSUMER_ID " +
+                "group by TIMESTAMP, CONSUMER_ID";
     }
 
     /**
