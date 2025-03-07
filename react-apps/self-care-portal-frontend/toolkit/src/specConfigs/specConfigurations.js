@@ -83,6 +83,20 @@ export const account_lang = [
         dataType: dataTypes.rawData,
       },
       {
+        heading: 'Profile',
+        dataOrigin: dataOrigins.consent,
+        dataParameterKey: 'consentAttributes.selectedProfileName',
+        failOverDataParameterKey: 'consentAttributes.selectedProfileId',
+        dataType: dataTypes.rawData,
+      },
+      {
+        heading: 'Authorized By',
+        dataOrigin: dataOrigins.consent,
+        dataParameterKey: 'user',
+        failOverDataParameterKey: '',
+        dataType: dataTypes.rawData,
+      },
+      {
         heading: 'Consented Date',
         dataOrigin: dataOrigins.consent,
         dataParameterKey: 'createdTimestamp',
@@ -136,6 +150,7 @@ export const account_lang = [
       },
     ],
     accountsInfoLabel: 'Accounts',
+    secondaryAccountsInfoLabel: 'Secondary Accounts',
     dataSharedLabel: 'Data we are sharing',
     accreditation: {
       accreditationLabel: 'Accreditation',
@@ -157,6 +172,20 @@ export const account_lang = [
         dataOrigin: dataOrigins.applicationInfo,
         dataParameterKey: 'client_name',
         failOverDataParameterKey: 'software_id',
+        dataType: dataTypes.rawData,
+      },
+      {
+        heading: 'Profile',
+        dataOrigin: dataOrigins.consent,
+        dataParameterKey: 'consentAttributes.selectedProfileName',
+        failOverDataParameterKey: 'consentAttributes.selectedProfileId',
+        dataType: dataTypes.rawData,
+      },
+      {
+        heading: 'Authorized By',
+        dataOrigin: dataOrigins.consent,
+        dataParameterKey: 'user',
+        failOverDataParameterKey: '',
         dataType: dataTypes.rawData,
       },
       {
@@ -202,6 +231,7 @@ export const account_lang = [
       },
     ],
     accountsInfoLabel: 'Accounts',
+    secondaryAccountsInfoLabel: 'Secondary Accounts',
     dataSharedLabel: 'Data we shared',
     accreditation: {
       accreditationLabel: 'Accreditation',
@@ -224,6 +254,20 @@ export const account_lang = [
         dataOrigin: dataOrigins.applicationInfo,
         dataParameterKey: 'client_name',
         failOverDataParameterKey: 'software_id',
+        dataType: dataTypes.rawData,
+      },
+      {
+        heading: 'Profile',
+        dataOrigin: dataOrigins.consent,
+        dataParameterKey: 'consentAttributes.selectedProfileName',
+        failOverDataParameterKey: 'consentAttributes.selectedProfileId',
+        dataType: dataTypes.rawData,
+      },
+      {
+        heading: 'Authorized By',
+        dataOrigin: dataOrigins.consent,
+        dataParameterKey: 'user',
+        failOverDataParameterKey: '',
         dataType: dataTypes.rawData,
       },
       {

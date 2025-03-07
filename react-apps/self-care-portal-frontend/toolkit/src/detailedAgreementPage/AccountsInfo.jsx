@@ -23,31 +23,60 @@ import { account_lang, specConfigurations } from '../specConfigs/specConfigurati
 import { permissionBindTypes } from '../specConfigs/common';
 
 export const AccountsInfo = ({ consent }) => {
-  const uniqueActiveAccountIds = [
-    ...new Set(
+  const uniqueActiveAccountIds = new Set(
        consent.consentMappingResources
         .filter((account) => 'active' === account.mappingStatus)
         .map((account) => account.accountId)
-    ),
-  ];
+      );
+
+      const activeSecondaryAccountIds = new Set();
+      for (let i = 0; i < consent.consentMappingResources.length; i++) {
+          const account = consent.consentMappingResources[i];
+          if (account.mappingStatus === 'active' && account.permission === 'secondary_account_user') {
+              activeSecondaryAccountIds.add(account.accountId);
+          }
+      }
+    
+      for (let id of activeSecondaryAccountIds) {
+        uniqueActiveAccountIds.delete(id);
+      }
+    
+      const accounts = Array.from(uniqueActiveAccountIds);
+      const secondaryAccounts = Array.from(activeSecondaryAccountIds);
 
   const keyDatesConfig = account_lang.filter((lbl) => lbl.id === consent.currentStatus.toLowerCase())[0];
 
     return (
-      <div className="accountsInfoBody mb-3">
-        {keyDatesConfig && uniqueActiveAccountIds.length > 0 && 
-        (specConfigurations.consent.permissionsView.permissionBindType ===
-        permissionBindTypes.samePermissionSetForAllAccounts) ? (
-          <>
-            <hr id = "sharingDetailsHr" className = "horizontalLine" />
-            <h5>{keyDatesConfig.accountsInfoLabel}</h5>
-            {uniqueActiveAccountIds.map((accountId, index) => (
-              <li className="permittedAccount" key={index}>{accountId}</li>
-            ))}
-          </>
-        ) : (
-          <></>
-        )}
-     </div>
+      <>
+        <div className="accountsInfoBody mb-3">
+          {keyDatesConfig && accounts.length > 0 && 
+          (specConfigurations.consent.permissionsView.permissionBindType ===
+          permissionBindTypes.samePermissionSetForAllAccounts) ? (
+            <>
+              <h5>{keyDatesConfig.accountsInfoLabel}</h5>
+              {accounts.map((accountId, index) => (
+                <li className="permittedAccount" key={index}>{accountId}</li>
+              ))}
+            </>
+          ) : (
+            <></>
+          )}
+        </div>
+
+        <div className="accountsInfoBody mb-3">
+          {keyDatesConfig && secondaryAccounts.length > 0 && 
+          (specConfigurations.consent.permissionsView.permissionBindType ===
+          permissionBindTypes.samePermissionSetForAllAccounts) ? (
+            <>
+              <h5 style={{ paddingTop: '7px' }}>{keyDatesConfig.secondaryAccountsInfoLabel}</h5>
+              {secondaryAccounts.map((accountId, index) => (
+                <li className="permittedSecondaryAccount" key={index}>{accountId}</li>
+              ))}
+            </>
+          ) : (
+            <></>
+          )}
+        </div>
+      </>
   );
 };
