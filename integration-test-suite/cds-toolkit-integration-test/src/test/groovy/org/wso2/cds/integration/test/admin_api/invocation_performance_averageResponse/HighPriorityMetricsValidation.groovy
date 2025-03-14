@@ -227,8 +227,8 @@ class HighPriorityMetricsValidation extends AUTest {
         Assert.assertEquals(metricsResponse.statusCode(), AUConstants.STATUS_CODE_200)
         Assert.assertEquals(metricsResponse.getHeader(AUConstants.X_V_HEADER).toInteger(), AUConstants.X_V_HEADER_METRICS)
 
-        //High Priority Invocation count increase by 1
-        highPriorityCurrentDay = highPriorityCurrentDay + 1
+        //High Priority Invocation count increase by 2 ( with `/par` )
+        highPriorityCurrentDay = highPriorityCurrentDay + 2
 
         //Unattended count increase by 1 for the Metrics Call of BeforeClass Step
         unattendedCurrentDay = unattendedCurrentDay + 1
@@ -379,8 +379,8 @@ class HighPriorityMetricsValidation extends AUTest {
 
         Assert.assertEquals(metricsResponse.statusCode(), AUConstants.STATUS_CODE_200)
 
-        //High Priority Invocation count increase by 3 (Authorisation + Token Request + API Request)
-        highPriorityCurrentDay = highPriorityCurrentDay + 3
+        //High Priority Invocation count increase by 3 (Authorisation + Token Request + API Request + par)
+        highPriorityCurrentDay = highPriorityCurrentDay + 4
         newAuthCurrentDayOngoingIndividual = newAuthCurrentDayOngoingIndividual + 1
         activeAuthIndividual = activeAuthIndividual + 1
 

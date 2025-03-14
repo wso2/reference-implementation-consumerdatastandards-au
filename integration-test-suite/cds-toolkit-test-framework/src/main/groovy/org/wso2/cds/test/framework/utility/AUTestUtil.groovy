@@ -564,7 +564,7 @@ class AUTestUtil extends OBTestUtil {
         def highPriorityResources = ["/discovery/status", "/discovery/outages",
                                      "/register",
                                      "/register/{ClientId}", "/", "/token", "/authorize", "/revoke", "/userinfo",
-                                     "/introspect", "/jwks", "/.well-known/openid-configuration"]
+                                     "/introspect", "/jwks", "/.well-known/openid-configuration", "/par"]
         def commonResources = ["/common/customer", "/common/customer/detail"]
         def accountsResources = ["/banking/accounts"]
 
@@ -615,7 +615,7 @@ class AUTestUtil extends OBTestUtil {
                                  "/banking/accounts/{accountId}/transactions/{transactionId}", "/banking/payees",
                                  "/banking/payees/{payeeId}", "/banking/accounts/{accountId}/direct-debits",
                                  "/banking/accounts/{accountId}/payments/scheduled", "/banking/payments/scheduled",
-                                 "/register/metadata", "/metrics", "/banking/accounts/direct-debits"]
+                                 "/register/metadata", "/metrics", "/banking/accounts/direct-debits", "/par"]
 
         def unauthenticatedList = ["/banking/products", "/banking/products/{productId}",
                                    "/discovery/status", "/discovery/outages"]
