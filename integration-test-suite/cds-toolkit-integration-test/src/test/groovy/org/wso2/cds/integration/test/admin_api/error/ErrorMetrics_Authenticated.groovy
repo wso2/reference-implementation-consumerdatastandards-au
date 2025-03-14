@@ -172,8 +172,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //High Priority Invocation count increase by 4
-        highPriorityCurrentDay = highPriorityCurrentDay + 4
+        //High Priority Invocation count increase by 3
+        highPriorityCurrentDay = highPriorityCurrentDay + 3
 
         //Unattended count increase by 1 for the Metrics Call of BeforeClass Step
         unattendedCurrentDay = unattendedCurrentDay + 1
@@ -205,7 +205,7 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //High Priority Invocation count increase by 0
+        //High Priority Invocation count increase by 1
         highPriorityCurrentDay = highPriorityCurrentDay
 
         //Unattended count increase by 1 for the Metrics Call of BeforeClass Step
@@ -373,8 +373,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //High Priority Invocation count increase by 3
-        highPriorityCurrentDay = highPriorityCurrentDay + 3
+        //High Priority Invocation count increase by 2
+        highPriorityCurrentDay = highPriorityCurrentDay + 2
 
         //Low Priority Invocation count increase by 1
         lowPriorityCurrentDay = lowPriorityCurrentDay + 1
@@ -409,8 +409,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //Low Priority Invocation count increase by 0
-        lowPriorityCurrentDay = lowPriorityCurrentDay
+        //Low Priority Invocation count increase by 1
+        lowPriorityCurrentDay = lowPriorityCurrentDay + 1
 
         //Unattended count increase by 1 for the Metrics Call of BeforeClass Step
         unattendedCurrentDay = unattendedCurrentDay + 1
@@ -620,8 +620,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //High Priority count increase by 3
-        highPriorityCurrentDay = highPriorityCurrentDay + 3
+        //High Priority count increase by 2
+        highPriorityCurrentDay = highPriorityCurrentDay + 2
 
         //Unattended count increase by 2 including Metrics Call of BeforeClass Step
         unattendedCurrentDay = unattendedCurrentDay + 2
@@ -653,8 +653,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //Unattended count increase by 1 including Metrics Call of BeforeClass Step
-        unattendedCurrentDay = unattendedCurrentDay + 1
+        //Unattended count increase by 2 including Metrics Call of BeforeClass Step
+        unattendedCurrentDay = unattendedCurrentDay + 2
 
         //Asserting the Performance, Average Response and Average TPS
         assertTierBasedMetrics(metricsResponse)
@@ -864,8 +864,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //High Priority count increase by 3 (`/par`, `/authorise`, `/token`)
-        highPriorityCurrentDay = highPriorityCurrentDay + 3
+        //High Priority count increase by 1
+        highPriorityCurrentDay = highPriorityCurrentDay + 2
 
         //Large Payload count increase by 1
         largePayloadCurrentDay = largePayloadCurrentDay + 1
@@ -900,8 +900,8 @@ class ErrorMetrics_Authenticated extends AUTest {
         //Asserting the Errors Metrics response
         assertMetricsErrorResponse(metricsResponse)
 
-        //Large Payload count increase by 0
-        largePayloadCurrentDay = largePayloadCurrentDay
+        //Large Payload count increase by 1
+        largePayloadCurrentDay = largePayloadCurrentDay + 1
 
         //Unattended count increase by 1 including Metrics Call of BeforeClass Step
         unattendedCurrentDay = unattendedCurrentDay + 1

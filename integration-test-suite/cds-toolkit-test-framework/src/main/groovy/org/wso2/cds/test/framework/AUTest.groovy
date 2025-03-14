@@ -1916,39 +1916,42 @@ class AUTest extends OBTest {
 
                 tier = AUTestUtil.getPriorityTier(row[1], row[3])
 
-                switch (tier) {
-                    case AUConstants.UNAUTHENTICATED:
-                        totalInvocationsUnAuthPerf = totalInvocationsUnAuthPerf + 1
-                        if (responseTime <= 1500){
-                            withinThreshold[0]++
-                        }
-                        break
-                    case AUConstants.HIGH_PRIORITY:
-                        totalInvocationsHighPerf = totalInvocationsHighPerf + 1
-                        if (responseTime <= 1000){
-                            withinThreshold[1]++
-                        }
-                        break
-                    case AUConstants.LOW_PRIORITY:
-                        totalInvocationsLowPerf = totalInvocationsLowPerf + 1
-                        if (responseTime <= 1500){
-                            withinThreshold[2]++
-                        }
-                        break
-                    case AUConstants.UNATTENDED:
-                        totalInvocationsUnattendedPerf = totalInvocationsUnattendedPerf + 1
-                        if (responseTime <= 4000){
-                            withinThreshold[3]++
-                        }
-                        break
-                    case AUConstants.LARGE_PAYLOAD:
-                        totalInvocationsLargePayPerf = totalInvocationsLargePayPerf + 1
-                        if (responseTime <= 6000){
-                            withinThreshold[4]++
-                        }
-                        break
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + tier + " for " + row[1])
+                if(!row[1].equals("/par")) {
+
+                    switch (tier) {
+                        case AUConstants.UNAUTHENTICATED:
+                            totalInvocationsUnAuthPerf = totalInvocationsUnAuthPerf + 1
+                            if (responseTime <= 1500){
+                                withinThreshold[0]++
+                            }
+                            break
+                        case AUConstants.HIGH_PRIORITY:
+                            totalInvocationsHighPerf = totalInvocationsHighPerf + 1
+                            if (responseTime <= 1000){
+                                withinThreshold[1]++
+                            }
+                            break
+                        case AUConstants.LOW_PRIORITY:
+                            totalInvocationsLowPerf = totalInvocationsLowPerf + 1
+                            if (responseTime <= 1500){
+                                withinThreshold[2]++
+                            }
+                            break
+                        case AUConstants.UNATTENDED:
+                            totalInvocationsUnattendedPerf = totalInvocationsUnattendedPerf + 1
+                            if (responseTime <= 4000){
+                                withinThreshold[3]++
+                            }
+                            break
+                        case AUConstants.LARGE_PAYLOAD:
+                            totalInvocationsLargePayPerf = totalInvocationsLargePayPerf + 1
+                            if (responseTime <= 6000){
+                                withinThreshold[4]++
+                            }
+                            break
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + tier + " for " + row[1])
+                    }
                 }
             }
         }
@@ -2258,29 +2261,32 @@ class AUTest extends OBTest {
 
                 tier = AUTestUtil.getPriorityTier(row[1], row[3])
 
-                switch (tier) {
-                    case AUConstants.UNAUTHENTICATED:
-                        totalInvocationsUnAuthAvg = totalInvocationsUnAuthAvg + 1
-                        sumResponseTime[0] += responseTime
-                        break
-                    case AUConstants.HIGH_PRIORITY:
-                        totalInvocationsHighAvg = totalInvocationsHighAvg + 1
-                        sumResponseTime[1] += responseTime
-                        break
-                    case AUConstants.LOW_PRIORITY:
-                        totalInvocationsLowAvg = totalInvocationsLowAvg + 1
-                        sumResponseTime[2] += responseTime
-                        break
-                    case AUConstants.UNATTENDED:
-                        totalInvocationsUnattendedAvg = totalInvocationsUnattendedAvg + 1
-                        sumResponseTime[3] += responseTime
-                        break
-                    case AUConstants.LARGE_PAYLOAD:
-                        totalInvocationsLargePayAvg = totalInvocationsLargePayAvg + 1
-                        sumResponseTime[4] += responseTime
-                        break
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + tier + " for " + row[1])
+                if(!row[1].equals("/par")) {
+
+                    switch (tier) {
+                        case AUConstants.UNAUTHENTICATED:
+                            totalInvocationsUnAuthAvg = totalInvocationsUnAuthAvg + 1
+                            sumResponseTime[0] += responseTime
+                            break
+                        case AUConstants.HIGH_PRIORITY:
+                            totalInvocationsHighAvg = totalInvocationsHighAvg + 1
+                            sumResponseTime[1] += responseTime
+                            break
+                        case AUConstants.LOW_PRIORITY:
+                            totalInvocationsLowAvg = totalInvocationsLowAvg + 1
+                            sumResponseTime[2] += responseTime
+                            break
+                        case AUConstants.UNATTENDED:
+                            totalInvocationsUnattendedAvg = totalInvocationsUnattendedAvg + 1
+                            sumResponseTime[3] += responseTime
+                            break
+                        case AUConstants.LARGE_PAYLOAD:
+                            totalInvocationsLargePayAvg = totalInvocationsLargePayAvg + 1
+                            sumResponseTime[4] += responseTime
+                            break
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + tier + " for " + row[1])
+                    }
                 }
             }
         }
@@ -2314,15 +2320,18 @@ class AUTest extends OBTest {
 
                 resourceType = AUTestUtil.getAuthenticatedResources(row[1])
 
-                switch (resourceType) {
-                    case AUConstants.UNAUTHENTICATED:
-                        totalResourceCount[0]++
-                        break
-                    case AUConstants.AUTHENTICATED:
-                        totalResourceCount[1]++
-                        break
-                    default:
-                        throw new IllegalStateException("Unexpected value: " + resourceType + " for " + row[1])
+                if (!row[1].equals("/par")) {
+
+                    switch (resourceType) {
+                        case AUConstants.UNAUTHENTICATED:
+                            totalResourceCount[0]++
+                            break
+                        case AUConstants.AUTHENTICATED:
+                            totalResourceCount[1]++
+                            break
+                        default:
+                            throw new IllegalStateException("Unexpected value: " + resourceType + " for " + row[1])
+                    }
                 }
             }
         }
