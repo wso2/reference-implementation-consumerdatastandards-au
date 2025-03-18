@@ -953,7 +953,7 @@ dataholder_responsibilities.bulk_execution_hour=2
 name = "x-v"
 value = "2"
 [[open_banking_cds.metadata_cache.register_api_request.header]]
-name = "x_min_v"
+name = "x-min-v"
 value = "1"
 
 [open_banking_cds.recipient_consent_revocation_endpoint]
