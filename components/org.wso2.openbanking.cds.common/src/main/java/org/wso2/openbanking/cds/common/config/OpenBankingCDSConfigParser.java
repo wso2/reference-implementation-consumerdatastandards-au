@@ -42,6 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
+import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -346,6 +347,34 @@ public class OpenBankingCDSConfigParser {
             return (String) config;
         }
         return CommonConstants.DEFAULT_SOFTWARE_PRODUCT_STATUS_URL;
+    }
+
+    /**
+     * Get CDS Register API request headers.
+     *
+     * @return - Map of configured headers for register API
+     */
+    public Map<String, String> getRegisterApiRequestHeaders() {
+
+        Map<String, String> headersMap = new HashMap<>();
+        OMElement metadataCacheElement = rootElement.getFirstChildWithName(
+                new QName(CommonConstants.OB_CDS_CONFIG_QNAME, CommonConstants.METADATA_CACHE));
+
+        if (metadataCacheElement != null) {
+            OMElement registerApiHeadersElement = metadataCacheElement.getFirstChildWithName(
+                    new QName(CommonConstants.OB_CDS_CONFIG_QNAME, CommonConstants.REGISTER_API_REQUEST_HEADERS_TAG));
+
+            if (registerApiHeadersElement != null) {
+                Iterator headerElements = registerApiHeadersElement.getChildElements();
+                while (headerElements.hasNext()) {
+                    OMElement headerElement = (OMElement) headerElements.next();
+                    String headerName = headerElement.getAttributeValue(new QName("name"));
+                    String headerValue = headerElement.getAttributeValue(new QName("value"));
+                    headersMap.put(headerName, headerValue);
+                }
+            }
+        }
+        return headersMap;
     }
 
     /**

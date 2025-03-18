@@ -117,6 +117,13 @@
         {% else %}
         <SoftwareProductStatusURL>https://api.cdr.gov.au/cdr-register/v1/banking/data-recipients/brands/software-products/status</SoftwareProductStatusURL>
         {% endif %}
+        {% if open_banking_cds.metadata_cache.register_api_request.header is defined %}
+        <CDRRegisterAPIHeaders>
+            {% for header in open_banking_cds.metadata_cache.register_api_request.header %}
+                <Header name="{{header.name}}" value="{{header.value}}"/>
+            {% endfor %}
+        </CDRRegisterAPIHeaders>
+        {% endif %}
         {% if open_banking_cds.metadata_cache.dcr_internal_url is defined %}
         <DCRInternalURL>{{open_banking_cds.metadata_cache.dcr_internal_url}}</DCRInternalURL>
         {% else %}

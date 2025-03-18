@@ -42,6 +42,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 
 /**
  * Test class for metadata Utils.
@@ -59,12 +60,12 @@ public class UtilsTest extends PowerMockTestCase {
 
     @Test
     public void testReadJsonFromUrl() throws OpenBankingException, IOException {
-        Assert.assertNull(Utils.readJsonFromUrl(""));
-        Assert.assertNull(Utils.readJsonFromUrl(TEST_URL));
-        Assert.assertThrows(OpenBankingException.class, () -> Utils.readJsonFromUrl(TEST_URL));
-        Assert.assertNotNull(Utils.readJsonFromUrl(TEST_URL));
-        Assert.assertNull(Utils.readJsonFromUrl(TEST_URL));
-        Assert.assertThrows(OpenBankingException.class, () -> Utils.readJsonFromUrl(TEST_URL));
+        Assert.assertNull(Utils.readJsonFromUrl("", new HashMap<>()));
+        Assert.assertNull(Utils.readJsonFromUrl(TEST_URL, new HashMap<>()));
+        Assert.assertThrows(OpenBankingException.class, () -> Utils.readJsonFromUrl(TEST_URL, new HashMap<>()));
+        Assert.assertNotNull(Utils.readJsonFromUrl(TEST_URL, new HashMap<>()));
+        Assert.assertNull(Utils.readJsonFromUrl(TEST_URL, new HashMap<>()));
+        Assert.assertThrows(OpenBankingException.class, () -> Utils.readJsonFromUrl(TEST_URL, new HashMap<>()));
     }
 
     private void mockHttpGetResponse() throws IOException, OpenBankingException {

@@ -35,6 +35,7 @@ import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Utility functions to perform tasks.
@@ -53,12 +54,14 @@ public class Utils {
     //                                       resource is being referred within the try block. This is a known issue in
     //                                       the plugin and therefore it is being suppressed.
     //                                       https://github.com/spotbugs/spotbugs/issues/1694
-    public static JSONObject readJsonFromUrl(String url) throws IOException, OpenBankingException {
+    public static JSONObject readJsonFromUrl(String url, Map<String, String> registerApiRequestHeaders)
+            throws IOException, OpenBankingException {
 
         if (!StringUtils.isEmpty(url)) {
             try (CloseableHttpClient httpclient = HTTPClientUtils.getHttpsClient()) {
 
                 HttpGet httpGet = new HttpGet(url);
+                setRequestHeaders(httpGet, registerApiRequestHeaders);
                 CloseableHttpResponse response = httpclient.execute(httpGet);
 
                 return getResponseJson(response);
@@ -68,6 +71,20 @@ public class Utils {
             }
         }
         return null;
+    }
+
+    /**
+     * Set request headers to the HttpGet request.
+     *
+     * @param httpGet                   HttpGet request
+     * @param registerApiRequestHeaders Request headers
+     */
+    private static void setRequestHeaders(HttpGet httpGet, Map<String, String> registerApiRequestHeaders) {
+        if (registerApiRequestHeaders != null) {
+            for (Map.Entry<String, String> entry : registerApiRequestHeaders.entrySet()) {
+                httpGet.addHeader(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     private static JSONObject getResponseJson(HttpResponse response) throws IOException, OpenBankingException {
