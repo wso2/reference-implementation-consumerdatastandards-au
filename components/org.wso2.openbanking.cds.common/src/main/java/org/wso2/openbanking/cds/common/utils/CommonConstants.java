@@ -22,6 +22,7 @@ package org.wso2.openbanking.cds.common.utils;
  */
 public class CommonConstants {
 
+    public static final String OB_CDS_CONFIG_QNAME = "http://wso2.org/projects/carbon/open-banking-cds.xml";
     public static final String OB_CONSENT_ID_PREFIX = "OB_CONSENT_ID_";
     public static final String CDS_API_CONTEXT_PREFIX = "cds-au";
     public static final String REQUEST = "request";
@@ -68,6 +69,7 @@ public class CommonConstants {
 
     // metadata config constants
     public static final String METADATA_CACHE = "MetaDataCache";
+    public static final String REGISTER_API_REQUEST_HEADERS_TAG = "CDRRegisterAPIHeaders";
     public static final String METADATA_CACHE_ENABLED = METADATA_CACHE + ".EnableMetaDataCache";
     public static final String METADATA_CACHE_UPDATE_TIME = METADATA_CACHE + ".MetaDataCacheUpdatePeriod";
     public static final String METADATA_CACHE_DATA_RECIPIENTS_URL = METADATA_CACHE + ".DataRecipientsDiscoveryURL";

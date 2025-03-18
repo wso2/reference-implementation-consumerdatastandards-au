@@ -948,6 +948,14 @@ http_request_retry_count=2
 dataholder_responsibilities.bulk_execution=true
 dataholder_responsibilities.bulk_execution_hour=2
 
+# Metadata_cache register API Headers
+[[open_banking_cds.metadata_cache.register_api_request.header]]
+name = "x-v"
+value = "2"
+[[open_banking_cds.metadata_cache.register_api_request.header]]
+name = "x_min_v"
+value = "1"
+
 [open_banking_cds.recipient_consent_revocation_endpoint]
 enable=false
 

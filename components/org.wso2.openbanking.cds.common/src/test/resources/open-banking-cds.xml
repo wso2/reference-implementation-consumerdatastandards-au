@@ -44,6 +44,10 @@
         <DataRecipientsDiscoveryURL>https://test-discovery/</DataRecipientsDiscoveryURL>
         <DataRecipientStatusURL>https://test-dr/</DataRecipientStatusURL>
         <SoftwareProductStatusURL>https://test-sp/</SoftwareProductStatusURL>
+        <CDRRegisterAPIHeaders>
+            <Header name="x-v" value="2"/>
+            <Header name="x_min_v" value="1"/>
+        </CDRRegisterAPIHeaders>
         <DCRInternalURL>https://localhost:9446/api/openbanking/dynamic-client-registration/register</DCRInternalURL>
         <APIMApplicationSearchURL>https://localhost:9443/api/am/admin/v2/applications</APIMApplicationSearchURL>
         <RetryCount>3</RetryCount>

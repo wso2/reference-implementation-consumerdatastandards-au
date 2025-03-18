@@ -126,10 +126,14 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
         try {
             Retryer<JSONObject> retryer = new Retryer<>(1000, OpenBankingCDSConfigParser.getInstance().
                     getRetryCount());
+            Map<String, String> registerApiRequestHeaders =
+                    OpenBankingCDSConfigParser.getInstance().getRegisterApiRequestHeaders();
             JSONObject drStatusResponseJson = retryer.execute(() -> Utils
-                    .readJsonFromUrl(OpenBankingCDSConfigParser.getInstance().getDataRecipientStatusUrl()));
+                    .readJsonFromUrl(OpenBankingCDSConfigParser.getInstance().getDataRecipientStatusUrl(),
+                            registerApiRequestHeaders));
             JSONObject spStatusResponseJson = retryer.execute(() -> Utils
-                    .readJsonFromUrl(OpenBankingCDSConfigParser.getInstance().getSoftwareProductStatusUrl()));
+                    .readJsonFromUrl(OpenBankingCDSConfigParser.getInstance().getSoftwareProductStatusUrl(),
+                            registerApiRequestHeaders));
 
             if (drStatusResponseJson == null || spStatusResponseJson == null) {
                 // CDR response is null, possible because Common HttpPool is not initialized yet.
