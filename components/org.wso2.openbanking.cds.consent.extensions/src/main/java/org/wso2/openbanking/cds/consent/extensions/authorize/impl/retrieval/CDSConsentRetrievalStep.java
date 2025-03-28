@@ -140,7 +140,7 @@ public class CDSConsentRetrievalStep implements ConsentRetrievalStep {
                                     matchedAuthResourcesForUser.add(authResource);
                                 }
                             }
-                            if (matchedAuthResourcesForUser.size() > 1){
+                            if (matchedAuthResourcesForUser.size() > 1) {
                                 // multiple auth resources found for the user, checking auth type `primary_member`
                                 for (AuthorizationResource authResource : matchedAuthResourcesForUser) {
                                     if (CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY.equals(
