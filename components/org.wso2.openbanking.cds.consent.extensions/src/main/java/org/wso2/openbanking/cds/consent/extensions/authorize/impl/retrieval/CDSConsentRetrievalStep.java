@@ -134,12 +134,35 @@ public class CDSConsentRetrievalStep implements ConsentRetrievalStep {
                             consentData.setUserId(userId);
                             String authId = null;
                             String authStatus = null;
+                            ArrayList<AuthorizationResource> matchedAuthResourcesForUser = new ArrayList<>();
                             for (AuthorizationResource authResource : authResourceList) {
                                 if (userId.equals(authResource.getUserID())) {
-                                    authId = authResource.getAuthorizationID();
-                                    authStatus = authResource.getAuthorizationStatus();
+                                    matchedAuthResourcesForUser.add(authResource);
                                 }
                             }
+                            if (matchedAuthResourcesForUser.size() > 1) {
+                                // multiple auth resources found for the user, checking auth type `primary_member`
+                                for (AuthorizationResource authResource : matchedAuthResourcesForUser) {
+                                    if (CDSConsentExtensionConstants.AUTH_RESOURCE_TYPE_PRIMARY.equals(
+                                            authResource.getAuthorizationType())) {
+                                        authId = authResource.getAuthorizationID();
+                                        authStatus = authResource.getAuthorizationStatus();
+                                        break;
+                                    }
+                                }
+                                // if no primary_member auth resource found, taking the last one
+                                // This is to preserve the existing behavior.
+                                if (authId == null || authStatus == null) {
+                                    authId = matchedAuthResourcesForUser.get(matchedAuthResourcesForUser.size() - 1).
+                                            getAuthorizationID();
+                                    authStatus = matchedAuthResourcesForUser.
+                                            get(matchedAuthResourcesForUser.size() - 1).getAuthorizationStatus();
+                                }
+                            } else if (matchedAuthResourcesForUser.size() == 1) {
+                                authId = matchedAuthResourcesForUser.get(0).getAuthorizationID();
+                                authStatus = matchedAuthResourcesForUser.get(0).getAuthorizationStatus();
+                            }
+
                             if (authId == null || authStatus == null) {
                                 String errorMessage = String.format("There's no authorization resource " +
                                                 "corresponds to consent id %s and user id %s.", consentId,
