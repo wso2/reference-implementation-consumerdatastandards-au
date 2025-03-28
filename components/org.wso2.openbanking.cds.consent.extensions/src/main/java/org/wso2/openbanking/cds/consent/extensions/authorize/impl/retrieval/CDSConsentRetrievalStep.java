@@ -150,6 +150,14 @@ public class CDSConsentRetrievalStep implements ConsentRetrievalStep {
                                         break;
                                     }
                                 }
+                                // if no primary_member auth resource found, taking the last one
+                                // This is to preserve the existing behavior.
+                                if (authId == null || authStatus == null) {
+                                    authId = matchedAuthResourcesForUser.get(matchedAuthResourcesForUser.size() - 1).
+                                            getAuthorizationID();
+                                    authStatus = matchedAuthResourcesForUser.
+                                            get(matchedAuthResourcesForUser.size() - 1).getAuthorizationStatus();
+                                }
                             } else if (matchedAuthResourcesForUser.size() == 1) {
                                 authId = matchedAuthResourcesForUser.get(0).getAuthorizationID();
                                 authStatus = matchedAuthResourcesForUser.get(0).getAuthorizationStatus();

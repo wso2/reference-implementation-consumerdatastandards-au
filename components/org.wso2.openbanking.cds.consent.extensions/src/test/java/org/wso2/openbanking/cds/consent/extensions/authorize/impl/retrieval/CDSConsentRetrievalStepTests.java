@@ -272,6 +272,79 @@ public class CDSConsentRetrievalStepTests extends PowerMockTestCase {
         Assert.assertTrue(!jsonObject.isEmpty());
     }
 
+    @Test(priority = 2)
+    public void testConsentRetrievalWithConsentAmendmentPrimaryUser() throws OpenBankingException {
+
+        PowerMockito.mockStatic(CDSConsentCommonUtil.class);
+        Mockito.when(CDSConsentCommonUtil.getUserIdWithTenantDomain(anyString())).
+                thenReturn("user1@wso2.com@carbon.super");
+        JSONObject jsonObject = new JSONObject();
+
+
+        String request = "request=" + CDSConsentAuthorizeTestConstants.VALID_AMENDMENT_REQUEST_OBJECT;
+        String redirectUri = "redirect_uri=https://www.google.com/redirects/redirect1&";
+        String scopeString = "common:customer.basic:read common:customer.detail:read openid profile";
+        String clientId = "client-id";
+        String spFullName = "sp-full-name";
+        String sampleQueryParams = redirectUri + request;
+        final String userId = "user1@wso2.com@carbon.super";
+        PowerMockito.stub(PowerMockito.method(CDSDataRetrievalUtil.class, "getServiceProviderFullName"))
+                .toReturn(spFullName);
+
+        ConsentData testConsentData = new ConsentData("",userId,sampleQueryParams,scopeString,clientId,
+                new HashMap<>());
+        testConsentData.setRegulatory(true);
+        testConsentData.setClientId(clientId);
+
+
+        final String receipt = "{\"accountData\":{\"permissions\":[\"CDRREADACCOUNTSBASIC\"], " +
+                "\"expirationDateTime\": \"" + LocalDateTime.now(ZoneOffset.UTC).plusDays(1L) + "Z\"}}";
+
+        AuthorizationResource authorizationResource = new AuthorizationResource();
+        authorizationResource.setUserID(userId);
+        authorizationResource.setAuthorizationID("AUTH_ID_NON_PRIMARY");
+        authorizationResource.setAuthorizationStatus("authorized");
+        authorizationResource.setAuthorizationType("non_primary_member");
+        ArrayList<AuthorizationResource> authResourceList = new ArrayList<>();
+        authResourceList.add(authorizationResource);
+
+        ConsentMappingResource consentMappingResource = new ConsentMappingResource();
+        consentMappingResource.setMappingStatus("active");
+        consentMappingResource.setAccountID("ACCOUNT_123");
+        ArrayList<ConsentMappingResource> mappingResourceList = new ArrayList<>();
+        mappingResourceList.add(consentMappingResource);
+
+        // adding second auth resource
+        AuthorizationResource authorizationResource2 = new AuthorizationResource();
+        authorizationResource2.setUserID(userId);
+        authorizationResource2.setAuthorizationID("AUTH_ID_PRIMARY");
+        authorizationResource2.setAuthorizationStatus("authorized");
+        authorizationResource2.setAuthorizationType("primary_member");
+        authResourceList.add(authorizationResource2);
+
+        ConsentMappingResource consentMappingResource2 = new ConsentMappingResource();
+        consentMappingResource2.setMappingStatus("active");
+        consentMappingResource2.setAccountID("ACCOUNT_123");
+        mappingResourceList.add(consentMappingResource2);
+
+        DetailedConsentResource detailedConsentResource = new DetailedConsentResource();
+        detailedConsentResource.setReceipt(receipt);
+        detailedConsentResource.setAuthorizationResources(authResourceList);
+        detailedConsentResource.setConsentMappingResources(mappingResourceList);
+        Map<String, String> consentAttributes = new HashMap<>();
+        consentAttributes.put(CDSConsentExtensionConstants.SELECTED_PROFILE_ID,
+                CDSConsentExtensionConstants.INDIVIDUAL_PROFILE_ID);
+        detailedConsentResource.setConsentAttributes(consentAttributes);
+
+        ConsentCoreServiceImpl consentCoreServiceMock = mock(ConsentCoreServiceImpl.class);
+        when(consentCoreServiceMock.getDetailedConsent(anyString())).thenReturn(detailedConsentResource);
+
+        new CDSConsentRetrievalStep(consentCoreServiceMock).execute(testConsentData, jsonObject);
+        Assert.assertTrue(!jsonObject.isEmpty());
+        Assert.assertEquals(testConsentData.getMetaDataMap().get(CDSConsentExtensionConstants.AUTH_RESOURCE_ID),
+                "AUTH_ID_PRIMARY");
+    }
+
     @Test(expectedExceptions = ConsentException.class, priority = 2)
     public void testConsentRetrievalWithConsentAmendmentAndExpiredConsent() throws OpenBankingException {
 
