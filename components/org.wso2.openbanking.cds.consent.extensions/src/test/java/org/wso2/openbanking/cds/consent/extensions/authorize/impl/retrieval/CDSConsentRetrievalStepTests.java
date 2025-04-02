@@ -291,8 +291,8 @@ public class CDSConsentRetrievalStepTests extends PowerMockTestCase {
         PowerMockito.stub(PowerMockito.method(CDSDataRetrievalUtil.class, "getServiceProviderFullName"))
                 .toReturn(spFullName);
 
-        ConsentData testConsentData = new ConsentData("",userId,sampleQueryParams,scopeString,clientId,
-                new HashMap<>());
+        ConsentData testConsentData = new ConsentData("", userId, sampleQueryParams, scopeString,
+                clientId, new HashMap<>());
         testConsentData.setRegulatory(true);
         testConsentData.setClientId(clientId);
 
