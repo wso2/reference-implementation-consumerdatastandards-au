@@ -56,11 +56,15 @@ rm ${WSO2_OB_BI_HOME}/deployment/siddhi-files/APILatencyRawDataApp.siddhi
 
 echo -e "\nRemoving default AccessTokenRawDataApp\n"
 echo -e "================================================\n"
-rm ${WSO2_OB_BI_HOME}/deployment/siddhi-files/AccessTokenRawDataApp.siddhi
+if [ -f "${WSO2_OB_BI_HOME}/deployment/siddhi-files/AccessTokenRawDataApp.siddhi" ]; then
+  rm "${WSO2_OB_BI_HOME}/deployment/siddhi-files/AccessTokenRawDataApp.siddhi"
+fi
 
 echo -e "\nRemoving default AuthenticationDataSubmissionApp\n"
 echo -e "================================================\n"
-rm ${WSO2_OB_BI_HOME}/deployment/siddhi-files/AuthenticationDataSubmissionApp.siddhi
+if [ -f "${WSO2_OB_BI_HOME}/deployment/siddhi-files/AuthenticationDataSubmissionApp.siddhi" ]; then
+  rm ${WSO2_OB_BI_HOME}/deployment/siddhi-files/AuthenticationDataSubmissionApp.siddhi
+fi
 
 echo -e "\nCopying open banking artifacts\n"
 echo -e "================================================\n"
