@@ -103,7 +103,7 @@
                 <div class="col-md-12 ui box">
                     <h3 class="ui header"><strong>${sp_full_name}
                     </strong> requests account details on your account.</h3>
-    
+
                     <% if (!skipAccounts) { %>
                         <div class="padding-top">
                             <h4 class="section-heading-5 ui subheading">
@@ -252,7 +252,6 @@
                         <input type="hidden" name="type" id="type" value="accounts"/>
                         <input type="hidden" name="accounts[]" id="account" value="${accounts}">
                         <input type="hidden" name="spFullName" id="spFullName" value="${sp_full_name}"/>
-                        <input type="hidden" name="user" id="user" value="${userName}"/>
                         <input type="hidden" name="selectedProfileId" id="selectedProfileId" value="${selectedProfileId}"/>
                         <input type="hidden" name="selectedProfileName" id="selectedProfileName" value="${selectedProfileName}"/>
                     </div>
