@@ -63,6 +63,15 @@ public class MetricsApiImpl implements MetricsApi {
                     "Requested x-v version is not supported", new CDSErrorMeta()));
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(ErrorUtil.getErrorJson(errorList)).build();
         }
+
+        if (!PeriodEnum.isValidPeriodEnum(period)) {
+            log.error("Error occurred due to invalid period value.");
+            JSONArray errorList = new JSONArray();
+            errorList.add(ErrorUtil.getErrorObject(ErrorConstants.AUErrorEnum.INVALID_FIELD,
+                    "Requested period value is invalid", new CDSErrorMeta()));
+            return Response.status(Response.Status.BAD_REQUEST).entity(ErrorUtil.getErrorJson(errorList)).build();
+        }
+
         PeriodEnum periodEnum = PeriodEnum.fromString(period);
 
         try {

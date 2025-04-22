@@ -48,4 +48,21 @@ public enum PeriodEnum {
         return String.valueOf(text);
     }
 
+    /**
+     * Check if the given period is valid enum value
+     * Valid values : CURRENT, HISTORIC, ALL
+     * As defined in the specification values MUST be in all caps.
+     *
+     * @param period - Period to be checked
+     * @return - true if the period is valid, false otherwise
+     */
+    public static boolean isValidPeriodEnum(String period) {
+        for (PeriodEnum periodEnum : PeriodEnum.values()) {
+            if (periodEnum.name().equals(period)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }
