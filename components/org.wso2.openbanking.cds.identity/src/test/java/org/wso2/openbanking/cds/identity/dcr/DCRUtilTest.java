@@ -343,6 +343,9 @@ public class DCRUtilTest {
         cdsConfigMap.put("DCR.EnableURIValidation", "false");
         registrationRequest = getRegistrationRequestObject(RegistrationTestConstants.extendedRegistrationRequestJson);
         initiateData();
+        mockStatic(OpenBankingConfigParser.class);
+        openBankingConfigParser = mock(OpenBankingConfigParser.class);
+        when(OpenBankingConfigParser.getInstance()).thenReturn(openBankingConfigParser);
         try {
             extendedValidator.validatePost(registrationRequest);
         } catch (DCRValidationException e) {
@@ -357,6 +360,9 @@ public class DCRUtilTest {
         cdsConfigMap.put("DCR.EnableURIValidation", "false");
         registrationRequest = getRegistrationRequestObject(RegistrationTestConstants.extendedRegistrationRequestJson);
         initiateData();
+        mockStatic(OpenBankingConfigParser.class);
+        openBankingConfigParser = mock(OpenBankingConfigParser.class);
+        when(OpenBankingConfigParser.getInstance()).thenReturn(openBankingConfigParser);
         try {
             extendedValidator.validateUpdate(registrationRequest);
         } catch (DCRValidationException e) {
