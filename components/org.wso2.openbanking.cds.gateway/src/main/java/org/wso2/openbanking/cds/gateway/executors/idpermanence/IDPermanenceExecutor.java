@@ -71,7 +71,8 @@ public class IDPermanenceExecutor implements OpenBankingGatewayExecutor {
             if (requestBody != null && !GatewayConstants.EMPTY_SOAP_BODY.equals(requestBody)) {
                 try {
                     payloadJson = gson.fromJson(requestBody, JsonObject.class);
-                    idPermanenceValidationResponse = IdPermanenceUtils.unmaskRequestBodyAccountIDs(payloadJson, SECRET_KEY);
+                    idPermanenceValidationResponse =
+                            IdPermanenceUtils.unmaskRequestBodyAccountIDs(payloadJson, SECRET_KEY);
                 } catch (JsonSyntaxException e) {
                     if (log.isDebugEnabled()) {
                         log.debug("Unexpected error while parsing request body", e);
