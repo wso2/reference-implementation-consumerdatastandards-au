@@ -552,6 +552,7 @@
         <carbon.kernel.version>4.6.0</carbon.kernel.version>
         <carbon.identity.clientauth.jwt.version>2.2.0</carbon.identity.clientauth.jwt.version>
         <quartz.version>2.1.1.wso2v1</quartz.version>
+        <quartz.osgi.version.range>[2.1.1, 2.3.2)</quartz.osgi.version.range>
         <carbon.analytics.common.version>6.1.66</carbon.analytics.common.version>
     </properties>
 
