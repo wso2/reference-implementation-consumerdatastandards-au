@@ -48,7 +48,7 @@ fi
 
 echo -e "\nRemoving default backend war\n"
 echo -e "================================================\n"
-rm ${WSO2_OB_APIM_HOME}/repository/deployment/server/webapps/api#openbanking#backend.war
+rm -f ${WSO2_OB_APIM_HOME}/repository/deployment/server/webapps/api#openbanking#backend.war
 
 echo -e "\nRemoving old open banking artifacts from the base product\n"
 echo -e "================================================\n"
