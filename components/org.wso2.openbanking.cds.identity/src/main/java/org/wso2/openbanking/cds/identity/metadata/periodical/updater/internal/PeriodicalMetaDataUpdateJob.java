@@ -44,6 +44,7 @@ import org.wso2.openbanking.cds.identity.metadata.periodical.updater.utils.Utils
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -187,7 +188,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
         Map<String, String> dataRecipientsMap = new HashMap<>();
         for (int jsonElementIndex = 0; jsonElementIndex < dataRecipientsArray.length(); jsonElementIndex++) {
             JSONObject softwareProduct = dataRecipientsArray.getJSONObject(jsonElementIndex);
-            dataRecipientsMap.put(softwareProduct.getString(STATUS_JSON_LEGAL_ENTITY_KEY),
+            dataRecipientsMap.put(softwareProduct.getString(STATUS_JSON_LEGAL_ENTITY_KEY).toLowerCase(Locale.ENGLISH),
                     softwareProduct.getString(STATUS));
         }
         return dataRecipientsMap;
@@ -206,7 +207,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
         Map<String, String> softwareProductsMap = new HashMap<>();
         for (int jsonElementIndex = 0; jsonElementIndex < softwareProductsArray.length(); jsonElementIndex++) {
             JSONObject softwareProduct = softwareProductsArray.getJSONObject(jsonElementIndex);
-            softwareProductsMap.put(softwareProduct.getString(STATUS_JSON_SP_KEY),
+            softwareProductsMap.put(softwareProduct.getString(STATUS_JSON_SP_KEY).toLowerCase(Locale.ENGLISH),
                     softwareProduct.getString(STATUS));
         }
         return softwareProductsMap;
@@ -242,8 +243,8 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
             String dataRecipientId = getIdFromProperties(serviceProvider.getSpProperties(), LEGAL_ENTITY_ID);
             String softwareProductId = getIdFromProperties(serviceProvider.getSpProperties(), SOFTWARE_ID);
 
-            String dataRecipientsStatus = dataRecipientsMap.get(dataRecipientId);
-            String softwareProductsStatus = softwareProductsMap.get(softwareProductId);
+            String dataRecipientsStatus = dataRecipientsMap.get(dataRecipientId.toLowerCase(Locale.ENGLISH));
+            String softwareProductsStatus = softwareProductsMap.get(softwareProductId.toLowerCase(Locale.ENGLISH));
 
             if (dataRecipientsStatus != null && softwareProductsStatus != null) {
 
