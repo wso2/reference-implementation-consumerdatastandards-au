@@ -20,7 +20,7 @@
 @App:description("Summarizes the API invocation data while keeping the first and last sharing dates for each consentID and resource.")
 
 @source(type='wso2event',  @map(type='wso2event'))
-define stream APIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
+define stream FilteredAPIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string, CLIENT_ID string,
                         USER_AGENT string, STATUS_CODE int, STATUS_MESSAGE string, HTTP_METHOD string, RESPONSE_PAYLOAD_SIZE long,
                         ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
                         CUSTOMER_STATUS string, ACCESS_TOKEN_ID string);
@@ -59,7 +59,7 @@ define function getDataCluster[JavaScript] return string {
 	return dataCluster;
 };
 
-from APIInputStream[not(CONSENT_ID is null) and (STATUS_CODE == 200 or STATUS_CODE == 201)]
+from FilteredAPIInputStream[not(CONSENT_ID is null) and (STATUS_CODE == 200 or STATUS_CODE == 201)]
 select CONSENT_ID, getDataCluster(ELECTED_RESOURCE) AS DATA_CLUSTER, TIMESTAMP as SHARING_START_DATE, TIMESTAMP as LAST_SHARED_DATE
 update or insert into CDS_SHARING_START_END_DATE
 set CDS_SHARING_START_END_DATE.LAST_SHARED_DATE = LAST_SHARED_DATE
