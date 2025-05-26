@@ -29,6 +29,7 @@ import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.testng.PowerMockTestCase;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.InboundAuthenticationConfig;
@@ -42,6 +43,7 @@ import org.wso2.openbanking.cds.common.metadata.periodical.updater.utils.Softwar
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.wso2.openbanking.cds.common.metadata.periodical.updater.constants.MetadataConstants.DATA;
@@ -106,18 +108,29 @@ public class PeriodicalMetaDataUpdateJobTest extends PowerMockTestCase {
         Assert.assertFalse(statuses.isEmpty());
     }
 
-    @Test(description = "when valid data provided, should return modified maps")
-    public void testProcessMetaDataStatus()
+    @DataProvider(name = "MetadataTestDataProvider")
+    Object[][] getClientErrorTestDataProvider() {
+
+        return new Object[][]{
+                {DUMMY_LEGAL_ENTITY_ID_1, DUMMY_SOFTWARE_PRODUCT_ID_1},
+                {DUMMY_LEGAL_ENTITY_ID_1.toUpperCase(Locale.ENGLISH),
+                        DUMMY_SOFTWARE_PRODUCT_ID_1.toUpperCase(Locale.ENGLISH)} //case sensitivity test
+        };
+    }
+
+    @Test(description = "when valid data provided, should return modified maps",
+            dataProvider = "MetadataTestDataProvider")
+    public void testProcessMetaDataStatus(String legalEntityId, String softwareId)
             throws IdentityApplicationManagementException, UserStoreException, OpenBankingException {
 
         //mock
         ServiceProviderProperty spProperty1 = new ServiceProviderProperty();
         spProperty1.setDisplayName(MetadataConstants.LEGAL_ENTITY_ID);
-        spProperty1.setValue(DUMMY_LEGAL_ENTITY_ID_1);
+        spProperty1.setValue(legalEntityId);
 
         ServiceProviderProperty spProperty2 = new ServiceProviderProperty();
         spProperty2.setDisplayName(MetadataConstants.SOFTWARE_ID);
-        spProperty2.setValue(DUMMY_SOFTWARE_PRODUCT_ID_1);
+        spProperty2.setValue(softwareId);
 
         InboundAuthenticationRequestConfig config = new InboundAuthenticationRequestConfig();
         config.setInboundAuthKey("apim-store-client-id-1");

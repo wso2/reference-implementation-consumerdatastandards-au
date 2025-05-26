@@ -20,6 +20,7 @@ package org.wso2.openbanking.cds.gateway.executors.idpermanence;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 import com.wso2.openbanking.accelerator.gateway.executor.core.OpenBankingGatewayExecutor;
 import com.wso2.openbanking.accelerator.gateway.executor.model.OBAPIRequestContext;
 import com.wso2.openbanking.accelerator.gateway.executor.model.OBAPIResponseContext;
@@ -68,8 +69,24 @@ public class IDPermanenceExecutor implements OpenBankingGatewayExecutor {
             IdPermanenceValidationResponse idPermanenceValidationResponse;
             String requestBody = obApiRequestContext.getRequestPayload();
             if (requestBody != null && !GatewayConstants.EMPTY_SOAP_BODY.equals(requestBody)) {
-                payloadJson = gson.fromJson(requestBody, JsonObject.class);
-                idPermanenceValidationResponse = IdPermanenceUtils.unmaskRequestBodyAccountIDs(payloadJson, SECRET_KEY);
+                try {
+                    payloadJson = gson.fromJson(requestBody, JsonObject.class);
+                    idPermanenceValidationResponse =
+                            IdPermanenceUtils.unmaskRequestBodyAccountIDs(payloadJson, SECRET_KEY);
+                } catch (JsonSyntaxException e) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Unexpected error while parsing request body", e);
+                    }
+                    idPermanenceValidationResponse = new IdPermanenceValidationResponse();
+                    idPermanenceValidationResponse.setValid(false);
+                    idPermanenceValidationResponse.setError(new OpenBankingExecutorError(
+                            ErrorConstants.AUErrorEnum.INVALID_FIELD.getCode(),
+                            ErrorConstants.AUErrorEnum.INVALID_FIELD.getTitle(),
+                            String.format(ErrorConstants.AUErrorEnum.INVALID_FIELD.getDetail(),
+                                    IdPermanenceConstants.REQUEST_BODY),
+                            String.valueOf(ErrorConstants.AUErrorEnum.INVALID_FIELD.getHttpCode())
+                    ));
+                }
             } else {
                 idPermanenceValidationResponse = new IdPermanenceValidationResponse();
                 idPermanenceValidationResponse.setValid(false);

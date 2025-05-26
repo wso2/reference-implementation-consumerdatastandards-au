@@ -34,7 +34,7 @@ define stream CDSMetricsRawStream(id string, statusCode int, respTime long, elec
 
 @primaryKey('ID','ELECTED_RESOURCE')
 @store(type='rdbms', datasource='OB_REPORTING_DB')
-@Index('TIMESTAMP')
+@Index('TIMESTAMP', 'MESSAGE_ID')
 define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string,
                         CLIENT_ID string, USER_AGENT string, STATUS_CODE int, STATUS_MESSAGE string, HTTP_METHOD string,
                         RESPONSE_PAYLOAD_SIZE long, ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string,
@@ -45,8 +45,19 @@ define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID st
 define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
                         REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
 
+--Intermediate stream to drop duplicate events. Avoids the issues caused in message queue flushing.
+from APIInputStream as newEvents
+left outer join API_INVOCATION_RAW_DATA as existingRecords
+    on newEvents.MESSAGE_ID == existingRecords.MESSAGE_ID
+select newEvents.MESSAGE_ID, newEvents.CONSENT_ID, newEvents.CONSUMER_ID, newEvents.CLIENT_ID,
+       newEvents.USER_AGENT, newEvents.STATUS_CODE, newEvents.STATUS_MESSAGE, newEvents.HTTP_METHOD,
+       newEvents.RESPONSE_PAYLOAD_SIZE, newEvents.ELECTED_RESOURCE, newEvents.API_NAME, newEvents.API_SPEC_VERSION,
+       newEvents.TIMESTAMP, newEvents.CUSTOMER_STATUS, newEvents.ACCESS_TOKEN_ID
+having existingRecords.MESSAGE_ID is null
+insert into FilteredAPIInputStream;
+
 --Persist API Invocation Data
-from APIInputStream
+from FilteredAPIInputStream
 select UUID() as ID, MESSAGE_ID, CONSENT_ID, CONSUMER_ID, CLIENT_ID, USER_AGENT, STATUS_CODE, STATUS_MESSAGE, HTTP_METHOD,
                         RESPONSE_PAYLOAD_SIZE, ELECTED_RESOURCE, API_NAME, API_SPEC_VERSION, TIMESTAMP, CUSTOMER_STATUS,
                         ACCESS_TOKEN_ID, ifThenElse(CUSTOMER_STATUS == 'customer-present', 'attended', 'unattended') as
@@ -55,14 +66,14 @@ insert into API_INVOCATION_RAW_DATA;
 
 --Update session type of token
 --Once a token used in customer present context, it will always be considered as a session used for attended traffic.
-from APIInputStream[CUSTOMER_STATUS == 'customer-present']
+from FilteredAPIInputStream[CUSTOMER_STATUS == 'customer-present']
 update API_INVOCATION_RAW_DATA
 set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
 --Generate CDS Metrics Raw stream
 --A 5 second window is introduced to handle any delays in publishing latency data to the database.
-from APIInputStream#window.timeBatch(5 sec) as apiInputWindowStream
+from FilteredAPIInputStream#window.timeBatch(5 sec) as apiInputWindowStream
 join API_LATENCY_RAW_DATA as latencyRawData
     on apiInputWindowStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
 select apiInputWindowStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
