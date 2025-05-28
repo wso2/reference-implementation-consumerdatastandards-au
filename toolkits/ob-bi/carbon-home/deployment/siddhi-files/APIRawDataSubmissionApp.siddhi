@@ -28,6 +28,13 @@ define stream APIInputStream(MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID s
                         ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string, TIMESTAMP long,
                         CUSTOMER_STATUS string, ACCESS_TOKEN_ID string);
 
+--Stream to retrigger matrics data aggregations
+@source(type='http', receiver.url='http://<BI_HOSTNAME>:8290/repopulate-cds-metrics', @map(type='json'))
+define stream TriggerRepopulateStream(fromTimestamp long, toTimestamp long);
+
+--Stream to retain timestamp range in a window to retrigger aggregations
+define stream TriggeredTimeRangeStream(fromTs long, toTs long);
+
 @sink(type='inMemory',topic='apiInvocationRawData', @map(type='passThrough'))
 define stream CDSMetricsRawStream(id string, statusCode int, respTime long, electedResource string, reqTimestamp long,
                         customerStatus string);
@@ -78,4 +85,30 @@ join API_LATENCY_RAW_DATA as latencyRawData
     on apiInputWindowStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
 select apiInputWindowStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
        TIMESTAMP * 1000 as reqTimestamp, CUSTOMER_STATUS as customerStatus
+insert into CDSMetricsRawStream;
+
+from TriggerRepopulateStream
+select fromTimestamp as fromTs, toTimestamp as toTs
+insert into TriggeredTimeRangeStream;
+
+-- Generate CDS Metrics Raw stream from raw data tables
+from TriggeredTimeRangeStream#window.length(1) as t
+join API_INVOCATION_RAW_DATA as invocation
+  on invocation.TIMESTAMP >= t.fromTs and invocation.TIMESTAMP <= t.toTs
+select invocation.MESSAGE_ID as messageId,
+       invocation.STATUS_CODE as statusCode,
+       invocation.ELECTED_RESOURCE as electedResource,
+       invocation.TIMESTAMP * 1000 as reqTimestamp,
+       invocation.CUSTOMER_STATUS as customerStatus
+insert into FilteredInvocationsForJoin;
+
+from FilteredInvocationsForJoin as invocation
+join API_LATENCY_RAW_DATA as latency
+  on invocation.messageId == latency.MESSAGE_ID
+select invocation.messageId as id,
+       invocation.statusCode as statusCode,
+       ifThenElse(latency.RESPONSE_LATENCY is null, 0L, latency.RESPONSE_LATENCY) as respTime,
+       invocation.electedResource as electedResource,
+       invocation.reqTimestamp as reqTimestamp,
+       invocation.customerStatus as customerStatus
 insert into CDSMetricsRawStream;
