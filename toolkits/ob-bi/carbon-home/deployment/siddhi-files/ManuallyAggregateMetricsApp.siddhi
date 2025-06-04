@@ -18,17 +18,34 @@
 
 @App:name("ManuallyAggregateMetricsApp")
 
---Stream to retrigger matrics data aggregations
+-- Stream to trigger metrics data aggregations
 @source(type='http', receiver.url='http://<BI_HOSTNAME>:8290/repopulate-cds-metrics', @map(type='json'))
 define stream TriggerRepopulateStream(fromTimestamp long, toTimestamp long);
 
---Stream to retain timestamp range in a window to retrigger aggregations
-define stream TriggeredTimeRangeStream(fromTs long, toTs long);
-
+-- Raw metrics aggregation output stream
 @sink(type='inMemory',topic='apiInvocationRawData', @map(type='passThrough'))
 define stream CDSMetricsRawStream(id string, statusCode int, respTime long, electedResource string, reqTimestamp long,
                         customerStatus string);
 
+-- Intermediate stream used for joining API_INVOCATION_RAW_DATA and API_LATENCY_RAW_DATA tables
+define stream FilteredInvocationsForJoin(messageId string, statusCode int, electedResource string, reqTimestamp long, customerStatus string);
+
+
+-- Stream to log each published metric event
+@sink(type='file',
+      file.uri='file:<LOG_PATH>/metrics-aggregate-events.log',
+      append='true',
+      @map(type='text', @payload("[INFO] Publishing event with Id: {{id}}, Timestamp: {{reqTimestamp}}")))
+define stream CDSMetricsLoggingStream(id string, reqTimestamp long);
+
+-- Stream to log the total count before aggregation begins
+@sink(type='file',
+      file.uri='file:<LOG_PATH>/metrics-aggregate-events.log',
+      append='true',
+      @map(type='text', @payload("[INFO] Total rows in time range {{fromTs}} to {{toTs}}: {{count}}")))
+define stream InvocationCountResultStream(count long, fromTs long, toTs long);
+
+-- Invocation and latency source tables
 @primaryKey('ID','ELECTED_RESOURCE')
 @store(type='rdbms', datasource='OB_REPORTING_DB')
 @Index('TIMESTAMP', 'MESSAGE_ID')
@@ -42,14 +59,17 @@ define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID st
 define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
                         REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
 
-from TriggerRepopulateStream
-select fromTimestamp as fromTs, toTimestamp as toTs
-insert into TriggeredTimeRangeStream;
-
--- Generate CDS Metrics Raw stream from raw data tables
-from TriggeredTimeRangeStream#window.length(1) as t
+-- Direct count from API_INVOCATION_RAW_DATA based on input range
+from TriggerRepopulateStream#window.length(1) as t
 join API_INVOCATION_RAW_DATA as invocation
-  on invocation.TIMESTAMP >= t.fromTs and invocation.TIMESTAMP <= t.toTs
+  on invocation.TIMESTAMP >= t.fromTimestamp and invocation.TIMESTAMP <= t.toTimestamp
+select count() as count, t.fromTimestamp as fromTs, t.toTimestamp as toTs
+insert into InvocationCountResultStream;
+
+-- Extract invocation events in the given range
+from TriggerRepopulateStream#window.length(1) as t
+join API_INVOCATION_RAW_DATA as invocation
+  on invocation.TIMESTAMP >= t.fromTimestamp and invocation.TIMESTAMP <= t.toTimestamp
 select invocation.MESSAGE_ID as messageId,
        invocation.STATUS_CODE as statusCode,
        invocation.ELECTED_RESOURCE as electedResource,
@@ -57,6 +77,7 @@ select invocation.MESSAGE_ID as messageId,
        invocation.CUSTOMER_STATUS as customerStatus
 insert into FilteredInvocationsForJoin;
 
+-- Join with latency table and emit final event
 from FilteredInvocationsForJoin as invocation
 join API_LATENCY_RAW_DATA as latency
   on invocation.messageId == latency.MESSAGE_ID
@@ -67,3 +88,8 @@ select invocation.messageId as id,
        invocation.reqTimestamp as reqTimestamp,
        invocation.customerStatus as customerStatus
 insert into CDSMetricsRawStream;
+
+-- Log each published event
+from CDSMetricsRawStream
+select id, reqTimestamp
+insert into CDSMetricsLoggingStream;
