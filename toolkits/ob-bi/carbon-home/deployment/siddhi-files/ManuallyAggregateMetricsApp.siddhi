@@ -35,15 +35,15 @@ define stream FilteredInvocationsForJoin(messageId string, statusCode int, elect
 @sink(type='file',
       file.uri='file:<LOG_PATH>/metrics-aggregate-events.log',
       append='true',
-      @map(type='text', @payload("[INFO] Publishing event with Id: {{id}}, Timestamp: {{reqTimestamp}}")))
-define stream CDSMetricsLoggingStream(id string, reqTimestamp long);
+      @map(type='text', @payload("[INFO] [{{logTs}}] Publishing event with Id: {{id}}, EventTimestamp: {{reqTimestamp}}")))
+define stream CDSMetricsLoggingStream(logTs string, id string, reqTimestamp long);
 
 -- Stream to log the total count before aggregation begins
 @sink(type='file',
       file.uri='file:<LOG_PATH>/metrics-aggregate-events.log',
       append='true',
-      @map(type='text', @payload("[INFO] Total rows in time range {{fromTs}} to {{toTs}}: {{count}}")))
-define stream InvocationCountResultStream(count long, fromTs long, toTs long);
+      @map(type='text', @payload("[INFO] [{{logTs}}] Total rows in time range {{fromTs}} to {{toTs}}: {{count}}")))
+define stream InvocationCountResultStream(logTs string, count long, fromTs long, toTs long);
 
 -- Invocation and latency source tables
 @primaryKey('ID','ELECTED_RESOURCE')
@@ -63,7 +63,7 @@ define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAM
 from TriggerRepopulateStream#window.length(1) as t
 join API_INVOCATION_RAW_DATA as invocation
   on invocation.TIMESTAMP >= t.fromTimestamp and invocation.TIMESTAMP <= t.toTimestamp
-select count() as count, t.fromTimestamp as fromTs, t.toTimestamp as toTs
+select time:currentTimestamp() as logTs, count() as count, t.fromTimestamp as fromTs, t.toTimestamp as toTs
 insert into InvocationCountResultStream;
 
 -- Extract invocation events in the given range
@@ -91,5 +91,5 @@ insert into CDSMetricsRawStream;
 
 -- Log each published event
 from CDSMetricsRawStream
-select id, reqTimestamp
+select time:currentTimestamp() as logTs, id, reqTimestamp
 insert into CDSMetricsLoggingStream;
