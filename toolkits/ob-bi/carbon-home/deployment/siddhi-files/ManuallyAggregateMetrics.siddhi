@@ -1,0 +1,95 @@
+/**
+ * Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
+@App:name("ManuallyAggregateMetricsApp")
+
+-- Stream to trigger metrics data aggregations
+@source(type='http', receiver.url='http://<BI_HOSTNAME>:8290/repopulate-cds-metrics', @map(type='json'))
+define stream TriggerRepopulateStream(fromTimestamp long, toTimestamp long);
+
+-- Raw metrics aggregation output stream
+@sink(type='inMemory',topic='apiInvocationRawData', @map(type='passThrough'))
+define stream CDSMetricsRawStream(id string, statusCode int, respTime long, electedResource string, reqTimestamp long,
+                        customerStatus string);
+
+-- Intermediate stream used for joining API_INVOCATION_RAW_DATA and API_LATENCY_RAW_DATA tables
+define stream FilteredInvocationsForJoin(messageId string, statusCode int, electedResource string, reqTimestamp long, customerStatus string);
+
+
+-- Stream to log each published metric event
+@sink(type='file',
+      file.uri='file:<LOG_PATH>/metrics-aggregate-events.log',
+      append='true',
+      @map(type='text', @payload("[INFO] [{{logTs}}] Publishing event with Id: {{id}}, EventTimestamp: {{reqTimestamp}}")))
+define stream CDSMetricsLoggingStream(logTs string, id string, reqTimestamp long);
+
+-- Stream to log the total count before aggregation begins
+@sink(type='file',
+      file.uri='file:<LOG_PATH>/metrics-aggregate-events.log',
+      append='true',
+      @map(type='text', @payload("[INFO] [{{logTs}}] Total rows in time range {{fromTs}} to {{toTs}}: {{count}}")))
+define stream InvocationCountResultStream(logTs string, count long, fromTs long, toTs long);
+
+-- Invocation and latency source tables
+@primaryKey('ID','ELECTED_RESOURCE')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+@Index('TIMESTAMP', 'MESSAGE_ID')
+define table API_INVOCATION_RAW_DATA(ID string, MESSAGE_ID string, CONSENT_ID string, CONSUMER_ID string,
+                        CLIENT_ID string, USER_AGENT string, STATUS_CODE int, STATUS_MESSAGE string, HTTP_METHOD string,
+                        RESPONSE_PAYLOAD_SIZE long, ELECTED_RESOURCE string, API_NAME string, API_SPEC_VERSION string,
+                        TIMESTAMP long, CUSTOMER_STATUS string, ACCESS_TOKEN_ID string, SESSION_TYPE string);
+
+@primaryKey('ID','MESSAGE_ID')
+@store(type='rdbms', datasource='OB_REPORTING_DB')
+define table API_LATENCY_RAW_DATA(ID string, MESSAGE_ID string, REQUEST_TIMESTAMP string, BACKEND_LATENCY long,
+                        REQUEST_MEDIATION_LATENCY long, RESPONSE_LATENCY long, RESPONSE_MEDIATION_LATENCY long);
+
+-- Direct count from API_INVOCATION_RAW_DATA based on input range
+from TriggerRepopulateStream#window.length(1) as t
+join API_INVOCATION_RAW_DATA as invocation
+  on invocation.TIMESTAMP >= t.fromTimestamp and invocation.TIMESTAMP <= t.toTimestamp
+select time:currentTimestamp() as logTs, count() as count, t.fromTimestamp as fromTs, t.toTimestamp as toTs
+insert into InvocationCountResultStream;
+
+-- Extract invocation events in the given range
+from TriggerRepopulateStream#window.length(1) as t
+join API_INVOCATION_RAW_DATA as invocation
+  on invocation.TIMESTAMP >= t.fromTimestamp and invocation.TIMESTAMP <= t.toTimestamp
+select invocation.MESSAGE_ID as messageId,
+       invocation.STATUS_CODE as statusCode,
+       invocation.ELECTED_RESOURCE as electedResource,
+       invocation.TIMESTAMP * 1000 as reqTimestamp,
+       invocation.CUSTOMER_STATUS as customerStatus
+insert into FilteredInvocationsForJoin;
+
+-- Join with latency table and emit final event
+from FilteredInvocationsForJoin as invocation
+join API_LATENCY_RAW_DATA as latency
+  on invocation.messageId == latency.MESSAGE_ID
+select invocation.messageId as id,
+       invocation.statusCode as statusCode,
+       ifThenElse(latency.RESPONSE_LATENCY is null, 0L, latency.RESPONSE_LATENCY) as respTime,
+       invocation.electedResource as electedResource,
+       invocation.reqTimestamp as reqTimestamp,
+       invocation.customerStatus as customerStatus
+insert into CDSMetricsRawStream;
+
+-- Log each published event
+from CDSMetricsRawStream
+select time:currentTimestamp() as logTs, id, reqTimestamp
+insert into CDSMetricsLoggingStream;
