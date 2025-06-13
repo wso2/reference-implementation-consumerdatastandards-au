@@ -121,7 +121,7 @@ public class Utils {
     /**
      * Initializes the super tenant domain and tenant ID in the Carbon context if not already set.
      */
-    public static void initializeTenantContextIfAbsent() {
+    public static void initializeTenantContextIfAbsent() throws OpenBankingException {
 
         RealmService realmService = CDSIdentityDataHolder.getInstance().getRealmService();
         TenantManager tenantManager;
@@ -142,10 +142,12 @@ public class Utils {
                     carbonContext.setTenantId(tenantId);
                 }
             } catch (UserStoreException e) {
-                LOG.error("Failed to initialize tenant id and tenant domain.", e);
+                LOG.error("Failed to initialize tenant id and tenant domain.");
+                throw new OpenBankingException("Failed to initialize tenant id and tenant domain.", e);
             }
         } else {
-            LOG.warn("RealmService is not available. Skipping tenant context initialization.");
+            LOG.error("RealmService is not available. Skipping tenant context initialization.");
+            throw new OpenBankingException("RealmService is not available. Skipping tenant context initialization.");
         }
     }
 }

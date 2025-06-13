@@ -18,6 +18,8 @@
 
 package org.wso2.openbanking.cds.identity.metadata.periodical.updater;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.cds.identity.metadata.periodical.updater.internal.MetaDataUpdate;
 import org.wso2.openbanking.cds.identity.metadata.periodical.updater.internal.PeriodicalMetaDataUpdateJob;
 
@@ -27,6 +29,7 @@ import org.wso2.openbanking.cds.identity.metadata.periodical.updater.internal.Pe
 public class ExternalMetadataUpdater {
 
     private static volatile ExternalMetadataUpdater instance;
+    private static final Log log = LogFactory.getLog(ExternalMetadataUpdater.class);
 
     private ExternalMetadataUpdater() {
 
@@ -45,6 +48,7 @@ public class ExternalMetadataUpdater {
     }
 
     public void updateMetadata() {
+        log.info("Updating data recipient and software product metadata by external call.");
         MetaDataUpdate updateInterface = new PeriodicalMetaDataUpdateJob();
         updateInterface.updateMetaDataValues();
     }

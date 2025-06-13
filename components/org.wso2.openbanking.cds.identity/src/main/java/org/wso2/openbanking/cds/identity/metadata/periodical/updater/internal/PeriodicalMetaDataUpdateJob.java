@@ -112,6 +112,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
      */
     @Override
     public void execute(JobExecutionContext context) {
+        LOG.info("Metadata update scheduled task is executing.");
         updateMetaDataValues();
     }
 
@@ -122,10 +123,10 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
     @Generated(message = "Ignoring since all cases are covered from other unit tests")
     public void updateMetaDataValues() {
 
-        LOG.debug("Metadata Scheduled Task is executing.");
-        Utils.initializeTenantContextIfAbsent();
+        LOG.debug("Metadata update is executing.");
         Map<String, Map<String, String>> metaDataStatuses = new HashMap<>();
         try {
+            Utils.initializeTenantContextIfAbsent();
             Retryer<JSONObject> retryer = new Retryer<>(1000, OpenBankingCDSConfigParser.getInstance().
                     getRetryCount());
             Map<String, String> registerApiRequestHeaders =
@@ -152,7 +153,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
              * Continue to operate with existing metadata as per CDR expectations
              * https://cdr-register.github.io/register/#cdr-register-unavailable
              */
-            LOG.error("Error while getting statuses from directory. " +
+            LOG.error("Error while updating data recipient and service provider status. " +
                     "Continue to operate from existing metadata. Caused by, ", e);
             return;
         }
@@ -173,7 +174,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
             LOG.error("Data holder responsibilities were not performed successfully", e);
         }
 
-        LOG.debug("Metadata Scheduled Task is finished.");
+        LOG.debug("Metadata update is complete.");
     }
 
     /**
