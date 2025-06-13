@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
- *
+ * <p>
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -28,11 +28,13 @@ import org.json.JSONObject;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
 import org.wso2.carbon.identity.application.common.IdentityApplicationManagementException;
 import org.wso2.carbon.identity.application.common.model.InboundAuthenticationRequestConfig;
 import org.wso2.carbon.identity.application.common.model.ServiceProvider;
 import org.wso2.carbon.identity.application.common.model.ServiceProviderProperty;
 import org.wso2.carbon.user.core.UserStoreException;
+import org.wso2.carbon.utils.multitenancy.MultitenantConstants;
 import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
 import org.wso2.openbanking.cds.common.metadata.periodical.updater.MetadataHolder;
 import org.wso2.openbanking.cds.identity.metadata.periodical.updater.service.dataholder.responsibility.CleanupRegistrationResponsibility;
@@ -126,7 +128,11 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
         LOG.debug("Metadata update is executing.");
         Map<String, Map<String, String>> metaDataStatuses = new HashMap<>();
         try {
-            Utils.initializeTenantContextIfAbsent();
+            // Set tenant-id and tenant-domain
+            PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+            carbonContext.setTenantDomain(MultitenantConstants.SUPER_TENANT_DOMAIN_NAME);
+            carbonContext.setTenantId(MultitenantConstants.SUPER_TENANT_ID);
+
             Retryer<JSONObject> retryer = new Retryer<>(1000, OpenBankingCDSConfigParser.getInstance().
                     getRetryCount());
             Map<String, String> registerApiRequestHeaders =
