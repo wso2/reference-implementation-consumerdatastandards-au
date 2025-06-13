@@ -123,6 +123,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
     public void updateMetaDataValues() {
 
         LOG.debug("Metadata Scheduled Task is executing.");
+        Utils.initializeTenantContextIfAbsent();
         Map<String, Map<String, String>> metaDataStatuses = new HashMap<>();
         try {
             Retryer<JSONObject> retryer = new Retryer<>(1000, OpenBankingCDSConfigParser.getInstance().

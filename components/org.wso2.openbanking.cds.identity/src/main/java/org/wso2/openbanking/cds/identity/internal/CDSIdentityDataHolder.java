@@ -17,6 +17,8 @@
  */
 package org.wso2.openbanking.cds.identity.internal;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.identity.oauth2.client.authentication.OAuthClientAuthnService;
 import org.wso2.carbon.user.core.service.RealmService;
 
@@ -29,6 +31,7 @@ public class CDSIdentityDataHolder {
     private static volatile CDSIdentityDataHolder instance = new CDSIdentityDataHolder();
     private RealmService realmService;
     private OAuthClientAuthnService oAuthClientAuthnService;
+    private static final Log log = LogFactory.getLog(CDSIdentityDataHolder.class);
 
     private CDSIdentityDataHolder() {
 
@@ -49,7 +52,7 @@ public class CDSIdentityDataHolder {
     public RealmService getRealmService() {
 
         if (realmService == null) {
-            throw new RuntimeException("Realm Service is not available. Component did not start correctly.");
+            log.error("Realm Service is not available. Component did not start correctly.");
         }
         return realmService;
     }

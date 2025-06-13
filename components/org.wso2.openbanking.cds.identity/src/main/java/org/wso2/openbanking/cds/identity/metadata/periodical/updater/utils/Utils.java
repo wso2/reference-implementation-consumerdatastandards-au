@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
- *
+ * <p>
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -33,6 +33,11 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
+import org.wso2.carbon.context.PrivilegedCarbonContext;
+import org.wso2.carbon.user.api.TenantManager;
+import org.wso2.carbon.user.api.UserStoreException;
+import org.wso2.carbon.user.core.service.RealmService;
+import org.wso2.openbanking.cds.identity.internal.CDSIdentityDataHolder;
 
 import java.io.IOException;
 import java.util.Map;
@@ -111,5 +116,36 @@ public class Utils {
                     "Empty response received from ACCC");
         }
 
+    }
+
+    /**
+     * Initializes the super tenant domain and tenant ID in the Carbon context if not already set.
+     */
+    public static void initializeTenantContextIfAbsent() {
+
+        RealmService realmService = CDSIdentityDataHolder.getInstance().getRealmService();
+        TenantManager tenantManager;
+        if (realmService != null) {
+            tenantManager = realmService.getTenantManager();
+            String tenantDomain;
+            try {
+                tenantDomain = tenantManager.getSuperTenantDomain();
+                int tenantId = tenantManager.getTenantId(tenantDomain);
+                PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+
+                if (carbonContext.getTenantDomain() == null) {
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Setting carbon context tenant domain as " + tenantDomain + " and tenant id as " +
+                                tenantId + ".");
+                    }
+                    carbonContext.setTenantDomain(tenantDomain);
+                    carbonContext.setTenantId(tenantId);
+                }
+            } catch (UserStoreException e) {
+                LOG.error("Failed to initialize tenant id and tenant domain.", e);
+            }
+        } else {
+            LOG.warn("RealmService is not available. Skipping tenant context initialization.");
+        }
     }
 }
