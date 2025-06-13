@@ -114,7 +114,7 @@ public class PeriodicalMetaDataUpdateJob implements Job, MetaDataUpdate {
      */
     @Override
     public void execute(JobExecutionContext context) {
-        LOG.info("Metadata update scheduled task is executing.");
+        LOG.debug("Metadata update scheduled task is executing.");
         updateMetaDataValues();
     }
 
