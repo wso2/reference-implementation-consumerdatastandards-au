@@ -123,6 +123,11 @@ public class Utils {
      */
     public static void initializeTenantContextIfAbsent() throws OpenBankingException {
 
+        PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
+        if (carbonContext.getTenantDomain() != null) {
+            return;
+        }
+
         RealmService realmService = CDSIdentityDataHolder.getInstance().getRealmService();
         TenantManager tenantManager;
         if (realmService != null) {
@@ -131,16 +136,13 @@ public class Utils {
             try {
                 tenantDomain = tenantManager.getSuperTenantDomain();
                 int tenantId = tenantManager.getTenantId(tenantDomain);
-                PrivilegedCarbonContext carbonContext = PrivilegedCarbonContext.getThreadLocalCarbonContext();
-
-                if (carbonContext.getTenantDomain() == null) {
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Setting carbon context tenant domain as " + tenantDomain + " and tenant id as " +
-                                tenantId + ".");
-                    }
-                    carbonContext.setTenantDomain(tenantDomain);
-                    carbonContext.setTenantId(tenantId);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Setting carbon context tenant domain as " + tenantDomain + " and tenant id as " +
+                            tenantId + ".");
                 }
+                carbonContext.setTenantDomain(tenantDomain);
+                carbonContext.setTenantId(tenantId);
+
             } catch (UserStoreException e) {
                 LOG.error("Failed to initialize tenant id and tenant domain.");
                 throw new OpenBankingException("Failed to initialize tenant id and tenant domain.", e);
