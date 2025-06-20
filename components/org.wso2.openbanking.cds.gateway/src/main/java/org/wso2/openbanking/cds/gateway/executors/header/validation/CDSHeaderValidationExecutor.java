@@ -300,7 +300,7 @@ public class CDSHeaderValidationExecutor implements OpenBankingGatewayExecutor {
             }
             LOG.debug("version validation is success");
             updateResponseHeader(obapiRequestContext, MAX_REQUESTED_ENDPOINT_VERSION,
-                    String.valueOf(dataHolderMaxVersion));
+                    String.valueOf(Math.min(dataHolderMaxVersion, maxRequestedVersion)));
         }
         return true;
     }
