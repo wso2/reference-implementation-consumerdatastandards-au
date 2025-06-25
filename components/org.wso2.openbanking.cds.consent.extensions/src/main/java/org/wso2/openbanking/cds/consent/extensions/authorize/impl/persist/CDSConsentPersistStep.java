@@ -1,13 +1,13 @@
 /**
  * Copyright (c) 2024-2025, WSO2 LLC. (https://www.wso2.com).
- *
+ * <p>
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -50,6 +50,7 @@ import org.wso2.openbanking.cds.consent.extensions.common.CDSConsentExtensionCon
 
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,8 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
 
     private static final Log log = LogFactory.getLog(CDSConsentPersistStep.class);
     private final ConsentCoreServiceImpl consentCoreService;
+    private static final ArrayList<String> COMMON_AUTH_ID_KEY_ARRAY = new ArrayList<>(Collections.singletonList(
+            CDSConsentExtensionConstants.COMMON_AUTH_ID));
 
     public CDSConsentPersistStep() {
         this.consentCoreService = new ConsentCoreServiceImpl();
@@ -80,6 +83,23 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
             try {
                 ConsentData consentData = consentPersistData.getConsentData();
                 JSONObject payloadData = consentPersistData.getPayload();
+
+                /* delete common authid from consent attributes table since same common auth id is available when
+                  same browser session is used */
+                String commonAuthId = consentPersistData.getBrowserCookies().get(
+                        CDSConsentExtensionConstants.COMMON_AUTH_ID);
+                try {
+                    ArrayList<String> existingConsentIdList = consentCoreService.
+                            getConsentIdByConsentAttributeNameAndValue(CDSConsentExtensionConstants.COMMON_AUTH_ID,
+                                    commonAuthId);
+                    if (!existingConsentIdList.isEmpty()) {
+                        consentCoreService.deleteConsentAttributes(existingConsentIdList.get(0),
+                                COMMON_AUTH_ID_KEY_ARRAY);
+                    }
+                } catch (ConsentManagementException e) {
+                    // Catching the accelerator error thrown when no records are found in the database.
+                    log.info("No records were found in the database for the given common-auth-id: " + commonAuthId);
+                }
 
                 // Append tenant domain to user id
                 String userId = CDSConsentCommonUtil.getUserIdWithTenantDomain(consentData.getUserId());
@@ -549,9 +569,9 @@ public class CDSConsentPersistStep implements ConsentPersistStep {
         }
         if (!secondaryUserAuthResources.isEmpty() && !secondaryUserAccountMappings.isEmpty()) {
             additionalAmendmentData.put(ConsentCoreServiceConstants.ADDITIONAL_AUTHORIZATION_RESOURCES_LIST,
-                            secondaryUserAuthResources);
+                    secondaryUserAuthResources);
             additionalAmendmentData.put(ConsentCoreServiceConstants.ADDITIONAL_MAPPING_RESOURCES_WITH_AUTH_TYPES,
-                            secondaryUserAccountMappings);
+                    secondaryUserAccountMappings);
         }
         return additionalAmendmentData;
     }
