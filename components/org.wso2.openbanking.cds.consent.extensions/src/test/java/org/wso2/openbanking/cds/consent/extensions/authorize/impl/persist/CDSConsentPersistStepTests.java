@@ -70,6 +70,7 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
     private static ConsentResource consentResourceMock;
     private static AuthorizationResource authorizationResourceMock;
     private static ConsentCoreServiceImpl consentCoreServiceMock;
+    private static ConsentCoreServiceImpl consentCoreServiceSpy;
     private static Map<String, Object> consentDataMap;
     private static Map<String, String> browserCookies;
 
@@ -84,12 +85,13 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         consentDataMap.put("expirationDateTime", OffsetDateTime.now(ZoneOffset.UTC));
         consentDataMap.put("sharing_duration_value", (long) 7600000);
         consentDataMap.put("requestUriKey", "abc123");
-        cdsConsentPersistStep = new CDSConsentPersistStep();
         consentPersistDataMock = mock(ConsentPersistData.class);
         consentDataMock = mock(ConsentData.class);
         consentResourceMock = mock(ConsentResource.class);
         authorizationResourceMock = mock(AuthorizationResource.class);
         consentCoreServiceMock = mock(ConsentCoreServiceImpl.class);
+        consentCoreServiceSpy = Mockito.spy(new ConsentCoreServiceImpl());
+        cdsConsentPersistStep = new CDSConsentPersistStep(consentCoreServiceSpy);
     }
 
     @BeforeMethod
@@ -102,7 +104,7 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
                 Mockito.anyString(), Mockito.anyObject());
     }
 
-    // @Test
+    @Test
     public void testConsentPersistWithApproval() throws Exception {
 
         ArrayList<AuthorizationResource> authorizationResources = new ArrayList<>();
@@ -117,8 +119,10 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         doReturn(payload).when(consentPersistDataMock).getPayload();
         doReturn(browserCookies).when(consentPersistDataMock).getBrowserCookies();
         doReturn(true).when(consentPersistDataMock).getApproval();
+        doReturn(new ArrayList<String>()).when(consentCoreServiceMock)
+                .getConsentIdByConsentAttributeNameAndValue(anyString(), anyString());
 
-        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess();
+        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess(consentCoreServiceMock);
 
         try {
             mockCDSConsentPersist.execute(consentPersistDataMock);
@@ -127,7 +131,7 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         }
     }
 
-    // @Test(expectedExceptions = ConsentException.class)
+    @Test(expectedExceptions = ConsentException.class)
     public void testConsentPersistErrorForConsentCreation() throws Exception {
 
         doReturn(consentDataMock).when(consentPersistDataMock).getConsentData();
@@ -140,11 +144,10 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         doReturn(payload).when(consentPersistDataMock).getPayload();
         doReturn(browserCookies).when(consentPersistDataMock).getBrowserCookies();
         doReturn(true).when(consentPersistDataMock).getApproval();
-        doReturn(new ArrayList<String>()).when(consentCoreServiceMock)
+        doReturn(new ArrayList<String>()).when(consentCoreServiceSpy)
                 .getConsentIdByConsentAttributeNameAndValue(anyString(), anyString());
 
-        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess();
-        mockCDSConsentPersist.execute(consentPersistDataMock);
+        cdsConsentPersistStep.execute(consentPersistDataMock);
     }
 
     @Test(expectedExceptions = ConsentException.class)
@@ -162,7 +165,7 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         doReturn(new ArrayList<String>()).when(consentCoreServiceMock)
                 .getConsentIdByConsentAttributeNameAndValue(anyString(), anyString());
 
-        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess();
+        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess(consentCoreServiceSpy);
         mockCDSConsentPersist.execute(consentPersistDataMock);
     }
 
@@ -181,7 +184,7 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         doReturn(new ArrayList<String>()).when(consentCoreServiceMock)
                 .getConsentIdByConsentAttributeNameAndValue(anyString(), anyString());
 
-        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess();
+        MockCDSConsentPersistSuccess mockCDSConsentPersist = new MockCDSConsentPersistSuccess(consentCoreServiceMock);
         mockCDSConsentPersist.execute(consentPersistDataMock);
     }
 
@@ -200,7 +203,7 @@ public class CDSConsentPersistStepTests extends PowerMockTestCase {
         doReturn(new ArrayList<String>()).when(consentCoreServiceMock)
                 .getConsentIdByConsentAttributeNameAndValue(anyString(), anyString());
 
-        MockCDSConsentPersistError mockCDSConsentPersistError = new MockCDSConsentPersistError();
+        MockCDSConsentPersistError mockCDSConsentPersistError = new MockCDSConsentPersistError(consentCoreServiceMock);
         mockCDSConsentPersistError.execute(consentPersistDataMock);
     }
 
@@ -271,6 +274,10 @@ class MockCDSConsentPersistSuccess extends CDSConsentPersistStep {
 }
 
 class MockCDSConsentPersistError extends CDSConsentPersistStep {
+
+    public MockCDSConsentPersistError(ConsentCoreServiceImpl consentCoreService) {
+        super(consentCoreService);
+    }
 
     @Override
     protected DetailedConsentResource createConsent(ConsentCoreServiceImpl consentCoreService,
