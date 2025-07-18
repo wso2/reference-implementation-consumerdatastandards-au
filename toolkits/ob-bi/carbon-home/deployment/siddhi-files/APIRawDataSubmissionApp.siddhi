@@ -71,9 +71,14 @@ update API_INVOCATION_RAW_DATA
 set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
+--A delay window is added to handle any delays in publishing data to the database.
+--Window time can be adjusted according to the database latency of the deployment.
+from FilteredAPIInputStream#window.delay(20 sec)
+select MESSAGE_ID, STATUS_CODE, ELECTED_RESOURCE, TIMESTAMP, CUSTOMER_STATUS
+insert into DelayedAPIInputStream;
+
 --Generate CDS Metrics Raw stream
---A 5 second window is introduced to handle any delays in publishing latency data to the database.
-from FilteredAPIInputStream#window.timeBatch(5 sec) as apiInputWindowStream
+from DelayedAPIInputStream#window.timeBatch(5 sec) as apiInputWindowStream
 join API_LATENCY_RAW_DATA as latencyRawData
     on apiInputWindowStream.MESSAGE_ID == latencyRawData.MESSAGE_ID
 select apiInputWindowStream.MESSAGE_ID as id, STATUS_CODE as statusCode, ifThenElse(RESPONSE_LATENCY is null, 0L, RESPONSE_LATENCY) as respTime, ELECTED_RESOURCE as electedResource,
