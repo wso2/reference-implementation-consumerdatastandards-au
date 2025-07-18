@@ -72,7 +72,7 @@ set API_INVOCATION_RAW_DATA.SESSION_TYPE = 'attended'
 on API_INVOCATION_RAW_DATA.ACCESS_TOKEN_ID == ACCESS_TOKEN_ID;
 
 --A delay window is added to handle any delays in publishing data to the database.
---Can be adjusted according to the database latency of the deployment.
+--Window time can be adjusted according to the database latency of the deployment.
 from FilteredAPIInputStream#window.delay(20 sec)
 select MESSAGE_ID, STATUS_CODE, ELECTED_RESOURCE, TIMESTAMP, CUSTOMER_STATUS
 insert into DelayedAPIInputStream;
