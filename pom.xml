@@ -534,7 +534,7 @@
         <javax.xml.bind.version>2.3.1</javax.xml.bind.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <jackson.databinding.version>2.12.0</jackson.databinding.version>
-        <hibernate-validator>6.0.20.Final</hibernate-validator>
+        <hibernate-validator>6.2.0.Final</hibernate-validator>
         <swagger-annotations.version>1.5.10</swagger-annotations.version>
         <commons.logging.version>1.2</commons.logging.version>
         <maven-war-plugin.version>2.2</maven-war-plugin.version>
