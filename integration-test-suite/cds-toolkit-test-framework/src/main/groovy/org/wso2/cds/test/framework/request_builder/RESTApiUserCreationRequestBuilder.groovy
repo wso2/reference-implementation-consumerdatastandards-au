@@ -57,7 +57,7 @@ class RESTApiUserCreationRequestBuilder {
 		URI scim2Url = new URI("${auConfiguration.getServerAuthorisationServerURL()}" + baseURL + "/Users")
 		def payload = getUserCreationPayload(userName, password)
 
-		createUserResponse = AURestAsRequestBuilder.buildRequest()
+		createUserResponse = AURestAsRequestBuilder.buildBasicRequest()
 						.contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
 						.accept(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
 						.header(AUConstants.AUTHORIZATION_HEADER_KEY, basicHeader)
@@ -73,7 +73,7 @@ class RESTApiUserCreationRequestBuilder {
 
 		String roleNameSubString = roleName.split("/")[1]
 
-		def roleGroupResponse = AURestAsRequestBuilder.buildRequest()
+		def roleGroupResponse = AURestAsRequestBuilder.buildBasicRequest()
 						.accept(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
 						.header(AUConstants.AUTHORIZATION_HEADER_KEY, basicHeader)
 						.queryParam("filter", "displayName eq $roleNameSubString")
@@ -89,12 +89,9 @@ class RESTApiUserCreationRequestBuilder {
 		URI scim2Url = new URI("${auConfiguration.getServerAuthorisationServerURL()}" + baseURL + "/Groups/$roleId")
 		def payload = defaultUserRolesPayload(roleName, userInfoList)
 
-		roleGroupResponse = RestAssured.given()
-				.config(RestAssuredConfig.newConfig()
-						.encoderConfig(EncoderConfig.encoderConfig().appendDefaultContentCharsetToContentTypeIfUndefined(false))) // Prevent charset appending
-				.relaxedHTTPSValidation()
-				.header("Content-Type", "application/scim+json")
-				.header("Accept", "application/scim+json")
+		roleGroupResponse = AURestAsRequestBuilder.buildBasicRequest()
+				.contentType(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
+				.accept(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
 				.header(AUConstants.AUTHORIZATION_HEADER_KEY, basicHeader)
 				.body(payload)
 				.put(scim2Url.toString())
@@ -107,7 +104,7 @@ class RESTApiUserCreationRequestBuilder {
 
 		URI scim2Url = new URI("${auConfiguration.getServerAuthorisationServerURL()}" + baseURL + "/Users/$userId")
 
-		responseUserDetails = AURestAsRequestBuilder.buildRequest()
+		responseUserDetails = AURestAsRequestBuilder.buildBasicRequest()
 						.accept(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
 						.header(AUConstants.AUTHORIZATION_HEADER_KEY, basicHeader)
 						.queryParam("attributes", "roles")
@@ -185,7 +182,7 @@ class RESTApiUserCreationRequestBuilder {
 
 		URI scim2Url = new URI("${auConfiguration.getServerAuthorisationServerURL()}" + baseURL + "/Users")
 
-		def roleGroupResponse = AURestAsRequestBuilder.buildRequest()
+		def roleGroupResponse = AURestAsRequestBuilder.buildBasicRequest()
 				.accept(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
 				.header(AUConstants.AUTHORIZATION_HEADER_KEY, basicHeader)
 				.queryParam("filter", "userName eq ${auConfiguration.getUserKeyManagerAdminName()}")
