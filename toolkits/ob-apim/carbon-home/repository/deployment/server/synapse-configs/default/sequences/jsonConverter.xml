@@ -27,7 +27,12 @@
             <filter source="$axis2:HTTP_SC" regex="200|201|203|204|205|206|207|208|226">
                 <then/>
                 <else>
-                    <class name="org.wso2.openbanking.cds.gateway.mediators.GatewayErrorMediator"/>
+                    <filter xpath="contains(//text(), 'urn:au-cds:error')">
+                        <then/>
+                        <else>
+                            <class name="org.wso2.openbanking.cds.gateway.mediators.GatewayErrorMediator"/>
+                        </else>
+                    </filter>
                 </else>
             </filter>
         </else>
