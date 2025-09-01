@@ -10,20 +10,21 @@ Following configs can be used in test-config.xml to use sample SSA and keystores
         <RedirectUri>https://www.google.com/redirects/redirect1</RedirectUri>
     </DCR>
 
-SoftwareId of App Config 2 - SP3
-
 Use signing.jks in 'signing-keystore' directory as the Application Keystore, and transport.jks in 'transport-keystore'
 directory as the Transport Keystore.
 
 Sample Keystore information:
 
-- Signing Kid = cIYo-5zX4OTWZpHrmmiZDVxACJM
+SoftwareId of App Config 2 - SP3
+SSA Redirect Uri - https://www.google.com/redirects/redirect1
+
+- Signing Kid = 5dBuoFxTMIrwWd9hzUMVgF2jMbk
 
 - Signing keystore alias = signing
 
 - Signing keystore password = wso2carbon
 
-- Transport Kid - 41uFt7QcUzeWoEWO3slUAGfXk8Y
+- Transport Kid - Cxhf6SoaTPr_YB_zbfP3NEdYZzg
 
 - Transport keystore alias = transport
 
