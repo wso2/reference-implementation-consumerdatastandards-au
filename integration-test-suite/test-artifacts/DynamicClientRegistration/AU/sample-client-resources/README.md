@@ -18,13 +18,13 @@ Sample Keystore information:
 SSA SoftwareId - jFQuQ4eQbNCMSqdCog21nF
 SSA Redirect Uri - https://www.google.com/redirects/redirect1
 
-- Signing Kid = cIYo-5zX4OTWZpHrmmiZDVxACJM
+- Signing Kid = 5dBuoFxTMIrwWd9hzUMVgF2jMbk
 
 - Signing keystore alias = signing
 
 - Signing keystore password = wso2carbon
 
-- Transport Kid - 41uFt7QcUzeWoEWO3slUAGfXk8Y
+- Transport Kid - Cxhf6SoaTPr_YB_zbfP3NEdYZzg
 
 - Transport keystore alias = transport
 

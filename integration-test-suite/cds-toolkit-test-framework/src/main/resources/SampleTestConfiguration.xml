@@ -85,7 +85,7 @@
                 <DomainName>https://wso2.com</DomainName>
 
                 <!--Sample Values: cIYo-5zX4OTWZpHrmmiZDVxACJM -->
-                <SigningKid>cIYo-5zX4OTWZpHrmmiZDVxACJM</SigningKid>
+                <SigningKid>5dBuoFxTMIrwWd9hzUMVgF2jMbk</SigningKid>
             </KeyStore>
 
             <!-- Transport Keystore and Truststore -->
@@ -130,7 +130,7 @@
 
             <!-- Application Info -->
             <Application>
-                <ClientID>_EgYN9rlScVnrYAzBBQSACjQYgca</ClientID>
+                <ClientID>AppConfig1.Application.ClientID</ClientID>
 
                 <ClientSecret>AppConfig1.Application.ClientSecret</ClientSecret>
 
@@ -158,7 +158,7 @@
                 <DomainName>https://wso2.com</DomainName>
 
                 <!--Sample Values: cIYo-5zX4OTWZpHrmmiZDVxACJM -->
-                <SigningKid>cIYo-5zX4OTWZpHrmmiZDVxACJM</SigningKid>
+                <SigningKid>5dBuoFxTMIrwWd9hzUMVgF2jMbk</SigningKid>
             </KeyStore>
 
             <!-- Transport Keystore and Truststore -->
