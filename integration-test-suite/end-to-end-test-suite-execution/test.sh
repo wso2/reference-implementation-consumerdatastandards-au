@@ -114,8 +114,7 @@ sed -i -e "s|{AM_HOST}|$(get_prop "ApimHostname")|g" $TEST_CONFIG_FILE
 sed -i -e "s|{IS_HOST}|$(get_prop "IamHostname")|g" $TEST_CONFIG_FILE
 
 # Set client trust store
-#TODO:If Remote Server, Need to copy the client-truststore.jks manually.
-cp $(get_prop "ApimServerPath")/repository/resources/security/client-truststore.jks ${TEST_ARTIFACTS}/am-certs/
+#TODO:If Remote Server, Need to copy the client-truststore.jks manually to ${TEST_ARTIFACTS}/am-certs/
 
 # Set Web Browser Configuration
 sed -i -e "s|BrowserAutomation.HeadlessEnabled|$(get_prop "BrowserAutomation.HeadlessEnabled")|g" $TEST_CONFIG_FILE
