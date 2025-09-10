@@ -229,130 +229,16 @@ cp $ARTIFACTS_DIR/configuration-files/is/deployment.toml $TEST_HOME/wso2is-6.1.0
 cp $ARTIFACTS_DIR/configuration-files/am/deployment.toml $TEST_HOME/wso2am-4.2.0/repository/conf/
 
 
-echo '======================= Generate and Export Certificates ======================='
-storepass="wso2carbon"
-alias_name="wso2carbon"
-declare -A servers
-servers["wso2is"]="$TEST_HOME/wso2is-6.1.0/repository/resources/security/wso2carbon.jks"
-servers["wso2am"]="$TEST_HOME/wso2am-4.2.0/repository/resources/security/wso2carbon.jks"
-servers["wso2si"]="$TEST_HOME/wso2si-4.2.0/resources/security/wso2carbon.jks"
+echo '======================= Copy Modified Certs to Base Packs ======================='
+# Certs inside the product-artifacts/security_certs folder are updated with OBIE sandbox certs and the host mapping
+cp $ARTIFACTS_DIR/security_certs/is_certs/wso2carbon.jks $TEST_HOME/wso2is-6.1.0/repository/resources/security/
+cp $ARTIFACTS_DIR/security_certs/is_certs/client-truststore.jks $TEST_HOME/wso2is-6.1.0/repository/resources/security/
 
-cert_dir="$TEST_HOME/certs"
-mkdir -p "$cert_dir"
+cp $ARTIFACTS_DIR/security_certs/am_certs/wso2carbon.jks $TEST_HOME/wso2am-4.2.0/repository/resources/security/
+cp $ARTIFACTS_DIR/security_certs/am_certs/client-truststore.jks $TEST_HOME/wso2am-4.2.0/repository/resources/security/
 
-echo "======================= Generating Certificates ======================="
-for product in "${!servers[@]}"; do
-  keystore="${servers[$product]}"
-  echo "Processing $product keystore: $keystore"
-
-  # Remove old key pair
-  echo "Removing old key pair if exists"
-  keytool -delete -alias "$alias_name" -keystore "$keystore" -storepass "$storepass" 2>/dev/null
-
-  # Generate new key pair
-  echo "Generating new key pair for $product..."
-  keytool -genkey -alias "$alias_name" -keystore "$keystore" \
-    -keysize 2048 -keyalg RSA -validity 9999 \
-    -dname "CN=obiam, O=OB, L=WSO2, S=COL, C=LK, OU=OB" \
-    -ext san=ip:127.0.0.1,dns:localhost,dns:$product \
-    -keypass "$storepass" -storepass "$storepass"
-
-  # Export public certificate
-  echo "Exporting public certificate for $product..."
-  keytool -export -alias "$alias_name" \
-    -keystore "$keystore" \
-    -file "$cert_dir/$product.pem" \
-    -storepass "$storepass"
-
-  echo "Completed for $product"
-  echo "--------------------------------------"
-done
-
-echo '======================= Import Certificates into Truststores ======================='
-
-# Define truststores for all products
-truststores=(
-  "$TEST_HOME/wso2is-6.1.0/repository/resources/security/client-truststore.jks"
-  "$TEST_HOME/wso2am-4.2.0/repository/resources/security/client-truststore.jks"
-  "$TEST_HOME/wso2si-4.2.0/resources/security/client-truststore.jks"
-)
-
-# Import each product's certificate into all truststores
-for product in "${!servers[@]}"; do
-  cert="$cert_dir/$product.pem"
-  for truststore in "${truststores[@]}"; do
-    echo "Importing $product certificate into truststore: $truststore"
-    keytool -import \
-      -alias "$product" \
-      -file "$cert" \
-      -keystore "$truststore" \
-      -storepass "$storepass" \
-      -keypass "$storepass" \
-      -noprompt
-  done
-done
-
-echo "======================= All Certificates Imported Successfully ======================="
-
-echo '======================= Verify Exchanged Certificates ======================='
-
-# List of aliases to check (should match the products)
-aliases=("wso2is" "wso2am" "wso2si")
-
-# Function to check if alias exists in the truststore
-# Function to check if alias exists
-check_alias() {
-  local truststore="$1"
-  local alias="$2"
-
-  if [[ ! -f "$truststore" ]]; then
-    echo "[✘] Truststore not found: $truststore"
-    return 1
-  fi
-
-  if keytool -list -keystore "$truststore" -storepass "$storepass" -alias "$alias" &>/dev/null; then
-    echo "[✔] Alias '$alias' found in truststore: $truststore"
-  else
-    echo "[✘] Alias '$alias' NOT found in truststore: $truststore"
-    return 1
-  fi
-}
-
-# Function to display certificate details
-show_certificate_details() {
-  local truststore="$1"
-  local alias="$2"
-
-  echo "-------------------------------"
-  echo "Details for alias '$alias' in truststore: $truststore"
-  keytool -list -v -keystore "$truststore" -storepass "$storepass" -alias "$alias" 2>/dev/null \
-    | grep -E "Alias name:|Valid from:|Issuer:|Owner:"
-  echo "-------------------------------"
-}
-
-# Verify all aliases in all truststores
-for truststore in "${truststores[@]}"; do
-  echo "Checking truststore: $truststore"
-  for alias in "${aliases[@]}"; do
-    if check_alias "$truststore" "$alias"; then
-      show_certificate_details "$truststore" "$alias"
-    else
-      echo "[✘] Verification failed for alias '$alias' in truststore: $truststore"
-      exit 1
-    fi
-  done
-done
-
-echo '======================= All Truststore Verifications Completed Successfully ======================='
-
-echo '======================= Import OB sandbox Root and Issuer Certificates ======================='
-cp "$OBIE_CERTS_DIR/OB_SandBox_PP_Root_CA.cer" $TEST_HOME
-keytool -import -alias root -file "${TEST_HOME}/OB_SandBox_PP_Root CA.cer" -keystore "${TEST_HOME}/wso2is-6.1.0/repository/resources/security/client-truststore.jks" -storepass wso2carbon -noprompt
-keytool -import -alias root -file "${TEST_HOME}/OB_SandBox_PP_Root CA.cer" -keystore "${TEST_HOME}/wso2am-4.2.0/repository/resources/security/client-truststore.jks" -storepass wso2carbon -noprompt
-
-cp "$OBIE_CERTS_DIR/OB_SandBox_PP_Issuing_CA.cer" $TEST_HOME
-keytool -import -alias issuer -file "${TEST_HOME}/OB_SandBox_PP_Issuing CA.cer" -keystore "${TEST_HOME}/wso2is-6.1.0/repository/resources/security/client-truststore.jks" -storepass wso2carbon -noprompt
-keytool -import -alias issuer -file "${TEST_HOME}/OB_SandBox_PP_Issuing CA.cer" -keystore "${TEST_HOME}/wso2am-4.2.0/repository/resources/security/client-truststore.jks" -storepass wso2carbon -noprompt
+cp $ARTIFACTS_DIR/security_certs/si_certs/wso2carbon.jks $TEST_HOME/wso2si-4.2.0/resources/security/
+cp $ARTIFACTS_DIR/security_certs/si_certs/client-truststore.jks $TEST_HOME/wso2si-4.2.0/resources/security/
 
 
 echo '======================= Starting SI server ======================='
