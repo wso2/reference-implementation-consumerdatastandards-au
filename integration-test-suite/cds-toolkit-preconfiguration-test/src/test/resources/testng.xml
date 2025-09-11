@@ -34,7 +34,11 @@
             <class name="org.wso2.cds.preexecution.UserCreationTest"/>
         </classes>
     </test>
-
+    <test name="Pre Test Execution Step - Add IDP" parallel="true" enabled="true">
+        <classes>
+            <class name="org.wso2.cds.preexecution.AddSmsOtpIdentityProvider"/>
+        </classes>
+    </test>
     <test name="Pre Test Execution Step - Client Registration" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.tpponboarding.CommonTppOnboardingStep"/>
