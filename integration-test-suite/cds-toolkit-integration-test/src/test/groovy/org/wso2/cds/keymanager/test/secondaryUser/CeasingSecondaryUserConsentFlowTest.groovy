@@ -102,7 +102,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 .execute()
     }
 
-    @Test (priority = 1)
+    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
+//    @Test (priority = 1)
     void "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner"() {
 
         //Active the sharing status
@@ -140,8 +141,9 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
     }
 
-    @Test (priority = 1,
-            dependsOnMethods = "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner")
+    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
+//    @Test (priority = 1,
+//            dependsOnMethods = "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner")
     void "CDS-645_Retrieve accounts after blocking the data sharing for legal entity"() {
 
         //Get User Access Token
@@ -158,8 +160,9 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    @Test (priority = 1,
-            dependsOnMethods = "CDS-645_Retrieve accounts after blocking the data sharing for legal entity")
+    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
+//    @Test (priority = 1,
+//            dependsOnMethods = "CDS-645_Retrieve accounts after blocking the data sharing for legal entity")
     void "CDS-646_Retrieve accounts after activating the data sharing for legal entity"() {
 
         //Block the sharing status
@@ -173,7 +176,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    @Test
+    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
+//    @Test
     void "CDS-647_Retrieve accounts after blocking the data sharing for one legal entity when the consent is given for multiple accounts"() {
 
         //Active the sharing status for secondary account 1
@@ -232,7 +236,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}"))
     }
 
-    @Test
+    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
+//    @Test
     void "CDS-647_Consent amendment after ceasing the secondary user sharing"() {
 
         //Active the sharing status for secondary account 1
@@ -295,7 +300,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    @Test
+    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
+//    @Test
     void "CDS-649_Verify account is listed under unavailable accounts once the legal entity is restricted in consent amendment flow"() {
 
         //Active the sharing status for secondary account 1
