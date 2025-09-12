@@ -47,7 +47,7 @@
             <class name="org.wso2.cds.integration.test.accounts.DuplicateCommonAuthIdTest"/>
         </classes>
     </test>
-    <test name="Scenarios for Multiple TPPs" parallel="false" enabled="false">
+    <test name="Scenarios for Multiple TPPs" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.clientRegistration.MultiTppDcrEndpointTests"/>
             <class name="org.wso2.cds.integration.test.accounts.MultiTppConsentValidationTest"/>
