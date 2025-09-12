@@ -18,6 +18,8 @@
 
 package org.wso2.cds.test.framework.constant
 
+import org.apache.commons.lang3.StringUtils
+
 /**
  * Class for keep automation Page objects
  */
@@ -241,4 +243,23 @@ class AUPageObjects {
     static final String BTN_FINISH = "//input[@value='Finish']"
     static final String LBL_MESSAGE_BOX = "//div[@id='messagebox-info']/p"
     static final String BTN_MESSAGEBOX_OK = "//div[@class='ui-dialog-buttonpane']/button[text()='OK']"
+
+    public static String BTN_ADD_IDP = "//li[text()='Identity Providers']/following-sibling::li//a[text()='Add']"
+    public static String BTN_RESIDENT = "//li[text()='Identity Providers']/following-sibling::li//a[text()='Resident']"
+    public static String TXT_IDP_NAME = "idPName"
+    public static String TAB_FEDERATED_AUTHENTICATOR = "//a[text()='Federated Authenticators']"
+    public static String TAB_SMS_OTP = "//a[text()='SMS OTP Configuration']"
+    public static String CHK_ENABLE_SMS_OTP = "SMSOTP_Enabled"
+    public static String TXT_SMS_URL = "//input[contains(@id,'sms_url')]"
+    public static String TXT_HTTP_METHOD = "//input[contains(@id,'http_method')]"
+    public static String TXT_HTTP_HEADER = "//input[contains(@id,'headers')]"
+    public static String TXT_HTTP_PAYLOAD = "//input[contains(@id,'payload')]"
+    public static String BTN_IDP_REGISTER = "//input[contains(@onclick,'idpMgtUpdate();')]"
+    public static String TAB_LOGIN_SECURITY = "//a[text()='Login Attempts Security']"
+    public static String TAB_ACCOUNT_LOCK = "//a[text()='Account Lock']"
+    public static String CHK_ENABLE_ACCOUNT_LOCK = "//input[contains(@value,'account.lock.handler.lock.on.max.failed.attempts.enable')]"
+    public static String TAB_CLAIMS_LIST = "//li[text()='Claims']/following-sibling::li//a[contains(@href,'identity_claim_mgt_menu_list')]"
+    public static String LNK_ORG_CLAIMS = "//a[text()='http://wso2.org/claims']"
+    public static String BTN_MOBILE_CLAIM_EDIT = "//span[normalize-space(.)='Mobile']/ancestor::div[@class='trigger-title-container']//a[contains(@class,'editLink')]"
+    public static String CHK_REQUIRED = "//input[@id='required']"
 }

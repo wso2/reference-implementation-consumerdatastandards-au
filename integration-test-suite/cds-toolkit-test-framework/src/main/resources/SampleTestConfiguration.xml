@@ -269,6 +269,12 @@
                 <Password>wso2123</Password>
             </Credentials>
         </PSUInfo>
+        <PSUInfo>
+            <Credentials>
+                <User>admin@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
     </PSUList>
 
     <!-- Publisher Info -->

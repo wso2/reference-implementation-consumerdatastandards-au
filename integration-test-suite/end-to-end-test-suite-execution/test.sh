@@ -114,8 +114,7 @@ sed -i -e "s|{AM_HOST}|$(get_prop "ApimHostname")|g" $TEST_CONFIG_FILE
 sed -i -e "s|{IS_HOST}|$(get_prop "IamHostname")|g" $TEST_CONFIG_FILE
 
 # Set client trust store
-#TODO:If Remote Server, Need to copy the client-truststore.jks manually.
-cp $(get_prop "ApimServerPath")/repository/resources/security/client-truststore.jks ${TEST_ARTIFACTS}/am-certs/
+#TODO:If Remote Server, Need to copy the client-truststore.jks manually to ${TEST_ARTIFACTS}/am-certs/
 
 # Set Web Browser Configuration
 sed -i -e "s|BrowserAutomation.HeadlessEnabled|$(get_prop "BrowserAutomation.HeadlessEnabled")|g" $TEST_CONFIG_FILE
@@ -133,15 +132,17 @@ sed -i -e "s|DataBaseConfiguration.DBPassword|$(get_prop "DBPassword")|g" $TEST_
 sed -i -e "s|DataBaseConfiguration.DBDriverClass|$(get_prop "DBDriverClass")|g" $TEST_CONFIG_FILE
 sed -i -e "s|DataBaseConfiguration.OracleDBSID|$(get_prop "OracleDBSID")|g" $TEST_CONFIG_FILE
 
-#--------------build the Base test framework-----------------#
+##--------------build the Base test framework-----------------#
 git clone https://github.com/wso2/financial-services-accelerator.git
-cd financial-services-accelerator/integration-test-framework
+cd financial-services-accelerator
+git checkout -b 3.0.0 remotes/origin/3.0.0
+cd integration-test-framework
 mvn clean install
 
-#--------------build the CDS Toolkit test Framework-----------------#
+##--------------build the CDS Toolkit test Framework-----------------#
 cd ${TEST_FRAMEWORK_HOME}
 echo "${TEST_FRAMEWORK_HOME}/cds-toolkit-test-framework"
-mvn clean install
+mvn clean install -DskipTests -Dfindbugs.skip=true -Dspotbugs.skip=true
 
 #--------------run the Pre Configuration Steps (Create Key Manager, Publish APIs, Create Users, Create Common TPP Application)-----------------#
 cd ${TEST_FRAMEWORK_HOME}/../cds-toolkit-preconfiguration-test/

@@ -90,7 +90,7 @@ class RESTApiUserCreationRequestBuilder {
 		def payload = defaultUserRolesPayload(roleName, userInfoList)
 
 		roleGroupResponse = AURestAsRequestBuilder.buildBasicRequest()
-				.contentType(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
+				.contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
 				.accept(AUConstants.CONTENT_TYPE_APPLICATION_SCIM_JSON)
 				.header(AUConstants.AUTHORIZATION_HEADER_KEY, basicHeader)
 				.body(payload)
