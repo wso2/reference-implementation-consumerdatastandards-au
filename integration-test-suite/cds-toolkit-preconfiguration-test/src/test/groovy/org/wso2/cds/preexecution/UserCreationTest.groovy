@@ -116,25 +116,25 @@ class UserCreationTest extends AUTest {
         }
     }
 
-//    @Test
-//    void "Assign Subscriber role to Admin User"() {
-//
-//        roleName = AUConstants.SUBSCRIBER_ROLE
-//
-//        //Get Internal/subscriber role Id
-//        roleId = restApiUserCreationRequestBuilder.getRoleId(roleName)
-//
-//        //Assign subscriber role to the created user
-//        def response = restApiUserCreationRequestBuilder.assignUserRoles(roleName, roleId, userInfoList)
-//
-//        Assert.assertEquals(response.statusCode(), HTTPResponse.SC_OK)
-//
-//        //Verify Assigned User Role
-//        def responseUserRole = restApiUserCreationRequestBuilder.getUserDetails(userId)
-//
-//        Assert.assertEquals(responseUserRole.statusCode(), HTTPResponse.SC_OK)
-//        Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
-//                .contains(roleId))
-//
-//    }
+    @Test
+    void "Assign Subscriber role to Admin User"() {
+
+        roleName = AUConstants.SUBSCRIBER_ROLE
+
+        //Get Internal/subscriber role Id
+        roleId = restApiUserCreationRequestBuilder.getRoleId(roleName)
+
+        //Assign subscriber role to the created user
+        def response = restApiUserCreationRequestBuilder.assignUserRoles(roleName, roleId, userInfoList)
+
+        Assert.assertEquals(response.statusCode(), HTTPResponse.SC_OK)
+
+        //Verify Assigned User Role
+        def responseUserRole = restApiUserCreationRequestBuilder.getUserDetails(userId)
+
+        Assert.assertEquals(responseUserRole.statusCode(), HTTPResponse.SC_OK)
+        Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
+                .contains(roleId))
+
+    }
 }
