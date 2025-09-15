@@ -28,7 +28,7 @@ jobs:
 
   Build-repo-check:
 
-    if: ${{ contains(github.event.pull_request.labels.*.name, 'Ready-to-Build') }}
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Ready-to-Build')
     runs-on: ubuntu-latest
     env:
       WSO2_USERNAME: ${{ secrets.SOLUTIONS_BOT_EMAIL }}
