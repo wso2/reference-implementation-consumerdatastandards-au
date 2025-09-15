@@ -48,7 +48,7 @@ class UserCreationTest extends AUTest {
 
         userInfoList = new ArrayList<>()
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 7; i++) {
 
             auConfiguration.setPsuNumber(i)
             userName = auConfiguration.getUserPSUName()
@@ -93,7 +93,7 @@ class UserCreationTest extends AUTest {
             Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
                     .contains(roleId))
 
-        } else if (!userName.equalsIgnoreCase(auConfiguration.getUserKeyManagerAdminName())) {
+        } else {
             roleName = AUConstants.SUBSCRIBER_ROLE
 
             //Get Internal/subscriber role Id
@@ -108,8 +108,33 @@ class UserCreationTest extends AUTest {
             def responseUserRole = restApiUserCreationRequestBuilder.getUserDetails(userId)
 
             Assert.assertEquals(responseUserRole.statusCode(), HTTPResponse.SC_OK)
-            Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
-                    .contains(roleId))
+
+            if (!userName.equalsIgnoreCase(auConfiguration.getUserKeyManagerAdminName())) {
+                Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
+                        .contains(roleId))
+            }
         }
+    }
+
+    @Test
+    void "Assign Subscriber role to Admin User"() {
+
+        roleName = AUConstants.SUBSCRIBER_ROLE
+
+        //Get Internal/subscriber role Id
+        roleId = restApiUserCreationRequestBuilder.getRoleId(roleName)
+
+        //Assign subscriber role to the created user
+        def response = restApiUserCreationRequestBuilder.assignUserRoles(roleName, roleId, userInfoList)
+
+        Assert.assertEquals(response.statusCode(), HTTPResponse.SC_OK)
+
+        //Verify Assigned User Role
+        def responseUserRole = restApiUserCreationRequestBuilder.getUserDetails(userId)
+
+        Assert.assertEquals(responseUserRole.statusCode(), HTTPResponse.SC_OK)
+        Assert.assertTrue(AUTestUtil.parseResponseBody(responseUserRole, "roles[0].value")
+                .contains(roleId))
+
     }
 }

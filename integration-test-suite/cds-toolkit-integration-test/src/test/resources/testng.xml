@@ -47,31 +47,31 @@
             <class name="org.wso2.cds.integration.test.accounts.DuplicateCommonAuthIdTest"/>
         </classes>
     </test>
-    <test name="Scenarios for Multiple TPPs" parallel="false" enabled="false">
+    <test name="Scenarios for Multiple TPPs" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.clientRegistration.MultiTppDcrEndpointTests"/>
             <class name="org.wso2.cds.integration.test.accounts.MultiTppConsentValidationTest"/>
             <class name="org.wso2.cds.integration.test.tokenEndpoint.MultiTppTokenFlowValidationTests"/>
         </classes>
     </test>
-    <test name="Banking API Tests" parallel="false" enabled="false">
+    <test name="Banking API Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.banking_products.ProductRetrievalHeaderValidationTest"/>
             <class name="org.wso2.cds.integration.test.banking_products.ProductRetrievalValidationTest"/>
         </classes>
     </test>
-    <test name="Common API Tests" parallel="false" enabled="false">
+    <test name="Common API Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalHeaderValidationTests"/>
             <class name="org.wso2.cds.integration.test.common_api.CustomerDetailsRetrievalTest"/>
         </classes>
     </test>
-    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="false">
+    <test name="CDR Arrangement Management API Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.cdr_arrangement.ConcurrentConsentTest"/>
         </classes>
     </test>
-    <test name="Token Validation Tests" parallel="false" enabled="false">
+    <test name="Token Validation Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.tokenEndpoint.AccessTokenTest"/>
         </classes>
@@ -93,7 +93,7 @@
             <class name="org.wso2.cds.integration.test.throttling.ThrottlingPolicyTest"/>
         </classes>
     </test>
-    <test name="CX Validation Tests" parallel="false" enabled="false">
+    <test name="CX Validation Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.integration.test.authflow.AuthorisationFlowCXValidationTest"/>
             <class name="org.wso2.cds.integration.test.authflow.AuthorisationFlowUIValidationTest"/>
@@ -134,20 +134,20 @@
     </test>
 
     <!-- Key Manager Validation Tests-->
-    <test name="Authorisation Flow Validation Tests" parallel="false" enabled="false">
+    <test name="Authorisation Flow Validation Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.authorizationflow.AuthorisationFlowTest"/>
             <class name="org.wso2.cds.keymanager.test.authorizationflow.ConsentAmendmentFlowTest"/>
             <class name="org.wso2.cds.keymanager.test.authorizationflow.SharingDurationValidationTest"/>
         </classes>
     </test>
-    <test name="Pushed Authorisation Flow Tests" parallel="false" enabled="false">
+    <test name="Pushed Authorisation Flow Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.par.PushedAuthorisationFlowTest"/>
             <class name="org.wso2.cds.keymanager.test.par.RequestObjectValidationTest"/>
         </classes>
     </test>
-    <test name="JWT Response Management" parallel="false" enabled="false">
+    <test name="JWT Response Management" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.jarm.JarmResponseModeFormPostJwtValidationTests"/>
             <class name="org.wso2.cds.keymanager.test.jarm.JarmResponseModeFragmentJwtValidationTests"/>
@@ -156,19 +156,19 @@
             <class name="org.wso2.cds.keymanager.test.jarm.JwtSecuredAuthorizationResponseValidationTests"/>
         </classes>
     </test>
-    <test name="Disclosure Option Management Service" parallel="false" enabled="false">
+    <test name="Disclosure Option Management Service" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.doms.DisclosureOptionManagementServiceTest"/>
         </classes>
     </test>
-    <test name="Secondary User Instructions" parallel="false" enabled="false">
+    <test name="Secondary User Instructions" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.SecondaryUserInstructionsAuthorisationTest"/>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.SecondaryUserAmendmentFlow"/>
         </classes>
     </test>
     <!--TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215-->
-    <test name="Ceasing Secondary User" parallel="false" enabled="false">
+    <test name="Ceasing Secondary User" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserManagementTest"/>
             <class name="org.wso2.cds.keymanager.test.secondaryUser.CeasingSecondaryUserConsentFlowTest"/>
@@ -178,7 +178,7 @@
         Note: Ensure that the following test group is executed last.
         After these tests are completed, clear the openbank_openbankingdb.OB_ACCOUNT_METADATA table.
     -->
-    <test name="Business Nominated User Representative Tests" parallel="false" enabled="false">
+    <test name="Business Nominated User Representative Tests" parallel="false" enabled="true">
         <classes>
             <class name="org.wso2.cds.keymanager.test.bnr.BnrEndToEndTest"/>
             <class name="org.wso2.cds.keymanager.test.bnr.ConsentAmendmentFlowTests"/>
