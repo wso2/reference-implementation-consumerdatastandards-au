@@ -18,7 +18,7 @@ name: Build Consumer Data Standards AU Reference Implementation Repository
 
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
-  pull_request:
+  pull_request_target:
     branches:
       - 'main'
     types:
@@ -89,6 +89,10 @@ jobs:
       - name: Running the integration test suite
         run: |
           echo "Starting tests..."
+          echo "Using test home: $TEST_HOME"
+          echo "Using bot username: $WSO2_USERNAME"
+          echo "Using bot password: $WSO2_PASSWORD"
+          echo "Using bot test: $WSO2_USERNAME_ERROR"
           export MAVEN_OPTS="-Xmx4g"
           RUNNER_HOME=`pwd`
           chmod +x $RUNNER_HOME/github-action-build/test.sh
