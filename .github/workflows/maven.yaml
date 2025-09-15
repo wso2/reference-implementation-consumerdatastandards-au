@@ -82,6 +82,9 @@ jobs:
                 "url": "http://resources.knopflerfish.org/repo/maven2/release"
               }
             ]
+      - name: Debug labels
+        run:
+          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
       - name: Build with Maven
         run: |
           export MAVEN_OPTS="-Xmx8g -XX:MaxPermSize=512m"
