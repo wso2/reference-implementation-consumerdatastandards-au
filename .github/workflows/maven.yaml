@@ -83,7 +83,7 @@ jobs:
               }
             ]
       - name: Debug labels
-        run:
+        run: |
           echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
       - name: Build with Maven
         run: |
