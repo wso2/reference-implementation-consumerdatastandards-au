@@ -23,17 +23,8 @@ on:
       - 'main'
 
 jobs:
-  Debug-Labels:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Print all PR labels
-        run: |
-          echo "Labels are: "
-          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
 
   Build-repo-check:
-
-    if: contains(join(github.event.pull_request_target.labels.*.name, ' '), 'Ready-to-Build')
     runs-on: ubuntu-latest
     env:
       WSO2_USERNAME: ${{ secrets.SOLUTIONS_BOT_EMAIL }}
