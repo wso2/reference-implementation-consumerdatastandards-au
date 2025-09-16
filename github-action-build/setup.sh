@@ -28,30 +28,28 @@ if [ ! -d "$TEST_HOME" ]; then
 fi
 
 echo '======================= Extracting Base Products to test home directory======================='
-wget --no-check-certificate "https://docs.google.com/uc?export=download&id=1wafbiDmy6XrXAh1rE3EYRSIbCFVzKges" -O wso2am-4.2.0.zip
-curl -k -L -o "$TEST_HOME/wso2is-6.1.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip"
+#curl -k -L -o "$TEST_HOME/wso2is-6.1.0.zip" \
+#            "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip"
+wget --no-check-certificate "https://docs.google.com/uc?export=download&id=1zpY840QTPhQl7zMjLWaLKVlGyQupst5U" -O wso2is-6.1.0.zip
 unzip $TEST_HOME/wso2is-6.1.0.zip -d $TEST_HOME
 
-curl -k -L -o "$TEST_HOME/wso2am-4.2.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip"
+#curl -k -L -o "$TEST_HOME/wso2am-4.2.0.zip" \
+#            "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip"
+wget --no-check-certificate "https://docs.google.com/uc?export=download&id=1wafbiDmy6XrXAh1rE3EYRSIbCFVzKges" -O wso2am-4.2.0.zip
 unzip $TEST_HOME/wso2am-4.2.0.zip -d $TEST_HOME
 
 cp $ARTIFACTS_DIR/wso2si-4.2.0.zip $TEST_HOME
 unzip $TEST_HOME/wso2si-4.2.0.zip -d $TEST_HOME
 
 echo '======================= Extracting Accelerator Artifacts to product home directory======================='
-curl -k -L -o "$TEST_HOME/wso2-obiam-accelerator-3.0.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obiam-accelerator-3.0.0.zip"
-unzip $TEST_HOME/wso2-obiam-accelerator-3.0.0.zip -d $TEST_HOME/wso2is-6.1.0
+wget "https://github.com/wso2/financial-services-accelerator/releases/download/v3.3.0/wso2-obiam-accelerator-3.3.0.zip" -O wso2-obiam-accelerator-3.3.0.zip
+unzip $TEST_HOME/wso2-obiam-accelerator-3.3.0.zip -d $TEST_HOME/wso2is-6.1.0
 
-curl -k -L -o "$TEST_HOME/wso2-obam-accelerator-3.0.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obam-accelerator-3.0.0.zip"
-unzip $TEST_HOME/wso2-obam-accelerator-3.0.0.zip -d $TEST_HOME/wso2am-4.2.0
+wget "https://github.com/wso2/financial-services-accelerator/releases/download/v3.3.0/wso2-obam-accelerator-3.3.0.zip" -O wso2-obam-accelerator-3.3.0.zip
+unzip $TEST_HOME/wso2-obam-accelerator-3.3.0.zip -d $TEST_HOME/wso2am-4.2.0
 
-curl -k -L -o "$TEST_HOME/wso2-obbi-accelerator-3.0.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obbi-accelerator-3.0.0.zip"
-unzip $TEST_HOME/wso2-obbi-accelerator-3.0.0.zip -d $TEST_HOMER/wso2si-4.2.0
+wget "https://github.com/wso2/financial-services-accelerator/releases/download/v3.3.0/wso2-obbi-accelerator-3.3.0.zip" -O wso2-obbi-accelerator-3.3.0.zip
+unzip $TEST_HOME/wso2-obbi-accelerator-3.3.0.zip -d $TEST_HOMER/wso2si-4.2.0
 
 # Extract the WSO2 IS Connector to the TEST_HOME directory
 cp $ARTIFACTS_DIR/wso2is-extensions-1.6.8.zip $TEST_HOME
@@ -88,25 +86,25 @@ echo '======================= Installing WSO2 IS Accelerator Updates ===========
 name=$(echo "$WSO2_USERNAME" | cut -d'@' -f1)
 WSO2_UPDATES_HOME=home/$name/.wso2updates
 sudo mkdir -p /home/$name/.wso2-updates/docker && sudo chmod -R 777 /home/$name/.wso2-updates
-cp ${RUNNER_HOME}/github-action-build/wso2update_linux $TEST_HOME/wso2is-6.1.0/wso2-obiam-accelerator-3.0.0/bin/
-chmod +x $TEST_HOME/wso2is-6.1.0/wso2-obiam-accelerator-3.0.0/bin/wso2update_linux
-$TEST_HOME/wso2-obiam-accelerator-3.0.0/wso2is-6.1.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD ||  ($TEST_HOME/wso2-obiam-accelerator-3.0.0/wso2is-6.1.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD )
+cp ${RUNNER_HOME}/github-action-build/wso2update_linux $TEST_HOME/wso2is-6.1.0/wso2-obiam-accelerator-3.3.0/bin/
+chmod +x $TEST_HOME/wso2is-6.1.0/wso2-obiam-accelerator-3.3.0/bin/wso2update_linux
+$TEST_HOME/wso2-obiam-accelerator-3.3.0/wso2is-6.1.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD ||  ($TEST_HOME/wso2-obiam-accelerator-3.3.0/wso2is-6.1.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD )
 
 echo '======================= Installing WSO2 API-M Accelerator Updates ===================='
 name=$(echo "$WSO2_USERNAME" | cut -d'@' -f1)
 WSO2_UPDATES_HOME=home/$name/.wso2updates
 sudo mkdir -p /home/$name/.wso2-updates/docker && sudo chmod -R 777 /home/$name/.wso2-updates
-cp ${RUNNER_HOME}/github-action-build/wso2update_linux $TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.0.0/bin/
-chmod +x $TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.0.0/bin/wso2update_linux
-$TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.0.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD ||  ($TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.0.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD )
+cp ${RUNNER_HOME}/github-action-build/wso2update_linux $TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.3.0/bin/
+chmod +x $TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.3.0/bin/wso2update_linux
+$TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.3.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD ||  ($TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.3.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD )
 
 echo '======================= Installing WSO2 BI Accelerator Updates ===================='
 name=$(echo "$WSO2_USERNAME" | cut -d'@' -f1)
 WSO2_UPDATES_HOME=home/$name/.wso2updates
 sudo mkdir -p /home/$name/.wso2-updates/docker && sudo chmod -R 777 /home/$name/.wso2-updates
-cp ${RUNNER_HOME}/github-action-build/wso2update_linux $TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.0.0/bin/
-chmod +x $TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.0.0/bin/wso2update_linux
-$TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.0.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD ||  ($TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.0.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD )
+cp ${RUNNER_HOME}/github-action-build/wso2update_linux $TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.3.0/bin/
+chmod +x $TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.3.0/bin/wso2update_linux
+$TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.3.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD ||  ($TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.3.0/bin/wso2update_linux -v --username $WSO2_USERNAME --password $WSO2_U2_PASSWORD )
 
 echo '=================== Setup Firefox ==================='
 if command -v firefox &> /dev/null
@@ -164,15 +162,15 @@ SET GLOBAL max_connections = 500;
 
 
 echo '======================= Run Accelerator merge and Config scripts ======================='
-cd $TEST_HOME/wso2is-6.1.0/wso2-obiam-accelerator-3.0.0/bin
+cd $TEST_HOME/wso2is-6.1.0/wso2-obiam-accelerator-3.3.0/bin
 bash merge.sh
 bash configure.sh
 
-cd $TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.0.0/bin
+cd $TEST_HOME/wso2am-4.2.0/wso2-obam-accelerator-3.3.0/bin
 bash merge.sh
 bash configure.sh
 
-cd $TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.0.0/bin
+cd $TEST_HOME/wso2si-4.2.0/wso2-obbi-accelerator-3.3.0/bin
 bash merge.sh
 bash configure.sh
 
