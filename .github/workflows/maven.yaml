@@ -86,23 +86,10 @@ jobs:
         run: |
           echo "Adding WSO2 host entry to /etc/hosts"
           echo "15.197.248.29 atuwa.private.wso2.com" | sudo tee -a /etc/hosts
-      - name: Debug labels
-        run: |
-          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
 #      - name: Build with Maven
 #        run: |
 #          export MAVEN_OPTS="-Xmx8g -XX:MaxPermSize=512m"
 #          mvn -B install --file pom.xml
-      - name: Debug passphrase length
-        run: |
-          echo "Passphrase length: ${#WSO2_UPDATE_LINUX_DECRYPTION_PASSPHRASE}"
-      - name: Download WSO2 product zip ignoring SSL
-        run: |
-          curl -k -L -o "$TEST_HOME/wso2is-6.1.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip"
-          curl -k -L -o "$TEST_HOME/wso2am-4.2.0.zip" \
-            "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip"
-
       - name: Running the integration test suite
         run: |
           echo "Starting tests..."
