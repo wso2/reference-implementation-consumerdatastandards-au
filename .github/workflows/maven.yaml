@@ -82,6 +82,10 @@ jobs:
                 "url": "http://resources.knopflerfish.org/repo/maven2/release"
               }
             ]
+      - name: Add host entry
+        run: |
+          echo "Adding WSO2 host entry to /etc/hosts"
+          echo "15.197.248.29 atuwa.private.wso2.com" | sudo tee -a /etc/hosts
       - name: Debug labels
         run: |
           echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
