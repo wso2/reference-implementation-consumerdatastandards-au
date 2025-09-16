@@ -97,8 +97,6 @@ jobs:
           echo "Using bot password: $WSO2_PASSWORD"
           echo "Using bot test: $WSO2_USERNAME_ERROR"
           export MAVEN_OPTS="-Xmx4g"
-          echo $RUNNER_HOME
-          echo `ls $RUNNER_HOME/*`
           RUNNER_HOME=`pwd`
           chmod +x $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution/test.sh
           chmod +x ${RUNNER_HOME}/github-action-build/wso2update_linux.gpg
