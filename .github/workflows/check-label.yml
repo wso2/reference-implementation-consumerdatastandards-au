@@ -1,7 +1,7 @@
 name: Check PR Label
 
 on:
-  pull_request:
+  pull_request_target:
     branches:
      - 'main'
     types:
@@ -10,12 +10,18 @@ on:
       - unlabeled
 
 jobs:
+  Debug-Labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print all PR labels
+        run: |
+          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
 
   Build-label-check:
 
     runs-on: ubuntu-latest
 
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'Ready-to-Build') || join(github.event.pull_request.labels) == '' }}
+    if: ${{ !contains(github.event.pull_request_target.labels.*.name, 'Ready-to-Build') || join(github.event.pull_request_target.labels) == '' }}
     steps:
       - name: Fail if PR is not yet built
         run: |
