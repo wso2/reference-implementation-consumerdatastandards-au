@@ -28,23 +28,23 @@ if [ ! -d "$TEST_HOME" ]; then
 fi
 
 echo '======================= Extracting Base Products to test home directory======================='
-wget --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip" -O $TEST_HOME/wso2is-6.1.0.zip
+wget --quiet --show-progress --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip" -O $TEST_HOME/wso2is-6.1.0.zip
 unzip $TEST_HOME/wso2is-6.1.0.zip -d $TEST_HOME
 
-wget --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip" -O $TEST_HOME/wso2am-4.2.0.zip
+wget --quiet --show-progress --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip" -O $TEST_HOME/wso2am-4.2.0.zip
 unzip $TEST_HOME/wso2am-4.2.0.zip -d $TEST_HOME
 
 cp $ARTIFACTS_DIR/wso2si-4.2.0.zip $TEST_HOME
 unzip $TEST_HOME/wso2si-4.2.0.zip -d $TEST_HOME
 
 echo '======================= Extracting Accelerator Artifacts to product home directory======================='
-wget --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obiam-accelerator-3.0.0.zip" -O $TEST_HOME/wso2-obiam-accelerator-3.0.0.zip
+wget --quiet --show-progress --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obiam-accelerator-3.0.0.zip" -O $TEST_HOME/wso2-obiam-accelerator-3.0.0.zip
 unzip $TEST_HOME/wso2-obiam-accelerator-3.0.0.zip -d $TEST_HOME/wso2is-6.1.0
 
-wget --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obam-accelerator-3.0.0.zip" -O $TEST_HOME/wso2-obam-accelerator-3.0.0.zip
+wget --quiet --show-progress --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obam-accelerator-3.0.0.zip" -O $TEST_HOME/wso2-obam-accelerator-3.0.0.zip
 unzip $TEST_HOME/wso2-obam-accelerator-3.0.0.zip -d $TEST_HOME/wso2am-4.2.0
 
-wget --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obbi-accelerator-3.0.0.zip" -O $TEST_HOME/wso2-obbi-accelerator-3.0.0.zip
+wget --quiet --show-progress --no-check-certificate "https://atuwa.private.wso2.com/WSO2-Products/open-banking-accelerators/3.0.0/wso2-obbi-accelerator-3.0.0.zip" -O $TEST_HOME/wso2-obbi-accelerator-3.0.0.zip
 unzip $TEST_HOME/wso2-obbi-accelerator-3.0.0.zip -d $TEST_HOMER/wso2si-4.2.0
 
 # Extract the WSO2 IS Connector to the TEST_HOME directory
