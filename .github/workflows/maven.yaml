@@ -28,7 +28,7 @@ jobs:
 
   Build-repo-check:
 
-    if: ${{ contains(github.event.pull_request_target.labels.*.name, 'Ready-to-Build') }}
+    if: contains(join(github.event.pull_request.labels.*.name, ' '), 'Ready-to-Build')
     runs-on: ubuntu-latest
     env:
       WSO2_USERNAME: ${{ secrets.SOLUTIONS_BOT_EMAIL }}
@@ -39,6 +39,9 @@ jobs:
       TEST_HOME: /home/runner/work/reference-implementation-consumerdatastandards-au/reference-implementation-consumerdatastandards-au
 
     steps:
+      - name: Debug labels
+        run: |
+          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
       - uses: actions/checkout@v2
       - name: Set up JDK 8
         uses: actions/setup-java@v1
