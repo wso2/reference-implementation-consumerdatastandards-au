@@ -10,12 +10,6 @@ on:
       - unlabeled
 
 jobs:
-  Debug-Labels:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Print all PR labels
-        run: |
-          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
 
   Build-label-check:
 

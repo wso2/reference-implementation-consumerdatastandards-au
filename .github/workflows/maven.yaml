@@ -96,13 +96,16 @@ jobs:
       - name: Debug passphrase length
         run: |
           echo "Passphrase length: ${#WSO2_UPDATE_LINUX_DECRYPTION_PASSPHRASE}"
+      - name: Download WSO2 product zip ignoring SSL
+        run: |
+          wget --no-check-certificate \
+            "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip" -O $TEST_HOME/wso2is-6.1.0.zip
+          wget --no-check-certificate \
+            "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip" -O $TEST_HOME/wso2am-4.2.0.zip
+
       - name: Running the integration test suite
         run: |
           echo "Starting tests..."
-          echo "Using test home: $TEST_HOME"
-          echo "Using bot username: $WSO2_USERNAME"
-          echo "Using bot password: $WSO2_PASSWORD"
-          echo "Using bot test: $WSO2_USERNAME_ERROR"
           export MAVEN_OPTS="-Xmx4g"
           RUNNER_HOME=`pwd`
           chmod +x $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution/test.sh
