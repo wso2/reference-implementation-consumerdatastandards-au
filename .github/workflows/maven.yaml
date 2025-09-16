@@ -25,6 +25,12 @@ on:
       - labeled
 
 jobs:
+  Debug-Labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print all PR labels
+        run: |
+          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
 
   Build-repo-check:
 
@@ -39,9 +45,6 @@ jobs:
       TEST_HOME: /home/runner/work/reference-implementation-consumerdatastandards-au/reference-implementation-consumerdatastandards-au
 
     steps:
-      - name: Show labels
-        run: |
-          echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
       - uses: actions/checkout@v2
       - name: Set up JDK 8
         uses: actions/setup-java@v1
