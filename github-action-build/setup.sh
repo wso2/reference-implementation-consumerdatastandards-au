@@ -28,14 +28,12 @@ if [ ! -d "$TEST_HOME" ]; then
 fi
 
 echo '======================= Extracting Base Products to test home directory======================='
-#curl -k -L -o "$TEST_HOME/wso2is-6.1.0.zip" \
-#            "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip"
-wget --no-check-certificate "https://docs.google.com/uc?export=download&id=1zpY840QTPhQl7zMjLWaLKVlGyQupst5U" -O wso2is-6.1.0.zip
+curl -k -L -o "$TEST_HOME/wso2is-6.1.0.zip" \
+            "https://atuwa.private.wso2.com/WSO2-Products/identity-server/6.1.0/wso2is-6.1.0.zip"
 unzip $TEST_HOME/wso2is-6.1.0.zip -d $TEST_HOME
 
-#curl -k -L -o "$TEST_HOME/wso2am-4.2.0.zip" \
-#            "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip"
-wget --no-check-certificate "https://docs.google.com/uc?export=download&id=1wafbiDmy6XrXAh1rE3EYRSIbCFVzKges" -O wso2am-4.2.0.zip
+curl -k -L -o "$TEST_HOME/wso2am-4.2.0.zip" \
+            "https://atuwa.private.wso2.com/WSO2-Products/api-manager/4.2.0/APIM/wso2am-4.2.0.zip"
 unzip $TEST_HOME/wso2am-4.2.0.zip -d $TEST_HOME
 
 cp $ARTIFACTS_DIR/wso2si-4.2.0.zip $TEST_HOME
