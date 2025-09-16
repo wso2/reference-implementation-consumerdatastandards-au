@@ -21,8 +21,6 @@ on:
   pull_request_target:
     branches:
       - 'main'
-    types:
-      - labeled
 
 jobs:
   Debug-Labels:
@@ -30,6 +28,7 @@ jobs:
     steps:
       - name: Print all PR labels
         run: |
+          echo "Labels are: "
           echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
 
   Build-repo-check:
