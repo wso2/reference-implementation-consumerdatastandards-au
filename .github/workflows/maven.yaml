@@ -39,7 +39,7 @@ jobs:
       TEST_HOME: /home/runner/work/reference-implementation-consumerdatastandards-au/reference-implementation-consumerdatastandards-au
 
     steps:
-      - name: Debug labels
+      - name: Show labels
         run: |
           echo "Labels: ${{ toJson(github.event.pull_request.labels) }}"
       - uses: actions/checkout@v2
