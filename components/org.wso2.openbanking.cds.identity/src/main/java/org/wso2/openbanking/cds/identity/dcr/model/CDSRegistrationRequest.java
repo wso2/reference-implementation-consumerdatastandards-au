@@ -164,4 +164,10 @@ public class CDSRegistrationRequest extends RegistrationRequest {
 
         return registrationRequest.getSoftwareStatementBody();
     }
+
+    @Override
+    public String getAuthorizationSignedResponseAlg() {
+
+        return registrationRequest.getAuthorizationSignedResponseAlg();
+    }
 }

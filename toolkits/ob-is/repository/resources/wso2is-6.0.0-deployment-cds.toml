@@ -582,6 +582,10 @@ required = true
 [open_banking.dcr.registration.software_statement]
 unmodifiable_metadata = ["iss", "org_id", "software_id", "software_roles", "legal_entity_id", "legal_entity_name"]
 
+[open_banking.dcr.registration.authorization_signed_response_alg]
+required = true
+allowed_values = ["PS256"]
+
 [open_banking.data_publishing]
 enable = false
 username="$ref{super_admin.username}@carbon.super"
