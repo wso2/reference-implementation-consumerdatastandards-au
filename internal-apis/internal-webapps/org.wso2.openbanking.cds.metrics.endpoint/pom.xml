@@ -23,7 +23,7 @@
     <parent>
         <artifactId>reference-implementation-consumerdatastandards-au</artifactId>
         <groupId>org.wso2.openbanking</groupId>
-        <version>1.1.30-SNAPSHOT</version>
+        <version>1.1.30</version>
         <relativePath>../../../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
