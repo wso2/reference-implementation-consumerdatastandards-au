@@ -82,23 +82,27 @@ jobs:
                 "url": "http://resources.knopflerfish.org/repo/maven2/release"
               }
             ]
-      - name: Build with Maven
+      - name: Add host entry
         run: |
-          export MAVEN_OPTS="-Xmx8g -XX:MaxPermSize=512m"
-          mvn -B install --file pom.xml
+          echo "Adding WSO2 host entry to /etc/hosts"
+          echo "15.197.248.29 atuwa.private.wso2.com" | sudo tee -a /etc/hosts
+#      - name: Build with Maven
+#        run: |
+#          export MAVEN_OPTS="-Xmx8g -XX:MaxPermSize=512m"
+#          mvn -B install --file pom.xml
       - name: Running the integration test suite
         run: |
           echo "Starting tests..."
           export MAVEN_OPTS="-Xmx4g"
           RUNNER_HOME=`pwd`
-          chmod +x $RUNNER_HOME/github-action-build/test.sh
+          chmod +x $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution/test.sh
           chmod +x ${RUNNER_HOME}/github-action-build/wso2update_linux.gpg
           echo "Decrypting update script..."
           gpg --quiet --batch --yes --decrypt --passphrase="$WSO2_UPDATE_LINUX_DECRYPTION_PASSPHRASE" --output ${RUNNER_HOME}/github-action-build/wso2update_linux ${RUNNER_HOME}/github-action-build/wso2update_linux.gpg
           echo "Setting up..."
           bash $RUNNER_HOME/github-action-build/setup.sh
           echo "Running test suite..."
-          bash $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution/test.sh -i $TEST_HOME
+          bash $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution/test.sh --input-dir $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution --output-dir $RUNNER_HOME/integration-test-suite/end-to-end-test-suite-execution/
 
 # Repositories mirrored due to the use of HTTP repositories. Mirrors can be removed after the respective repositories
 # are updated.
@@ -106,3 +110,4 @@ jobs:
 #        wso2.releases (http://maven.wso2.org/nexus/content/repositories/releases/, default, releases+snapshots),
 #        wso2.snapshots (http://maven.wso2.org/nexus/content/repositories/snapshots/, default, snapshots),
 #        knopflerfish (http://resources.knopflerfish.org/repo/maven2/release, default, releases+snapshots)]
+
