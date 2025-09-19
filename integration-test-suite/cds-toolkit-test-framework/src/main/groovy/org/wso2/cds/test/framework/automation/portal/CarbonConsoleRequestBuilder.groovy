@@ -54,11 +54,11 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
         webDriver.get(url)
 
-        WebElement username = webDriver.findElement(By.xpath(AUPageObjects.AU_IS_USERNAME_ID))
+        WebElement username = webDriver.findElement(By.id(AUPageObjects.AU_IS_USERNAME_ID))
         username.clear()
         username.sendKeys(configurationService.getUserKeyManagerAdminName())
 
-        WebElement password = webDriver.findElement(By.xpath(AUPageObjects.AU_IS_PASSWORD_ID))
+        WebElement password = webDriver.findElement(By.id(AUPageObjects.AU_IS_PASSWORD_ID))
         password.clear()
         password.sendKeys(configurationService.getUserKeyManagerAdminPWD())
 
@@ -66,7 +66,6 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         wait.until(
                 ExpectedConditions.elementToBeClickable(By.xpath(AUPageObjects.AU_BTN_IS_SIGNING)))
         webDriver.findElement(By.xpath(AUPageObjects.AU_BTN_IS_SIGNING)).click()
-        webDriver(webDriver, 20)
     }
 
     /**
@@ -81,7 +80,7 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         webDriver.findElement(By.xpath(AUPageObjects.BTN_ADD_IDP)).click()
 
         //Enter IDP Name
-        WebElement txtIdpName = webDriver.findElement(By.xpath(AUPageObjects.TXT_IDP_NAME))
+        WebElement txtIdpName = webDriver.findElement(By.id(AUPageObjects.TXT_IDP_NAME))
         txtIdpName.clear()
         txtIdpName.sendKeys("SMSAuthentication")
 
@@ -92,23 +91,23 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         webDriver.findElement(By.xpath(AUPageObjects.TAB_SMS_OTP)).click()
 
         //Configure SMS OTP
-        webDriver.findElement(By.xpath(AUPageObjects.CHK_ENABLE_SMS_OTP)).click()
+        webDriver.findElement(By.id(AUPageObjects.CHK_ENABLE_SMS_OTP)).click()
 
         WebElement txtSmsUrl = webDriver.findElement(By.xpath(AUPageObjects.TXT_SMS_URL))
         txtSmsUrl.clear()
-        txtSmsUrl.sendKeys("SMSAuthentication")
+        txtSmsUrl.sendKeys("https://api.twilio.com/2010-04-01/Accounts/AC34f40df03e20fb6498b3fcee256ebd3b/SMS/Messages.json")
 
         WebElement txtHttpMethod = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_METHOD))
         txtHttpMethod.clear()
-        txtHttpMethod.sendKeys("SMSAuthentication")
+        txtHttpMethod.sendKeys("POST")
 
         WebElement txtHttpHeader = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_HEADER))
         txtHttpHeader.clear()
-        txtHttpHeader.sendKeys("SMSAuthentication")
+        txtHttpHeader.sendKeys("Authorization: Basic QUMzNGY0MGRmMDNlMjBmYjY0OThiM2ZjZWUyNTZlYmQzYjo1ZmFkM2VkYzg4YWM1NTNiMmFiZjc4 NWI1MmM4MWFkYg==")
 
         WebElement txtHttpPayload = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_PAYLOAD))
         txtHttpPayload.clear()
-        txtHttpPayload.sendKeys("SMSAuthentication")
+        txtHttpPayload.sendKeys("Body=$ctx.msg&To=$ctx.num&From=+12108801806")
 
         //Click Register button
         webDriver.findElement(By.xpath(AUPageObjects.BTN_IDP_REGISTER)).click()
