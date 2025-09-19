@@ -98,7 +98,7 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
         WebElement txtSmsUrl = webDriver.findElement(By.xpath(AUPageObjects.TXT_SMS_URL))
         txtSmsUrl.clear()
-        txtSmsUrl.sendKeys("https://api.twilio.com/2010-04-01/Accounts/AC34f40df03e20fb6498b3fcee256ebd3b/SMS/Messages.json")
+        txtSmsUrl.sendKeys(AUConstants.TEST_SMS_URL)
 
         WebElement txtHttpMethod = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_METHOD))
         txtHttpMethod.clear()

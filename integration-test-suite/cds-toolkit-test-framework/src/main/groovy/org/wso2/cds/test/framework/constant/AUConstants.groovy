@@ -619,6 +619,7 @@ class AUConstants extends OBConstants {
     public static final String PUBLISHER_ROLE = "Internal/publisher"
     public static final String TEST_SMS_CLIENT_ID = "AC34f40df03e20fb6498b3fcee256ebd3b"
     public static final String TEST_SMS_CLIENT_SECRET = "5fad3edc88ac553b2abf785b52c81adb"
+    public static final String TEST_SMS_URL = "https://api.twilio.com/2010-04-01/Accounts/AC34f40df03e20fb6498b3fcee256ebd3b/SMS/Messages.json"
 
 }
 
