@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+	http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+    <display-name>WSO2 Open Banking - Consent API</display-name>
+    <description>WSO2 Open Banking - Consent API</description>
+
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>WEB-INF/beans.xml</param-value>
+    </context-param>
+
+    <filter>
+        <filter-name>HttpHeaderSecurityFilter</filter-name>
+        <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+        <init-param>
+            <param-name>hstsEnabled</param-name>
+            <param-value>false</param-value>
+        </init-param>
+    </filter>
+
+    <filter-mapping>
+        <filter-name>HttpHeaderSecurityFilter</filter-name>
+        <url-pattern>*</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>ConsentCXFServlet</servlet-name>
+        <servlet-class>
+            org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet
+        </servlet-class>
+        <init-param>
+            <param-name>service-list-stylesheet</param-name>
+            <param-value>servicelist.css</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jersey.config.server.provider.classnames</param-name>
+            <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessConsentCreationApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichConsentCreationResponseApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessConsentRetrievalApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessConsentRevokeApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PopulateConsentAuthorizeScreenApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PersistAuthorizedConsentApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateConsentAccessApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.IssueRefreshTokenApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateAuthorizationRequestApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateEventCreationApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateEventPollingApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichEventPollingResponseApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateEventSubscriptionApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichEventSubscriptionResponseApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessClientCreationApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessClientUpdateApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.MapAcceleratorErrorResponseApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichConsentFileResponseApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessConsentFileUploadApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateConsentFileRetrievalApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessClientRetrievalApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichConsentSearchResponseApi
+            </param-value>
+        </init-param>
+        <init-param>
+            <param-name>jaxrs.providers</param-name>
+            <param-value>
+                com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider
+            </param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ConsentCXFServlet</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+
+    <session-config>
+        <session-timeout>60</session-timeout>
+    </session-config>
+
+</web-app>
