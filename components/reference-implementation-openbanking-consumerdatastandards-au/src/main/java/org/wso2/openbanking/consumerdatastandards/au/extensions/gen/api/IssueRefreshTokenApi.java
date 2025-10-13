@@ -4,9 +4,8 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.IssueRefreshTokenRequestBody;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForIssueRefreshToken;
+import io.swagger.annotations.Authorization;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.*;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -37,6 +36,19 @@ public class IssueRefreshTokenApi {
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
     public Response issueRefreshTokenPost(@Valid @NotNull IssueRefreshTokenRequestBody issueRefreshTokenRequestBody) {
-        return Response.ok().entity("magic!").build();
+
+        SuccessResponseIssueRefreshToken successResponseIssueRefreshToken = new SuccessResponseIssueRefreshToken();
+        successResponseIssueRefreshToken.setResponseId(issueRefreshTokenRequestBody.getRequestId());
+        successResponseIssueRefreshToken.setStatus(SuccessResponseIssueRefreshToken.StatusEnum.SUCCESS);
+
+        SuccessResponseIssueRefreshTokenData successResponseIssueRefreshTokenData = new SuccessResponseIssueRefreshTokenData();
+        successResponseIssueRefreshTokenData.setIssueRefreshToken(true);
+
+        long consentValidityPeriod = issueRefreshTokenRequestBody.getData().getConsentValidityPeriod();
+        long consentCreatedPeriod = issueRefreshTokenRequestBody.getData().getConsentCreatedTime();
+
+        successResponseIssueRefreshTokenData.setRefreshTokenValidityPeriod(consentValidityPeriod - consentCreatedPeriod);
+        successResponseIssueRefreshToken.setData(successResponseIssueRefreshTokenData);
+        return Response.ok().entity(successResponseIssueRefreshToken).build();
     }
 }

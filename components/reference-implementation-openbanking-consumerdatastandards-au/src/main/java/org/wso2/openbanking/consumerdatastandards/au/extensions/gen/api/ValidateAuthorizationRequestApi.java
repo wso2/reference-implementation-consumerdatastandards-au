@@ -6,6 +6,7 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.*;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForValidateAuthorizationRequest;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ValidateAuthorizationRequestBody;
 
 import java.io.InputStream;
@@ -37,6 +38,10 @@ public class ValidateAuthorizationRequestApi {
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
     public Response preUserAuthorization(@Valid @NotNull ValidateAuthorizationRequestBody validateAuthorizationRequestBody) {
-        return Response.ok().entity("magic!").build();
+
+        SuccessResponse successResponse = new SuccessResponse();
+        successResponse.setResponseId(validateAuthorizationRequestBody.getRequestId());
+        successResponse.setStatus(SuccessResponse.StatusEnum.SUCCESS);
+        return Response.ok().entity(successResponse).build();
     }
 }

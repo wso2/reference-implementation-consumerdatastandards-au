@@ -139,7 +139,6 @@ public class BankAccountService {
             "          \"isJointAccount\": false,\n" +
             "          \"isSecondaryAccount\" : false,\n" +
             "          \"jointAccountConsentElectionStatus\": false,\n" +
-            "          \"isSecondaryAccount\": false,\n" +
             "          \"businessAccountInfo\": {\n" +
             "              \"AccountOwners\": [\n" +
             "                  {\n" +
@@ -180,7 +179,6 @@ public class BankAccountService {
             "          \"isJointAccount\": false,\n" +
             "          \"isSecondaryAccount\" : false,\n" +
             "          \"jointAccountConsentElectionStatus\": false,\n" +
-            "          \"isSecondaryAccount\": false,\n" +
             "          \"businessAccountInfo\": {\n" +
             "              \"AccountOwners\": [\n" +
             "                  {\n" +
@@ -221,7 +219,6 @@ public class BankAccountService {
             "          \"isJointAccount\": false,\n" +
             "          \"isSecondaryAccount\" : false,\n" +
             "          \"jointAccountConsentElectionStatus\": false,\n" +
-            "          \"isSecondaryAccount\": false,\n" +
             "          \"businessAccountInfo\": {\n" +
             "              \"AccountOwners\": [\n" +
             "                  {\n" +

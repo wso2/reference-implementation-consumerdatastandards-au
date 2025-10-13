@@ -1,35 +1,31 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import javax.validation.constraints.*;
 import javax.validation.Valid;
 
-import io.swagger.annotations.*;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 
 
 @JsonTypeName("SuccessResponsePopulateConsentAuthorizeScreenData_consentData")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
-public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extends HashMap<String, Object>  {
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-07-15T13:10:30.062370600+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
+public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData  {
   private String type;
   private @Valid Map<String, List<String>> basicConsentData = new HashMap<>();
   private @Valid List<@Valid SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> permissions = new ArrayList<>();
   private @Valid List<Account> initiatedAccountsForConsent = new ArrayList<>();
   private Boolean allowMultipleAccounts;
+  private Boolean handleAccountSelectionSeparately;
   private Boolean isReauthorization;
   private Object consentMetadata;
+  private Map<String, Object> additionalProperties = new HashMap<>();
 
   public SuccessResponsePopulateConsentAuthorizeScreenDataConsentData() {
   }
@@ -42,7 +38,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "The type of consent")
   @JsonProperty("type")
   public String getType() {
@@ -62,7 +58,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Structured descriptive text shown on the consent page, split into sections. Each key is a section title, and its value is a list of bullet points displayed under that section.")
   @JsonProperty("basicConsentData")
   public Map<String, List<String>> getBasicConsentData() {
@@ -98,7 +94,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "List of permissions for the consent (optional)")
   @JsonProperty("permissions")
   @Valid public List<@Valid SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> getPermissions() {
@@ -134,7 +130,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Initialized accounts for the overall consent (optional)")
   @JsonProperty("initiatedAccountsForConsent")
   @Valid public List<@Valid Account> getInitiatedAccountsForConsent() {
@@ -170,7 +166,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Indicates if multiple consumer accounts can be selected per consent / permission")
   @JsonProperty("allowMultipleAccounts")
   public Boolean getAllowMultipleAccounts() {
@@ -190,7 +186,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Indicates if this is a reauthorization flow (optional)")
   @JsonProperty("isReauthorization")
   public Boolean getIsReauthorization() {
@@ -210,7 +206,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Hidden consent metadata to be forwarded to consent persistence.")
   @JsonProperty("consentMetadata")
   public Object getConsentMetadata() {
@@ -220,6 +216,16 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
   @JsonProperty("consentMetadata")
   public void setConsentMetadata(Object consentMetadata) {
     this.consentMetadata = consentMetadata;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getAdditionalProperties() {
+    return this.additionalProperties;
+  }
+
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 
 
@@ -233,25 +239,24 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     }
     SuccessResponsePopulateConsentAuthorizeScreenDataConsentData successResponsePopulateConsentAuthorizeScreenDataConsentData = (SuccessResponsePopulateConsentAuthorizeScreenDataConsentData) o;
     return Objects.equals(this.type, successResponsePopulateConsentAuthorizeScreenDataConsentData.type) &&
-        Objects.equals(this.basicConsentData, successResponsePopulateConsentAuthorizeScreenDataConsentData.basicConsentData) &&
-        Objects.equals(this.permissions, successResponsePopulateConsentAuthorizeScreenDataConsentData.permissions) &&
-        Objects.equals(this.initiatedAccountsForConsent, successResponsePopulateConsentAuthorizeScreenDataConsentData.initiatedAccountsForConsent) &&
-        Objects.equals(this.allowMultipleAccounts, successResponsePopulateConsentAuthorizeScreenDataConsentData.allowMultipleAccounts) &&
-        Objects.equals(this.isReauthorization, successResponsePopulateConsentAuthorizeScreenDataConsentData.isReauthorization) &&
-        Objects.equals(this.consentMetadata, successResponsePopulateConsentAuthorizeScreenDataConsentData.consentMetadata) &&
-        super.equals(o);
+            Objects.equals(this.basicConsentData, successResponsePopulateConsentAuthorizeScreenDataConsentData.basicConsentData) &&
+            Objects.equals(this.permissions, successResponsePopulateConsentAuthorizeScreenDataConsentData.permissions) &&
+            Objects.equals(this.initiatedAccountsForConsent, successResponsePopulateConsentAuthorizeScreenDataConsentData.initiatedAccountsForConsent) &&
+            Objects.equals(this.allowMultipleAccounts, successResponsePopulateConsentAuthorizeScreenDataConsentData.allowMultipleAccounts) &&
+            Objects.equals(this.isReauthorization, successResponsePopulateConsentAuthorizeScreenDataConsentData.isReauthorization) &&
+            Objects.equals(this.consentMetadata, successResponsePopulateConsentAuthorizeScreenDataConsentData.consentMetadata) &&
+            Objects.equals(this.additionalProperties, successResponsePopulateConsentAuthorizeScreenDataConsentData.additionalProperties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(type, basicConsentData, permissions, initiatedAccountsForConsent, allowMultipleAccounts, isReauthorization, consentMetadata, super.hashCode());
+    return Objects.hash(type, basicConsentData, permissions, initiatedAccountsForConsent, allowMultipleAccounts, isReauthorization, consentMetadata, additionalProperties);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    type: ").append(toIndentedString(type)).append("\n");
     sb.append("    basicConsentData: ").append(toIndentedString(basicConsentData)).append("\n");
     sb.append("    permissions: ").append(toIndentedString(permissions)).append("\n");
@@ -259,6 +264,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     sb.append("    allowMultipleAccounts: ").append(toIndentedString(allowMultipleAccounts)).append("\n");
     sb.append("    isReauthorization: ").append(toIndentedString(isReauthorization)).append("\n");
     sb.append("    consentMetadata: ").append(toIndentedString(consentMetadata)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -274,6 +280,24 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData extend
     return o.toString().replace("\n", "\n    ");
   }
 
+  /**
+   * Specifies whether the account selection page is handled separately.
+   **/
+  public SuccessResponsePopulateConsentAuthorizeScreenDataConsentData handleAccountSelectionSeparately(Boolean handleAccountSelectionSeparately) {
+    this.handleAccountSelectionSeparately = handleAccountSelectionSeparately;
+    return this;
+  }
+
+  @ApiModelProperty(value = "Specifies whether the account selection page is handled separately.")
+  @JsonProperty("handleAccountSelectionSeparately")
+  public Boolean getHandleAccountSelectionSeparately() {
+    return handleAccountSelectionSeparately;
+  }
+
+  @JsonProperty("handleAccountSelectionSeparately")
+  public void setHandleAccountSelectionSeparately(Boolean handleAccountSelectionSeparately) {
+    this.handleAccountSelectionSeparately = handleAccountSelectionSeparately;
+  }
+
 
 }
-
