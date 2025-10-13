@@ -23,7 +23,7 @@
     <groupId>org.wso2.openbanking</groupId>
     <artifactId>reference-implementation-consumerdatastandards-au</artifactId>
     <packaging>pom</packaging>
-    <version>1.1.31-SNAPSHOT</version>
+    <version>2.0.0</version>
     <parent>
         <groupId>org.wso2</groupId>
         <artifactId>wso2</artifactId>
@@ -45,9 +45,9 @@
                 </property>
             </activation>
             <modules>
-                <module>components</module>
-                <module>internal-apis</module>
-                <module>react-apps</module>
+                <module>components/demo-backend</module>
+                <module>components/reference-implementation-openbanking-consumerdatastandards-au</module>
+<!--                <module>react-apps</module>-->
             </modules>
             <properties>
                 <npm.executable>npm</npm.executable>
@@ -62,10 +62,10 @@
                 </property>
             </activation>
             <modules>
-                <module>components</module>
-                <module>internal-apis</module>
-                <module>react-apps</module>
-                <module>toolkits</module>
+                <module>components/demo-backend</module>
+                <module>components/reference-implementation-openbanking-consumerdatastandards-au</module>
+<!--                <module>react-apps</module>-->
+<!--                <module>toolkits</module>-->
             </modules>
             <properties>
                 <npm.executable>npm</npm.executable>
@@ -200,122 +200,38 @@
                     <artifactId>jacoco-maven-plugin</artifactId>
                     <version>${jacoco.version}</version>
                 </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-checkstyle-plugin</artifactId>
+                    <version>${maven.checkstyleplugin.version}</version>
+                    <executions>
+                        <execution>
+                            <id>validate</id>
+                            <phase>validate</phase>
+                            <configuration>
+                                <configLocation>
+                                    https://raw.githubusercontent.com/wso2/code-quality-tools/v1.3/checkstyle/checkstyle.xml
+                                </configLocation>
+                                <suppressionsLocation>
+                                    https://raw.githubusercontent.com/wso2/code-quality-tools/v1.3/checkstyle/suppressions.xml
+                                </suppressionsLocation>
+                                <encoding>UTF-8</encoding>
+                                <consoleOutput>true</consoleOutput>
+                                <failsOnError>true</failsOnError>
+                                <includeTestSourceDirectory>true</includeTestSourceDirectory>
+                            </configuration>
+                            <goals>
+                                <goal>check</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <dependencyManagement>
         <dependencies>
-            <!--Open Banking Accelerator components-->
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.common</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.account.metadata.service</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.identity</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.runtime.identity.authn.filter</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.consent.service</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.consent.dao</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.consent.extensions</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.gateway</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.service.activator</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.data.publisher.common</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.wso2.openbanking.accelerator</groupId>
-                <artifactId>com.wso2.openbanking.accelerator.account.metadata.service</artifactId>
-                <version>${accelerator.project.version.range}</version>
-            </dependency>
-            <!--Dependencies from Toolkit -->
-            <dependency>
-                <groupId>org.wso2.openbanking</groupId>
-                <artifactId>org.wso2.openbanking.cds.common</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.openbanking</groupId>
-                <artifactId>org.wso2.openbanking.cds.identity</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.openbanking</groupId>
-                <artifactId>org.wso2.openbanking.cds.metrics</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <!--General dependencies-->
-            <dependency>
-                <groupId>org.wso2.carbon.analytics-common</groupId>
-                <artifactId>org.wso2.carbon.databridge.agent</artifactId>
-                <version>${carbon.analytics.common.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
-                <artifactId>org.wso2.carbon.identity.oauth.client.authn.filter</artifactId>
-                <version>${identity.inbound.auth.oauth.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.identity.inbound.auth.oauth2</groupId>
-                <artifactId>org.wso2.carbon.identity.oauth</artifactId>
-                <version>${identity.inbound.auth.oauth.version}</version>
-                <!-- Comment out exclusions when building locally with m2 repository updated using install scripts -->
-                <exclusions>
-                    <exclusion>
-                        <groupId>org.ops4j.pax.logging</groupId>
-                        <artifactId>pax-logging-api</artifactId>
-                    </exclusion>
-                </exclusions>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.extension.identity.oauth.addons</groupId>
-                <artifactId>org.wso2.carbon.identity.oauth2.token.handler.clientauth.jwt</artifactId>
-                <version>${carbon.identity.clientauth.jwt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.gateway</artifactId>
-                <version>${org.wso2.carbon.apimgt.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.wso2.carbon.apimgt</groupId>
-                <artifactId>org.wso2.carbon.apimgt.impl</artifactId>
-                <version>${org.wso2.carbon.apimgt.keymgt.version}</version>
-            </dependency>
             <dependency>
                 <groupId>commons-logging</groupId>
                 <artifactId>commons-logging</artifactId>
@@ -496,6 +412,53 @@
                 <artifactId>cache-api</artifactId>
                 <version>${javax.cache.version}</version>
             </dependency>
+            <dependency>
+                <groupId>org.wso2.orbit.com.nimbusds</groupId>
+                <artifactId>nimbus-jose-jwt</artifactId>
+                <version>${org.wso2.orbit.nimbus.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.equinox</groupId>
+                <artifactId>javax.servlet</artifactId>
+                <version>${equinox.javax.servlet.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>jakarta.ws.rs</groupId>
+                <artifactId>jakarta.ws.rs-api</artifactId>
+                <version>${jakarta.ws.rs-version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jsr310</artifactId>
+                <version>${jackson-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.jaxrs</groupId>
+                <artifactId>jackson-jaxrs-json-provider</artifactId>
+                <version>${jackson-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>joda-time</groupId>
+                <artifactId>joda-time</artifactId>
+                <version>${joda-version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.json</groupId>
+                <artifactId>json</artifactId>
+                <version>${json.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>javax.servlet</groupId>
+                <artifactId>javax.servlet-api</artifactId>
+                <version>${javax.servlet.version}</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>javax.ws.rs</groupId>
+                <artifactId>javax.ws.rs-api</artifactId>
+                <version>${javax.ws.rs-api.version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -554,6 +517,15 @@
         <quartz.version>2.1.1.wso2v1</quartz.version>
         <quartz.osgi.version.range>[2.1.1, 2.3.2)</quartz.osgi.version.range>
         <carbon.analytics.common.version>6.1.66</carbon.analytics.common.version>
+        <org.wso2.orbit.nimbus.version>7.3.0.wso2v1</org.wso2.orbit.nimbus.version>
+        <equinox.javax.servlet.version>3.0.0.v201112011016</equinox.javax.servlet.version>
+        <jakarta.ws.rs-version>2.1.6</jakarta.ws.rs-version>
+        <jackson-version>2.17.1</jackson-version>
+        <joda-version>2.10.13</joda-version>
+        <json.version>20210307</json.version>
+        <javax.servlet.version>4.0.1</javax.servlet.version>
+        <javax.ws.rs-api.version>2.1.1</javax.ws.rs-api.version>
+        <maven-war-plugin.version>3.3.1</maven-war-plugin.version>
     </properties>
 
 </project>
