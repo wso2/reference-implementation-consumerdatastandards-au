@@ -75,4 +75,11 @@ public class ErrorConstants {
     public static final String CONSENT_ID_NOT_FOUND = "Consent ID not available in consent data";
     public static final String AUTH_RESOURCE_NOT_FOUND = "Auth resource not available in consent data";
     public static final String ACCOUNT_ID_NOT_FOUND_ERROR = "Account IDs not available in persist request";
+    public static final String PAYLOAD_FORMAT_ERROR = "Request Payload is not in correct JSON format";
+    public static final String INVALID_URI_ERROR = "Path requested is invalid. :" + ErrorConstants.PATH_URL;
+    public static final String PATH_URL = "Data.Url";
+    public static final String INVALID_CDR_ARRANGEMENT_ID = "Invalid cdr_arrangement_id";
+    public static final String INVALID_REQUEST_OBJECT = "invalid_request_object";
+    public static final String EMPTY_CDR_ARRANGEMENT_ID = "Empty cdr-arrangement-id sent in the request";
+    public static final String INVALID_SHARING_DURATION = "Invalid sharing_duration value";
 }

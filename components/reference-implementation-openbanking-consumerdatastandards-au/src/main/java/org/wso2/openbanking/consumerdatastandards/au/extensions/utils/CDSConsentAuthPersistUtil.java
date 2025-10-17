@@ -226,43 +226,38 @@ public class CDSConsentAuthPersistUtil {
 
         String expirationDateTime = null;
 
-        // 2. Check if the top-level object is a Map and cast it.
         if (metadataObject instanceof Map) {
             Map<String, Object> metadata = (Map<String, Object>) metadataObject;
 
-            // 3. Get the 'accountData' object and check if it's a List.
+            // Get the 'accountData' object and check if it's a List.
             Object accountDataObject = metadata.get("accountData");
             if (accountDataObject instanceof List) {
                 List<Map<String, Object>> accountDataList = (List<Map<String, Object>>) accountDataObject;
 
-                // 4. Stream the list to find the Map where "title" is "expirationDateTime".
+                // Stream the list to find the Map where "title" is "expirationDateTime".
                 Optional<Map<String, Object>> expirationEntry = accountDataList.stream()
                         .filter(item -> "expirationDateTime".equals(item.get("title")))
                         .findFirst();
 
-                // 5. If the correct entry was found, process it.
                 if (expirationEntry.isPresent()) {
                     Map<String, Object> item = expirationEntry.get();
 
-                    // 6. Get the nested 'data' object and check if it's a List.
+                    // Get the nested 'data' object and check if it's a List.
                     Object dataObject = item.get("data");
                     if (dataObject instanceof List) {
                         List<Object> dataList = (List<Object>) dataObject;
 
-                        // 7. Finally, get the first element from the 'data' list if it's not empty.
+                        // Get expiration date time value from the list
                         if (!dataList.isEmpty()) {
-                            expirationDateTime = (String) dataList.get(0);
+                            expirationDateTime = dataList.get(0).toString();
                         }
                     }
                 }
             }
         }
 
-        //Parse the string directly into an Instant object
-        Instant instant = Instant.parse(expirationDateTime);
-
-        //Get the number of seconds from the epoch (1970-01-01T00:00:00Z)
-        long epochSeconds = instant.getEpochSecond();
+        // Convert expirationDateTime to epoch seconds
+        long epochSeconds = CommonConsentExtensionUtils.getEpochSeconds(expirationDateTime);
         return epochSeconds;
     }
 
@@ -273,16 +268,14 @@ public class CDSConsentAuthPersistUtil {
      */
     public static JSONObject createJsonPayload(Object metadataObject) {
 
-        // 1. Check if the provided Object is actually a Map.
+        // Check if the provided Object is actually a Map.
         if (!(metadataObject instanceof Map)) {
             // If it's not a Map (or is null), return an empty JSON object.
             return new JSONObject();
         }
 
-        // 2. If the check passes, cast the Object to a Map to work with it.
+        // Cast the Object to a Map to work with it.
         Map<String, Object> metadata = (Map<String, Object>) metadataObject;
-
-        // --- From this point on, the logic is identical to the previous solution ---
 
         JSONObject jsonPayload = new JSONObject();
         JSONObject accountDataJson = new JSONObject();

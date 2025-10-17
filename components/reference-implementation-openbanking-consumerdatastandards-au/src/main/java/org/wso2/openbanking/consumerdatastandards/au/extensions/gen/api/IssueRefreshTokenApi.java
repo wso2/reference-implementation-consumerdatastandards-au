@@ -42,12 +42,21 @@ public class IssueRefreshTokenApi {
         successResponseIssueRefreshToken.setStatus(SuccessResponseIssueRefreshToken.StatusEnum.SUCCESS);
 
         SuccessResponseIssueRefreshTokenData successResponseIssueRefreshTokenData = new SuccessResponseIssueRefreshTokenData();
-        successResponseIssueRefreshTokenData.setIssueRefreshToken(true);
 
-        long consentValidityPeriod = issueRefreshTokenRequestBody.getData().getConsentValidityPeriod();
-        long consentCreatedPeriod = issueRefreshTokenRequestBody.getData().getConsentCreatedTime();
+        //If consent validity period is 0 or null, do not issue refresh token
+        if(issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == 0 ||
+                issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == null) {
 
-        successResponseIssueRefreshTokenData.setRefreshTokenValidityPeriod(consentValidityPeriod - consentCreatedPeriod);
+            successResponseIssueRefreshTokenData.setIssueRefreshToken(false);
+        } else {
+            successResponseIssueRefreshTokenData.setIssueRefreshToken(true);
+
+            long consentValidityPeriod = issueRefreshTokenRequestBody.getData().getConsentValidityPeriod();
+            long consentCreatedPeriod = issueRefreshTokenRequestBody.getData().getConsentCreatedTime();
+
+            successResponseIssueRefreshTokenData.setRefreshTokenValidityPeriod(consentValidityPeriod - consentCreatedPeriod);
+        }
+
         successResponseIssueRefreshToken.setData(successResponseIssueRefreshTokenData);
         return Response.ok().entity(successResponseIssueRefreshToken).build();
     }

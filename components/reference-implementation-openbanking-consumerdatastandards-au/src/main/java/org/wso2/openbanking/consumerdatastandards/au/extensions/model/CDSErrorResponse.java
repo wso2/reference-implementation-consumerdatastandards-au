@@ -19,6 +19,9 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,5 +59,25 @@ public class CDSErrorResponse {
             this.errors = new ArrayList<>();
         }
         this.errors.add(error);
+    }
+
+    /**
+     * Converts the current CDSErrorResponse instance into a JSONObject.
+     * This method uses the Jackson ObjectMapper to serialize the object first.
+     *
+     * @return A JSONObject representation of this object, or an error JSON if serialization fails.
+     */
+    public JSONObject toJSONObject() {
+        try {
+            // The 'this' keyword refers to the current instance of CDSErrorResponse.
+            ObjectMapper mapper = new ObjectMapper();
+            String jsonString = mapper.writeValueAsString(this);
+            return new JSONObject(jsonString);
+
+        } catch (JsonProcessingException e) {
+            // In case of a serialization error, log it and return a fallback error object.
+            e.printStackTrace();
+            return new JSONObject("{\"error\":\"Failed to convert to JSONObject\"}");
+        }
     }
 }

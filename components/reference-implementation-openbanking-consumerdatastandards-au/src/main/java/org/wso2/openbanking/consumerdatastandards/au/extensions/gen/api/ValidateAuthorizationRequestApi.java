@@ -3,11 +3,15 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
+import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForValidateAuthorizationRequest;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ValidateAuthorizationRequestBody;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.handlers.CDSAuthorizationFlowHandler;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -37,11 +41,14 @@ public class ValidateAuthorizationRequestApi {
         @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
-    public Response preUserAuthorization(@Valid @NotNull ValidateAuthorizationRequestBody validateAuthorizationRequestBody) {
+    public Response preUserAuthorization(@Valid @NotNull ValidateAuthorizationRequestBody validateAuthorizationRequestBody)
+            throws CDSConsentException, JsonProcessingException {
 
-        SuccessResponse successResponse = new SuccessResponse();
-        successResponse.setResponseId(validateAuthorizationRequestBody.getRequestId());
-        successResponse.setStatus(SuccessResponse.StatusEnum.SUCCESS);
-        return Response.ok().entity(successResponse).build();
+        CDSAuthorizationFlowHandler cdsAuthorizationFlowHandler = new CDSAuthorizationFlowHandler();
+
+        Response200ForValidateAuthorizationRequest response =
+                cdsAuthorizationFlowHandler.handlePushedAuthorisationRequest(validateAuthorizationRequestBody);
+
+        return Response.ok().entity(response).build();
     }
 }

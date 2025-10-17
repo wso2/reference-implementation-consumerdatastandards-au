@@ -21,23 +21,26 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.handlers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AuthorizationFailureException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsentRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenRequestBody;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForValidateAuthorizationRequest;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePersistAuthorizedConsent;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePersistAuthorizedConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreen;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.*;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ValidateAuthorizationRequestBody;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CDSConsentAuthPersistUtil;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CDSDataRetrievalUtil;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CommonConsentExtensionUtils;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ConsentAuthorizationUtil;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.validators.consent.CDSPushedAuthRequestValidator;
 
 import javax.ws.rs.core.Response;
 import java.util.Map;
@@ -152,5 +155,38 @@ public class CDSAuthorizationFlowHandler {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(authException.toFailedResponseJsonString()).build();
         }
+    }
+
+    /**
+     * Handle pushed authorization request validation.
+     * @param validateAuthRequestBody
+     * @return
+     * @throws CDSConsentException
+     * @throws JsonProcessingException
+     */
+    public Response200ForValidateAuthorizationRequest handlePushedAuthorisationRequest(
+            ValidateAuthorizationRequestBody validateAuthRequestBody)
+            throws JsonProcessingException {
+
+        Response200ForValidateAuthorizationRequest response = new Response200ForValidateAuthorizationRequest();
+        String requestId = validateAuthRequestBody.getRequestId();
+        Object requestObject = validateAuthRequestBody.getData().getRequestObject();
+
+        // Validate PAR request object and capture the error response
+        JSONObject errorData = CDSPushedAuthRequestValidator.validateCdsPushedAuthRequest(requestObject);
+
+        response.setResponseId(requestId);
+
+        if (errorData != null) {
+            response.setStatus(Response200ForValidateAuthorizationRequest.StatusEnum.ERROR);
+            response.setErrorCode(400);
+            response.setData(errorData.toMap());
+        } else {
+            response.setStatus(Response200ForValidateAuthorizationRequest.StatusEnum.SUCCESS);
+            response.setErrorCode(200);
+            response.setData(CommonConsentExtensionUtils.getSuccessResponse(requestId).toMap());
+        }
+
+        return response;
     }
 }

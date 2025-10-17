@@ -98,4 +98,9 @@ public class CommonConstants {
     public static final String ALLOW_MULTIPLE_ACCOUNTS = "allowMultipleAccounts";
     public static final Integer DEFAULT_FREQUENCY = 0;
     public static final String VALIDITY_TIME_TITLE = "VALIDITY_TIME";
+    public static final String RESOURCE_PARAMS = "resourceParams";
+    public static final String RESOURCE = "resource";
+    public static final String RESOURCE_PATH = "ResourcePath";
+    public static final String ELECTED_RESOURCE = "electedResource";
+    public static final String RECEIPT = "receipt";
 }

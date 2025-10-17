@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.*;
@@ -191,5 +192,31 @@ public class CommonConsentExtensionUtils {
             }
         }
         return null;
+    }
+
+    /**
+     * Get epoch seconds from the given expiration date time string.
+     * @param expirationDateTime
+     * @return
+     */
+    public static long getEpochSeconds(String expirationDateTime) {
+
+        Instant instant;
+
+        try {
+            // Try to parse the string as a standard date (ISO 8601)
+            instant = Instant.parse(expirationDateTime);
+
+        } catch (DateTimeParseException e) {
+            try {
+                long epochMillis = Long.parseLong(expirationDateTime);
+                instant = Instant.ofEpochMilli(epochMillis);
+            } catch (NumberFormatException nfe) {
+                throw new IllegalArgumentException("Invalid format for expirationDateTime: " + expirationDateTime, nfe);
+            }
+        }
+
+        // Get the number of seconds from the epoch for the successfully parsed Instant
+        return instant.getEpochSecond();
     }
 }
