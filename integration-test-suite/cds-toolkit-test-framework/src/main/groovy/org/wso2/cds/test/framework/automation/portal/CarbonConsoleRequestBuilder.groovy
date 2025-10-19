@@ -23,10 +23,10 @@ import org.openqa.selenium.WebElement
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
+import org.wso2.bfsi.test.framework.automation.BrowserAutomation
+import org.wso2.bfsi.test.framework.automation.BrowserAutomationStep
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUPageObjects
-import org.wso2.openbanking.test.framework.automation.BrowserAutomationStep
-import org.wso2.openbanking.test.framework.automation.OBBrowserAutomation
 
 class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
@@ -174,7 +174,7 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
     }
 
     @Override
-    void execute(RemoteWebDriver remoteWebDriver, OBBrowserAutomation.AutomationContext automationContext) {
+    void execute(RemoteWebDriver remoteWebDriver, BrowserAutomation.AutomationContext automationContext) {
 
         carbonConsoleLogin(remoteWebDriver)
         addResidentIdp(remoteWebDriver)

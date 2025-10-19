@@ -18,10 +18,10 @@
 
 package org.wso2.cds.test.framework.automation.dashboard
 
+import org.wso2.bfsi.test.framework.automation.BrowserAutomation
 import org.wso2.cds.test.framework.constant.AUPageObjects
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.BrowserAutomationStep
-import org.wso2.openbanking.test.framework.automation.OBBrowserAutomation
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.BrowserAutomationStep
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.openqa.selenium.remote.RemoteWebDriver
 import java.util.concurrent.TimeUnit
@@ -47,7 +47,7 @@ class AUCCPortalWithdrawalAutomationStep implements BrowserAutomationStep{
      * @param context   automation context.
      */
     @Override
-    void execute(RemoteWebDriver webDriver, OBBrowserAutomation.AutomationContext context) {
+    void execute(RemoteWebDriver webDriver, BrowserAutomation.AutomationContext context) {
         AutomationMethod driver = new AutomationMethod(webDriver)
         webDriver.navigate().to(CCPortalUrl)
         driver.executeTextField(AUPageObjects.AU_USERNAME_FIELD_ID,auConfiguration.getUserCustomerCareName())

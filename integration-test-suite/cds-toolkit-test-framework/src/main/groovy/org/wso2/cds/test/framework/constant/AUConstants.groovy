@@ -19,7 +19,7 @@
 package org.wso2.cds.test.framework.constant
 
 import com.nimbusds.oauth2.sdk.pkce.CodeVerifier
-import org.wso2.openbanking.test.framework.constant.OBConstants
+import org.wso2.bfsi.test.framework.constant.Constants
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.utility.AUTestUtil
 
@@ -27,7 +27,7 @@ import org.wso2.cds.test.framework.utility.AUTestUtil
  * Class for provide AU and OB constants to the
  * AU layer and tests
  */
-class AUConstants extends OBConstants {
+class AUConstants extends Constants {
 
     static AUConfigurationService auConfiguration = new AUConfigurationService()
 
@@ -97,7 +97,7 @@ class AUConstants extends OBConstants {
     public static final String INTROSPECTION_ENDPOINT = "/oauth2/introspect"
     public static final String CONSENT_STATUS_ENDPOINT = "/api/openbanking/consent-mgt/uk300"
     public static final String PUSHED_AUTHORISATION_BASE_PATH = auConfiguration.getServerAuthorisationServerURL()
-    public static final String PAR_ENDPOINT = "/api/openbanking/push-authorization/par"
+    public static final String PAR_ENDPOINT = "/oauth2/par"
     public static final String TOKEN_REVOKE_PATH = "/oauth2/revoke"
     public static final String STATUS_PATH = "/account-confirmation"
     public static final String CONSENT_STATUS_AU_ENDPOINT = "api/openbanking/account-type-mgt"
@@ -433,15 +433,15 @@ class AUConstants extends OBConstants {
 
     public static final INVALID_REQUEST_BODY = "Invalid request body"
     public static final MALFORMED_PAR_REQUEST= "The request is malformed."
-    public static final INVALID_ALGORITHM = "Invalid request object signing algorithm"
+    public static final INVALID_ALGORITHM = "Request Object signature verification failed due to an invalid signature algorithm."
     public static final INVALID_RESPONSE_TYPE = "Invalid response type"
     public static final MISSING_AUD_VALUE= "aud parameter is missing in the request object"
     public static final MISSING_ISS_VALUE= "Invalid issuer in the request"
-    public static final MISSING_EXP_VALUE= "exp parameter is missing in the request object"
-    public static final MISSING_NBF_VALUE= "nbf parameter is missing in the request object"
-    public static final INVALID_FUTURE_EXPIRY_TIME = "Invalid expiry time. 'exp' claim must be a future value."
-    public static final INVALID_EXPIRY_TIME = "exp parameter in the request object is over 1 hour in the future"
-    public static final INVALID_FUTURE_NBF_TIME = "Invalid not before time. 'nbf' must be a past value."
+    public static final MISSING_EXP_VALUE= "Request Object does not contain Expiration Time."
+    public static final MISSING_NBF_VALUE= "Request Object does not contain Not Before Time."
+    public static final INVALID_FUTURE_EXPIRY_TIME = "Error occurred while validating request object signature using jwks endpoint: request object is expired."
+    public static final INVALID_EXPIRY_TIME = "Request Object expiry time is too far in the future than not before time."
+    public static final INVALID_FUTURE_NBF_TIME = "Error occurred while validating request object signature using jwks endpoint: request object is not valid yet."
     public static final UNSUPPORTED_X_FAPI_AUTH_DATE = "Requested x-fapi-auth-date header is not supported"
     public static final NEWEST_TIME = "newest-time"
     public static final OLDEST_TIME = "oldest-time"

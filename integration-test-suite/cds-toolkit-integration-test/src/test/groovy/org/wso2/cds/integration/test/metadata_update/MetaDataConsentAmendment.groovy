@@ -19,13 +19,13 @@
 package org.wso2.cds.integration.test.metadata_update
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountScope
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
 import org.testng.Assert
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test

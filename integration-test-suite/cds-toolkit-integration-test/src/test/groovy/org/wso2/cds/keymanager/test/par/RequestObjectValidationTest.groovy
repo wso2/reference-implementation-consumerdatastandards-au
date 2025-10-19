@@ -302,7 +302,8 @@ class RequestObjectValidationTest extends AUTest {
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION),
-                "Invalid expiry time. 'exp' claim must be a future value.")
+                "Error occurred while validating request object signature using jwks endpoint: " +
+                        "request object is expired.")
         Assert.assertEquals(AUTestUtil.parseResponseBody(response, AUConstants.ERROR), AUConstants.INVALID_REQUEST_OBJECT)
     }
 

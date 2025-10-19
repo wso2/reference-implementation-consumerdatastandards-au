@@ -26,7 +26,7 @@ import com.nimbusds.oauth2.sdk.ResponseType
 import com.nimbusds.oauth2.sdk.Scope
 import com.nimbusds.oauth2.sdk.id.ClientID
 import com.nimbusds.oauth2.sdk.id.State
-import org.wso2.openbanking.test.framework.request_builder.SignedObject
+import org.wso2.bfsi.test.framework.request_builder.SignedObject
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import io.restassured.response.Response
 import org.wso2.cds.test.framework.constant.AUAccountScope
@@ -100,11 +100,13 @@ class AUAuthorisationBuilder {
         if(isStateParamPresent) {
             request = new AuthorizationRequest.Builder(requestUri, new ClientID(clientID))
                     .state(getState())
+                    .redirectionURI(getRedirectURI())
                     .endpointURI(getEndpoint())
                     .build()
         } else {
             request = new AuthorizationRequest.Builder(requestUri, new ClientID(clientID))
                     .endpointURI(getEndpoint())
+                    .redirectionURI(getRedirectURI())
                     .build()
         }
 
@@ -302,7 +304,7 @@ class AUAuthorisationBuilder {
 
     private URI getEndpoint() {
         if (endpoint == null) {
-            endpoint = new URI("${auConfiguration.getServerAuthorisationServerURL()}/oauth2/authorize")
+            endpoint = new URI("${auConfiguration.getServerAuthorisationServerURL()}/oauth2/authorize/")
         }
         return endpoint
     }

@@ -18,6 +18,7 @@
 
 package org.wso2.cds.integration.test.cdr_arrangement
 
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountProfile
@@ -28,7 +29,6 @@ import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AURestAsRequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
 import io.restassured.response.Response
 import org.testng.Assert
 import org.testng.annotations.Test

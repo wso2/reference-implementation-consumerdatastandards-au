@@ -23,9 +23,9 @@ import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import org.wso2.bfsi.test.framework.exception.TestFrameworkException
+import org.wso2.bfsi.test.framework.util.CommonTestUtil
 import org.wso2.cds.test.framework.request_builder.AUAuthorisationBuilder
 import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
-import org.wso2.openbanking.test.framework.utility.OBTestUtil
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.apache.http.conn.ssl.SSLSocketFactory
 import org.jsoup.nodes.Document
@@ -44,7 +44,7 @@ import java.nio.file.Paths
 /**
  * Domain specific AU layer Class to contain utility classes used for Test Framework.
  */
-class AUTestUtil extends OBTestUtil {
+class AUTestUtil extends CommonTestUtil {
 
     static SSLSocketFactory sslSocketFactoryForMockCDRRegister
 
@@ -62,7 +62,7 @@ class AUTestUtil extends OBTestUtil {
                 // Skip hostname verification.
                 sslSocketFactoryForMockCDRRegister.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
             } catch (TestFrameworkException e) {
-                OBTestUtil.log.error("Unable to create the SSL socket factory", e);
+                CommonTestUtil.log.error("Unable to create the SSL socket factory", e);
             }
         }
     }
@@ -458,7 +458,7 @@ class AUTestUtil extends OBTestUtil {
      */
     static String getErrorFromUrl(String url){
         try {
-            return url.split("oauthErrorMsg=")[1].split("&")[0].replace("+", " ")
+            return url.split("error_description=")[1].split("&")[0].replace("+", " ")
         } catch (Exception e) {
             log.error("Unable to find error description in URL", e)
         }

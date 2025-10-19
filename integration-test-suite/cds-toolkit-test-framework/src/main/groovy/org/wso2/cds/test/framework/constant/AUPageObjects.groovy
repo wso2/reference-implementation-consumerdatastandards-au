@@ -41,6 +41,7 @@ class AUPageObjects {
     public static String CONSENT_EXPIRY_XPATH = "//button[@id='consent-expiry-date']"
     public static String NEGATIVE_SHARING_DURATION_ERROR_PATH = "//td[contains(text(),'Negative sharing_duration')]"
     public static String CONSENT_CONFIRM_XPATH = "//input[@id='approve']"
+    public static String CONSENT_NEXT = "//input[@id='next']"
     public static String CONSENT_AUTHORIZE_FLOW_BACK_XPATH = "//input[@id='back']"
 
     public static String LBL_PERMISSION_HEADER_ORG_PROFILE = "//button[contains(text(),'Organisation profile')]"
@@ -167,7 +168,8 @@ class AUPageObjects {
     public static String AU_PASSWORD_FIELD_ID = "password"
     public static String AU_HEADLESS_TAG = "--headless"
     public static String AU_ACCOUNT_SELECT_DROPDOWN_XPATH = "//*[@id=\"accselect\"]"
-    public static String AU_AUTH_SIGNIN_XPATH = "//input[@value='Next']"
+    //    public static String AU_AUTH_SIGNIN_XPATH = "//input[@value='Next']"
+    public static String AU_AUTH_SIGNIN_XPATH = " //button[contains(text(),'Sign In')]"
     public static String AU_CONSENT_DENY_XPATH = "//input[@value='Deny']"
     public static String AU_CONSENT_APPROVE_SUBMIT_ID = "approve"
     public static String AU_IS_USERNAME_ID = "txtUserName"
