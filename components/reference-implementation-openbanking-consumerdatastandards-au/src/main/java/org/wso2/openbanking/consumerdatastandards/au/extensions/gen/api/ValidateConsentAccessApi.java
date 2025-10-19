@@ -40,7 +40,7 @@ public class ValidateConsentAccessApi {
         @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
-    public Response validateConsentAccessPost(@Valid @NotNull ValidateConsentAccessRequestBody validateConsentAccessRequestBody) {
+    public Response validateConsentAccessPost(@Valid @NotNull ValidateConsentAccessRequestBody validateConsentAccessRequestBody) throws Exception {
 
         Log log = LogFactory.getLog(ValidateConsentAccessApi.class);
         // Read the request body
@@ -51,15 +51,7 @@ public class ValidateConsentAccessApi {
         Object dataPayload = validateConsentAccessRequestBody.getData().getDataRequestPayload();
 
         JSONObject validationResponse = null;
-//        try {
-//            validationResponse = CDSAccountValidator.validateConsent(requestId, dataPayload, consentResource, consentType);
-//
-//        } catch (Exception e) {
-//            log.error("Error while validating the consent access request", e);
-//            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(new ErrorResponse()
-//                    .data(CommonConsentValidationUtil.getErrorDataObject("server_error",
-//                            e.getMessage())).toString()).build();
-//        }
+        validationResponse = CDSAccountValidator.validateConsent(requestId, dataPayload, consentResource);
 
         return Response.status(Response.Status.OK).entity(validationResponse.toString()).build();
     }

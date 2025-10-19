@@ -26,5 +26,6 @@ public class ConfigurableProperties {
     public static final String SHARABLE_ENDPOINT = "http://ob-iam:9766/api/openbanking/cds/backend/" +
             "services/bankaccounts/bankaccountservice/sharable-accounts";
     public static final String CDS_HEADER_HOLDER_IDENTIFIER = "HID";
+    public static final String ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL = "true";
 
 }

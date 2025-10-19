@@ -103,4 +103,21 @@ public class CommonConstants {
     public static final String RESOURCE_PATH = "ResourcePath";
     public static final String ELECTED_RESOURCE = "electedResource";
     public static final String RECEIPT = "receipt";
+    public static final String ACCOUNT_REGEX = "/accounts";
+    public static final String PRODUCTS_REGEX = "/products";
+    public static final String PRODUCT_DETAILS_REGEX = "/products/[^/?]*";
+    public static final String ACCOUNT_DETAILS_REGEX = "/accounts/[^/?]*";
+    public static final String BALANCES_REGEX = "/accounts/balances";
+    public static final String BALANCES_ID_REGEX = "/accounts/[^/?]*/balance";
+    public static final String TRANSACTIONS_ID_REGEX = "/accounts/[^/?]*/transactions";
+    public static final String TRANSACTION_DETAILS_REGEX = "/accounts/[^/?]*/transactions/[^/?]*";
+    public static final String DIRECT_DEBITS_ID_REGEX = "/accounts/[^/?]*/direct-debits";
+    public static final String DIRECT_DEBITS_REGEX = "/accounts/direct-debits";
+    public static final String SCHEDULED_PAYMENTS_ID_REGEX = "/accounts/[^/?]*/payments/scheduled";
+    public static final String SCHEDULED_PAYMENTS_REGEX = "/payments/scheduled";
+    public static final String PAYEES_REGEX = "/payees";
+    public static final String PAYEES_ID_REGEX = "/payees/[^/?]*";
+    public static final String ACCOUNT_DATA = "accountData";
+    public static final String STATUS = "status";
+
 }

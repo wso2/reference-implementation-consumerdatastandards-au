@@ -1,8 +1,25 @@
+/**
+ * Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ *
+ * WSO2 LLC. licenses this file to you under the Apache License,
+ * Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied. See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
+ */
+
 package org.wso2.openbanking.consumerdatastandards.au.extensions.validators.consent;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
@@ -15,12 +32,22 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * Validator class for CDS Account related consent validations.
+ */
 public class CDSAccountValidator {
 
     private static final Log log = LogFactory.getLog(CDSAccountValidator.class);
 
-    public static JSONObject validateConsent(String requestId, Object dataPayload, Object consentResource,
-                                             String consentType) throws Exception {
+    /**
+     * Validate the consent for account related requests.
+     * @param requestId
+     * @param dataPayload
+     * @param consentResource
+     * @return
+     * @throws Exception
+     */
+    public static JSONObject validateConsent(String requestId, Object dataPayload, Object consentResource) throws Exception {
 
         JSONObject validationResponse = null;
 
@@ -31,11 +58,19 @@ public class CDSAccountValidator {
         return validationResponse;
     }
 
+    /**
+     * Validate banking api submission.
+     * @param dataPayload
+     * @param consentPayload
+     * @param requestId
+     * @return
+     * @throws Exception
+     */
     public static JSONObject validateBankingApiSubmission(Object dataPayload, Object consentPayload, String requestId)
             throws Exception {
 
         JSONObject jsonDataRequestBody = CommonConsentExtensionUtils.convertObjectToJson(dataPayload);
-        JSONObject jsonConsentRequestBody = CommonConsentExtensionUtils.convertObjectToJson(consentPayload);
+        JSONObject jsonConsentResourceBody = CommonConsentExtensionUtils.convertObjectToJson(consentPayload);
 
         String resourcePath = jsonDataRequestBody.getJSONObject(CommonConstants.RESOURCE_PARAMS)
                 .getString(CommonConstants.RESOURCE_PATH);
@@ -48,74 +83,25 @@ public class CDSAccountValidator {
             return ErrorUtil.createErrorResponse(CDSErrorEnum.UNEXPECTED_FIELD).toJSONObject();
         }
 
-        //Retrieve Consent Payload
-        JSONObject receiptJson = jsonConsentRequestBody.getJSONObject(CommonConstants.RECEIPT);
+        //Consent Status Validation
+        if (!CommonConstants.AUTHORIZED_STATUS
+                .equalsIgnoreCase(jsonConsentResourceBody.get(CommonConstants.STATUS).toString())) {
 
-        //Check whether required permissions provided.
-        JSONArray permissions = (JSONArray) ((JSONObject) receiptJson.get(CommonConstants.DATA))
-                .get(CommonConstants.PERMISSIONS);
+            String description = "The associated consent for resource is not in a status " +
+                    "that would allow the resource to be executed";
+            log.error(description);
+            return ErrorUtil.createErrorResponse(CDSErrorEnum.REVOKED_CONSENT).toJSONObject();
+        }
 
-//        if (!UKConsentValidatorUtil.validateAccountPermissions(electedResource, permissions)) {
-//
-//            log.error(ErrorConstants.PERMISSION_MISMATCH_ERROR);
-//            return CommonConsentExtensionUtils.getErrorResponse(CommonConstants.BAD_REQUEST,
-//                    ErrorConstants.FIELD_INVALID, ErrorConstants.PERMISSION_MISMATCH_ERROR);
-//        }
-//
-//        //Check whether the consent is expired.
-//        if (UKConsentValidatorUtil.isConsentExpired((String) ((JSONObject) receiptJson.get(CommonConstants.DATA))
-//                .get(CommonConstants.EXPIRATION_DATE))) {
-//
-//            log.error(ErrorConstants.CONSENT_EXPIRED_ERROR);
-//            return CommonConsentExtensionUtils.getErrorResponse(CommonConstants.BAD_REQUEST,
-//                    ErrorConstants.FIELD_INVALID, ErrorConstants.CONSENT_EXPIRED_ERROR);
-//        }
-//
-//        //Consent Status Validation
-//        String consentStatus = jsonConsentRequestBody.getString(CommonConstants.STATUS.toLowerCase(Locale.ROOT));
-//
-//        if (!CommonConstants.AUTHORIZED_STATUS.equalsIgnoreCase(consentStatus)) {
-//
-//            log.error(ErrorConstants.ACCOUNT_CONSENT_STATE_INVALID);
-//            return CommonConsentExtensionUtils.getErrorResponse(CommonConstants.BAD_REQUEST,
-//                    ErrorConstants.RESOURCE_INVALID_CONSENT_STATUS, ErrorConstants.ACCOUNT_CONSENT_STATE_INVALID);
-//        }
-//
-//        //Account ID Validation
-//        String isAccountIdValidationEnabled = ConfigurableProperties.VALIDATE_ACCOUNT_ID;
-//
-//        if (Boolean.parseBoolean(isAccountIdValidationEnabled) &&
-//                !UKConsentValidatorUtil.isAccountIdValid(jsonConsentRequestBody, resourcePath)) {
-//
-//            log.error(ErrorConstants.ACCOUNT_ID_NOT_AVAILABLE_MSG);
-//            return CommonConsentExtensionUtils.getErrorResponse(CommonConstants.BAD_REQUEST,
-//                    ErrorConstants.FIELD_INVALID, ErrorConstants.ACCOUNT_ID_NOT_AVAILABLE_MSG);
-//        }
-//
-//        // Perform Query Param Validation.
-//        Map<String, String> resourceParams = new HashMap<>();
-//        resourceParams = CommonConsentExtensionUtils.extractQueryParams(jsonDataRequestBody);
-//
-//        JSONObject queryParamValidity = UKConsentValidatorUtil.checkTransactionTimePeriodValidity(resourcePath,
-//                receiptJson, resourceParams, requestId);
-//
-//        if (queryParamValidity != null && queryParamValidity.toString().contains(CommonConstants.ERROR)) {
-//            return queryParamValidity;
-//        }
-//
-//        //Validating 90 days re-authentication removal for account refresh tokens with 3.1.10 update.
-//        Integer lastAuthorizeDate = jsonConsentRequestBody.getInt(CommonConstants.UPDATED_TIME);
-//
-//        if (CommonConsentExtensionUtils.isLastAuthorizedDateOutOfLimit(lastAuthorizeDate) &&
-//                CommonConsentExtensionUtils.isFromDateOutOfDateLimit(resourceParams)) {
-//
-//            log.error(ErrorConstants.OLDER_REFRESH_TOKEN);
-//            return CommonConsentExtensionUtils.getErrorResponse(CommonConstants.BAD_REQUEST,
-//                    ErrorConstants.INVALID_QUERY_PARAMS, ErrorConstants.OLDER_REFRESH_TOKEN);
-//        }
+        //Consent Expiry Validation
+        if (CDSConsentValidatorUtil.isConsentExpired(jsonConsentResourceBody.getJSONObject(CommonConstants.RECEIPT)
+                .getJSONObject(CommonConstants.ACCOUNT_DATA).get(CommonConstants.EXPIRATION_DATE_TIME).toString())) {
 
+            String description = "The associated consent for resource is not in a status " +
+                    "that would allow the resource to be executed";
+            log.error(description);
+            return ErrorUtil.createErrorResponse(CDSErrorEnum.INVALID_CONSENT, description).toJSONObject();
+        }
         return CommonConsentExtensionUtils.getSuccessResponse(requestId);
     }
-
-
 }
