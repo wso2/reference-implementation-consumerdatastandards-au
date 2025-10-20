@@ -35,7 +35,7 @@ import com.nimbusds.oauth2.sdk.http.HTTPRequest
 import com.nimbusds.oauth2.sdk.http.HTTPResponse
 import com.nimbusds.oauth2.sdk.id.ClientID
 import com.nimbusds.oauth2.sdk.token.RefreshToken
-import org.wso2.openbanking.test.framework.request_builder.SignedObject
+import org.wso2.bfsi.test.framework.request_builder.SignedObject
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import io.restassured.RestAssured
 import io.restassured.http.ContentType

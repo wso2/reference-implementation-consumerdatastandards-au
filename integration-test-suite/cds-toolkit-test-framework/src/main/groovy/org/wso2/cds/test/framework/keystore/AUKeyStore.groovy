@@ -19,16 +19,15 @@
 package org.wso2.cds.test.framework.keystore
 
 import org.wso2.bfsi.test.framework.exception.TestFrameworkException
-import org.wso2.openbanking.test.framework.keystore.OBKeyStore
+import org.wso2.bfsi.test.framework.keystore.KeyStore
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import java.security.Key
-import java.security.KeyStore
 import java.security.cert.Certificate
 
 /**
  * Class for provide keystore functions for AU Layer
  */
-class AUKeyStore extends OBKeyStore{
+class AUKeyStore extends KeyStore {
 
     private static AUConfigurationService auConfiguration = new AUConfigurationService()
 

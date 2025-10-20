@@ -27,11 +27,11 @@ import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
 import io.restassured.response.Response
 import org.testng.Assert
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
 
 import java.nio.charset.Charset
 
