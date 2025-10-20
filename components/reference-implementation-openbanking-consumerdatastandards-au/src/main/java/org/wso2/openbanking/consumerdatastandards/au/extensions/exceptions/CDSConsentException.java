@@ -20,8 +20,6 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorResponse;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ErrorUtil;
 
 /**
  * Unified exception class for all CDS-related errors.
@@ -146,78 +144,10 @@ public class CDSConsentException extends Exception {
         return customDetail != null ? customDetail : errorEnum.getDetail();
     }
 
-    /**
-     * Get the URN if provided.
-     *
-     * @return URN string
-     */
-    public String getUrn() {
-        return urn;
-    }
-
-    /**
-     * Get CDS-compliant error response.
-     *
-     * @return CDSErrorResponse object
-     */
-    public CDSErrorResponse getCDSErrorResponse() {
-        return ErrorUtil.createErrorResponse(errorEnum, customDetail, urn);
-    }
-
-    /**
-     * Get error response as JSON string for HTTP responses.
-     *
-     * @return JSON string representation
-     */
-    public String toJsonString() {
-        return ErrorUtil.toJsonString(getCDSErrorResponse());
-    }
-
     // Common factory method for any CDS error
-
-    /**
-     * Create CDS exception using any error from CDSErrorEnum.
-     * This method reads all necessary information (HTTP status, error code, title, detail)
-     * from the CDSErrorEnum and creates the appropriate exception.
-     *
-     * @param errorEnum the error type from CDSErrorEnum
-     * @return CDSConsentException
-     */
-    public static CDSConsentException createError(CDSErrorEnum errorEnum) {
-        return new CDSConsentException(errorEnum);
-    }
-
-    /**
-     * Create CDS exception using any error from CDSErrorEnum with custom detail message.
-     * This method reads HTTP status, error code, and title from CDSErrorEnum,
-     * but uses the provided custom detail message instead of the default one.
-     *
-     * @param errorEnum    the error type from CDSErrorEnum
-     * @param customDetail custom detail message (can include formatted strings)
-     * @return CDSConsentException
-     */
-    public static CDSConsentException createError(CDSErrorEnum errorEnum, String customDetail) {
-        return new CDSConsentException(errorEnum, customDetail);
-    }
-
-    /**
-     * Create CDS exception using any error from CDSErrorEnum with custom detail and URN.
-     * This method reads HTTP status, error code, and title from CDSErrorEnum,
-     * uses the provided custom detail message and URN for categorization.
-     *
-     * @param errorEnum    the error type from CDSErrorEnum
-     * @param customDetail custom detail message (can include formatted strings)
-     * @param urn          URN for error categorization
-     * @return CDSConsentException
-     */
-    public static CDSConsentException createError(CDSErrorEnum errorEnum, String customDetail, String urn) {
-        return new CDSConsentException(errorEnum, customDetail, urn);
-    }
-
     /**
      * Convert any Throwable to appropriate CDSConsentException based on exception type.
-     * This method intelligently maps different exception types to appropriate CDS errors,
-     * eliminating the need for multiple catch clauses.
+     * This method maps different exception types to appropriate CDS errors.
      *
      * @param throwable the original exception
      * @param context   optional context message for better error description
@@ -265,91 +195,5 @@ public class CDSConsentException extends Exception {
         // Default mapping for any other exception
         return new CDSConsentException(CDSErrorEnum.UNEXPECTED_ERROR,
                 contextMessage + "An unexpected error occurred: " + throwable.getMessage(), throwable);
-    }
-
-    /**
-     * Convert any Throwable to appropriate CDSConsentException (without context).
-     *
-     * @param throwable the original exception
-     * @return CDSConsentException with appropriate CDS error enum
-     */
-    public static CDSConsentException fromThrowable(Throwable throwable) {
-        return fromThrowable(throwable, null);
-    }
-
-    /**
-     * Wrap any operation that might throw exceptions in a CDS-compliant way.
-     * This method allows you to execute any code block and automatically converts
-     * any thrown exceptions to appropriate CDSConsentException.
-     *
-     * @param operation the operation to execute
-     * @param context   optional context message
-     * @param <T>       return type of the operation
-     * @return result of the operation
-     * @throws CDSConsentException if any exception occurs during operation
-     */
-    public static <T> T wrapOperation(ThrowingSupplier<T> operation, String context) throws CDSConsentException {
-        try {
-            return operation.get();
-        } catch (Exception e) {
-            throw fromThrowable(e, context);
-        }
-    }
-
-    /**
-     * Wrap any operation that might throw exceptions (without context).
-     *
-     * @param operation the operation to execute
-     * @param <T>       return type of the operation
-     * @return result of the operation
-     * @throws CDSConsentException if any exception occurs during operation
-     */
-    public static <T> T wrapOperation(ThrowingSupplier<T> operation) throws CDSConsentException {
-        return wrapOperation(operation, null);
-    }
-
-    /**
-     * Wrap any void operation that might throw exceptions.
-     *
-     * @param operation the operation to execute
-     * @param context   optional context message
-     * @throws CDSConsentException if any exception occurs during operation
-     */
-    public static void wrapVoidOperation(ThrowingRunnable operation, String context) throws CDSConsentException {
-        try {
-            operation.run();
-        } catch (Exception e) {
-            throw fromThrowable(e, context);
-        }
-    }
-
-    /**
-     * Wrap any void operation that might throw exceptions (without context).
-     *
-     * @param operation the operation to execute
-     * @throws CDSConsentException if any exception occurs during operation
-     */
-    public static void wrapVoidOperation(ThrowingRunnable operation) throws CDSConsentException {
-        wrapVoidOperation(operation, null);
-    }
-
-    // ========== FUNCTIONAL INTERFACES FOR OPERATIONS ==========
-
-    /**
-     * Functional interface for operations that return a value and might throw exceptions.
-     *
-     * @param <T> return type
-     */
-    @FunctionalInterface
-    public interface ThrowingSupplier<T> {
-        T get() throws Exception;
-    }
-
-    /**
-     * Functional interface for void operations that might throw exceptions.
-     */
-    @FunctionalInterface
-    public interface ThrowingRunnable {
-        void run() throws Exception;
     }
 }

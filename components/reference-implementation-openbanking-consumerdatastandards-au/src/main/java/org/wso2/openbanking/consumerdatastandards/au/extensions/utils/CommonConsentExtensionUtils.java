@@ -32,13 +32,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.ErrorConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponse;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorFormat;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorMeta;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,10 +52,11 @@ public class CommonConsentExtensionUtils {
     private static final Log log = LogFactory.getLog(CommonConsentExtensionUtils.class);
 
     /**
-     * Method to convert a generic object to JSONObject.
-     * @param object
-     * @return
-     * @throws JsonProcessingException
+     * Converts a generic Java object to a {@link JSONObject}.
+     *
+     * @param object the Java object to be converted to JSON
+     * @return a {@link JSONObject} representation of the given object
+     * @throws JsonProcessingException if the object cannot be serialized to a JSON string
      */
     public static JSONObject convertObjectToJson(Object object) throws JsonProcessingException {
         // Convert Object to JSON string
@@ -73,8 +69,8 @@ public class CommonConsentExtensionUtils {
 
     /**
      * Method to construct the consent manage success response.
-     * @param requestId
-     * @return
+     * @param requestId The unique identifier for the request to be included in the success response.
+     * @return A {@link JSONObject} representing the success response with the provided request ID and status.
      */
     public static JSONObject getSuccessResponse(String requestId) {
 
@@ -86,9 +82,9 @@ public class CommonConsentExtensionUtils {
     }
 
     /**
-     * Validate whether the date is a valid ISO 8601 format.
-     * @param dateValue
-     * @return
+     * Validate whether the given date string is in a valid ISO 8601 format.
+     * @param dateValue the date string to validate
+     * @return true if the date string is a valid ISO 8601 format, false otherwise
      */
     public static boolean isValid8601(String dateValue) {
         try {
@@ -100,11 +96,12 @@ public class CommonConsentExtensionUtils {
     }
 
     /**
-     * Method to get accounts from the sharable endpoint.
-     * @param sharableAccountsRetrieveUrl
-     * @param parameters
-     * @param headers
-     * @return
+     * Retrieves account information from the specified sharable accounts endpoint.
+     *
+     * @param sharableAccountsRetrieveUrl The URL of the sharable accounts retrieve endpoint.
+     * @param parameters A map of query parameters to be included in the request URL.
+     * @param headers A map of HTTP headers to be included in the request.
+     * @return The response body as a String if the request is successful; otherwise, returns null.
      */
     public static String getAccountsFromEndpoint(String sharableAccountsRetrieveUrl, Map<String, String> parameters,
                                                  Map<String, String> headers) {
@@ -172,9 +169,9 @@ public class CommonConsentExtensionUtils {
 
     /**
      * Get accountId from the accounts list by matching the displayName.
-     * @param accountsURL
-     * @param targetDisplayName
-     * @return
+     * @param accountsURL The URL endpoint to retrieve the list of accounts.
+     * @param targetDisplayName The display name of the account to search for.
+     * @return The accountId of the account with the matching display name, or {@code null} if not found.
      */
     public static String getAccountIdByDisplayName(String accountsURL, String targetDisplayName) {
 
@@ -196,8 +193,8 @@ public class CommonConsentExtensionUtils {
 
     /**
      * Get epoch seconds from the given expiration date time string.
-     * @param expirationDateTime
-     * @return
+     * @param expirationDateTime the expiration date/time as a string, either in ISO 8601 format or as epoch milliseconds
+     * @return the number of seconds since the epoch represented by the expirationDateTime
      */
     public static long getEpochSeconds(String expirationDateTime) {
 

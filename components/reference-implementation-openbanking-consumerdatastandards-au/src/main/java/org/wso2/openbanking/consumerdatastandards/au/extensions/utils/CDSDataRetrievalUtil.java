@@ -43,9 +43,9 @@ public class CDSDataRetrievalUtil {
 
     /**
      * Method to retrieve consent data from request object.
-     * @param jsonRequestBody
-     * @param requiredData
-     * @return
+     * @param jsonRequestBody The JSON object representing the request object of authorization request.
+     * @param requiredData The Map containing the required data which is extracted from the request object.
+     * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsentData object containing the consent data.
      */
     public static SuccessResponsePopulateConsentAuthorizeScreenDataConsentData CdsConsentRetrieval(
             JSONObject jsonRequestBody, Map<String, Object> requiredData) throws CDSConsentException {
@@ -132,10 +132,10 @@ public class CDSDataRetrievalUtil {
 
     /**
      * Method to retrieve consumer data from request object.
-     * @param jsonRequestBody
-     * @param requiredData
-     * @param userId
-     * @return
+     * @param jsonRequestBody The JSON object representing the request object of authorization request.
+     * @param requiredData The Map containing the required data which is extracted from the request object.
+     * @param userId The user id of the authenticated user.
+     * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
     public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData CdsConsumerDataRetrieval(
             JSONObject jsonRequestBody, Map<String, Object> requiredData, String userId) throws CDSConsentException {
@@ -150,10 +150,10 @@ public class CDSDataRetrievalUtil {
 
     /**
      * Method to validate and append consumer object to response.
-     * @param jsonRequestBody
-     * @param requiredData
-     * @param userId
-     * @return
+     * @param jsonRequestBody The JSON object representing the request object of authorization request.
+     * @param requiredData The Map containing the required data which is extracted from the request object.
+     * @param userId The user id of the authenticated user.
+     * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
     public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData
     validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, Map<String, Object> requiredData, String userId) throws CDSConsentException {
@@ -273,9 +273,9 @@ public class CDSDataRetrievalUtil {
 
     /**
      * Set profile scope related individual claims as permissions.
-     * @param jsonRequestBody
-     * @param userInfoClaimsObj
-     * @param idTokenClaimsObj
+     * @param jsonRequestBody The JSON object representing the request object of authorization request.
+     * @param userInfoClaimsObj The object representing the UserInfo claims.
+     * @param idTokenClaimsObj The object representing the ID Token claims.
      */
     private static void setClaimPermissions(JSONObject jsonRequestBody, Object userInfoClaimsObj,
                                             Object idTokenClaimsObj) {
@@ -319,10 +319,10 @@ public class CDSDataRetrievalUtil {
 
     /**
      * Construct basic consent data for consent authorisation screen.
-     * @param expirationDate
-     * @param sharingDurationValue
-     * @param permissionsList
-     * @return
+     * @param expirationDate - expiration date time
+     * @param sharingDurationValue - sharing duration value
+     * @param permissionsList - list of permissions
+     * @return Map of basic consent data
      */
     private static Map<String, List<String>> constructBasicConsentData(String expirationDate, String sharingDurationValue,
                                                                       List<String> permissionsList) {
@@ -339,9 +339,9 @@ public class CDSDataRetrievalUtil {
 
     /**
      * Construct consent metadata map.
-     * @param permissionsList
-     * @param expirationDate
-     * @return
+     * @param permissionsList - list of permissions
+     * @param expirationDate - expiration date time
+     * @return Map of consent metadata
      */
     private static Map<String,Object> constructConsentMetadatMap(List<String> permissionsList, String expirationDate) {
 

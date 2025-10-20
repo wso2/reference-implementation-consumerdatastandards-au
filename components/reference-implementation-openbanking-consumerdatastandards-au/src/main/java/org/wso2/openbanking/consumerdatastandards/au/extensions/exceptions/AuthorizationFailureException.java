@@ -46,16 +46,6 @@ public class AuthorizationFailureException extends Exception {
         super(message, e);
     }
 
-    public AuthorizationFailureException(String message, String newStatus) {
-        super(message);
-        this.newStatus = newStatus;
-    }
-
-    public AuthorizationFailureException(String message, String newStatus, Throwable e) {
-        super(message, e);
-        this.newStatus = newStatus;
-    }
-
     /**
      * Constructor with CDS error for structured error handling.
      *
@@ -92,24 +82,6 @@ public class AuthorizationFailureException extends Exception {
      */
     public void setResponseId(String responseId) {
         this.responseId = responseId;
-    }
-
-    /**
-     * Get the CDS error enum if available.
-     *
-     * @return CDSErrorEnum or null if not set
-     */
-    public CDSErrorEnum getCdsError() {
-        return cdsError;
-    }
-
-    /**
-     * Get new consent status.
-     *
-     * @return new consent status
-     */
-    public String getNewStatus() {
-        return newStatus;
     }
 
     /**

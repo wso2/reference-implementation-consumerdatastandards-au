@@ -45,7 +45,7 @@ public class CDSConsentAuthPersistUtil {
     /**
      * Method to handle the persist consent request.
      * @param persistAuthorizedConsentRequestBody
-     * @return
+     * @return Detailed Consent Resource
      */
     public static SuccessResponsePersistAuthorizedConsentData CdsConsentPersist(
             PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody) throws CDSConsentException {
@@ -138,8 +138,8 @@ public class CDSConsentAuthPersistUtil {
 
     /**
      * Method to retrieve account id from shareable endpoint and generate the authorisation resources.
-     * @param authorizedDataInners
-     * @return
+     * @param authorizedDataInners List of permissions and accounts
+     * @return List of Account Ids and it's Mapping
      */
     private static List<Resource> validateAndGetResources(List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners) {
         List<Resource> resources = new ArrayList<>();
@@ -170,11 +170,11 @@ public class CDSConsentAuthPersistUtil {
 
     /**
      * Builds authorization from input accounts and status.
-     * @param authResource
-     * @param type
-     * @param authStatus
-     * @param userId
-     * @return
+     * @param authResource List of Resource objects
+     * @param type Consent Type
+     * @param authStatus Authorization Status
+     * @param userId User Id
+     * @return Authorization object
      */
     public static Authorization validateAndBuildAuthorizations(List<Resource> authResource, String type,
                                                                String authStatus, String userId) {
@@ -190,8 +190,8 @@ public class CDSConsentAuthPersistUtil {
 
     /**
      * Method to get the account id list from the payload data.
-     * @param payloadData
-     * @return
+     * @param payloadData payload data from the persist request
+     * @return List of account ids
      * @throws CDSConsentException
      */
     private static ArrayList<String> getAccountIdList(JSONObject payloadData) throws CDSConsentException {
@@ -217,10 +217,9 @@ public class CDSConsentAuthPersistUtil {
     }
 
     /**
-     * Method to get the validity time from the metadata.
-     * Convert the expiration datetime to epoch seconds.
-     * @param metadataObject
-     * @return
+     * Method to get the validity time from the metadata and Convert the expiration datetime to epoch seconds.
+     * @param metadataObject metadata object from authorized resources
+     * @return validity time in epoch seconds
      */
     private static Long getValidityTime(Object metadataObject) {
 
@@ -263,8 +262,8 @@ public class CDSConsentAuthPersistUtil {
 
     /**
      * Method to create JSON payload from metadata object.
-     * @param metadataObject
-     * @return
+     * @param metadataObject metadata object from authorized resources
+     * @return JSON payload from metadata
      */
     public static JSONObject createJsonPayload(Object metadataObject) {
 

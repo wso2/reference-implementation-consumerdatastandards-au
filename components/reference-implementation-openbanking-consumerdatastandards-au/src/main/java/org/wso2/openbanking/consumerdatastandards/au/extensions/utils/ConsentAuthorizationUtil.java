@@ -45,10 +45,11 @@ public class ConsentAuthorizationUtil {
     private static final int secondsInYear = (int) TimeUnit.SECONDS.convert(365, TimeUnit.DAYS);
 
     /**
-     * Extract required data from request object.
-     * @param jsonRequestBody
-     * @return
-     * @throws CDSConsentException
+     * Extracts required data from the given request object.
+     *
+     * @param jsonRequestBody The JSON object representing the request payload from which required data will be extracted.
+     * @return A map containing the extracted data, or error information if extraction fails.
+     * @throws CDSConsentException If there is an error while parsing the request object or extracting required data.
      */
     public static Map<String, Object> extractRequiredDataFromRequestObject(JSONObject jsonRequestBody) throws CDSConsentException {
 
@@ -127,8 +128,8 @@ public class ConsentAuthorizationUtil {
 
     /**
      * Calculate consent expiry date time based on sharing duration.
-     * @param sharingDuration
-     * @return
+     * @param sharingDuration the duration in seconds for which the consent is valid
+     * @return the calculated consent expiry date and time as an {@link OffsetDateTime}
      */
     private static OffsetDateTime getConsentExpiryDateTime(long sharingDuration) {
 

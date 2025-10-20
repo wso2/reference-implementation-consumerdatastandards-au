@@ -160,7 +160,7 @@ public class CDSAuthorizationFlowHandler {
     /**
      * Handle pushed authorization request validation.
      * @param validateAuthRequestBody
-     * @return
+     * @return Response200ForValidateAuthorizationRequest response
      * @throws CDSConsentException
      * @throws JsonProcessingException
      */

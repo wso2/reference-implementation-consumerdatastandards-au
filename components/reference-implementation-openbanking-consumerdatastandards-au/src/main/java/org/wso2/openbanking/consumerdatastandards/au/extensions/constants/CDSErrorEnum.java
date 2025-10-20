@@ -219,8 +219,6 @@ public enum CDSErrorEnum {
         return detail;
     }
 
-    private String value;
-
     public static CDSErrorEnum fromValue(String text) {
 
         for (CDSErrorEnum b : CDSErrorEnum.values()) {

@@ -117,178 +117,20 @@ public class ErrorUtil {
     }
 
     /**
-     * Convert CDSErrorResponse to JSON string.
-     *
-     * @param errorResponse the error response
-     * @return JSON string
-     */
-    public static String toJsonString(CDSErrorResponse errorResponse) {
-        try {
-            return objectMapper.writeValueAsString(errorResponse);
-        } catch (JsonProcessingException e) {
-            // Return simple fallback JSON
-            return "{\"errors\":[{\"code\":\"UNKNOWN\",\"title\":\"Error\",\"detail\":\"Failed to serialize error\"}]}";
-        }
-    }
-
-    // ========== ENHANCED LEGACY METHODS (UPDATED TO USE NEW FORMAT) ==========
-
-    /**
-     * Method to get the error json with multiple error objects for CDS.
-     *
-     * @param errors - Array with multiple error details
-     * @return Error in JSON format
-     */
-    public static String getErrorJson(JSONArray errors) {
-        Gson gson = new Gson();
-        return gson.toJson(constructErrorObject(errors));
-    }
-
-    /**
-     * Method to construct final error object for CDS.
-     * Enhanced to work with the new CDSErrorFormat structure.
-     *
-     * @param errorData - Error Data array
-     * @return CDS Error Response
-     */
-    public static CDSErrorResponse constructErrorObject(JSONArray errorData) {
-        List<CDSErrorFormat> errorArray = new ArrayList<>();
-
-        for (Object errorDatum : errorData) {
-            JSONObject errorElement = (JSONObject) errorDatum;
-            
-            // Get the enum for respective error
-            CDSErrorEnum cdsError = CDSErrorEnum.fromValue(errorElement.get(ErrorConstants.ERROR_ENUM).toString());
-
-            // Setting the error details
-            String errorMessage;
-            String metaUrnError = StringUtils.EMPTY;
-            
-            if (errorElement.get(ErrorConstants.DETAIL) != null) {
-                try {
-                    Object errorObject = new JSONParser(JSONParser.MODE_PERMISSIVE).parse(
-                            errorElement.getString(ErrorConstants.DETAIL));
-                    
-                    if (errorObject instanceof JSONObject) {
-                        JSONObject errorJSON = (JSONObject) errorObject;
-                        errorMessage = errorJSON.getString(ErrorConstants.DETAIL);
-                        
-                        if (errorJSON.getString(ErrorConstants.META_URN) != null) {
-                            metaUrnError = errorJSON.getString(ErrorConstants.META_URN);
-                        }
-                    } else {
-                        errorMessage = errorObject.toString();
-                    }
-                } catch (ParseException e) {
-                    log.error("Unexpected error while parsing string", e);
-                    errorMessage = "Unexpected error while parsing string";
-                }
-            } else {
-                errorMessage = cdsError.getDetail();
-            }
-
-            // Create error using new simplified approach
-            CDSErrorMeta meta = null;
-            if (StringUtils.isNotBlank(metaUrnError)) {
-                meta = new CDSErrorMeta(metaUrnError);
-            } else if (errorElement.get(ErrorConstants.METADATA) != null) {
-                meta = (CDSErrorMeta) errorElement.get(ErrorConstants.METADATA);
-            }
-
-            CDSErrorFormat error = new CDSErrorFormat(
-                    cdsError.getCode(),
-                    cdsError.getTitle(),
-                    errorMessage,
-                    meta
-            );
-            
-            errorArray.add(error);
-        }
-
-        return new CDSErrorResponse(errorArray);
-    }
-
-    /**
-     * Method to construct object for CDS to pass to the Error Generation Library.
-     *
-     * @param error        Relevant Error enum from the CDSErrorEnum
-     * @param errorMessage Custom error message
-     * @param metaData     metadata object
-     * @return JSONObject for legacy compatibility
-     */
-    public static JSONObject getErrorObject(CDSErrorEnum error, String errorMessage, CDSErrorMeta metaData) {
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put(ErrorConstants.ERROR_ENUM, error);
-        jsonObject.put(ErrorConstants.DETAIL, errorMessage);
-        jsonObject.put(ErrorConstants.METADATA, metaData);
-        return jsonObject;
-    }
-
-    // ========== UTILITY METHODS (RETAINED FOR COMPATIBILITY) ==========
-
-    /**
-     * Method to check whether error status code list have any client errors.
-     */
-    public static boolean isAnyClientErrors(HashSet<String> statusCodes) {
-        for (String statusCode : statusCodes) {
-            if (statusCode.startsWith("4")) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Method to get the HTTP Status code.
-     */
-    public static int getHTTPErrorCode(HashSet<String> statusCodes) {
-        if (statusCodes.contains(ErrorConstants.HTTP_UNAUTHORIZED)) {
-            return HttpStatus.SC_UNAUTHORIZED;
-        } else if (statusCodes.contains(ErrorConstants.HTTP_FORBIDDEN)) {
-            return HttpStatus.SC_FORBIDDEN;
-        } else if (statusCodes.contains(ErrorConstants.HTTP_NOT_FOUND)) {
-            return HttpStatus.SC_NOT_FOUND;
-        } else if (statusCodes.contains(ErrorConstants.HTTP_NOT_ACCEPTABLE)) {
-            return HttpStatus.SC_NOT_ACCEPTABLE;
-        } else if (statusCodes.contains(ErrorConstants.HTTP_UNSUPPORTED_MEDIA_TYPE)) {
-            return HttpStatus.SC_UNSUPPORTED_MEDIA_TYPE;
-        } else if (statusCodes.contains(ErrorConstants.HTTP_UNPROCESSABLE_ENTITY)) {
-            return HttpStatus.SC_UNPROCESSABLE_ENTITY;
-        } else {
-            return HttpStatus.SC_BAD_REQUEST;
-        }
-    }
-
-    /**
-     * Extract a meaningful error message from a JSON response.
-     */
-    public static String getErrorMessage(JSONObject data) {
-        String message = data.toString();
-
-        JSONArray tppMessages = data.optJSONArray("tppMessages");
-        if (tppMessages != null) {
-            JSONObject errorObj = tppMessages.optJSONObject(0);
-            if (errorObj != null) {
-                String text = errorObj.optString("text");
-                if (text != null && !text.isEmpty()) {
-                    message = text;
-                }
-            }
-        }
-        return message;
-    }
-
-    // ========== LEGACY RESPONSE METHODS (MAINTAINED FOR BACKWARD COMPATIBILITY) ==========
-
-    /**
      * Method to get ErrorResponse object for error.
+     * @param errorMessage error message
+     * @param errorDescription error description
+     * @return ErrorResponse object
      */
     public static ErrorResponse getErrorResponse(String errorMessage, String errorDescription) {
         return new ErrorResponse(ErrorResponse.StatusEnum.ERROR, getErrorDataObject(errorMessage, errorDescription));
     }
 
     /**
-     * Method to construct the error data object.
+     * Method to get error data object.
+     * @param errorMessage error message
+     * @param errorDescription error description
+     * @return JSONObject containing error data
      */
     public static JSONObject getErrorDataObject(String errorMessage, String errorDescription) {
         JSONObject data = new JSONObject();
@@ -299,6 +141,8 @@ public class ErrorUtil {
 
     /**
      * Get formatted error object for internal errors.
+     * @param data error data
+     * @return JSONObject containing formatted error response
      */
     public static JSONObject getFormattedErrorResponse(JSONObject data) {
         ErrorResponse errorResponse = new ErrorResponse();
@@ -309,6 +153,11 @@ public class ErrorUtil {
 
     /**
      * Method to build FailedResponseInConsentAuthorize object from failed authorization exceptions.
+     *
+     * @param responseId response ID
+     * @param message    error message
+     * @param newStatus  new consent status (optional)
+     * @return JSONObject containing formatted authorization failure exception response
      */
     public static JSONObject getFormattedAuthorizationFailureException(String responseId, String message,
                                                                        String newStatus) {
@@ -323,16 +172,5 @@ public class ErrorUtil {
         }
 
         return new JSONObject(failedResponse.data(responseData));
-    }
-
-    /**
-     * Get formatted error object for validation failures.
-     */
-    public static JSONObject getFormattedFailedResponse(int errorCode, JSONObject data) {
-        FailedResponse failedResponse = new FailedResponse();
-        failedResponse.setStatus(FailedResponse.StatusEnum.ERROR);
-        failedResponse.setErrorCode(errorCode);
-        failedResponse.setData(data);
-        return new JSONObject(failedResponse);
     }
 }

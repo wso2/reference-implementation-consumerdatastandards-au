@@ -19,11 +19,9 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -39,7 +37,7 @@ public class CDSConsentValidatorUtil {
      * Util method to validate the Account request URI.
      *
      * @param uri  Request URI
-     * @return
+     * @return boolean indicating whether the URI is valid for Account API
      */
     public static boolean isAccountURIValid(String uri) {
         List<String> accountPaths = getAccountAPIPathRegexArray();
@@ -84,7 +82,7 @@ public class CDSConsentValidatorUtil {
      * Validate whether consent is expired.
      *
      * @param expDateVal     Expiration Date Time
-     * @return
+     * @return boolean indicating whether the consent is expired
      */
     public static boolean isConsentExpired(String expDateVal) {
 

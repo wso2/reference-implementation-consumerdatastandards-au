@@ -41,11 +41,11 @@ public class CDSAccountValidator {
 
     /**
      * Validate the consent for account related requests.
-     * @param requestId
-     * @param dataPayload
-     * @param consentResource
-     * @return
-     * @throws Exception
+     * @param requestId The unique identifier for the request, used for tracking and response purposes.
+     * @param dataPayload The request data payload to be validated, typically representing the API request body.
+     * @param consentResource The consent resource payload associated with the request, typically representing the consent object.
+     * @return A {@link JSONObject} representing the validation result. If validation passes, a success response is returned;
+     * @throws Exception If validation fails due to invalid input, expired consent, or JSON processing errors.
      */
     public static JSONObject validateConsent(String requestId, Object dataPayload, Object consentResource) throws Exception {
 
@@ -59,12 +59,15 @@ public class CDSAccountValidator {
     }
 
     /**
-     * Validate banking api submission.
-     * @param dataPayload
-     * @param consentPayload
-     * @param requestId
-     * @return
-     * @throws Exception
+     * Validates a banking API submission by checking the data payload and consent payload for correctness,
+     * consent status, and expiry.
+     *
+     * @param dataPayload     The request data payload to be validated, typically representing the API request body.
+     * @param consentPayload  The consent resource payload associated with the request, typically representing the consent object.
+     * @param requestId       The unique identifier for the request, used for tracking and response purposes.
+     * @return                A {@link JSONObject} representing the validation result. If validation passes, a success response is returned;
+     *                        otherwise, an error response is returned.
+     * @throws Exception      If validation fails due to invalid input, expired consent, or JSON processing errors.
      */
     public static JSONObject validateBankingApiSubmission(Object dataPayload, Object consentPayload, String requestId)
             throws Exception {

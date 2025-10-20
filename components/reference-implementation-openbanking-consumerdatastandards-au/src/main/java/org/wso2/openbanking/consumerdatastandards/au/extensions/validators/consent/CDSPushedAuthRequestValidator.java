@@ -37,9 +37,9 @@ public class CDSPushedAuthRequestValidator {
 
     /**
      * Validates the CDS pushed authorization request object.
-     * @param requestObject
-     * @return
-     * @throws JsonProcessingException
+     * @param requestObject The request object to be validated, typically representing the CDS pushed authorization request payload.
+     * @return A JSONObject containing error details if validation fails, or {@code null} if all validations pass.
+     * @throws JsonProcessingException If an error occurs while converting the request object to a JSON representation.
      */
     public static JSONObject validateCdsPushedAuthRequest(Object requestObject)
             throws JsonProcessingException {
@@ -66,7 +66,7 @@ public class CDSPushedAuthRequestValidator {
     /**
      * Validate cdr_arrangement_id if present in the request object.
      * @param requestObjectJsonBody
-     * @return ErrorMapperData if validation fails, null otherwise
+     * @return JSONObject if validation fails, null otherwise
      */
     private static JSONObject validateCDRArrangementId(JSONObject requestObjectJsonBody) {
         JSONObject claims = requestObjectJsonBody.optJSONObject(CommonConstants.CLAIMS);
@@ -93,9 +93,9 @@ public class CDSPushedAuthRequestValidator {
     }
 
     /**
-     * Validate sharing_duration if present in the request object.
-     * @param requestObjectJsonBody
-     * @return
+     * Validates the 'sharing_duration' claim if present in the request object.
+     * @param requestObjectJsonBody The JSON body of the request object containing claims to be validated.
+     * @return A JSONObject representing an error if validation fails, or null if validation passes.
      */
     private static JSONObject validateSharingDuration(JSONObject requestObjectJsonBody) {
         JSONObject claims = requestObjectJsonBody.optJSONObject(CommonConstants.CLAIMS);
