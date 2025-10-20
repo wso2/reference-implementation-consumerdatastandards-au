@@ -58,7 +58,6 @@ public class CommonConstants {
     public static final List<String> EMAIL_CLUSTER_CLAIMS = Collections.unmodifiableList(Arrays.asList("email",
             "email_verified"));
     public static final List<String> MAIL_CLUSTER_CLAIMS = Collections.unmodifiableList(Arrays.asList("address"));
-    ;
     public static final List<String> PHONE_CLUSTER_CLAIMS = Collections.unmodifiableList(Arrays.asList("phone_number",
             "phone_number_verified"));
     public static final String NAME_CLUSTER = "name";
