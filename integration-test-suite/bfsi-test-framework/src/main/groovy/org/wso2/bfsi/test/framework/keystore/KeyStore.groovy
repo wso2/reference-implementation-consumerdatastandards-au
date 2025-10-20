@@ -18,7 +18,6 @@
 
 package org.wso2.bfsi.test.framework.keystore
 
-import org.apache.lucene.queries.spans.SpanNearQuery
 import org.wso2.bfsi.test.framework.configuration.CommonConfigurationService
 import org.wso2.bfsi.test.framework.constant.Constants
 import org.wso2.bfsi.test.framework.exception.TestFrameworkException
@@ -258,7 +257,8 @@ class KeyStore {
 
         String x5t = "";
         RSAPublicKey rsaPublicKey = (RSAPublicKey) certificate.getPublicKey();
-        JWK jwk = new SpanNearQuery.Builder(rsaPublicKey).keyID(UUID.randomUUID().toString()).build();
+        JWK jwk = new RSAKey.Builder(rsaPublicKey).keyID(UUID.randomUUID().toString()).build();
+
         try {
             x5t = jwk.computeThumbprint("SHA-1").toString();
         } catch (JOSEException e) {
