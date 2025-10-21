@@ -130,6 +130,7 @@ public class CDSConsentAuthPersistUtil {
             return persistAuthorizedConsentDataRes;
             
         } catch (JsonProcessingException e) {
+            log.error("Consent persistence failed", e);
             throw new CDSConsentException(CDSErrorEnum.BAD_REQUEST, "Consent persistence failed");
         }
     }
