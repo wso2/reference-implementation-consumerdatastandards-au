@@ -87,10 +87,8 @@ public class CDSConsentAuthPersistUtil {
             } else {
                 consentStatus = CommonConstants.AUTHORIZED_STATUS;
                 authStatus = CommonConstants.AUTHORIZED_STATUS;
-            }
 
-            //Check if account ids are available in the request when consent is approved.
-            if (isApproved) {
+                //Check if account ids are available in the request when consent is approved.
                 for (AuthorizedResourcesAuthorizedDataInner authorizedDataInner : authorizedDataInners) {
                     if (authorizedDataInner.getAccounts().isEmpty()) {
                         throw new CDSConsentException(CDSErrorEnum.FIELD_MISSING,

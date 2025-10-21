@@ -79,7 +79,6 @@ public class CDSErrorResponse {
             return new JSONObject(jsonString);
 
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
             log.error("Failed to convert to JSONObject", e);
             return new JSONObject("{\"error\":\"Failed to convert to JSONObject\"}");
         }
