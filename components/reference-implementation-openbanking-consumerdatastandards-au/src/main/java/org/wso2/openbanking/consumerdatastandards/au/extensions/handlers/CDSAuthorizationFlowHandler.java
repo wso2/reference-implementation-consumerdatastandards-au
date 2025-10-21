@@ -74,11 +74,11 @@ public class CDSAuthorizationFlowHandler {
 
             //CDS consent retrieval step
             SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData =
-                    CDSDataRetrievalUtil.CdsConsentRetrieval(jsonRequestBody, requiredData);
+                    CDSDataRetrievalUtil.CDSConsentRetrieval(jsonRequestBody, requiredData);
 
             //CDS account list retrieval step
             SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData =
-                    CDSDataRetrievalUtil.CdsConsumerDataRetrieval(jsonRequestBody, requiredData, userId);
+                    CDSDataRetrievalUtil.CDSConsumerDataRetrieval(jsonRequestBody, requiredData, userId);
 
             //Set consent data to return to accelerator
             SuccessResponsePopulateConsentAuthorizeScreenData screenData =
@@ -93,13 +93,13 @@ public class CDSAuthorizationFlowHandler {
 
             return Response.status(Response.Status.OK).entity(new JSONObject(response).toString()).build();
 
-        } catch (CDSConsentException ex) {
+        } catch (CDSConsentException e) {
             // Handle all CDS-related errors (including auto-converted exceptions)
-            log.error("CDS error during consent authorize screen population: " + ex.getMessage(), ex);
+            log.error("CDS error during consent authorize screen population: " + e.getMessage(), e);
 
             // Convert CDSConsentException to AuthorizationFailureException for consistent response format
-            AuthorizationFailureException authException = AuthorizationFailureException.createError(ex.getErrorEnum(),
-                ex.getErrorDetail(), CommonConstants.REJECTED_STATUS, requestBody.getRequestId());
+            AuthorizationFailureException authException = AuthorizationFailureException.createError(e.getErrorEnum(),
+                    e.getErrorDetail(), CommonConstants.REJECTED_STATUS, requestBody.getRequestId());
 
             return Response.status(Response.Status.OK).entity(authException.toFailedResponseJsonString()).build();
 
@@ -131,7 +131,7 @@ public class CDSAuthorizationFlowHandler {
         try {
             // Consent persist step
             SuccessResponsePersistAuthorizedConsentData persistConsentData = CDSConsentAuthPersistUtil
-                    .CdsConsentPersist(persistAuthorizedConsentRequestBody);
+                    .CDSConsentPersist(persistAuthorizedConsentRequestBody);
 
             SuccessResponsePersistAuthorizedConsent response = new SuccessResponsePersistAuthorizedConsent();
             response.setResponseId(persistAuthorizedConsentRequestBody.getRequestId());
@@ -173,7 +173,7 @@ public class CDSAuthorizationFlowHandler {
         Object requestObject = validateAuthRequestBody.getData().getRequestObject();
 
         // Validate PAR request object and capture the error response
-        JSONObject errorData = CDSPushedAuthRequestValidator.validateCdsPushedAuthRequest(requestObject);
+        JSONObject errorData = CDSPushedAuthRequestValidator.validateCDSPushedAuthRequest(requestObject);
 
         response.setResponseId(requestId);
 

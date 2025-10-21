@@ -58,7 +58,7 @@ public class CDSDataRetrievalUtil {
      * @param requiredData The Map containing the required data which is extracted from the request object.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsentData object containing the consent data.
      */
-    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsentData CdsConsentRetrieval(
+    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsentData CDSConsentRetrieval(
             JSONObject jsonRequestBody, Map<String, Object> requiredData) throws CDSConsentException {
 
         SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData =
@@ -148,7 +148,7 @@ public class CDSDataRetrievalUtil {
      * @param userId The user id of the authenticated user.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
-    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData CdsConsumerDataRetrieval(
+    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData CDSConsumerDataRetrieval(
             JSONObject jsonRequestBody, Map<String, Object> requiredData, String userId) throws CDSConsentException {
 
         // Append consumer data to response

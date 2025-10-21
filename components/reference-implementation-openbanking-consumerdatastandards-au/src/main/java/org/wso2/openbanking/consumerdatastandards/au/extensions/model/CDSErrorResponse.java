@@ -21,7 +21,10 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.validators.consent.CDSPushedAuthRequestValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,6 +33,8 @@ import java.util.List;
  * CDS Error Response according to Consumer Data Standards specification.
  */
 public class CDSErrorResponse {
+
+    private static final Log log = LogFactory.getLog(CDSErrorResponse.class);
 
     @JsonProperty("errors")
     private List<CDSErrorFormat> errors = new ArrayList<>();
@@ -69,14 +74,13 @@ public class CDSErrorResponse {
      */
     public JSONObject toJSONObject() {
         try {
-            // The 'this' keyword refers to the current instance of CDSErrorResponse.
             ObjectMapper mapper = new ObjectMapper();
             String jsonString = mapper.writeValueAsString(this);
             return new JSONObject(jsonString);
 
         } catch (JsonProcessingException e) {
-            // In case of a serialization error, log it and return a fallback error object.
             e.printStackTrace();
+            log.error("Failed to convert to JSONObject", e);
             return new JSONObject("{\"error\":\"Failed to convert to JSONObject\"}");
         }
     }

@@ -130,9 +130,7 @@ public class AuthorizationFailureException extends Exception {
     /**
      * Returns exception formatted as a FailedResponseInConsentAuthorize.
      * @return formatted error as a JSONObject (legacy method)
-     * @deprecated Use toFailedResponse() or toFailedResponseJsonString() instead
      */
-    @Deprecated
     public JSONObject toJson() {
         return ErrorUtil.getFormattedAuthorizationFailureException(this.responseId, getMessage(), this.newStatus);
     }
@@ -140,9 +138,7 @@ public class AuthorizationFailureException extends Exception {
     /**
      * Returns formatted error as String.
      * @return formatted error as a String (legacy method)
-     * @deprecated Use toFailedResponseJsonString() instead
      */
-    @Deprecated
     public String toJsonString() {
         return toJson().toString();
     }

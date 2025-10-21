@@ -42,7 +42,7 @@ public enum CDSErrorEnum {
     //Header is not defined by the API
     UNEXPECTED_HEADER(400, "AU.CDR.Unexpected.Header", "Unexpected Header Not Allowed", "Unexpected Header " +
             "Not Allowed"),
-    //Query, PAth or Request Body Parameter is invalid
+    //Query, Path or Request Body Parameter is invalid
     INVALID_FIELD(400, "urn:au-cds:error:cds-all:Field/Invalid", "Invalid Field",
             "Invalid Field %s found in the request"),
     INVALID_PAGE(400, "urn:au-cds:error:cds-all:Field/InvalidPage", "Invalid Page",
@@ -150,7 +150,6 @@ public enum CDSErrorEnum {
      * Custom values in the enum will be in the following order
      * (HTTP Status Code, Error Code, Error Code Title, Error Message)
      */
-    //Data Validation Error
     //Data Validation Error
     VALIDATION_ERROR(400, "WSO2.Data.ValidationError", "Error has occurred while validating account consent",
             "Error has occurred while validating account consent");

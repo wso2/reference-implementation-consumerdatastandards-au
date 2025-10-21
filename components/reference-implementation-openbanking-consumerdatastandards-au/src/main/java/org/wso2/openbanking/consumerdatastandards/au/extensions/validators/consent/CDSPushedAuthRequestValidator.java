@@ -41,7 +41,7 @@ public class CDSPushedAuthRequestValidator {
      * @return A JSONObject containing error details if validation fails, or {@code null} if all validations pass.
      * @throws JsonProcessingException If an error occurs while converting the request object to a JSON representation.
      */
-    public static JSONObject validateCdsPushedAuthRequest(Object requestObject)
+    public static JSONObject validateCDSPushedAuthRequest(Object requestObject)
             throws JsonProcessingException {
 
         JSONObject requestObjectJsonBody = CommonConsentExtensionUtils.convertObjectToJson(requestObject);

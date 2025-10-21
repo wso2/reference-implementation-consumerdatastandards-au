@@ -18,6 +18,7 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
@@ -28,7 +29,6 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.Common
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.*;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +47,7 @@ public class CDSConsentAuthPersistUtil {
      * @param persistAuthorizedConsentRequestBody
      * @return Detailed Consent Resource
      */
-    public static SuccessResponsePersistAuthorizedConsentData CdsConsentPersist(
+    public static SuccessResponsePersistAuthorizedConsentData CDSConsentPersist(
             PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody) throws CDSConsentException {
 
         String consentStatus;
@@ -131,7 +131,7 @@ public class CDSConsentAuthPersistUtil {
 
             return persistAuthorizedConsentDataRes;
             
-        } catch (Exception e) {
+        } catch (JsonProcessingException e) {
             throw new CDSConsentException(CDSErrorEnum.BAD_REQUEST, "Consent persistence failed");
         }
     }
