@@ -28,10 +28,6 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CDSConsent
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CommonConsentExtensionUtils;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ErrorUtil;
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 /**
  * Validator class for CDS Account related consent validations.
  */

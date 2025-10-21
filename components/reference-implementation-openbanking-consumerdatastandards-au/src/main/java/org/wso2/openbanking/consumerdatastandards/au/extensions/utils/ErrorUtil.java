@@ -18,30 +18,17 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.HttpStatus;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.ErrorConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorize;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorizeData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorFormat;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorMeta;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorResponse;
-
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 
 /**
  * Utility class for creating CDS compliant error responses.

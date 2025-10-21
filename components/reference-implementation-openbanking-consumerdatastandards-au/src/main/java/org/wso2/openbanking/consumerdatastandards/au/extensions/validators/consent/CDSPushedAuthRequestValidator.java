@@ -47,19 +47,18 @@ public class CDSPushedAuthRequestValidator {
         JSONObject requestObjectJsonBody = CommonConsentExtensionUtils.convertObjectToJson(requestObject);
         JSONObject error;
 
-        // Call validation method and check for an error response.
+        // Validate CDR Arrangement ID
         error = validateCDRArrangementId(requestObjectJsonBody);
         if (error != null) {
-            return error; // Validation failed, return the error object immediately.
+            return error;
         }
 
-        // Call the next validation method and check for an error response.
+        // Validate Sharing Duration
         error = validateSharingDuration(requestObjectJsonBody);
         if (error != null) {
-            return error; // Validation failed, return the error object.
+            return error;
         }
 
-        // All validations passed.
         return null;
     }
 
@@ -75,13 +74,13 @@ public class CDSPushedAuthRequestValidator {
             String cdrArrangementId = claims.optString(CommonConstants.CDR_ARRANGEMENT_ID, null);
 
             if ("null".equals(cdrArrangementId)) {
-                // This case handles a literal 'null' string value for the key.
+                // Handles a 'null' string value for the key.
                 log.error("Validation failed: " + ErrorConstants.INVALID_CDR_ARRANGEMENT_ID);
                 return ErrorUtil.getErrorDataObject(ErrorConstants.INVALID_REQUEST_OBJECT,
                         ErrorConstants.INVALID_CDR_ARRANGEMENT_ID);
 
             } else if (StringUtils.isBlank(cdrArrangementId)) {
-                // This case handles an empty or whitespace string ""
+                // Handles an empty or whitespace string ""
                 log.error("Validation failed: " + ErrorConstants.EMPTY_CDR_ARRANGEMENT_ID);
                 return ErrorUtil.getErrorDataObject(ErrorConstants.INVALID_REQUEST_OBJECT,
                         ErrorConstants.EMPTY_CDR_ARRANGEMENT_ID);
@@ -104,6 +103,7 @@ public class CDSPushedAuthRequestValidator {
             String sharingDurationString = claims.optString(CommonConstants.SHARING_DURATION);
 
             if (StringUtils.isBlank(sharingDurationString)) {
+                // Handles an empty or whitespace string ""
                 return ErrorUtil.getErrorDataObject(ErrorConstants.INVALID_REQUEST_OBJECT,
                         ErrorConstants.INVALID_SHARING_DURATION);
             }

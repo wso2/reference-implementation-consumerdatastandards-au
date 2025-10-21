@@ -28,9 +28,20 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErr
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.*;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 

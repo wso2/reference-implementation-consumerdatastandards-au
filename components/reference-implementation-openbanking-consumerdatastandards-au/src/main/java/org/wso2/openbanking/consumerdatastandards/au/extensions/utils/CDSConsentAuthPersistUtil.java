@@ -74,10 +74,10 @@ public class CDSConsentAuthPersistUtil {
             List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners = authorizedResources.getAuthorizedData();
 
             // Get metadata object from authorized resources
-            Object metadataObject = userGrantedData.getAuthorizedResources().getMetadata();
+            Object metadataObject = authorizedResources.getMetadata();
 
             //Set Consent Type
-            String consentType = requestData.getUserGrantedData().getAuthorizedResources().getType();
+            String consentType = authorizedResources.getType();
 
             //Check whether the consent is approved or not and assign consent status.
             boolean isApproved = requestData.getIsApproved();
@@ -107,7 +107,7 @@ public class CDSConsentAuthPersistUtil {
                     consumerInputData.getString("userId")));
 
             //Convert expiration date time to validity time in seconds
-            if (userGrantedData.getAuthorizedResources().getMetadata() != null) {
+            if (metadataObject != null) {
                 validityTime = getValidityTime(metadataObject);
             } else {
                 log.error("Metadata is null in persist request");
