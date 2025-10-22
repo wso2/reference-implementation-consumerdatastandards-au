@@ -25,7 +25,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * CDS Error Format according to Consumer Data Standards specification.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CDSErrorFormat {
+public class CdsErrorFormat {
 
     @JsonProperty("code")
     private String code;
@@ -37,23 +37,23 @@ public class CDSErrorFormat {
     private String detail;
     
     @JsonProperty("meta")
-    private CDSErrorMeta meta;
+    private CdsErrorMeta meta;
 
-    public CDSErrorFormat() {
+    public CdsErrorFormat() {
     }
 
-    public CDSErrorFormat(String code, String title) {
+    public CdsErrorFormat(String code, String title) {
         this.code = code;
         this.title = title;
     }
 
-    public CDSErrorFormat(String code, String title, String detail) {
+    public CdsErrorFormat(String code, String title, String detail) {
         this.code = code;
         this.title = title;
         this.detail = detail;
     }
 
-    public CDSErrorFormat(String code, String title, String detail, CDSErrorMeta meta) {
+    public CdsErrorFormat(String code, String title, String detail, CdsErrorMeta meta) {
         this.code = code;
         this.title = title;
         this.detail = detail;
@@ -85,17 +85,17 @@ public class CDSErrorFormat {
         this.detail = detail;
     }
 
-    public CDSErrorMeta getMeta() {
+    public CdsErrorMeta getMeta() {
         return meta;
     }
 
-    public void setMeta(CDSErrorMeta meta) {
+    public void setMeta(CdsErrorMeta meta) {
         this.meta = meta;
     }
 
     @Override
     public String toString() {
-        return "CDSErrorFormat{" +
+        return "CdsErrorFormat{" +
                 "code='" + code + '\'' +
                 ", title='" + title + '\'' +
                 ", detail='" + detail + '\'' +
@@ -104,13 +104,13 @@ public class CDSErrorFormat {
     }
 
     /**
-     * Simple builder for CDSErrorFormat when needed.
+     * Simple builder for CdsErrorFormat when needed.
      */
     public static class Builder {
         private String code;
         private String title;
         private String detail;
-        private CDSErrorMeta meta;
+        private CdsErrorMeta meta;
 
         public Builder code(String code) {
             this.code = code;
@@ -127,13 +127,13 @@ public class CDSErrorFormat {
             return this;
         }
 
-        public Builder meta(CDSErrorMeta meta) {
+        public Builder meta(CdsErrorMeta meta) {
             this.meta = meta;
             return this;
         }
 
-        public CDSErrorFormat build() {
-            return new CDSErrorFormat(code, title, detail, meta);
+        public CdsErrorFormat build() {
+            return new CdsErrorFormat(code, title, detail, meta);
         }
     }
 }

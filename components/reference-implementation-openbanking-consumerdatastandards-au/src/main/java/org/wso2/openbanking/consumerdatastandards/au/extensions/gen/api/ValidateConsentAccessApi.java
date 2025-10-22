@@ -4,17 +4,11 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ValidateConsentAccessRequestBody;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.validators.consent.CDSAccountValidator;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.ValidateConsentAccessImpl;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 
@@ -40,19 +34,9 @@ public class ValidateConsentAccessApi {
         @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
-    public Response validateConsentAccessPost(@Valid @NotNull ValidateConsentAccessRequestBody validateConsentAccessRequestBody) throws Exception {
+    public Response validateConsentAccessPost(@Valid @NotNull ValidateConsentAccessRequestBody validateConsentAccessRequestBody)
+            throws Exception {
 
-        Log log = LogFactory.getLog(ValidateConsentAccessApi.class);
-        // Read the request body
-        String requestId = validateConsentAccessRequestBody.getRequestId();
-        String cdrArrangementId = validateConsentAccessRequestBody.getData().getConsentId();
-        String consentType = validateConsentAccessRequestBody.getData().getConsentResource().getType();
-        Object consentResource = validateConsentAccessRequestBody.getData().getConsentResource();
-        Object dataPayload = validateConsentAccessRequestBody.getData().getDataRequestPayload();
-
-        JSONObject validationResponse = null;
-        validationResponse = CDSAccountValidator.validateConsent(requestId, dataPayload, consentResource);
-
-        return Response.status(Response.Status.OK).entity(validationResponse.toString()).build();
+        return ValidateConsentAccessImpl.validateConsent(validateConsentAccessRequestBody);
     }
 }

@@ -25,15 +25,15 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * CDS Error Meta object according to Consumer Data Standards specification.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class CDSErrorMeta {
+public class CdsErrorMeta {
 
     @JsonProperty("urn")
     private String urn;
 
-    public CDSErrorMeta() {
+    public CdsErrorMeta() {
     }
 
-    public CDSErrorMeta(String urn) {
+    public CdsErrorMeta(String urn) {
         this.urn = urn;
     }
 

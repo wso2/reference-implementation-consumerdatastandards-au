@@ -51,9 +51,9 @@ import java.util.Map;
 /**
  * Utility class for common functions used in consent extensions.
  */
-public class CommonConsentExtensionUtils {
+public class CommonConsentExtensionUtil {
 
-    private static final Log log = LogFactory.getLog(CommonConsentExtensionUtils.class);
+    private static final Log log = LogFactory.getLog(CommonConsentExtensionUtil.class);
 
     /**
      * Converts a generic Java object to a {@link JSONObject}.
@@ -179,7 +179,7 @@ public class CommonConsentExtensionUtils {
      */
     public static String getAccountIdByDisplayName(String accountsURL, String targetDisplayName) {
 
-        String accountData = CommonConsentExtensionUtils.getAccountsFromEndpoint(accountsURL, Collections.emptyMap(),
+        String accountData = CommonConsentExtensionUtil.getAccountsFromEndpoint(accountsURL, Collections.emptyMap(),
                 new HashMap<>());
 
         JSONObject jsonAccountData = new JSONObject(accountData);

@@ -19,10 +19,10 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions;
 
 import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ErrorUtil;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorize;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorizeData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
@@ -35,7 +35,7 @@ public class AuthorizationFailureException extends Exception {
 
     private String newStatus;
     private String responseId;
-    private CDSErrorEnum cdsError;
+    private CdsErrorEnum cdsError;
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthorizationFailureException(String message) {
@@ -49,11 +49,11 @@ public class AuthorizationFailureException extends Exception {
     /**
      * Constructor with CDS error for structured error handling.
      *
-     * @param cdsError   the CDS error type from CDSErrorEnum
+     * @param cdsError   the CDS error type from CdsErrorEnum
      * @param newStatus  new consent status to be set
      * @param responseId response ID for the failed request
      */
-    public AuthorizationFailureException(CDSErrorEnum cdsError, String newStatus, String responseId) {
+    public AuthorizationFailureException(CdsErrorEnum cdsError, String newStatus, String responseId) {
         super(cdsError.getDetail());
         this.cdsError = cdsError;
         this.newStatus = newStatus;
@@ -63,12 +63,12 @@ public class AuthorizationFailureException extends Exception {
     /**
      * Constructor with CDS error and custom message.
      *
-     * @param cdsError      the CDS error type from CDSErrorEnum
+     * @param cdsError      the CDS error type from CdsErrorEnum
      * @param customMessage custom error message
      * @param newStatus     new consent status to be set
      * @param responseId    response ID for the failed request
      */
-    public AuthorizationFailureException(CDSErrorEnum cdsError, String customMessage, String newStatus, String responseId) {
+    public AuthorizationFailureException(CdsErrorEnum cdsError, String customMessage, String newStatus, String responseId) {
         super(customMessage);
         this.cdsError = cdsError;
         this.newStatus = newStatus;
@@ -153,7 +153,7 @@ public class AuthorizationFailureException extends Exception {
      * @param responseId response ID
      * @return AuthorizationFailureException
      */
-    public static AuthorizationFailureException createError(CDSErrorEnum cdsError, String newStatus, String responseId) {
+    public static AuthorizationFailureException createError(CdsErrorEnum cdsError, String newStatus, String responseId) {
         return new AuthorizationFailureException(cdsError, newStatus, responseId);
     }
 
@@ -166,7 +166,7 @@ public class AuthorizationFailureException extends Exception {
      * @param responseId    response ID
      * @return AuthorizationFailureException
      */
-    public static AuthorizationFailureException createError(CDSErrorEnum cdsError, String customMessage, String newStatus, String responseId) {
+    public static AuthorizationFailureException createError(CdsErrorEnum cdsError, String customMessage, String newStatus, String responseId) {
         return new AuthorizationFailureException(cdsError, customMessage, newStatus, responseId);
     }
 
@@ -177,7 +177,7 @@ public class AuthorizationFailureException extends Exception {
      * @return AuthorizationFailureException
      */
     public static AuthorizationFailureException invalidConsent(String responseId) {
-        return createError(CDSErrorEnum.INVALID_CONSENT, "rejected", responseId);
+        return createError(CdsErrorEnum.INVALID_CONSENT, "rejected", responseId);
     }
 
     /**
@@ -187,7 +187,7 @@ public class AuthorizationFailureException extends Exception {
      * @return AuthorizationFailureException
      */
     public static AuthorizationFailureException unauthorized(String responseId) {
-        return createError(CDSErrorEnum.UNAUTHORIZED, "rejected", responseId);
+        return createError(CdsErrorEnum.UNAUTHORIZED, "rejected", responseId);
     }
 
     /**
@@ -197,6 +197,6 @@ public class AuthorizationFailureException extends Exception {
      * @return AuthorizationFailureException
      */
     public static AuthorizationFailureException revokedConsent(String responseId) {
-        return createError(CDSErrorEnum.REVOKED_CONSENT, "revoked", responseId);
+        return createError(CdsErrorEnum.REVOKED_CONSENT, "revoked", responseId);
     }
 }

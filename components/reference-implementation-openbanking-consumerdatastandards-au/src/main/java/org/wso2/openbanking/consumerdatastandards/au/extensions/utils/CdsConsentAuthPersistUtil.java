@@ -24,10 +24,19 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.*;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Account;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Authorization;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AuthorizedResources;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AuthorizedResourcesAuthorizedDataInner;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.DetailedConsentResourceDataWithAmendments;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsent;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsentRequestBody;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Resource;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePersistAuthorizedConsentData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.UserGrantedData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,17 +47,17 @@ import java.util.stream.Collectors;
 /**
  * Utility class for CDS Consent Auth persistence operations.
  */
-public class CDSConsentAuthPersistUtil {
+public class CdsConsentAuthPersistUtil {
 
-    private static final Log log = LogFactory.getLog(CDSConsentAuthPersistUtil.class);
+    private static final Log log = LogFactory.getLog(CdsConsentAuthPersistUtil.class);
 
     /**
      * Method to handle the persist consent request.
      * @param persistAuthorizedConsentRequestBody
      * @return Detailed Consent Resource
      */
-    public static SuccessResponsePersistAuthorizedConsentData CDSConsentPersist(
-            PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody) throws CDSConsentException {
+    public static SuccessResponsePersistAuthorizedConsentData cdsConsentPersist(
+            PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody) throws CdsConsentException {
 
         String consentStatus;
         String authStatus;
@@ -65,7 +74,7 @@ public class CDSConsentAuthPersistUtil {
             UserGrantedData userGrantedData = requestData.getUserGrantedData();
 
             // Convert user granted data to JSON object
-            JSONObject consumerInputData = CommonConsentExtensionUtils.convertObjectToJson(userGrantedData);
+            JSONObject consumerInputData = CommonConsentExtensionUtil.convertObjectToJson(userGrantedData);
 
             // Get authorisedResources from user granted data
             AuthorizedResources authorizedResources = userGrantedData.getAuthorizedResources();
@@ -91,7 +100,7 @@ public class CDSConsentAuthPersistUtil {
                 //Check if account ids are available in the request when consent is approved.
                 for (AuthorizedResourcesAuthorizedDataInner authorizedDataInner : authorizedDataInners) {
                     if (authorizedDataInner.getAccounts().isEmpty()) {
-                        throw new CDSConsentException(CDSErrorEnum.FIELD_MISSING,
+                        throw new CdsConsentException(CdsErrorEnum.FIELD_MISSING,
                                 "Account IDs are required when consent is approved");
                     }
                 }
@@ -109,7 +118,7 @@ public class CDSConsentAuthPersistUtil {
                 validityTime = getValidityTime(metadataObject);
             } else {
                 log.error("Metadata is null in persist request");
-                throw new CDSConsentException(CDSErrorEnum.FIELD_MISSING,
+                throw new CdsConsentException(CdsErrorEnum.FIELD_MISSING,
                         "Metadata field is required but missing in the request");
             }
 
@@ -131,7 +140,7 @@ public class CDSConsentAuthPersistUtil {
             
         } catch (JsonProcessingException e) {
             log.error("Consent persistence failed", e);
-            throw new CDSConsentException(CDSErrorEnum.BAD_REQUEST, "Consent persistence failed");
+            throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consent persistence failed");
         }
     }
 
@@ -155,7 +164,7 @@ public class CDSConsentAuthPersistUtil {
                 Resource resource = new Resource();
 
                 //Get Account_Id from Display Name
-                accountId = CommonConsentExtensionUtils.getAccountIdByDisplayName(accountsURL, account.getDisplayName());
+                accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(accountsURL, account.getDisplayName());
 
                 // Set properties from the individual 'account' and the outer 'authorizedDataInner'
                 resource.setAccountId(accountId);
@@ -191,14 +200,14 @@ public class CDSConsentAuthPersistUtil {
      * Method to get the account id list from the payload data.
      * @param payloadData payload data from the persist request
      * @return List of account ids
-     * @throws CDSConsentException
+     * @throws CdsConsentException
      */
-    private static ArrayList<String> getAccountIdList(JSONObject payloadData) throws CDSConsentException {
+    private static ArrayList<String> getAccountIdList(JSONObject payloadData) throws CdsConsentException {
 
         if (payloadData.get(CommonConstants.ACCOUNT_IDS) == null
                 || !(payloadData.get(CommonConstants.ACCOUNT_IDS) instanceof JSONArray)) {
             log.error("Account IDs not available in persist request");
-            throw new CDSConsentException(CDSErrorEnum.FIELD_MISSING,
+            throw new CdsConsentException(CdsErrorEnum.FIELD_MISSING,
                     "Account IDs field is missing or invalid in the request");
         }
 
@@ -207,7 +216,7 @@ public class CDSConsentAuthPersistUtil {
         for (Object account : accountIds) {
             if (!(account instanceof String)) {
                 log.error("Account IDs format error in persist request");
-                throw new CDSConsentException(CDSErrorEnum.INVALID_FIELD,
+                throw new CdsConsentException(CdsErrorEnum.INVALID_FIELD,
                         "Account IDs must be strings in the request");
             }
             accountIdsList.add((String) account);
@@ -255,7 +264,7 @@ public class CDSConsentAuthPersistUtil {
         }
 
         // Convert expirationDateTime to epoch seconds
-        long epochSeconds = CommonConsentExtensionUtils.getEpochSeconds(expirationDateTime);
+        long epochSeconds = CommonConsentExtensionUtil.getEpochSeconds(expirationDateTime);
         return epochSeconds;
     }
 

@@ -5,11 +5,11 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsentRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForPersistAuthorizedConsent;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.handlers.CDSAuthorizationFlowHandler;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.PersistAuthorizedConsentApiImpl;
 
 import javax.validation.constraints.*;
 import javax.validation.Valid;
@@ -37,9 +37,8 @@ public class PersistAuthorizedConsentApi {
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
     public Response persistAuthorizedConsentPost(@Valid @NotNull PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody)
-            throws CDSConsentException, JsonProcessingException {
+            throws CdsConsentException, JsonProcessingException {
 
-        CDSAuthorizationFlowHandler cdsAuthorizationFlowHandler = new CDSAuthorizationFlowHandler();
-        return cdsAuthorizationFlowHandler.handlePersistAuthorizedConsent(persistAuthorizedConsentRequestBody);
+        return PersistAuthorizedConsentApiImpl.handlePersistAuthorizedConsent(persistAuthorizedConsentRequestBody);
     }
 }

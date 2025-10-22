@@ -24,7 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.validators.consent.CDSPushedAuthRequestValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,34 +31,34 @@ import java.util.List;
 /**
  * CDS Error Response according to Consumer Data Standards specification.
  */
-public class CDSErrorResponse {
+public class CdsErrorResponse {
 
-    private static final Log log = LogFactory.getLog(CDSErrorResponse.class);
+    private static final Log log = LogFactory.getLog(CdsErrorResponse.class);
 
     @JsonProperty("errors")
-    private List<CDSErrorFormat> errors = new ArrayList<>();
+    private List<CdsErrorFormat> errors = new ArrayList<>();
 
-    public CDSErrorResponse() {
+    public CdsErrorResponse() {
     }
 
-    public CDSErrorResponse(CDSErrorFormat error) {
+    public CdsErrorResponse(CdsErrorFormat error) {
         this.errors = new ArrayList<>();
         this.errors.add(error);
     }
 
-    public CDSErrorResponse(List<CDSErrorFormat> errors) {
+    public CdsErrorResponse(List<CdsErrorFormat> errors) {
         this.errors = errors;
     }
 
-    public List<CDSErrorFormat> getErrors() {
+    public List<CdsErrorFormat> getErrors() {
         return errors;
     }
 
-    public void setErrors(List<CDSErrorFormat> errors) {
+    public void setErrors(List<CdsErrorFormat> errors) {
         this.errors = errors;
     }
 
-    public void addError(CDSErrorFormat error) {
+    public void addError(CdsErrorFormat error) {
         if (this.errors == null) {
             this.errors = new ArrayList<>();
         }
@@ -67,7 +66,7 @@ public class CDSErrorResponse {
     }
 
     /**
-     * Converts the current CDSErrorResponse instance into a JSONObject.
+     * Converts the current CdsErrorResponse instance into a JSONObject.
      * This method uses the Jackson ObjectMapper to serialize the object first.
      *
      * @return A JSONObject representation of this object, or an error JSON if serialization fails.

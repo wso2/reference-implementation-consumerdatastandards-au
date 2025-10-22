@@ -18,21 +18,14 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
+import net.minidev.json.parser.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
+import net.minidev.json.parser.JSONParser;
 
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,15 +35,151 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-/**
- * Utility class for data retrieval operations.
- */
-public class CDSDataRetrievalUtil {
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
 
-    private static final Log log = LogFactory.getLog(CDSDataRetrievalUtil.class);
+/**
+ * Utility class for consent authorization related operations.
+ */
+public class ConsentAuthorizeUtil {
+
+    private static final Log log = LogFactory.getLog(ConsentAuthorizeUtil.class);
+    private static final int secondsInYear = (int) TimeUnit.SECONDS.convert(365, TimeUnit.DAYS);
+
+    /**
+     * Extracts required data from the given request object.
+     *
+     * @param jsonRequestBody The JSON object representing the request payload from which required data will be extracted.
+     * @return A map containing the extracted data, or error information if extraction fails.
+     * @throws CdsConsentException If there is an error while parsing the request object or extracting required data.
+     */
+    public static Map<String, Object> extractRequiredDataFromRequestObject(JSONObject jsonRequestBody) throws
+            CdsConsentException {
+
+        String clientID;
+        Map<String, Object> dataMap = new HashMap<>();
+
+        try {
+            long sharingDuration = 0;
+            clientID = jsonRequestBody.getString(CommonConstants.CLIENT_ID);
+
+            // Validate client_id existence
+            if (StringUtils.isBlank(clientID)) {
+                log.error("client_id not found in request object");
+                dataMap.put(CommonConstants.IS_ERROR, "client_id not found in request object");
+                return dataMap;
+            }
+            dataMap.put(CommonConstants.CLIENT_ID, clientID);
+
+            // Verify claims
+            if (jsonRequestBody.has(CommonConstants.CLAIMS)) {
+                JSONObject claims = (JSONObject) jsonRequestBody.get(CommonConstants.CLAIMS);
+                if (claims.has(CommonConstants.SHARING_DURATION)) {
+
+                    String sharingDurationStr = claims.get(CommonConstants.SHARING_DURATION) == null ?
+                            StringUtils.EMPTY : claims.get(CommonConstants.SHARING_DURATION).toString();
+
+                    sharingDuration = sharingDurationStr.isEmpty() ? 0 : Long.parseLong(sharingDurationStr);
+
+                    if (sharingDuration > secondsInYear) {
+                        sharingDuration = secondsInYear;
+                        if (log.isDebugEnabled()) {
+                            log.debug("Requested sharing_duration is greater than a year,therefore one year duration"
+                                    + " is set as consent expiration for request object of client: "
+                                    + dataMap.get(CommonConstants.CLIENT_ID));
+                        }
+                    }
+                    dataMap.put(CommonConstants.EXPIRATION_DATE_TIME,
+                            getConsentExpiryDateTime(sharingDuration));
+                }
+                if (sharingDuration == 0) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("sharing_duration not found in the request object of client: " + clientID);
+                    }
+                    dataMap.put(CommonConstants.EXPIRATION_DATE_TIME, 0);
+                }
+
+                // adding original sharing_duration_value to data map
+                dataMap.put(CommonConstants.SHARING_DURATION_VALUE, sharingDuration);
+
+                // Extracting cdr_arrangement_id, id_token and userinfo claims if exist
+                if (claims.has(CommonConstants.CDR_ARRANGEMENT_ID)
+                        && claims.get(CommonConstants.CDR_ARRANGEMENT_ID) != null) {
+                    dataMap.put(CommonConstants.CDR_ARRANGEMENT_ID,
+                            claims.get(CommonConstants.CDR_ARRANGEMENT_ID).toString());
+                }
+
+                String idTokenJsonString = claims.has(CommonConstants.ID_TOKEN) ?
+                        claims.get(CommonConstants.ID_TOKEN).toString() : null;
+
+                String userInfoJsonString = claims.has(CommonConstants.USERINFO) ?
+                        claims.get(CommonConstants.USERINFO).toString() : null;
+
+                JSONParser parser = new JSONParser();
+                dataMap.put(CommonConstants.ID_TOKEN_CLAIMS, StringUtils.isNotBlank(idTokenJsonString) ?
+                        parser.parse(idTokenJsonString) : new JSONObject());
+                dataMap.put(CommonConstants.USERINFO_CLAIMS, StringUtils.isNotBlank(userInfoJsonString) ?
+                        parser.parse(userInfoJsonString) : new JSONObject());
+            }
+        } catch (ParseException e) {
+            log.error("Error while parsing the request object", e);
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR, "Error while parsing the request object: " + e);
+        }
+        return dataMap;
+    }
+
+
+    /**
+     * Calculate consent expiry date time based on sharing duration.
+     * @param sharingDuration the duration in seconds for which the consent is valid
+     * @return the calculated consent expiry date and time as an {@link OffsetDateTime}
+     */
+    private static OffsetDateTime getConsentExpiryDateTime(long sharingDuration) {
+
+        OffsetDateTime currentTime = OffsetDateTime.now(ZoneOffset.UTC);
+        return currentTime.plusSeconds(sharingDuration);
+    }
+
+    /**
+     * Set profile scope related individual claims as permissions.
+     *
+     * @param jsonRequestBody  request payload
+     * @param userInfoClaims user info claims
+     * @param idTokenClaims  id token claims
+     */
+    private void setClaimPermissions(JSONObject consentData, JSONObject jsonRequestBody, JSONObject userInfoClaims,
+                                     JSONObject idTokenClaims) {
+
+        StringBuilder scopeString = new StringBuilder(jsonRequestBody.getString("scope"));
+
+        List[] clusters = {CommonConstants.NAME_CLUSTER_CLAIMS,
+                CommonConstants.PHONE_CLUSTER_CLAIMS,
+                CommonConstants.EMAIL_CLUSTER_CLAIMS,
+                CommonConstants.MAIL_CLUSTER_CLAIMS};
+
+        for (List<String> cluster : clusters) {
+            for (String claim : cluster) {
+                if (userInfoClaims.has(claim) || idTokenClaims.has(claim)) {
+                    scopeString.append(" ");
+                    scopeString.append(claim);
+                }
+            }
+        }
+        consentData.put("scope", scopeString.toString().trim());
+    }
 
     /**
      * Method to retrieve consent data from request object.
@@ -58,8 +187,8 @@ public class CDSDataRetrievalUtil {
      * @param requiredData The Map containing the required data which is extracted from the request object.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsentData object containing the consent data.
      */
-    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsentData CDSConsentRetrieval(
-            JSONObject jsonRequestBody, Map<String, Object> requiredData) throws CDSConsentException {
+    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsentData cdsConsentRetrieval(
+            JSONObject jsonRequestBody, Map<String, Object> requiredData) throws CdsConsentException {
 
         SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData =
                 new SuccessResponsePopulateConsentAuthorizeScreenDataConsentData();
@@ -83,7 +212,7 @@ public class CDSDataRetrievalUtil {
 
             //Get List of Permission Objects
             List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> permissionObjs =
-                    CDSDataRetrievalUtil.getPermissionList(scopesString);
+                    getPermissionList(scopesString);
 
             //Convert the Permission Objects to a List<String>
             List<String> permissionsList = new ArrayList<>();
@@ -137,37 +266,35 @@ public class CDSDataRetrievalUtil {
 
             return consentData;
         } catch (Exception e) {
-            throw new CDSConsentException(CDSErrorEnum.BAD_REQUEST, "Consent data retrieval failed");
+            throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consent data retrieval failed");
         }
     }
 
     /**
      * Method to retrieve consumer data from request object.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
-     * @param requiredData The Map containing the required data which is extracted from the request object.
      * @param userId The user id of the authenticated user.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
-    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData CDSConsumerDataRetrieval(
-            JSONObject jsonRequestBody, Map<String, Object> requiredData, String userId) throws CDSConsentException {
+    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData cdsConsumerDataRetrieval(
+            JSONObject jsonRequestBody, String userId) throws CdsConsentException {
 
         // Append consumer data to response
         try {
-            return validateAndAppendConsumerObjectToResponse(jsonRequestBody, requiredData, userId);
-        } catch (CDSConsentException e) {
-            throw new CDSConsentException(CDSErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
+            return validateAndAppendConsumerObjectToResponse(jsonRequestBody, userId);
+        } catch (CdsConsentException e) {
+            throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
     }
 
     /**
      * Method to validate and append consumer object to response.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
-     * @param requiredData The Map containing the required data which is extracted from the request object.
      * @param userId The user id of the authenticated user.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
     public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData
-    validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, Map<String, Object> requiredData, String userId) throws CDSConsentException {
+    validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, String userId) throws CdsConsentException {
 
         SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData =
                 new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData();
@@ -180,12 +307,12 @@ public class CDSDataRetrievalUtil {
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put(CommonConstants.USER_ID_KEY_NAME, userId);
 
-                String accountData = CommonConsentExtensionUtils.getAccountsFromEndpoint(accountsURL, parameters,
+                String accountData = CommonConsentExtensionUtil.getAccountsFromEndpoint(accountsURL, parameters,
                         new HashMap<>());
 
                 if (StringUtils.isBlank(accountData)) {
                     log.error("Unable to load accounts data for the user: " + userId);
-                    throw new CDSConsentException(CDSErrorEnum.UNEXPECTED_ERROR,
+                    throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
                             "Exception occurred while getting accounts data");
                 }
 
@@ -218,11 +345,11 @@ public class CDSDataRetrievalUtil {
 
             } else {
                 log.error("Sharable accounts endpoint is not configured properly");
-                throw new CDSConsentException(CDSErrorEnum.UNEXPECTED_ERROR,
+                throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
                         "Sharable accounts endpoint is not configured properly");
             }
         } catch (Exception e) {
-            throw new CDSConsentException(CDSErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
+            throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
         return consumerData;
     }
@@ -233,8 +360,7 @@ public class CDSDataRetrievalUtil {
      * @param scopeString string containing the requested scopes
      * @return list of permission enums to be stored
      */
-    public static List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner>
-    getPermissionList(String scopeString) {
+    public static List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> getPermissionList(String scopeString) {
 
         List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> permissionList = new ArrayList<>();
 
@@ -336,7 +462,7 @@ public class CDSDataRetrievalUtil {
      * @return Map of basic consent data
      */
     private static Map<String, List<String>> constructBasicConsentData(String expirationDate, String sharingDurationValue,
-                                                                      List<String> permissionsList) {
+                                                                       List<String> permissionsList) {
 
         Map<String, List<String>> basicConsentData = new HashMap<>();
 

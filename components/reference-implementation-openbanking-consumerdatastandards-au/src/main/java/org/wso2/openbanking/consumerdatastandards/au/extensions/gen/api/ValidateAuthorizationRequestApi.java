@@ -5,17 +5,12 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
-import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForValidateAuthorizationRequest;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ValidateAuthorizationRequestBody;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.handlers.CDSAuthorizationFlowHandler;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.ValidateAuthorizationRequestApiImpl;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 
@@ -42,13 +37,8 @@ public class ValidateAuthorizationRequestApi {
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
     public Response preUserAuthorization(@Valid @NotNull ValidateAuthorizationRequestBody validateAuthorizationRequestBody)
-            throws CDSConsentException, JsonProcessingException {
+            throws CdsConsentException, JsonProcessingException {
 
-        CDSAuthorizationFlowHandler cdsAuthorizationFlowHandler = new CDSAuthorizationFlowHandler();
-
-        Response200ForValidateAuthorizationRequest response =
-                cdsAuthorizationFlowHandler.handlePushedAuthorisationRequest(validateAuthorizationRequestBody);
-
-        return Response.ok().entity(response).build();
+        return ValidateAuthorizationRequestApiImpl.handlePushedAuthorisationRequest(validateAuthorizationRequestBody);
     }
 }

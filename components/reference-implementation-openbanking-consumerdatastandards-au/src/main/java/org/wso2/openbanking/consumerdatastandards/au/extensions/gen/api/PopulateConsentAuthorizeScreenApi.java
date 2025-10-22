@@ -2,14 +2,12 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CDSConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForPopulateConsentAuthorizeScreen;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.handlers.CDSAuthorizationFlowHandler;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.PopulateConsentAuthorizeScreenApiImpl;
+
 import javax.validation.Valid;
 
 /**
@@ -36,7 +34,6 @@ public class PopulateConsentAuthorizeScreenApi {
     })
     public Response populateConsentAuthorizeScreenPost(@Valid PopulateConsentAuthorizeScreenRequestBody populateConsentAuthorizeScreenRequestBody){
 
-        CDSAuthorizationFlowHandler cdsAuthorizationFlowHandler = new CDSAuthorizationFlowHandler();
-        return cdsAuthorizationFlowHandler.handlePopulateConsentAuthorizeScreen(populateConsentAuthorizeScreenRequestBody);
+        return PopulateConsentAuthorizeScreenApiImpl.handlePopulateConsentAuthorizeScreen(populateConsentAuthorizeScreenRequestBody);
     }
 }

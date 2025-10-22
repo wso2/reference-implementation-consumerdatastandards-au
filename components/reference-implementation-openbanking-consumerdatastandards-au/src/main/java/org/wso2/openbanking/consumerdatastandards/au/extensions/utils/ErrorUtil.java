@@ -22,13 +22,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CDSErrorEnum;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorize;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorizeData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorFormat;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorMeta;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CDSErrorResponse;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CdsErrorFormat;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CdsErrorMeta;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.model.CdsErrorResponse;
 
 /**
  * Utility class for creating CDS compliant error responses.
@@ -39,53 +39,53 @@ public class ErrorUtil {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     /**
-     * Create error response from CDSErrorEnum.
+     * Create error response from CdsErrorEnum.
      *
      * @param errorEnum the error enum
-     * @return CDSErrorResponse
+     * @return CdsErrorResponse
      */
-    public static CDSErrorResponse createErrorResponse(CDSErrorEnum errorEnum) {
-        CDSErrorFormat error = new CDSErrorFormat(errorEnum.getCode(), errorEnum.getTitle());
-        return new CDSErrorResponse(error);
+    public static CdsErrorResponse createErrorResponse(CdsErrorEnum errorEnum) {
+        CdsErrorFormat error = new CdsErrorFormat(errorEnum.getCode(), errorEnum.getTitle());
+        return new CdsErrorResponse(error);
     }
 
     /**
-     * Create error response from CDSErrorEnum with custom detail.
+     * Create error response from CdsErrorEnum with custom detail.
      *
      * @param errorEnum the error enum
      * @param detail    custom detail message
-     * @return CDSErrorResponse
+     * @return CdsErrorResponse
      */
-    public static CDSErrorResponse createErrorResponse(CDSErrorEnum errorEnum, String detail) {
-        CDSErrorFormat error = new CDSErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), detail);
-        return new CDSErrorResponse(error);
+    public static CdsErrorResponse createErrorResponse(CdsErrorEnum errorEnum, String detail) {
+        CdsErrorFormat error = new CdsErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), detail);
+        return new CdsErrorResponse(error);
     }
 
     /**
-     * Create error response from CDSErrorEnum with URN meta.
+     * Create error response from CdsErrorEnum with URN meta.
      *
      * @param errorEnum the error enum
      * @param urn       the URN for meta
-     * @return CDSErrorResponse
+     * @return CdsErrorResponse
      */
-    public static CDSErrorResponse createErrorResponseWithUrn(CDSErrorEnum errorEnum, String urn) {
-        CDSErrorMeta meta = new CDSErrorMeta(urn);
-        CDSErrorFormat error = new CDSErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), errorEnum.getDetail(), meta);
-        return new CDSErrorResponse(error);
+    public static CdsErrorResponse createErrorResponseWithUrn(CdsErrorEnum errorEnum, String urn) {
+        CdsErrorMeta meta = new CdsErrorMeta(urn);
+        CdsErrorFormat error = new CdsErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), errorEnum.getDetail(), meta);
+        return new CdsErrorResponse(error);
     }
 
     /**
-     * Create error response from CDSErrorEnum with custom detail and URN.
+     * Create error response from CdsErrorEnum with custom detail and URN.
      *
      * @param errorEnum the error enum
      * @param detail    custom detail message
      * @param urn       the URN for meta
-     * @return CDSErrorResponse
+     * @return CdsErrorResponse
      */
-    public static CDSErrorResponse createErrorResponse(CDSErrorEnum errorEnum, String detail, String urn) {
-        CDSErrorMeta meta = new CDSErrorMeta(urn);
-        CDSErrorFormat error = new CDSErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), detail, meta);
-        return new CDSErrorResponse(error);
+    public static CdsErrorResponse createErrorResponse(CdsErrorEnum errorEnum, String detail, String urn) {
+        CdsErrorMeta meta = new CdsErrorMeta(urn);
+        CdsErrorFormat error = new CdsErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), detail, meta);
+        return new CdsErrorResponse(error);
     }
 
     /**
@@ -95,12 +95,12 @@ public class ErrorUtil {
      * @param title  error title
      * @param detail error detail (optional)
      * @param urn    URN for meta (optional)
-     * @return CDSErrorResponse
+     * @return CdsErrorResponse
      */
-    public static CDSErrorResponse createCustomErrorResponse(String code, String title, String detail, String urn) {
-        CDSErrorMeta meta = urn != null ? new CDSErrorMeta(urn) : null;
-        CDSErrorFormat error = new CDSErrorFormat(code, title, detail, meta);
-        return new CDSErrorResponse(error);
+    public static CdsErrorResponse createCustomErrorResponse(String code, String title, String detail, String urn) {
+        CdsErrorMeta meta = urn != null ? new CdsErrorMeta(urn) : null;
+        CdsErrorFormat error = new CdsErrorFormat(code, title, detail, meta);
+        return new CdsErrorResponse(error);
     }
 
     /**

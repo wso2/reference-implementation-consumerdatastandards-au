@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au.extensions.validators.consent;
+package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.apache.commons.lang3.StringUtils;
@@ -25,15 +25,13 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.ErrorConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CommonConsentExtensionUtils;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ErrorUtil;
 
 /**
- * Validator class for CDS Pushed Authorization Request Object.
+ * Utility class for CDS Pushed Authorization Request validations.
  */
-public class CDSPushedAuthRequestValidator {
+public class CdsPushedAuthorizeUtil {
 
-    private static final Log log = LogFactory.getLog(CDSPushedAuthRequestValidator.class);
+    private static final Log log = LogFactory.getLog(CdsPushedAuthorizeUtil.class);
 
     /**
      * Validates the CDS pushed authorization request object.
@@ -41,14 +39,14 @@ public class CDSPushedAuthRequestValidator {
      * @return A JSONObject containing error details if validation fails, or {@code null} if all validations pass.
      * @throws JsonProcessingException If an error occurs while converting the request object to a JSON representation.
      */
-    public static JSONObject validateCDSPushedAuthRequest(Object requestObject)
+    public static JSONObject validateCdsPushedAuthRequest(Object requestObject)
             throws JsonProcessingException {
 
-        JSONObject requestObjectJsonBody = CommonConsentExtensionUtils.convertObjectToJson(requestObject);
+        JSONObject requestObjectJsonBody = CommonConsentExtensionUtil.convertObjectToJson(requestObject);
         JSONObject error;
 
         // Validate CDR Arrangement ID
-        error = validateCDRArrangementId(requestObjectJsonBody);
+        error = validateCdrArrangementId(requestObjectJsonBody);
         if (error != null) {
             return error;
         }
@@ -67,7 +65,7 @@ public class CDSPushedAuthRequestValidator {
      * @param requestObjectJsonBody
      * @return JSONObject if validation fails, null otherwise
      */
-    private static JSONObject validateCDRArrangementId(JSONObject requestObjectJsonBody) {
+    private static JSONObject validateCdrArrangementId(JSONObject requestObjectJsonBody) {
         JSONObject claims = requestObjectJsonBody.optJSONObject(CommonConstants.CLAIMS);
 
         if (claims != null && claims.has(CommonConstants.CDR_ARRANGEMENT_ID)) {

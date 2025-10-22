@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 /**
  * Error enumerations for CDS Specific Errors.
  */
-public enum CDSErrorEnum {
+public enum CdsErrorEnum {
     /**
      * Error enumerations defined in the specification.
      * <p>
@@ -167,7 +167,7 @@ public enum CDSErrorEnum {
      * @param title    error title.
      * @param detail   error detail.
      */
-    CDSErrorEnum(int httpCode, String code, String title, String detail) {
+    CdsErrorEnum(int httpCode, String code, String title, String detail) {
 
         this.httpCode = httpCode;
         this.code = code;
@@ -218,9 +218,9 @@ public enum CDSErrorEnum {
         return detail;
     }
 
-    public static CDSErrorEnum fromValue(String text) {
+    public static CdsErrorEnum fromValue(String text) {
 
-        for (CDSErrorEnum b : CDSErrorEnum.values()) {
+        for (CdsErrorEnum b : CdsErrorEnum.values()) {
             if (String.valueOf(b).equals(text)) {
                 return b;
             }

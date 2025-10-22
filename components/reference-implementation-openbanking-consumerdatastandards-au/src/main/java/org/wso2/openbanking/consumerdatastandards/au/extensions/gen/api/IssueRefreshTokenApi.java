@@ -6,10 +6,8 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.*;
 import io.swagger.annotations.Authorization;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.*;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.IssueRefreshTokenApiImpl;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 
@@ -37,27 +35,6 @@ public class IssueRefreshTokenApi {
     })
     public Response issueRefreshTokenPost(@Valid @NotNull IssueRefreshTokenRequestBody issueRefreshTokenRequestBody) {
 
-        SuccessResponseIssueRefreshToken successResponseIssueRefreshToken = new SuccessResponseIssueRefreshToken();
-        successResponseIssueRefreshToken.setResponseId(issueRefreshTokenRequestBody.getRequestId());
-        successResponseIssueRefreshToken.setStatus(SuccessResponseIssueRefreshToken.StatusEnum.SUCCESS);
-
-        SuccessResponseIssueRefreshTokenData successResponseIssueRefreshTokenData = new SuccessResponseIssueRefreshTokenData();
-
-        //If consent validity period is 0 or null, do not issue refresh token
-        if(issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == 0 ||
-                issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == null) {
-
-            successResponseIssueRefreshTokenData.setIssueRefreshToken(false);
-        } else {
-            successResponseIssueRefreshTokenData.setIssueRefreshToken(true);
-
-            long consentValidityPeriod = issueRefreshTokenRequestBody.getData().getConsentValidityPeriod();
-            long consentCreatedPeriod = issueRefreshTokenRequestBody.getData().getConsentCreatedTime();
-
-            successResponseIssueRefreshTokenData.setRefreshTokenValidityPeriod(consentValidityPeriod - consentCreatedPeriod);
-        }
-
-        successResponseIssueRefreshToken.setData(successResponseIssueRefreshTokenData);
-        return Response.ok().entity(successResponseIssueRefreshToken).build();
+        return IssueRefreshTokenApiImpl.handleIssueRefreshToken(issueRefreshTokenRequestBody);
     }
 }
