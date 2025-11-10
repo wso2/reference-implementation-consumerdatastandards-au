@@ -181,8 +181,8 @@ public class ErrorConstants {
         INVALID_ACCEPT_HEADER(406, "urn:au-cds:error:cds-all:GeneralError/Expected", "Expected Error Encountered",
                 "Invalid Accept Header"),
         //Page out of range
-        PAGE_OUT_OF_RANGE(422, "urn:au-cds:error:cds-all: Field/InvalidPageSize", "Invalid Page Size",
-                "Page Requested Is Out Of Range"),
+        PAGE_OUT_OF_RANGE(422, "urn:au-cds:error:cds-all:Field/InvalidPageSize", "Invalid Page Size",
+                "Page Size Value Exceeds Valid Limits"),
         //Page size is greater than max
         PAGE_SIZE_EXCEED(422, "AU.CDR.Invalid.PageSizeTooLarge", "Page Size Exceeded", "Page Size Exceeded"),
         //Requested version is not a positive integer
