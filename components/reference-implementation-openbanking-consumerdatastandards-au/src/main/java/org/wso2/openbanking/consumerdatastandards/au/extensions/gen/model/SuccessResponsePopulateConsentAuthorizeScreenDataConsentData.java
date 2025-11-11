@@ -298,6 +298,4 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsentData  {
   public void setHandleAccountSelectionSeparately(Boolean handleAccountSelectionSeparately) {
     this.handleAccountSelectionSeparately = handleAccountSelectionSeparately;
   }
-
-
 }

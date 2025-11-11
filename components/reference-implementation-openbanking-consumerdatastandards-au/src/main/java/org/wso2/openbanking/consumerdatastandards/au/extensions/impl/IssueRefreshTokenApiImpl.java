@@ -17,6 +17,7 @@
  */
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.impl;
+
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.IssueRefreshTokenRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseIssueRefreshToken;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseIssueRefreshTokenData;

@@ -237,20 +237,20 @@ public class CdsConsentAuthPersistUtil {
             Map<String, Object> metadata = (Map<String, Object>) metadataObject;
 
             // Get the 'accountData' object and check if it's a List.
-            Object accountDataObject = metadata.get("accountData");
+            Object accountDataObject = metadata.get(CommonConstants.ACCOUNT_DATA);
             if (accountDataObject instanceof List) {
                 List<Map<String, Object>> accountDataList = (List<Map<String, Object>>) accountDataObject;
 
                 // Stream the list to find the Map where "title" is "expirationDateTime".
                 Optional<Map<String, Object>> expirationEntry = accountDataList.stream()
-                        .filter(item -> "expirationDateTime".equals(item.get("title")))
+                        .filter(item -> CommonConstants.EXPIRATION_DATE_TIME.equals(item.get(CommonConstants.TITLE)))
                         .findFirst();
 
                 if (expirationEntry.isPresent()) {
                     Map<String, Object> item = expirationEntry.get();
 
                     // Get the nested 'data' object and check if it's a List.
-                    Object dataObject = item.get("data");
+                    Object dataObject = item.get(CommonConstants.DATA);
                     if (dataObject instanceof List) {
                         List<Object> dataList = (List<Object>) dataObject;
 
@@ -287,27 +287,27 @@ public class CdsConsentAuthPersistUtil {
         JSONObject jsonPayload = new JSONObject();
         JSONObject accountDataJson = new JSONObject();
 
-        Object accountDataObject = metadata.get("accountData");
+        Object accountDataObject = metadata.get(CommonConstants.ACCOUNT_DATA);
         if (accountDataObject instanceof List) {
             List<Map<String, Object>> accountDataList = (List<Map<String, Object>>) accountDataObject;
 
             for (Map<String, Object> item : accountDataList) {
-                String title = (String) item.get("title");
-                Object dataObject = item.get("data");
+                String title = (String) item.get(CommonConstants.TITLE);
+                Object dataObject = item.get(CommonConstants.DATA);
 
                 if (title != null && dataObject instanceof List) {
                     List<Object> dataList = (List<Object>) dataObject;
 
                     if (!dataList.isEmpty()) {
                         switch (title) {
-                            case "permissions":
+                            case CommonConstants.PERMISSIONS:
                                 List<String> permissions = dataList.stream()
                                         .map(obj -> ((String) obj).toUpperCase())
                                         .collect(Collectors.toList());
-                                accountDataJson.put("permissions", permissions);
+                                accountDataJson.put(CommonConstants.PERMISSIONS, permissions);
                                 break;
-                            case "expirationDateTime":
-                                accountDataJson.put("expirationDateTime", dataList.get(0));
+                            case CommonConstants.EXPIRATION_DATE_TIME:
+                                accountDataJson.put(CommonConstants.EXPIRATION_DATE_TIME, dataList.get(0));
                                 break;
                         }
                     }
@@ -315,7 +315,7 @@ public class CdsConsentAuthPersistUtil {
             }
         }
 
-        jsonPayload.put("accountData", accountDataJson);
+        jsonPayload.put(CommonConstants.ACCOUNT_DATA, accountDataJson);
         return jsonPayload;
     }
 }

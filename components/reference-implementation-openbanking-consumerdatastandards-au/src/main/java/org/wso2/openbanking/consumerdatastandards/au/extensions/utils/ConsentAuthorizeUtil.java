@@ -22,7 +22,6 @@ import net.minidev.json.parser.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import net.minidev.json.parser.JSONParser;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -35,11 +34,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
@@ -57,89 +56,6 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 public class ConsentAuthorizeUtil {
 
     private static final Log log = LogFactory.getLog(ConsentAuthorizeUtil.class);
-    private static final int secondsInYear = (int) TimeUnit.SECONDS.convert(365, TimeUnit.DAYS);
-
-    /**
-     * Extracts required data from the given request object.
-     *
-     * @param jsonRequestBody The JSON object representing the request payload from which required data will be extracted.
-     * @return A map containing the extracted data, or error information if extraction fails.
-     * @throws CdsConsentException If there is an error while parsing the request object or extracting required data.
-     */
-    public static Map<String, Object> extractRequiredDataFromRequestObject(JSONObject jsonRequestBody) throws
-            CdsConsentException {
-
-        String clientID;
-        Map<String, Object> dataMap = new HashMap<>();
-
-        try {
-            long sharingDuration = 0;
-            clientID = jsonRequestBody.getString(CommonConstants.CLIENT_ID);
-
-            // Validate client_id existence
-            if (StringUtils.isBlank(clientID)) {
-                log.error("client_id not found in request object");
-                dataMap.put(CommonConstants.IS_ERROR, "client_id not found in request object");
-                return dataMap;
-            }
-            dataMap.put(CommonConstants.CLIENT_ID, clientID);
-
-            // Verify claims
-            if (jsonRequestBody.has(CommonConstants.CLAIMS)) {
-                JSONObject claims = (JSONObject) jsonRequestBody.get(CommonConstants.CLAIMS);
-                if (claims.has(CommonConstants.SHARING_DURATION)) {
-
-                    String sharingDurationStr = claims.get(CommonConstants.SHARING_DURATION) == null ?
-                            StringUtils.EMPTY : claims.get(CommonConstants.SHARING_DURATION).toString();
-
-                    sharingDuration = sharingDurationStr.isEmpty() ? 0 : Long.parseLong(sharingDurationStr);
-
-                    if (sharingDuration > secondsInYear) {
-                        sharingDuration = secondsInYear;
-                        if (log.isDebugEnabled()) {
-                            log.debug("Requested sharing_duration is greater than a year,therefore one year duration"
-                                    + " is set as consent expiration for request object of client: "
-                                    + dataMap.get(CommonConstants.CLIENT_ID));
-                        }
-                    }
-                    dataMap.put(CommonConstants.EXPIRATION_DATE_TIME,
-                            getConsentExpiryDateTime(sharingDuration));
-                }
-                if (sharingDuration == 0) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("sharing_duration not found in the request object of client: " + clientID);
-                    }
-                    dataMap.put(CommonConstants.EXPIRATION_DATE_TIME, 0);
-                }
-
-                // adding original sharing_duration_value to data map
-                dataMap.put(CommonConstants.SHARING_DURATION_VALUE, sharingDuration);
-
-                // Extracting cdr_arrangement_id, id_token and userinfo claims if exist
-                if (claims.has(CommonConstants.CDR_ARRANGEMENT_ID)
-                        && claims.get(CommonConstants.CDR_ARRANGEMENT_ID) != null) {
-                    dataMap.put(CommonConstants.CDR_ARRANGEMENT_ID,
-                            claims.get(CommonConstants.CDR_ARRANGEMENT_ID).toString());
-                }
-
-                String idTokenJsonString = claims.has(CommonConstants.ID_TOKEN) ?
-                        claims.get(CommonConstants.ID_TOKEN).toString() : null;
-
-                String userInfoJsonString = claims.has(CommonConstants.USERINFO) ?
-                        claims.get(CommonConstants.USERINFO).toString() : null;
-
-                JSONParser parser = new JSONParser();
-                dataMap.put(CommonConstants.ID_TOKEN_CLAIMS, StringUtils.isNotBlank(idTokenJsonString) ?
-                        parser.parse(idTokenJsonString) : new JSONObject());
-                dataMap.put(CommonConstants.USERINFO_CLAIMS, StringUtils.isNotBlank(userInfoJsonString) ?
-                        parser.parse(userInfoJsonString) : new JSONObject());
-            }
-        } catch (ParseException e) {
-            log.error("Error while parsing the request object", e);
-            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR, "Error while parsing the request object: " + e);
-        }
-        return dataMap;
-    }
 
 
     /**
@@ -147,7 +63,7 @@ public class ConsentAuthorizeUtil {
      * @param sharingDuration the duration in seconds for which the consent is valid
      * @return the calculated consent expiry date and time as an {@link OffsetDateTime}
      */
-    private static OffsetDateTime getConsentExpiryDateTime(long sharingDuration) {
+    public static OffsetDateTime getConsentExpiryDateTime(long sharingDuration) {
 
         OffsetDateTime currentTime = OffsetDateTime.now(ZoneOffset.UTC);
         return currentTime.plusSeconds(sharingDuration);
@@ -249,7 +165,7 @@ public class ConsentAuthorizeUtil {
             consentData.setBasicConsentData(basicConsentData);
 
             //Set Consent MetaData to Consent Data
-            Map<String,Object> consentMetadatMap = constructConsentMetadatMap(permissionsList, expirationDate);
+            Map<String, Object> consentMetadatMap = constructConsentMetadatMap(permissionsList, expirationDate);
             consentData.setConsentMetadata(consentMetadatMap);
 
             //Set additional properties to Consent Data
@@ -265,7 +181,9 @@ public class ConsentAuthorizeUtil {
             consentData.setAllowMultipleAccounts(true);
 
             return consentData;
-        } catch (Exception e) {
+        } catch (JSONException e) {
+            log.error("Consent data retrieval failed: " + e.getMessage(), e);
+
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consent data retrieval failed");
         }
     }
@@ -329,10 +247,6 @@ public class ConsentAuthorizeUtil {
 
                     SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account =
                             new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner();
-
-//                    String accountDisplayName = accountJson.getString("displayName") +
-//                            "<br>&nbsp;&nbsp;&nbsp;&nbsp;" +
-//                            accountJson.getString("accountId");
 
                     String accountDisplayName = accountJson.getString("displayName");
 

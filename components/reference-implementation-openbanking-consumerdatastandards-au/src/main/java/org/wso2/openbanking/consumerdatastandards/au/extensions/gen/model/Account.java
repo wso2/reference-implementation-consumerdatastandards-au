@@ -71,8 +71,8 @@ public class Account  {
       return false;
     }
     Account account = (Account) o;
-    return Objects.equals(this.displayName, account.displayName) &&
-            Objects.equals(this.additionalProperties, account.additionalProperties);
+    return Objects.equals(this.displayName, account.displayName) && Objects.equals(this.additionalProperties,
+            account.additionalProperties);
   }
 
   @Override
