@@ -2,16 +2,12 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
-
 import io.swagger.annotations.*;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForPopulateConsentAuthorizeScreen;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.PopulateConsentAuthorizeScreenApiImpl;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
-import javax.validation.constraints.*;
 import javax.validation.Valid;
 
 /**
@@ -36,7 +32,8 @@ public class PopulateConsentAuthorizeScreenApi {
         @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
-    public Response populateConsentAuthorizeScreenPost(@Valid PopulateConsentAuthorizeScreenRequestBody populateConsentAuthorizeScreenRequestBody) {
-        return Response.ok().entity("magic!").build();
+    public Response populateConsentAuthorizeScreenPost(@Valid PopulateConsentAuthorizeScreenRequestBody populateConsentAuthorizeScreenRequestBody){
+
+        return PopulateConsentAuthorizeScreenApiImpl.handlePopulateConsentAuthorizeScreen(populateConsentAuthorizeScreenRequestBody);
     }
 }

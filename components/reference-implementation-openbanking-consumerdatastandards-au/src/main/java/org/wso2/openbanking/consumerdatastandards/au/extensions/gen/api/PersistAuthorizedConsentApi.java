@@ -3,14 +3,14 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api;
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsentRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForPersistAuthorizedConsent;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.PersistAuthorizedConsentApiImpl;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 
@@ -36,7 +36,9 @@ public class PersistAuthorizedConsentApi {
         @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
-    public Response persistAuthorizedConsentPost(@Valid @NotNull PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody) {
-        return Response.ok().entity("magic!").build();
+    public Response persistAuthorizedConsentPost(@Valid @NotNull PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody)
+            throws CdsConsentException, JsonProcessingException {
+
+        return PersistAuthorizedConsentApiImpl.handlePersistAuthorizedConsent(persistAuthorizedConsentRequestBody);
     }
 }
