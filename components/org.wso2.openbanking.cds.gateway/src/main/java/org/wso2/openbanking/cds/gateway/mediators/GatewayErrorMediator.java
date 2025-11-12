@@ -384,7 +384,6 @@ public class GatewayErrorMediator extends AbstractMediator {
             } else if (errorDetail.contains(GatewayConstants.MAXIMUM_PAGE_SIZE_ERROR)
                     || errorDetail.contains(GatewayConstants.MINIMUM_PAGE_SIZE_ERROR)) {
                 errorEnum = ErrorConstants.AUErrorEnum.PAGE_OUT_OF_RANGE;
-                status = HttpStatus.SC_UNPROCESSABLE_ENTITY;
             } else {
                 errorEnum = ErrorConstants.AUErrorEnum.INVALID_FIELD;
             }
