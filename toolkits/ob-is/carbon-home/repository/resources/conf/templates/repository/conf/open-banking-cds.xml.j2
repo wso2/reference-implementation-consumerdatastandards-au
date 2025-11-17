@@ -29,6 +29,11 @@
         {% else %}
         <EnableHostNameValidation>false</EnableHostNameValidation>
         {% endif %}
+        {% if open_banking_cds.dcr.enable_redirect_uri_hostname_validation is defined %}
+        <EnableHostNameValidation>{{open_banking_cds.dcr.enable_redirect_uri_hostname_validation}}</EnableHostNameValidation>
+        {% else %}
+        <EnableHostNameValidation>true</EnableHostNameValidation>
+        {% endif %}
         {% if open_banking_cds.dcr.enable_sector_identifier_uri_validation is defined %}
         <EnableSectorIdentifierUriValidation>{{open_banking_cds.dcr.enable_sector_identifier_uri_validation}}</EnableSectorIdentifierUriValidation>
         {% else %}

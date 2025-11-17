@@ -918,6 +918,7 @@ event_executor = "org.wso2.openbanking.cds.consent.extensions.event.executor.CDS
 [open_banking_cds.dcr]
 enable_uri_validation=false
 enable_hostname_validation=false
+enable_redirect_uri_hostname_validation=true
 enable_sector_identifier_uri_validation=false
 request_jti_validation_enabled=true
 ssa_jti_validation_enabled=false

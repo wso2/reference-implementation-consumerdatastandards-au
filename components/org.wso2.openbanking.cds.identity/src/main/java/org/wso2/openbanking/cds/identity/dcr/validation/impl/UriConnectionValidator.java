@@ -73,7 +73,7 @@ public class UriConnectionValidator implements ConstraintValidator<ValidateUriCo
             // check whether the policy,logo,client and terms of service uris are valid uris if the
             // validation is set to true
             String isURIValidationEnabled = (String) OpenBankingCDSConfigParser.getInstance().getConfiguration()
-                    .get(CDSValidationConstants.DCR_VALIDATE_REDIRECT_URI);
+                    .get(CDSValidationConstants.DCR_VALIDATE_URI);
 
             if (Boolean.parseBoolean(isURIValidationEnabled)) {
                 return checkValidityOfURI(logoURI, clientURI, policyURI, termOfServiceURI);

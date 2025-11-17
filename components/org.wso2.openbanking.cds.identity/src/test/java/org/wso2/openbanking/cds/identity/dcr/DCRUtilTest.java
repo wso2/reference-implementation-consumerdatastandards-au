@@ -104,6 +104,7 @@ public class DCRUtilTest {
         confMap.put("DCR.JwksUrlSandbox",
                 "https://keystore.openbankingtest.org.uk/0015800001HQQrZAAX/9b5usDpbNtmxDcTzs7GzKp.jwks");
         cdsConfigMap.put("DCR.EnableHostNameValidation", "false");
+        cdsConfigMap.put("DCR.EnableRedirectURIHostNameValidation", "true");
         cdsConfigMap.put("DCR.EnableURIValidation", "false");
         cdsConfigMap.put("DCR.EnableSectorIdentifierUriValidation", "false");
         List<String> validAlgorithms = new ArrayList<>();
