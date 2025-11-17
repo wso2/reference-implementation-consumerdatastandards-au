@@ -48,8 +48,9 @@ public class CDSValidationConstants {
     public static final String ID_TOKEN_ENCRYPTION_RESPONSE_ENC = "id_token_encrypted_response_enc";
 
     // dcr config constants
-    public static final String DCR_VALIDATE_REDIRECT_URI = "DCR.EnableURIValidation";
+    public static final String DCR_VALIDATE_URI = "DCR.EnableURIValidation";
     public static final String DCR_VALIDATE_URI_HOSTNAME = "DCR.EnableHostNameValidation";
+    public static final String DCR_VALIDATE_REDIRECT_URI_HOSTNAME = "DCR.EnableRedirectURIHostNameValidation";
     public static final String DCR_VALIDATE_SECTOR_IDENTIFIER_URI = "DCR.EnableSectorIdentifierUriValidation";
     public static final String JTI = "jti";
     public static final String JTI_REPLAYED = "JTI value of the registration request has been replayed";

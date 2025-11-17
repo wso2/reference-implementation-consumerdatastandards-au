@@ -19,6 +19,8 @@ package org.wso2.openbanking.cds.identity.dcr.validation.impl;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.openbanking.cds.common.config.OpenBankingCDSConfigParser;
+import org.wso2.openbanking.cds.identity.dcr.constants.CDSValidationConstants;
 import org.wso2.openbanking.cds.identity.dcr.validation.annotation.ValidateSSACallbackUris;
 
 import java.net.URI;
@@ -40,7 +42,14 @@ public class SSACallbackUrisValidator implements ConstraintValidator<ValidateSSA
     @Override
     public boolean isValid(Object callbackUris, ConstraintValidatorContext constraintValidatorContext) {
 
-        return validateRedirectURIHostNames(callbackUris);
+        /* Check whether EnableRedirectURIHostNameValidation configuration is set to true. This will validate
+            whether all redirect_uris contain the same hostname. */
+        String isHostNameValidationEnabled = (String) OpenBankingCDSConfigParser.getInstance().getConfiguration()
+                .get(CDSValidationConstants.DCR_VALIDATE_REDIRECT_URI_HOSTNAME);
+        if (Boolean.parseBoolean(isHostNameValidationEnabled)) {
+            return validateRedirectURIHostNames(callbackUris);
+        }
+        return true;
     }
 
     /**
