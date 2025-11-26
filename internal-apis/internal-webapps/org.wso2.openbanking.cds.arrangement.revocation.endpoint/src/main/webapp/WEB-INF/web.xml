@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- ~ Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ ~ Copyright (c) 2024-2025, WSO2 LLC. (https://www.wso2.com).
  ~
  ~ WSO2 LLC. licenses this file to you under the Apache License,
  ~ Version 2.0 (the "License"); you may not use this file except
@@ -25,23 +25,19 @@
     <display-name>WSO2 Open Banking - CDR Arrangement Revocation API</display-name>
     <description>WSO2 Open Banking - CDR Arrangement Revocation API</description>
 
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>WEB-INF/beans.xml</param-value>
-    </context-param>
-
-    <listener>
-        <listener-class>
-            org.springframework.web.context.ContextLoaderListener
-        </listener-class>
-    </listener>
-
     <servlet>
         <servlet-name>CXFServlet</servlet-name>
-        <servlet-class>
-            org.apache.cxf.transport.servlet.CXFServlet
-        </servlet-class>
+        <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
+
+        <init-param>
+            <param-name>jaxrs.serviceClasses</param-name>
+            <param-value>org.wso2.openbanking.cds.arrangement.revocation.endpoint.ArrangementRevocationApi</param-value>
+        </init-param>
+        <init-param>
+            <param-name>jaxrs.providers</param-name>
+            <param-value>com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider</param-value>
+        </init-param>
     </servlet>
 
     <servlet-mapping>
