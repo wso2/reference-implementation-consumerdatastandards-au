@@ -25,7 +25,7 @@
 <Classloading xmlns="http://wso2.org/projects/as/classloading">
 
     <!-- Parent-first or child-first. Default behaviour is child-first.-->
-    <ParentFirst>true</ParentFirst>
+    <ParentFirst>false</ParentFirst>
 
     <!--
 	Default environments that contains provides to all the webapps. This can be overridden by individual webapps by specifying required environments
