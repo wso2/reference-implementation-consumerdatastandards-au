@@ -262,7 +262,7 @@ public class ConsentAuthorizeUtil {
                 throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
                         "Sharable accounts endpoint is not configured properly");
             }
-        } catch (Exception e) {
+        } catch (CdsConsentException e) {
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
         return consumerData;
