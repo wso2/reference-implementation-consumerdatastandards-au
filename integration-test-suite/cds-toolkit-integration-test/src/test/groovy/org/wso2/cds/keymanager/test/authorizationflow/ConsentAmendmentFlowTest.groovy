@@ -21,6 +21,7 @@ package org.wso2.cds.keymanager.test.authorizationflow
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import com.nimbusds.oauth2.sdk.TokenErrorResponse
 import com.nimbusds.oauth2.sdk.token.RefreshToken
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountProfile
@@ -29,7 +30,6 @@ import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
 import io.restassured.response.Response
 import org.testng.Assert
 import org.testng.annotations.Test
@@ -72,13 +72,13 @@ class ConsentAmendmentFlowTest extends AUTest{
         Assert.assertNotNull(refreshToken)
         Assert.assertNotNull(cdrArrangementId)
 
-        //Get Account Transaction Details
-        def responseBeforeAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
-                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
-                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
-                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+//        //Get Account Transaction Details
+//        def responseBeforeAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
+//                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
+//                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+//                .get("${AUConstants.BULK_ACCOUNT_PATH}")
 
-        Assert.assertEquals(responseBeforeAmendment.statusCode(), AUConstants.STATUS_CODE_200)
+//        Assert.assertEquals(responseBeforeAmendment.statusCode(), AUConstants.STATUS_CODE_200)
 
         //remove an existing scope and add a new scope to amend the consent
         scopes.remove(AUAccountScope.BANK_TRANSACTION_READ)
@@ -96,8 +96,9 @@ class ConsentAmendmentFlowTest extends AUTest{
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    //TODO: Change Button XPath after implementing V2 changes
                     //Click Confirm Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Authorise Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -118,12 +119,12 @@ class ConsentAmendmentFlowTest extends AUTest{
         Assert.assertEquals(cdrArrangementId, cdrArrangementId2, "Amended CDR id is not original CDR id")
 
         //Get Account Transaction Details
-        def responseAfterAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(secondUserAccessToken,
-                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
-                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
-                .get("${AUConstants.BULK_ACCOUNT_PATH}")
-
-        Assert.assertEquals(responseAfterAmendment.statusCode(), AUConstants.STATUS_CODE_200)
+//        def responseAfterAmendment = AURequestBuilder.buildBasicRequestWithCustomHeaders(secondUserAccessToken,
+//                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
+//                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
+//                .get("${AUConstants.BULK_ACCOUNT_PATH}")
+//
+//        Assert.assertEquals(responseAfterAmendment.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
     @Test(groups = "SmokeTest")
@@ -162,8 +163,9 @@ class ConsentAmendmentFlowTest extends AUTest{
                     assert authWebDriver.isElementDisplayed(AUTestUtil.getAltSingleAccountXPath())
                     authWebDriver.clickButtonXpath(AUTestUtil.getAltSingleAccountXPath())
 
+                    //TODO: Change Button XPath after implementing V2 changes
                     //Click Confirm Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Authorise Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)

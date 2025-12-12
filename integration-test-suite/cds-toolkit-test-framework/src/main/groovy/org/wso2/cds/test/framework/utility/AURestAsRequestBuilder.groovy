@@ -18,10 +18,9 @@
 
 package org.wso2.cds.test.framework.utility
 
-
+import org.wso2.bfsi.test.framework.configuration.CommonConfigurationService
 import org.wso2.bfsi.test.framework.exception.TestFrameworkException
-import org.wso2.openbanking.test.framework.configuration.OBConfigurationService
-import org.wso2.openbanking.test.framework.utility.RestAsRequestBuilder
+import org.wso2.bfsi.test.framework.util.RestAsRequestBuilder
 import io.restassured.RestAssured
 import io.restassured.config.EncoderConfig
 import io.restassured.config.RestAssuredConfig
@@ -33,9 +32,9 @@ import org.wso2.cds.test.framework.constant.AUConstants
 /**
  * AU Class for provide Basic Rest-assured Request Objects
  */
-class AURestAsRequestBuilder extends RestAsRequestBuilder{
+class AURestAsRequestBuilder extends RestAsRequestBuilder {
 
-    private static OBConfigurationService configurationService = new OBConfigurationService()
+    private static CommonConfigurationService configurationService = new CommonConfigurationService()
 
     /**
      * Get Base Request Specification to invoke mock CDR register.

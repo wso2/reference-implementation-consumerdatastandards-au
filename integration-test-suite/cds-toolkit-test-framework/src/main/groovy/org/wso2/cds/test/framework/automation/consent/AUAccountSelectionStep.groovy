@@ -18,10 +18,10 @@
 
 package org.wso2.cds.test.framework.automation.consent
 
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.BrowserAutomation
+import org.wso2.bfsi.test.framework.automation.BrowserAutomationStep
 import org.wso2.cds.test.framework.constant.AUPageObjects
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.BrowserAutomationStep
-import org.wso2.openbanking.test.framework.automation.OBBrowserAutomation
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.openqa.selenium.remote.RemoteWebDriver
 import org.wso2.cds.test.framework.utility.AUTestUtil
@@ -42,7 +42,7 @@ class AUAccountSelectionStep implements BrowserAutomationStep {
     }
 
     @Override
-    void execute(RemoteWebDriver webDriver, OBBrowserAutomation.AutomationContext context) {
+    void execute(RemoteWebDriver webDriver, BrowserAutomation.AutomationContext context) {
         AutomationMethod driver = new AutomationMethod(webDriver)
         driver.clickButtonXpath(AUTestUtil.getSingleAccountXPath())
         driver.clickButtonXpath(AUPageObjects.CONSENT_SUBMIT_XPATH)

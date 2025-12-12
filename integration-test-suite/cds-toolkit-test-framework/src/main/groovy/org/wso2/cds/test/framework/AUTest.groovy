@@ -27,7 +27,11 @@ import com.nimbusds.oauth2.sdk.ResponseType
 import com.nimbusds.oauth2.sdk.token.RefreshToken
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.ObjectNode
+import org.wso2.bfsi.test.framework.CommonTest
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
+import org.wso2.bfsi.test.framework.configuration.ConfigParser
 import org.wso2.cds.test.framework.constant.AUAccountProfile
 import org.wso2.cds.test.framework.constant.AUAccountScope
 import org.wso2.cds.test.framework.constant.AUConfigConstants
@@ -39,11 +43,7 @@ import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
 import org.wso2.cds.test.framework.utility.DbConnection
 import org.wso2.cds.test.framework.utility.SqlQuery
-import org.wso2.openbanking.test.framework.OBTest
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
-import org.wso2.openbanking.test.framework.configuration.OBConfigParser
 import io.restassured.http.ContentType
 import io.restassured.response.Response
 import org.apache.logging.log4j.LogManager
@@ -77,7 +77,7 @@ import java.util.stream.Collectors
  * Every test class in Test layer should extended from this.
  * Execute test framework initialization process
  */
-class AUTest extends OBTest {
+class AUTest extends CommonTest {
 
     static AUConfigurationService auConfiguration
     protected static Logger log = LogManager.getLogger(AUTest.class.getName())
@@ -107,7 +107,7 @@ class AUTest extends OBTest {
 
     @BeforeClass(alwaysRun = true)
     void "Initialize Test Suite"() {
-        OBConfigParser.getInstance(AUConfigConstants.CONFIG_FILE_LOCATION)
+        ConfigParser.getInstance(AUConfigConstants.CONFIG_FILE_LOCATION)
         AURestAsRequestBuilder.init()
         auConfiguration = new AUConfigurationService()
         auAuthorisationBuilder = new AUAuthorisationBuilder()
@@ -445,8 +445,9 @@ class AUTest extends OBTest {
 //                }
             } else {
                 //Select Individual Profile
-                authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
-                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                //TODO: Enable after implementing profile selection page
+//                authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+//                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
 
                 //Select Individual Account 1
                 consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getSingleAccountXPath(),
@@ -1017,8 +1018,9 @@ class AUTest extends OBTest {
                     //Select Profile and Accounts
                     selectProfileAndAccount(authWebDriver, profiles, isMultipleAccSelect)
 
+                    //TODO: Change Button XPath after implementing V2 changes
                     //Click Confirm Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Authorise Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)

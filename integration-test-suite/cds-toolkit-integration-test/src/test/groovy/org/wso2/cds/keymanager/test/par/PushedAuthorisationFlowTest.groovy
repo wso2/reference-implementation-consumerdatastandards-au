@@ -21,6 +21,8 @@ package org.wso2.cds.keymanager.test.par
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import com.nimbusds.oauth2.sdk.ResponseType
 import org.testng.annotations.BeforeClass
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
@@ -31,8 +33,6 @@ import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AURestAsRequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 import io.restassured.RestAssured
 import io.restassured.response.Response
 import org.testng.Assert
@@ -139,7 +139,7 @@ class PushedAuthorisationFlowTest extends AUTest {
         def url = automationResponse.currentUrl.get()
         Assert.assertTrue(AUTestUtil.getErrorFromUrl(url).contains("Expired request URI"))
 
-        def errorUrl = url.split("oauthErrorCode=")[1].split("&")[0].replaceAll("\\+"," ")
+        def errorUrl = url.split("error_description=")[1].split("&")[0].replaceAll("\\+"," ")
         Assert.assertEquals(errorUrl, AUConstants.INVALID_REQUEST_URI)
     }
 
@@ -188,8 +188,9 @@ class PushedAuthorisationFlowTest extends AUTest {
                             AUPageObjects.VALUE)
                     authWebDriver.clickButtonXpath(AUTestUtil.getAltSingleAccountXPath())
 
+                    //TODO: Change Button XPath after implementing V2 changes
                     //Click Confirm Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Authorise Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -214,6 +215,7 @@ class PushedAuthorisationFlowTest extends AUTest {
         Assert.assertTrue((refreshTokenIntrospect.jsonPath().get("active")).equals(false))
     }
 
+    //TODO: Test failing: Not validating redirect_uri properly. Check Further
     @Test(priority = 2)
     void "TC0205015_Unable to initiate authorisation if the redirect uri mismatch with the application redirect uri"() {
 
@@ -371,7 +373,8 @@ class PushedAuthorisationFlowTest extends AUTest {
 
         Assert.assertEquals(parResponse.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(parResponse, AUConstants.ERROR_DESCRIPTION),
-                "Error retrieving service provider tenant domain for client_id: ${incorrectClientId}")
+                "Error retrieving service provider tenant domain for client_id: ${incorrectClientId}. " +
+                        "Cannot proceed with signature validation")
         Assert.assertEquals(AUTestUtil.parseResponseBody(parResponse, AUConstants.ERROR),
                 "Service provider metadata retrieval failed")
     }
@@ -505,7 +508,7 @@ class PushedAuthorisationFlowTest extends AUTest {
         def errorDesc = AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION)
         def error = AUTestUtil.parseResponseBody(response, AUConstants.ERROR)
 
-        Assert.assertEquals(errorDesc, "Unsupported response_type value. Only code response type is allowed.")
+        Assert.assertEquals(errorDesc, "Invalid response_type parameter value")
         Assert.assertEquals(error, AUConstants.INVALID_REQUEST)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
     }
