@@ -7,10 +7,8 @@ import io.swagger.annotations.*;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ValidateConsentAccessRequestBody;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.ValidateConsentAccessImpl;
 
-import java.io.InputStream;
-import java.util.Map;
-import java.util.List;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
 
@@ -36,7 +34,9 @@ public class ValidateConsentAccessApi {
         @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
-    public Response validateConsentAccessPost(@Valid @NotNull ValidateConsentAccessRequestBody validateConsentAccessRequestBody) {
-        return Response.ok().entity("magic!").build();
+    public Response validateConsentAccessPost(@Valid @NotNull ValidateConsentAccessRequestBody validateConsentAccessRequestBody)
+            throws Exception {
+
+        return ValidateConsentAccessImpl.validateConsent(validateConsentAccessRequestBody);
     }
 }

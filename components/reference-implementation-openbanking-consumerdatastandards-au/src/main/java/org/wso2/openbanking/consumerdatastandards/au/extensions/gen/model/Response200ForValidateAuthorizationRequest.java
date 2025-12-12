@@ -20,7 +20,8 @@ public class Response200ForValidateAuthorizationRequest   {
   private String responseId;
   public enum StatusEnum {
 
-    ERROR(String.valueOf("ERROR"));
+    ERROR(String.valueOf("ERROR")),
+    SUCCESS(String.valueOf("SUCCESS"));
 
 
     private String value;

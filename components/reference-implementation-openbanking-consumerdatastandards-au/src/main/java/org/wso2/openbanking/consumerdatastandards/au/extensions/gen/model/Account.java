@@ -1,5 +1,6 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model;
 
+import com.fasterxml.jackson.annotation.*;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
@@ -9,10 +10,6 @@ import javax.validation.Valid;
 
 import io.swagger.annotations.*;
 import java.util.Objects;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.annotation.JsonTypeName;
 
 /**
  * A user account or resource representation
@@ -20,18 +17,17 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 @ApiModel(description = "A user account or resource representation")
 @JsonTypeName("Account")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
-public class Account extends HashMap<String, Object>  {
+public class Account  {
   private String displayName;
+  private Map<String, Object> additionalProperties = new HashMap<>();
 
   public Account() {
   }
 
   @JsonCreator
   public Account(
-    @JsonProperty(required = true, value = "displayName") String displayName
+          @JsonProperty(required = true, value = "displayName") String displayName
   ) {
-    super(
-    );
     this.displayName = displayName;
   }
 
@@ -43,7 +39,7 @@ public class Account extends HashMap<String, Object>  {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "Account display name")
   @JsonProperty(required = true, value = "displayName")
   @NotNull public String getDisplayName() {
@@ -53,6 +49,16 @@ public class Account extends HashMap<String, Object>  {
   @JsonProperty(required = true, value = "displayName")
   public void setDisplayName(String displayName) {
     this.displayName = displayName;
+  }
+
+  @JsonAnyGetter
+  public Map<String, Object> getAdditionalProperties() {
+    return this.additionalProperties;
+  }
+
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
   }
 
 
@@ -65,21 +71,21 @@ public class Account extends HashMap<String, Object>  {
       return false;
     }
     Account account = (Account) o;
-    return Objects.equals(this.displayName, account.displayName) &&
-        super.equals(o);
+    return Objects.equals(this.displayName, account.displayName) && Objects.equals(this.additionalProperties,
+            account.additionalProperties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(displayName, super.hashCode());
+    return Objects.hash(displayName, additionalProperties);
   }
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Account {\n");
-    sb.append("    ").append(toIndentedString(super.toString())).append("\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
+    sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
     sb.append("}");
     return sb.toString();
   }
