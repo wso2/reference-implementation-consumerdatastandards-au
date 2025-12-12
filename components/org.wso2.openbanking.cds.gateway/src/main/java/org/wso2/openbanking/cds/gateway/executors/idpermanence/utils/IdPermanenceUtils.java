@@ -84,6 +84,10 @@ public class IdPermanenceUtils {
         if (isResourceListResponse(url)) {
             // handle responses with a resource list
             List<String> keys = getJsonObjectMembers(data);
+            if (keys.isEmpty()) {
+                return data;
+            }
+
             JsonArray resourceList = (JsonArray) data.get(keys.get(0));
 
             for (int resourceIndex = 0; resourceIndex < resourceList.size(); resourceIndex++) {
