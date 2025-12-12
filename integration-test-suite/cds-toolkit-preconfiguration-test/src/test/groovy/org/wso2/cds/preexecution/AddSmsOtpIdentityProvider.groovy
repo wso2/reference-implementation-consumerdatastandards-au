@@ -21,6 +21,7 @@ package org.wso2.cds.preexecution
 import org.testng.annotations.Test
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.portal.CarbonConsoleRequestBuilder
+import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUConstants
 
 import java.util.logging.Logger
@@ -30,6 +31,7 @@ import java.util.logging.Logger
  */
 class AddSmsOtpIdentityProvider extends AUTest {
 
+    AUConfigurationService auConfiguration = new AUConfigurationService()
     String isCarbonConsoleUrl = auConfiguration.getServerAuthorisationServerURL() + "/carbon"
 
     @Test (groups = "SmokeTest")
