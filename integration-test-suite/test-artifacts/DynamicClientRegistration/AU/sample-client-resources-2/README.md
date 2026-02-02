@@ -18,13 +18,13 @@ Sample Keystore information:
 SoftwareId of App Config 2 - SP3
 SSA Redirect Uri - https://www.google.com/redirects/redirect1
 
-- Signing Kid = 5dBuoFxTMIrwWd9hzUMVgF2jMbk
+- Signing Kid = 9OzLGA1T9hCXqCQt3Y_f9a5JKTI
 
 - Signing keystore alias = signing
 
 - Signing keystore password = wso2carbon
 
-- Transport Kid - Cxhf6SoaTPr_YB_zbfP3NEdYZzg
+- Transport Kid - FpGbdOsv5VDDlOzVvH_r39a9_CU
 
 - Transport keystore alias = transport
 
