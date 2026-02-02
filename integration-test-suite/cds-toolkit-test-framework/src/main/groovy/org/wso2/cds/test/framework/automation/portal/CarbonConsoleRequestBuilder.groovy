@@ -24,9 +24,12 @@ import org.openqa.selenium.remote.RemoteWebDriver
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
+import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.openbanking.test.framework.automation.BrowserAutomationStep
 import org.wso2.openbanking.test.framework.automation.OBBrowserAutomation
+
+import java.nio.charset.Charset
 
 class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
@@ -54,11 +57,11 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
         webDriver.get(url)
 
-        WebElement username = webDriver.findElement(By.xpath(AUPageObjects.AU_IS_USERNAME_ID))
+        WebElement username = webDriver.findElement(By.id(AUPageObjects.AU_IS_USERNAME_ID))
         username.clear()
         username.sendKeys(configurationService.getUserKeyManagerAdminName())
 
-        WebElement password = webDriver.findElement(By.xpath(AUPageObjects.AU_IS_PASSWORD_ID))
+        WebElement password = webDriver.findElement(By.id(AUPageObjects.AU_IS_PASSWORD_ID))
         password.clear()
         password.sendKeys(configurationService.getUserKeyManagerAdminPWD())
 
@@ -66,7 +69,6 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         wait.until(
                 ExpectedConditions.elementToBeClickable(By.xpath(AUPageObjects.AU_BTN_IS_SIGNING)))
         webDriver.findElement(By.xpath(AUPageObjects.AU_BTN_IS_SIGNING)).click()
-        webDriver(webDriver, 20)
     }
 
     /**
@@ -81,7 +83,7 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         webDriver.findElement(By.xpath(AUPageObjects.BTN_ADD_IDP)).click()
 
         //Enter IDP Name
-        WebElement txtIdpName = webDriver.findElement(By.xpath(AUPageObjects.TXT_IDP_NAME))
+        WebElement txtIdpName = webDriver.findElement(By.id(AUPageObjects.TXT_IDP_NAME))
         txtIdpName.clear()
         txtIdpName.sendKeys("SMSAuthentication")
 
@@ -92,27 +94,28 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         webDriver.findElement(By.xpath(AUPageObjects.TAB_SMS_OTP)).click()
 
         //Configure SMS OTP
-        webDriver.findElement(By.xpath(AUPageObjects.CHK_ENABLE_SMS_OTP)).click()
+        webDriver.findElement(By.id(AUPageObjects.CHK_ENABLE_SMS_OTP)).click()
 
         WebElement txtSmsUrl = webDriver.findElement(By.xpath(AUPageObjects.TXT_SMS_URL))
         txtSmsUrl.clear()
-        txtSmsUrl.sendKeys("SMSAuthentication")
+        txtSmsUrl.sendKeys(AUConstants.TEST_SMS_URL)
 
         WebElement txtHttpMethod = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_METHOD))
         txtHttpMethod.clear()
-        txtHttpMethod.sendKeys("SMSAuthentication")
+        txtHttpMethod.sendKeys("POST")
 
+        String authToken = AUConstants.TEST_SMS_CLIENT_ID + ":" + AUConstants.TEST_SMS_CLIENT_SECRET
+        def clientHeader = "${Base64.encoder.encodeToString(authToken.getBytes(Charset.defaultCharset()))}"
         WebElement txtHttpHeader = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_HEADER))
         txtHttpHeader.clear()
-        txtHttpHeader.sendKeys("SMSAuthentication")
+        txtHttpHeader.sendKeys("Authorization: Basic " + clientHeader)
 
         WebElement txtHttpPayload = webDriver.findElement(By.xpath(AUPageObjects.TXT_HTTP_PAYLOAD))
         txtHttpPayload.clear()
-        txtHttpPayload.sendKeys("SMSAuthentication")
+        txtHttpPayload.sendKeys("Body=\$ctx.msg&To=\$ctx.num&From=+1 210-880-1806")
 
         //Click Register button
         webDriver.findElement(By.xpath(AUPageObjects.BTN_IDP_REGISTER)).click()
-        webDriver(webDriver, 20)
     }
 
     /**
@@ -141,7 +144,6 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
         //Click Update button
         webDriver.findElement(By.xpath(AUPageObjects.BTN_UPDATE)).click()
-        webDriver(webDriver, 20)
     }
 
     /**
@@ -170,8 +172,9 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
 
         //Click Update button
         webDriver.findElement(By.xpath(AUPageObjects.BTN_UPDATE)).click()
-        webDriver(webDriver, 20)
     }
+
+
 
     @Override
     void execute(RemoteWebDriver remoteWebDriver, OBBrowserAutomation.AutomationContext automationContext) {
@@ -180,5 +183,6 @@ class CarbonConsoleRequestBuilder implements BrowserAutomationStep {
         addResidentIdp(remoteWebDriver)
         enableMobileClaim(remoteWebDriver)
         enableAccountLock(remoteWebDriver)
+
     }
 }
