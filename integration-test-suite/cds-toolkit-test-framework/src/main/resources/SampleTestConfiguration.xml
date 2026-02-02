@@ -85,7 +85,7 @@
                 <DomainName>https://wso2.com</DomainName>
 
                 <!--Sample Values: cIYo-5zX4OTWZpHrmmiZDVxACJM -->
-                <SigningKid>5dBuoFxTMIrwWd9hzUMVgF2jMbk</SigningKid>
+                <SigningKid>9OzLGA1T9hCXqCQt3Y_f9a5JKTI</SigningKid>
             </KeyStore>
 
             <!-- Transport Keystore and Truststore -->
@@ -118,7 +118,7 @@
 
                 <!-- Software Product ID -->
                 <!--Sample Values: SP2 -->
-                <SoftwareId>SP2</SoftwareId>
+                <SoftwareId>jFQuQ4eQbNCMSqdCog21nF</SoftwareId>
 
                 <!-- SSA Redirect Uri -->
                 <!--Sample Values: https://www.google.com/redirects/redirect1 -->
@@ -158,7 +158,7 @@
                 <DomainName>https://wso2.com</DomainName>
 
                 <!--Sample Values: cIYo-5zX4OTWZpHrmmiZDVxACJM -->
-                <SigningKid>5dBuoFxTMIrwWd9hzUMVgF2jMbk</SigningKid>
+                <SigningKid>9OzLGA1T9hCXqCQt3Y_f9a5JKTI</SigningKid>
             </KeyStore>
 
             <!-- Transport Keystore and Truststore -->
