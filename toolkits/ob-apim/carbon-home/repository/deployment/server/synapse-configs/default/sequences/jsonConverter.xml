@@ -25,13 +25,13 @@
         </then>
         <else>
             <filter source="$axis2:HTTP_SC" regex="200|201|203|204|205|206|207|208|226">
-                <then />
+                <then/>
                 <else>
                     <filter xpath="contains(//text(), 'urn:au-cds:error')">
-                        <then />
+                        <then/>
                         <else>
                             <filter xpath="contains(get-property('To'), '/register') and boolean(//jsonObject/error_description)">
-                                <then />
+                                <then/>
                                 <else>
                                     <class name="org.wso2.openbanking.cds.gateway.mediators.GatewayErrorMediator" />
                                 </else>
