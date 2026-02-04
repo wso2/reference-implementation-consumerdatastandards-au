@@ -4,9 +4,12 @@ import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.EnrichConsentSearchRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForConsentSearch;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.EnrichConsentSearchApiImpl;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -21,6 +24,7 @@ import javax.validation.Valid;
 @Api(description = "the enrich-consent-search-response API")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
 public class EnrichConsentSearchResponseApi {
+    private static final Log log = LogFactory.getLog(PreProcessConsentRetrievalApi.class);
 
     @POST
     @Consumes({ "application/json" })
@@ -37,6 +41,6 @@ public class EnrichConsentSearchResponseApi {
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
     public Response enrichConsentSearchResponsePost(@Valid @NotNull EnrichConsentSearchRequestBody enrichConsentSearchRequestBody) {
-        return Response.ok().entity("magic!").build();
+        return EnrichConsentSearchApiImpl.handleEnrichSearchPost(enrichConsentSearchRequestBody);
     }
 }

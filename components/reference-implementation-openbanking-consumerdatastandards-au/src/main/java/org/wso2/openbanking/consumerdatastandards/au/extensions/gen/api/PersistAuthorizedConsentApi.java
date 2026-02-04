@@ -5,6 +5,8 @@ import javax.ws.rs.core.Response;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.annotations.*;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsentRequestBody;
@@ -13,6 +15,8 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.PersistAuth
 
 import javax.validation.constraints.*;
 import javax.validation.Valid;
+
+import static org.reflections.Reflections.log;
 
 /**
 * Represents a collection of functions to interact with the API endpoints.
@@ -38,7 +42,6 @@ public class PersistAuthorizedConsentApi {
     })
     public Response persistAuthorizedConsentPost(@Valid @NotNull PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody)
             throws CdsConsentException, JsonProcessingException {
-
         return PersistAuthorizedConsentApiImpl.handlePersistAuthorizedConsent(persistAuthorizedConsentRequestBody);
     }
 }

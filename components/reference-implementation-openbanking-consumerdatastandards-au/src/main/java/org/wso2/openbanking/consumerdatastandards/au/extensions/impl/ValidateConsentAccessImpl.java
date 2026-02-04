@@ -31,10 +31,10 @@ public class ValidateConsentAccessImpl {
 
     /**
      * Validate the consent for account related requests.
-     * @param requestId The unique identifier for the request, used for tracking and response purposes.
-     * @param dataPayload The request data payload to be validated, typically representing the API request body.
-     * @param consentResource The consent resource payload associated with the request, typically representing the consent object.
-     * @return A {@link JSONObject} representing the validation result. If validation passes, a success response is returned;
+     * @param validateConsentAccessRequestBody The unique identifier for the request,
+     *                                         used for tracking and response purposes.
+     * @return A {@link JSONObject} representing the validation result.
+     * If validation passes, a success response is returned;
      * @throws Exception If validation fails due to invalid input, expired consent, or JSON processing errors.
      */
     public static Response validateConsent(ValidateConsentAccessRequestBody validateConsentAccessRequestBody)
@@ -48,7 +48,8 @@ public class ValidateConsentAccessImpl {
         Object dataPayload = validateConsentAccessRequestBody.getData().getDataRequestPayload();
 
         // Validate the consent
-        validationResponse = CdsConsentValidateUtil.validateBankingApiSubmission(dataPayload, consentResource, requestId);
+        validationResponse = CdsConsentValidateUtil.validateBankingApiSubmission(
+                dataPayload, consentResource, requestId);
 
         return Response.status(Response.Status.OK).entity(validationResponse.toString()).build();
     }

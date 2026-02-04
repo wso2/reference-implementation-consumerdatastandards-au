@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
 @JsonTypeName("PopulateConsentAuthorizeScreenData")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-01-21T11:56:41.865817100+05:30[Asia/Colombo]", comments = "Generator version: 7.19.0")
 public class PopulateConsentAuthorizeScreenData   {
   private String consentId;
   private String userId;
@@ -32,7 +32,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(example = "An UUID", value = "")
   @JsonProperty("consentId")
   public String getConsentId() {
@@ -51,7 +51,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(example = "Username", value = "")
   @JsonProperty("userId")
   public String getUserId() {
@@ -71,7 +71,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Custom object with request parameters")
   @JsonProperty("requestParameters")
   public Object getRequestParameters() {
@@ -90,7 +90,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "")
   @JsonProperty("consentResource")
   @Valid public StoredDetailedConsentResourceData getConsentResource() {
@@ -113,9 +113,9 @@ public class PopulateConsentAuthorizeScreenData   {
     }
     PopulateConsentAuthorizeScreenData populateConsentAuthorizeScreenData = (PopulateConsentAuthorizeScreenData) o;
     return Objects.equals(this.consentId, populateConsentAuthorizeScreenData.consentId) &&
-        Objects.equals(this.userId, populateConsentAuthorizeScreenData.userId) &&
-        Objects.equals(this.requestParameters, populateConsentAuthorizeScreenData.requestParameters) &&
-        Objects.equals(this.consentResource, populateConsentAuthorizeScreenData.consentResource);
+            Objects.equals(this.userId, populateConsentAuthorizeScreenData.userId) &&
+            Objects.equals(this.requestParameters, populateConsentAuthorizeScreenData.requestParameters) &&
+            Objects.equals(this.consentResource, populateConsentAuthorizeScreenData.consentResource);
   }
 
   @Override
@@ -127,7 +127,7 @@ public class PopulateConsentAuthorizeScreenData   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PopulateConsentAuthorizeScreenData {\n");
-    
+
     sb.append("    consentId: ").append(toIndentedString(consentId)).append("\n");
     sb.append("    userId: ").append(toIndentedString(userId)).append("\n");
     sb.append("    requestParameters: ").append(toIndentedString(requestParameters)).append("\n");

@@ -75,6 +75,9 @@ public class CommonConstants {
     public static final String PERMISSIONS = "permissions";
     //TODO: Value Should be CDR_ACCOUNTS
     public static final String CDR_ACCOUNTS = "ACCOUNTS";
+    public static final String N_A = "n/a";
+    public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
+    public static final String CONSENT_MAPPING_RESOURCES= "consentMappingResources";
 
     public static final String COMMON_CUSTOMER_BASIC_READ_SCOPE = "common:customer.basic:read";
     public static final String COMMON_CUSTOMER_DETAIL_READ_SCOPE = "common:customer.detail:read";
@@ -118,5 +121,21 @@ public class CommonConstants {
     public static final String PAYEES_ID_REGEX = "/payees/[^/?]*";
     public static final String ACCOUNT_DATA = "accountData";
     public static final String STATUS = "status";
+    public static final String ACCOUNT_ID = "accountId";
+    public static final String DISPLAY_NAME = "displayName";
+
+    //Constants Related to Joint Accounts
+    public static final String DOMS_STATUS = "DISCLOSURE_OPTIONS_STATUS";
+    public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
+    public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
+    public static final String IS_JOINT_ACCOUNT_RESPONSE = "isJointAccount";
+    public static final String IS_JOINT_ACCOUNT = "is_joint_account";
+    public static final String LINKED_MEMBERS = "linkedMembers";
+    public static final String AUTH_RESOURCE_TYPE_LINKED = "linkedMember";
+    public static final String PRIMARY_MEMBER = "primaryMember";
+    public static final String AUTH_RESOURCE_TYPE_PRIMARY = "primary_member";
+    public static final String DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME = "domsStatus";
+
+
 
 }

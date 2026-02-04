@@ -81,7 +81,9 @@
                 org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessConsentFileUploadApi,
                 org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.ValidateConsentFileRetrievalApi,
                 org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.PreProcessClientRetrievalApi,
-                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichConsentSearchResponseApi
+                org.wso2.openbanking.consumerdatastandards.au.extensions.gen.api.EnrichConsentSearchResponseApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.account.metadata.management.endpoints.disclosure.options.api.DisclosureOptionsManagementApi,
+                org.wso2.openbanking.consumerdatastandards.au.extensions.account.metadata.management.endpoints.disclosure.options.api.DOMSAccountEnforcementApi
             </param-value>
         </init-param>
         <init-param>

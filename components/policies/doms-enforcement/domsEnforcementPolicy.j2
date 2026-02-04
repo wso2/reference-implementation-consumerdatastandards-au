@@ -1,0 +1,35 @@
+<!--
+ ~ DOMS Enforcement Policy - Safe Version
+ ~ Updates the Account-Request-Information header if accounts are blocked
+-->
+
+<!-- Save original request payload and headers -->
+<property name="originalRequestJsonBody" expression="json-eval($)" scope="default" type="STRING"/>
+<property name="originalRequestBody" expression="$body"/>
+<property name="originalAuthorizationHeader" expression="$trp:Authorization"/>
+<property name="originalContentTypeHeader" expression="$trp:Content-Type"/>
+<property name="originalAcceptHeader" expression="$trp:Accept"/>
+
+<!-- Engage the DOMS Enforcement Mediator -->
+<class name="org.wso2.openbanking.consumerdatastandards.au.DOMSEnforcementMediator">
+    <!-- Optional: pass any properties your mediator needs -->
+    <property name="domsGetApi" value="{{domsGetApi}}"/>
+    <property name="domsBasicAuthCredentials" value="{{domsBasicAuthCredentials}}"/>
+</class>
+
+<!-- Restore original headers for downstream services -->
+<header name="Authorization" scope="transport" expression="$ctx:originalAuthorizationHeader"/>
+<header name="Content-Type" scope="transport" expression="$ctx:originalContentTypeHeader"/>
+<header name="Accept" scope="transport" expression="$ctx:originalAcceptHeader"/>
+
+<!-- Set the Account-Request-Information header if DOMS mediator set it -->
+<filter xpath="boolean($trp:Account-Request-Information)">
+    <then>
+        <header name="Account-Request-Information" scope="transport" expression="$trp:Account-Request-Information"/>
+    </then>
+</filter>
+
+<!-- Optional: log the header for debugging -->
+<log level="full">
+    <property name="DOMS_Header" expression="$trp:Account-Request-Information"/>
+</log>

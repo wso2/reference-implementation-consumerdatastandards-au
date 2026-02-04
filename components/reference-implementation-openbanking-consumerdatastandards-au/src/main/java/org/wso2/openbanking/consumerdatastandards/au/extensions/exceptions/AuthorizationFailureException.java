@@ -18,13 +18,13 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ErrorUtil;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorize;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.FailedResponseInConsentAuthorizeData;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ErrorUtil;
 
 /**
  * Exception class for authorization failures that can be represented using 
@@ -68,7 +68,8 @@ public class AuthorizationFailureException extends Exception {
      * @param newStatus     new consent status to be set
      * @param responseId    response ID for the failed request
      */
-    public AuthorizationFailureException(CdsErrorEnum cdsError, String customMessage, String newStatus, String responseId) {
+    public AuthorizationFailureException(CdsErrorEnum cdsError, String customMessage, String newStatus,
+                                         String responseId) {
         super(customMessage);
         this.cdsError = cdsError;
         this.newStatus = newStatus;
@@ -153,7 +154,8 @@ public class AuthorizationFailureException extends Exception {
      * @param responseId response ID
      * @return AuthorizationFailureException
      */
-    public static AuthorizationFailureException createError(CdsErrorEnum cdsError, String newStatus, String responseId) {
+    public static AuthorizationFailureException createError(CdsErrorEnum cdsError, String newStatus,
+                                                            String responseId) {
         return new AuthorizationFailureException(cdsError, newStatus, responseId);
     }
 
@@ -166,7 +168,8 @@ public class AuthorizationFailureException extends Exception {
      * @param responseId    response ID
      * @return AuthorizationFailureException
      */
-    public static AuthorizationFailureException createError(CdsErrorEnum cdsError, String customMessage, String newStatus, String responseId) {
+    public static AuthorizationFailureException createError(CdsErrorEnum cdsError, String customMessage,
+                                                            String newStatus, String responseId) {
         return new AuthorizationFailureException(cdsError, customMessage, newStatus, responseId);
     }
 

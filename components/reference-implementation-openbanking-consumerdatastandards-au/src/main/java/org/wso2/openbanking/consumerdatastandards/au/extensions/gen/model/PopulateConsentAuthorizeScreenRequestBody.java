@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
 @JsonTypeName("PopulateConsentAuthorizeScreenRequestBody")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-01-21T11:56:41.865817100+05:30[Asia/Colombo]", comments = "Generator version: 7.19.0")
 public class PopulateConsentAuthorizeScreenRequestBody   {
   private String requestId;
   private PopulateConsentAuthorizeScreenData data;
@@ -25,8 +25,8 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
 
   @JsonCreator
   public PopulateConsentAuthorizeScreenRequestBody(
-    @JsonProperty(required = true, value = "requestId") String requestId,
-    @JsonProperty(required = true, value = "data") PopulateConsentAuthorizeScreenData data
+          @JsonProperty(required = true, value = "requestId") String requestId,
+          @JsonProperty(required = true, value = "data") PopulateConsentAuthorizeScreenData data
   ) {
     this.requestId = requestId;
     this.data = data;
@@ -39,7 +39,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
     return this;
   }
 
-  
+
   @ApiModelProperty(example = "Ec1wMjmiG8", required = true, value = "")
   @JsonProperty(required = true, value = "requestId")
   @NotNull public String getRequestId() {
@@ -58,7 +58,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "")
   @JsonProperty(required = true, value = "data")
   @NotNull @Valid public PopulateConsentAuthorizeScreenData getData() {
@@ -81,7 +81,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
     }
     PopulateConsentAuthorizeScreenRequestBody populateConsentAuthorizeScreenRequestBody = (PopulateConsentAuthorizeScreenRequestBody) o;
     return Objects.equals(this.requestId, populateConsentAuthorizeScreenRequestBody.requestId) &&
-        Objects.equals(this.data, populateConsentAuthorizeScreenRequestBody.data);
+            Objects.equals(this.data, populateConsentAuthorizeScreenRequestBody.data);
   }
 
   @Override
@@ -93,7 +93,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PopulateConsentAuthorizeScreenRequestBody {\n");
-    
+
     sb.append("    requestId: ").append(toIndentedString(requestId)).append("\n");
     sb.append("    data: ").append(toIndentedString(data)).append("\n");
     sb.append("}");

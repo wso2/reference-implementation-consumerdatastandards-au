@@ -39,9 +39,12 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.UserGrantedData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -113,6 +116,71 @@ public class CdsConsentAuthPersistUtil {
             authorizationResource.add(validateAndBuildAuthorizations(authResource, consentType, authStatus,
                     consumerInputData.getString("userId")));
 
+            Map<String, Set<String>> linkedMemberAccountMap = new HashMap<>();
+
+            for (AuthorizedResourcesAuthorizedDataInner authorizedDataInner : authorizedDataInners) {
+                for (Account account : authorizedDataInner.getAccounts()) {
+
+                    Map<String, Object> additionalProps = account.getAdditionalProperties();
+                    if (additionalProps == null) {
+                        continue;
+                    }
+
+                    Object innerPropsObj = additionalProps.get(CommonConstants.ADDITIONAL_PROPERTIES);
+                    if (!(innerPropsObj instanceof Map)) {
+                        continue;
+                    }
+
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> innerProps = (Map<String, Object>) innerPropsObj;
+
+                    Object linkedMembersObj = innerProps.get(CommonConstants.LINKED_MEMBERS);
+                    if (!(linkedMembersObj instanceof List)) {
+                        continue;
+                    }
+
+                    String accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(
+                            ConfigurableProperties.SHARABLE_ENDPOINT,
+                            account.getDisplayName()
+                    );
+
+                    @SuppressWarnings("unchecked")
+                    List<String> linkedMembers = (List<String>) linkedMembersObj;
+
+                    for (String linkedMember : linkedMembers) {
+
+                        linkedMemberAccountMap
+                                .computeIfAbsent(linkedMember, k -> new HashSet<>())
+                                .add(accountId);
+                    }
+                }
+            }
+
+            // Create Authorizations for Linked Members
+            for (Map.Entry<String, Set<String>> entry : linkedMemberAccountMap.entrySet()) {
+
+                String linkedMemberUserId = entry.getKey();
+                Set<String> accountIds = entry.getValue();
+
+                Authorization linkedMemberAuthorization = new Authorization();
+                linkedMemberAuthorization.setUserId(linkedMemberUserId);
+                linkedMemberAuthorization.setType(CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
+                linkedMemberAuthorization.setStatus(CommonConstants.AUTHORIZED_STATUS);
+
+                List<Resource> linkedResources = new ArrayList<>();
+
+                for (String accountId : accountIds) {
+                    Resource resource = new Resource();
+                    resource.setAccountId(accountId);
+                    resource.setPermission(CommonConstants.N_A);
+                    resource.setStatus(CommonConstants.ACTIVE_MAPPING_STATUS);
+                    linkedResources.add(resource);
+                }
+
+                linkedMemberAuthorization.setResources(linkedResources);
+                authorizationResource.add(linkedMemberAuthorization);
+            }
+
             //Convert expiration date time to validity time in seconds
             if (metadataObject != null) {
                 validityTime = getValidityTime(metadataObject);
@@ -149,7 +217,8 @@ public class CdsConsentAuthPersistUtil {
      * @param authorizedDataInners List of permissions and accounts
      * @return List of Account Ids and it's Mapping
      */
-    private static List<Resource> validateAndGetResources(List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners) {
+    private static List<Resource> validateAndGetResources(
+            List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners) {
         List<Resource> resources = new ArrayList<>();
 
         String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;

@@ -18,10 +18,25 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
-import net.minidev.json.parser.ParseException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.account.metadata.service.service.AccountMetadataServiceImpl;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
@@ -36,19 +51,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
 
 /**
  * Utility class for consent authorization related operations.
@@ -194,7 +196,7 @@ public class ConsentAuthorizeUtil {
      * @param userId The user id of the authenticated user.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
-    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData cdsConsumerDataRetrieval(
+    public static ConsumerAndDisplayData cdsConsumerDataRetrieval(
             JSONObject jsonRequestBody, String userId) throws CdsConsentException {
 
         // Append consumer data to response
@@ -205,18 +207,37 @@ public class ConsentAuthorizeUtil {
         }
     }
 
+    private static boolean isJointAccountSelectable(String accountId) {
+
+        try {
+            String domsStatus = AccountMetadataServiceImpl.getInstance()
+                    .getAccountMetadataByKey(
+                            accountId,
+                            CommonConstants.DOMS_STATUS
+                    );
+            // Set false if DOMS status is no-sharing.
+            return !CommonConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(domsStatus);
+
+        } catch (AccountMetadataException e) {
+            log.error("Failed to retrieve DOMS status for accountId={}");
+            // Fail-safe: do NOT disclose
+            return false;
+        }
+    }
+
     /**
      * Method to validate and append consumer object to response.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
      * @param userId The user id of the authenticated user.
      * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
      */
-    public static SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData
+    public static ConsumerAndDisplayData
     validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, String userId) throws CdsConsentException {
 
         SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData =
                 new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData();
-
+        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData =
+                new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData();
         try {
 
             String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;
@@ -241,22 +262,55 @@ public class ConsentAuthorizeUtil {
 
                 jsonRequestBody.put(CommonConstants.ACCOUNTS, accountsJSON);
 
-                List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList = new ArrayList<>();
+                List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList =
+                        new ArrayList<>();
+                List<Map<String, Object>> blockedAccountsList = new ArrayList<>();
+
                 for (int i = 0; i < accountsJSON.length(); i++) {
-                    JSONObject accountJson = accountsJSON.getJSONObject(i);
 
                     SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account =
                             new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner();
+                    JSONObject accountJson = accountsJSON.getJSONObject(i);
 
-                    String accountDisplayName = accountJson.getString("displayName");
+                    String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
 
-                    account.setDisplayName(accountDisplayName);
+                    if (accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false)) {
+                        boolean isSelectable = isJointAccountSelectable(accountId);
+                        if (isSelectable) {
+                            List<String> linkedMembers = new ArrayList<>();
 
-                    accountList.add(account);
+                            // Adding joint accounts info as addiotional properties
+                            if (accountJson.has("jointAccountinfo")) {
+                                JSONObject jointInfo = accountJson.getJSONObject("jointAccountinfo");
+                                JSONArray linkedMemberArray = jointInfo.optJSONArray("linkedMember");
+
+                                if (linkedMemberArray != null) {
+                                    for (int j = 0; j < linkedMemberArray.length(); j++) {
+                                        JSONObject memberObj = linkedMemberArray.getJSONObject(j);
+                                        linkedMembers.add(memberObj.optString("memberId"));
+                                    }
+                                }
+                            }
+                            account.setAdditionalProperty("linkedMembers", linkedMembers);
+                            account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
+                            accountList.add(account);
+                        }
+                        else {
+                            Map<String, Object> blockedAccountMap = new HashMap<>();
+                            blockedAccountMap.put("accountId", accountId);
+                            blockedAccountMap.put("displayName", accountJson.getString(CommonConstants.DISPLAY_NAME));
+
+                            blockedAccountsList.add(blockedAccountMap);
+                        }
+                    }
+                    else {
+                        account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
+                        accountList.add(account);
+                    }
                 }
+                displayData.setDisplayData(blockedAccountsList);
 
                 consumerData.setAccounts(accountList);
-
             } else {
                 log.error("Sharable accounts endpoint is not configured properly");
                 throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
@@ -265,7 +319,9 @@ public class ConsentAuthorizeUtil {
         } catch (CdsConsentException e) {
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
-        return consumerData;
+
+        ConsumerAndDisplayData consumerAndDisplayData = new ConsumerAndDisplayData(consumerData,displayData);
+        return consumerAndDisplayData;
     }
 
     /**
@@ -274,9 +330,11 @@ public class ConsentAuthorizeUtil {
      * @param scopeString string containing the requested scopes
      * @return list of permission enums to be stored
      */
-    public static List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> getPermissionList(String scopeString) {
+    public static List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> getPermissionList(
+            String scopeString) {
 
-        List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> permissionList = new ArrayList<>();
+        List<SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner> permissionList =
+                new ArrayList<>();
 
         if (StringUtils.isNotBlank(scopeString)) {
             // Remove "openid" and "cdr:registration" from the scope list
@@ -375,7 +433,8 @@ public class ConsentAuthorizeUtil {
      * @param permissionsList - list of permissions
      * @return Map of basic consent data
      */
-    private static Map<String, List<String>> constructBasicConsentData(String expirationDate, String sharingDurationValue,
+    private static Map<String, List<String>> constructBasicConsentData(String expirationDate,
+                                                                       String sharingDurationValue,
                                                                        List<String> permissionsList) {
 
         Map<String, List<String>> basicConsentData = new HashMap<>();
@@ -394,7 +453,7 @@ public class ConsentAuthorizeUtil {
      * @param expirationDate - expiration date time
      * @return Map of consent metadata
      */
-    private static Map<String,Object> constructConsentMetadatMap(List<String> permissionsList, String expirationDate) {
+    private static Map<String, Object> constructConsentMetadatMap(List<String> permissionsList, String expirationDate) {
 
         //Build consent metadata as a list of maps
         Map<String, Object> permissionMeta = new LinkedHashMap<>();
@@ -406,12 +465,12 @@ public class ConsentAuthorizeUtil {
         expiryMeta.put(CommonConstants.DATA, Collections.singletonList(expirationDate));
 
         //Add permissions and expirationDateTime to the list
-        List<Map<String,Object>> consentMetadataList = new ArrayList<>();
+        List<Map<String, Object>> consentMetadataList = new ArrayList<>();
         consentMetadataList.add(permissionMeta);
         consentMetadataList.add(expiryMeta);
 
         //Wrap the list in a map with key "accountData"
-        Map<String,Object> dataMap = new LinkedHashMap<>();
+        Map<String, Object> dataMap = new LinkedHashMap<>();
         dataMap.put("accountData", consentMetadataList);
 
         return dataMap;

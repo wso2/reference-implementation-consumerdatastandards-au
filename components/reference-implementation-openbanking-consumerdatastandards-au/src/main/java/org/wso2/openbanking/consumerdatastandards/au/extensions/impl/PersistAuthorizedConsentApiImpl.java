@@ -23,8 +23,8 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AuthorizationFailureException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PersistAuthorizedConsentRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePersistAuthorizedConsent;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePersistAuthorizedConsentData;
@@ -56,6 +56,8 @@ public class PersistAuthorizedConsentApiImpl {
             response.setResponseId(persistAuthorizedConsentRequestBody.getRequestId());
             response.setStatus(SuccessResponsePersistAuthorizedConsent.StatusEnum.SUCCESS);
             response.setData(persistConsentData);
+
+            log.info(response);
 
             return Response.status(Response.Status.OK).entity(new JSONObject(response).toString()).build();
 

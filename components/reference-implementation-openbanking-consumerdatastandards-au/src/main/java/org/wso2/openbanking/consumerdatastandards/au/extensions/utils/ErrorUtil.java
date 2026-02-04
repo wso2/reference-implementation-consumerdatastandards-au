@@ -70,7 +70,8 @@ public class ErrorUtil {
      */
     public static CdsErrorResponse createErrorResponseWithUrn(CdsErrorEnum errorEnum, String urn) {
         CdsErrorMeta meta = new CdsErrorMeta(urn);
-        CdsErrorFormat error = new CdsErrorFormat(errorEnum.getCode(), errorEnum.getTitle(), errorEnum.getDetail(), meta);
+        CdsErrorFormat error = new CdsErrorFormat(
+                errorEnum.getCode(), errorEnum.getTitle(), errorEnum.getDetail(), meta);
         return new CdsErrorResponse(error);
     }
 
