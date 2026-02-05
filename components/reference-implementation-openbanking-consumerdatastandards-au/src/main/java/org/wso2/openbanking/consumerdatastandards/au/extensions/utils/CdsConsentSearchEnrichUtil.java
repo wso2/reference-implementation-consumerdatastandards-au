@@ -60,7 +60,7 @@ public class CdsConsentSearchEnrichUtil {
         for (Map<String, Object> consent : searchResultList) {
 
             // Extract joint account authorization IDs
-            List<String> jointAccountAuthIDs = extractJointAccountAuthIDs(consent);
+            List<String> jointAccountIDs = extractJointAccountIds(consent);
 
             Object consentMappingsObj = consent.get(CommonConstants.CONSENT_MAPPING_RESOURCES);
             if (!(consentMappingsObj instanceof List)) {
@@ -80,7 +80,7 @@ public class CdsConsentSearchEnrichUtil {
                 }
 
                 // Only add DOMS status if mapping belongs to a joint account
-                if (jointAccountAuthIDs.contains(authorizationId)) {
+                if (jointAccountIDs.contains(accountId)) {
                     String domsStatus = getDOMSStatus(accountId);
 
                     if (domsStatus == null) {
@@ -96,35 +96,69 @@ public class CdsConsentSearchEnrichUtil {
     }
 
     /**
-     * Extract authorization IDs corresponding to joint/linked accounts.
+     * Extract Joint account IDs corresponding to consents.
      */
     @SuppressWarnings("unchecked")
-    private static List<String> extractJointAccountAuthIDs(Map<String, Object> consent) {
-        List<String> jointAccountAuthIDs = new java.util.ArrayList<>();
+    private static List<String> extractJointAccountIds(Map<String, Object> consent) {
 
+        List<String> jointAccountIds = new java.util.ArrayList<>();
+        java.util.HashSet<Object> linkedMemberAuthIds = new java.util.HashSet<>();
+
+        // Collect linkedMember authorizationIds
         Object authResourcesObj = consent.get(CommonConstants.AUTHORIZATION_RESOURCES);
-        if (!(authResourcesObj instanceof List)) {
-            return jointAccountAuthIDs;
-        }
+        if (authResourcesObj instanceof List) {
 
-        List<Map<String, Object>> authResourcesList = (List<Map<String, Object>>) authResourcesObj;
+            List<Map<String, Object>> authResourcesList =
+                    (List<Map<String, Object>>) authResourcesObj;
 
-        for (Map<String, Object> authResource : authResourcesList) {
-            String authType = (String) authResource.get(CommonConstants.AUTH_TYPE);
+            for (Map<String, Object> authResource : authResourcesList) {
 
-            if (isJointAccount(authType)) {
-                String authId = (String) authResource.get(CommonConstants.AUTHORIZATION_ID);
-                if (authId != null) {
-                    jointAccountAuthIDs.add(authId);
+                String authType = (String) authResource.get(CommonConstants.AUTH_TYPE);
+
+                if (isJointAccount(authType)) {
+                    String authId =
+                            (String) authResource.get(CommonConstants.AUTHORIZATION_ID);
+
+                    if (authId != null) {
+                        linkedMemberAuthIds.add(authId);
+                    }
                 }
             }
         }
 
-        return jointAccountAuthIDs;
+        if (linkedMemberAuthIds.isEmpty()) {
+            return jointAccountIds;
+        }
+
+        // Mapping linkedMember authIds to accountIds
+        Object mappingObj = consent.get(CommonConstants.CONSENT_MAPPING_RESOURCES);
+        if (!(mappingObj instanceof List)) {
+            return jointAccountIds;
+        }
+
+        List<Map<String, Object>> mappingList =
+                (List<Map<String, Object>>) mappingObj;
+
+        for (Map<String, Object> mapping : mappingList) {
+
+            String accountId =
+                    (String) mapping.get(CommonConstants.ACCOUNT_ID);
+            String authorizationId =
+                    (String) mapping.get(CommonConstants.AUTHORIZATION_ID);
+
+            if (accountId != null && !jointAccountIds.contains(accountId) &&
+                    authorizationId != null &&
+                    linkedMemberAuthIds.contains(authorizationId)) {
+
+                jointAccountIds.add(accountId);
+            }
+        }
+
+        return jointAccountIds;
     }
 
     /**
-     * Check if authorization type is joint or linked.
+     * Check if authorization type is linkedMember.
      */
     private static boolean isJointAccount(String authType) {
         if (authType == null) {
