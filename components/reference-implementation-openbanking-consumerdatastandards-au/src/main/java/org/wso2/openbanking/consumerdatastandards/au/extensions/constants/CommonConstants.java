@@ -77,7 +77,7 @@ public class CommonConstants {
     public static final String CDR_ACCOUNTS = "ACCOUNTS";
     public static final String N_A = "n/a";
     public static final String ADDITIONAL_PROPERTIES = "additionalProperties";
-    public static final String CONSENT_MAPPING_RESOURCES= "consentMappingResources";
+    public static final String CONSENT_MAPPING_RESOURCES = "consentMappingResources";
 
     public static final String COMMON_CUSTOMER_BASIC_READ_SCOPE = "common:customer.basic:read";
     public static final String COMMON_CUSTOMER_DETAIL_READ_SCOPE = "common:customer.detail:read";
@@ -123,6 +123,9 @@ public class CommonConstants {
     public static final String STATUS = "status";
     public static final String ACCOUNT_ID = "accountId";
     public static final String DISPLAY_NAME = "displayName";
+    public static final String AUTHORIZATION_ID = "authorizationId";
+    public static final String AUTHORIZATION_RESOURCES = "authorizationResources";
+    public static final String AUTH_TYPE = "authorizationType";
 
     //Constants Related to Joint Accounts
     public static final String DOMS_STATUS = "DISCLOSURE_OPTIONS_STATUS";

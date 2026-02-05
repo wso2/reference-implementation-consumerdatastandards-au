@@ -203,13 +203,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-checkstyle-plugin</artifactId>
-                    <version>3.1.2</version><dependencies>
-                    <dependency>
-                        <groupId>com.puppycrawl.tools</groupId>
-                        <artifactId>checkstyle</artifactId>
-                        <version>8.23</version>
-                    </dependency>
-                </dependencies>
+                    <version>${maven.checkstyleplugin.version}</version>
                     <executions>
                         <execution>
                             <id>validate</id>
@@ -481,6 +475,7 @@
         <maven.bundle.plugin.version>3.2.0</maven.bundle.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <maven.compiler.plugin.version>2.3.2</maven.compiler.plugin.version>
+        <maven.findbugsplugin.version>3.0.5</maven.findbugsplugin.version>
         <com.h3xstream.findsecbugs.version>1.12.0</com.h3xstream.findsecbugs.version>
         <maven-spotbugs.version>4.2.3</maven-spotbugs.version>
         <json-smart>2.4.10</json-smart>

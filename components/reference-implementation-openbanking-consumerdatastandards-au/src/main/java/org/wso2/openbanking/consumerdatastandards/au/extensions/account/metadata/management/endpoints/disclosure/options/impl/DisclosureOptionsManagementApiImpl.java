@@ -57,7 +57,7 @@ public class DisclosureOptionsManagementApiImpl {
                 Map<String, String> metadataMap = new HashMap<>();
                 metadataMap.put(CommonConstants.DOMS_STATUS, item.getDisclosureOption().toString());
 
-                // Call the addOrUpdateGlobalAccountMetadata method from the AccountMetadataService class
+                // Calling the addOrUpdate DOMS status for joint accounts method from the AccountMetadataService class
                 accountMetadataService.addOrUpdateAccountMetadata(item.getAccountID(), metadataMap);
 
                 log.debug("[DOMS] Updated account: " + item.getAccountID() + " with disclosure option: "

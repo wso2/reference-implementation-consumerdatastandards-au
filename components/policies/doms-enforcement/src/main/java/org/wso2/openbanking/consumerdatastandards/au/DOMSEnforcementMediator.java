@@ -26,6 +26,7 @@ import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
 import org.wso2.openbanking.consumerdatastandards.au.utils.DOMSEnforcementUtils;
 
 import java.io.IOException;
@@ -121,7 +122,7 @@ public class DOMSEnforcementMediator extends AbstractMediator {
             payload.put("consentMappingResources", filteredAccounts);
 
             String signedJwt = DOMSEnforcementUtils.generateJWT(payload.toString());
-            headers.put("Account-Request-Information", signedJwt);
+            headers.put(DOMSEnforcementConstants.INFO_HEADER_TAG, signedJwt);
 
             log.info("DOMS enforcement completed successfully");
 

@@ -47,7 +47,6 @@ public class CdsConsentSearchEnrichUtil {
         SuccessResponseForConsentSearchData searchData =
                 new SuccessResponseForConsentSearchData();
 
-        // enrichedObj IS the searchResult list
         searchData.setEnrichedSearchResult(enrichedObj);
 
         if (!(enrichedObj instanceof List)) {
@@ -60,6 +59,9 @@ public class CdsConsentSearchEnrichUtil {
 
         for (Map<String, Object> consent : searchResultList) {
 
+            // Extract joint account authorization IDs
+            List<String> jointAccountAuthIDs = extractJointAccountAuthIDs(consent);
+
             Object consentMappingsObj = consent.get(CommonConstants.CONSENT_MAPPING_RESOURCES);
             if (!(consentMappingsObj instanceof List)) {
                 continue;
@@ -71,23 +73,64 @@ public class CdsConsentSearchEnrichUtil {
             for (Map<String, Object> mappingItem : mappingList) {
 
                 String accountId = (String) mappingItem.get(CommonConstants.ACCOUNT_ID);
-                if (accountId == null) {
+                String authorizationId = (String) mappingItem.get(CommonConstants.AUTHORIZATION_ID);
+
+                if (accountId == null || authorizationId == null) {
                     continue;
                 }
 
-                // Getting the DOMS status for joint accounts
-                String domsStatus = getDOMSStatus(accountId);
+                // Only add DOMS status if mapping belongs to a joint account
+                if (jointAccountAuthIDs.contains(authorizationId)) {
+                    String domsStatus = getDOMSStatus(accountId);
 
-                if (domsStatus != null) {
+                    if (domsStatus == null) {
+                        domsStatus = CommonConstants.DOMS_STATUS_PRE_APPROVAL;
+                    }
                     mappingItem.put(CommonConstants.DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME, domsStatus);
-
-                    log.debug("Added domsStatus=" + domsStatus +
-                            " for accountId=" + accountId);
+                    log.debug("Added domsStatus=" + domsStatus + " for joint accountId=" + accountId);
                 }
             }
         }
 
         return searchData;
+    }
+
+    /**
+     * Extract authorization IDs corresponding to joint/linked accounts.
+     */
+    @SuppressWarnings("unchecked")
+    private static List<String> extractJointAccountAuthIDs(Map<String, Object> consent) {
+        List<String> jointAccountAuthIDs = new java.util.ArrayList<>();
+
+        Object authResourcesObj = consent.get(CommonConstants.AUTHORIZATION_RESOURCES);
+        if (!(authResourcesObj instanceof List)) {
+            return jointAccountAuthIDs;
+        }
+
+        List<Map<String, Object>> authResourcesList = (List<Map<String, Object>>) authResourcesObj;
+
+        for (Map<String, Object> authResource : authResourcesList) {
+            String authType = (String) authResource.get(CommonConstants.AUTH_TYPE);
+
+            if (isJointAccount(authType)) {
+                String authId = (String) authResource.get(CommonConstants.AUTHORIZATION_ID);
+                if (authId != null) {
+                    jointAccountAuthIDs.add(authId);
+                }
+            }
+        }
+
+        return jointAccountAuthIDs;
+    }
+
+    /**
+     * Check if authorization type is joint or linked.
+     */
+    private static boolean isJointAccount(String authType) {
+        if (authType == null) {
+            return false;
+        }
+        return authType.equalsIgnoreCase("linkedMember");
     }
 
     /**

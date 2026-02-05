@@ -85,12 +85,12 @@ public class AccountMetadataServiceImpl {
 
 
     /**
-     * Update metadata where USER_ID is GLOBAL.
+     * Update metadata where USER_ID is N/A.
      */
     public int addOrUpdateAccountMetadata(String accountId,
                                           Map<String, String> accountMetadataMap)
             throws AccountMetadataException {
-        return addOrUpdateAccountMetadata(accountId, "GLOBAL", accountMetadataMap);
+        return addOrUpdateAccountMetadata(accountId, "N/A", accountMetadataMap);
     }
 
     /**
@@ -105,13 +105,13 @@ public class AccountMetadataServiceImpl {
     }
 
     /**
-     * Update a single column where USER_ID is GLOBAL.
+     * Update a single column where USER_ID is N/A.
      */
     public int addOrUpdateAccountMetadata(String accountId,
                                           String column,
                                           String value)
             throws AccountMetadataException {
-        return addOrUpdateAccountMetadata(accountId, "GLOBAL", Map.of(column, value));
+        return addOrUpdateAccountMetadata(accountId, "N/A", Map.of(column, value));
     }
 
     public Map<String, String> getAccountMetadataMap(String accountId,
@@ -193,6 +193,6 @@ public class AccountMetadataServiceImpl {
     public String getAccountMetadataByKey(String accountId,
                                           String key)
             throws AccountMetadataException {
-        return getAccountMetadataByKey(accountId, "GLOBAL", key);
+        return getAccountMetadataByKey(accountId, "N/A", key);
     }
 }

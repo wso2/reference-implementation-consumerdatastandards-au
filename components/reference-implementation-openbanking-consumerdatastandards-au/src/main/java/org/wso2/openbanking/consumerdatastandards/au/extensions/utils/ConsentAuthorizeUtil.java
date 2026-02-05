@@ -31,8 +31,8 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.Common
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
@@ -294,16 +294,14 @@ public class ConsentAuthorizeUtil {
                             account.setAdditionalProperty("linkedMembers", linkedMembers);
                             account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
                             accountList.add(account);
-                        }
-                        else {
+                        } else {
                             Map<String, Object> blockedAccountMap = new HashMap<>();
                             blockedAccountMap.put("accountId", accountId);
                             blockedAccountMap.put("displayName", accountJson.getString(CommonConstants.DISPLAY_NAME));
 
                             blockedAccountsList.add(blockedAccountMap);
                         }
-                    }
-                    else {
+                    } else {
                         account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
                         accountList.add(account);
                     }
@@ -320,7 +318,7 @@ public class ConsentAuthorizeUtil {
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
 
-        ConsumerAndDisplayData consumerAndDisplayData = new ConsumerAndDisplayData(consumerData,displayData);
+        ConsumerAndDisplayData consumerAndDisplayData = new ConsumerAndDisplayData(consumerData, displayData);
         return consumerAndDisplayData;
     }
 

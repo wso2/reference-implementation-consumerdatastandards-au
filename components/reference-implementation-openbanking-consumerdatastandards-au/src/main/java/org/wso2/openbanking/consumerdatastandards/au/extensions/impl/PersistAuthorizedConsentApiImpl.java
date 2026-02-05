@@ -57,8 +57,6 @@ public class PersistAuthorizedConsentApiImpl {
             response.setStatus(SuccessResponsePersistAuthorizedConsent.StatusEnum.SUCCESS);
             response.setData(persistConsentData);
 
-            log.info(response);
-
             return Response.status(Response.Status.OK).entity(new JSONObject(response).toString()).build();
 
         } catch (CdsConsentException e) {
