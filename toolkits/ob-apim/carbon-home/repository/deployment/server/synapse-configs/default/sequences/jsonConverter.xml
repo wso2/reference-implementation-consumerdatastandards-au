@@ -30,7 +30,12 @@
                     <filter xpath="contains(//text(), 'urn:au-cds:error')">
                         <then/>
                         <else>
-                            <class name="org.wso2.openbanking.cds.gateway.mediators.GatewayErrorMediator"/>
+                            <filter xpath="contains(get-property('To'), '/register') and boolean(//jsonObject/error_description)">
+                                <then/>
+                                <else>
+                                    <class name="org.wso2.openbanking.cds.gateway.mediators.GatewayErrorMediator" />
+                                </else>
+                            </filter>
                         </else>
                     </filter>
                 </else>
