@@ -18,11 +18,11 @@
 
 package org.wso2.cds.integration.test.metadata_update
 
+import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 import org.testng.Assert
 import org.testng.annotations.BeforeClass
 import org.testng.annotations.Test

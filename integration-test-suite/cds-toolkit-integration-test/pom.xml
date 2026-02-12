@@ -22,6 +22,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>cds-toolkit-integration-test</artifactId>
+    <version>2.0.0</version>
     <packaging>jar</packaging>
 
     <parent>
@@ -33,13 +34,19 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.apache.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
-            <type>pom</type>
+            <groupId>org.wso2.openbanking</groupId>
+            <artifactId>bfsi-test-framework</artifactId>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.wso2.openbanking</groupId>
             <artifactId>cds-toolkit-test-framework</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.groovy</groupId>
+            <artifactId>groovy-all</artifactId>
+            <type>pom</type>
         </dependency>
         <dependency>
             <groupId>org.testng</groupId>

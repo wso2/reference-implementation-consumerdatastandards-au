@@ -19,6 +19,8 @@
 package org.wso2.cds.integration.test.authflow
 
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountScope
@@ -27,8 +29,6 @@ import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 import org.openqa.selenium.By
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait

@@ -18,11 +18,11 @@
 
 package org.wso2.cds.test.framework.automation.consent
 
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.BrowserAutomation
+import org.wso2.bfsi.test.framework.automation.BrowserAutomationStep
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.BrowserAutomationStep
-import org.wso2.openbanking.test.framework.automation.OBBrowserAutomation
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
@@ -49,28 +49,30 @@ class AUBasicAuthAutomationStep implements BrowserAutomationStep {
     }
 
     @Override
-    void execute(RemoteWebDriver webDriver, OBBrowserAutomation.AutomationContext context) {
+    void execute(RemoteWebDriver webDriver, BrowserAutomation.AutomationContext context) {
         WebDriverWait wait = new WebDriverWait(webDriver, 30)
         AutomationMethod driver = new AutomationMethod(webDriver)
         webDriver.navigate().to(authorizeUrl)
         //Enter User Name
         driver.executeTextField(AUPageObjects.AU_USERNAME_FIELD_ID, auConfiguration.getUserPSUName())
+        driver.executeTextField(AUPageObjects.AU_PASSWORD_FIELD_ID, auConfiguration.getUserPSUPWD())
 
         //Click on SignIn Button
         driver.clickButtonXpath(AUPageObjects.AU_AUTH_SIGNIN_XPATH)
         driver.waitTimeRange(30)
 
-        //Second Factor Authentication Step
-        try{
-            if (driver.isElementDisplayed(AUPageObjects.AU_BTN_AUTHENTICATE)) {
-                driver.executeSMSOTP(AUPageObjects.AU_LBL_SMSOTP_AUTHENTICATOR, AUPageObjects.AU_TXT_OTP_CODE_ID,
-                        AUConstants.AU_OTP_CODE)
-                driver.clickButtonXpath(AUPageObjects.AU_BTN_AUTHENTICATE)
-                driver.waitTimeRange(30)
-            }
-        } catch (NoSuchElementException e) {
-            log.info("Second Factor Authentication Step is not required")
-        }
+        //TODO: Enable after implementing identifier-first authenticator
+//        //Second Factor Authentication Step
+//        try{
+//            if (driver.isElementDisplayed(AUPageObjects.AU_BTN_AUTHENTICATE)) {
+//                driver.executeSMSOTP(AUPageObjects.AU_LBL_SMSOTP_AUTHENTICATOR, AUPageObjects.AU_TXT_OTP_CODE_ID,
+//                        AUConstants.AU_OTP_CODE)
+//                driver.clickButtonXpath(AUPageObjects.AU_BTN_AUTHENTICATE)
+//                driver.waitTimeRange(30)
+//            }
+//        } catch (NoSuchElementException e) {
+//            log.info("Second Factor Authentication Step is not required")
+//        }
     }
 }
 

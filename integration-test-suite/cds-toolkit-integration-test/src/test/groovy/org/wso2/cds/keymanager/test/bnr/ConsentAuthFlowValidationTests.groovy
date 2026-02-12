@@ -18,6 +18,7 @@
 
 package org.wso2.cds.keymanager.test.bnr
 
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountScope
@@ -25,7 +26,6 @@ import org.wso2.cds.test.framework.constant.AUBusinessUserPermission
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
 import org.openqa.selenium.By
 import org.openqa.selenium.WebElement
 import org.testng.Assert
