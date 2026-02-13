@@ -25,19 +25,25 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.synapse.MessageContext;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
 
-import java.io.UnsupportedEncodingException;
+import java.io.IOException;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.PrivateKey;
 import java.text.ParseException;
-import java.util.HashMap;
-import java.util.Map;
+import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Utility class for the Consent Enforcement Policy.
@@ -45,84 +51,6 @@ import java.util.Map;
 public class DOMSEnforcementUtils {
 
     private static final Log log = LogFactory.getLog(DOMSEnforcementUtils.class);
-
-    /**
-     * Method to construct resource parameter map to invoke the validation service.
-     *
-     * @param messageContext request context object
-     * @return A Map containing resource path(ex: /aisp/accounts/{AccountId}?queryParam=urlEncodedQueryParamValue),
-     * http method and context(ex: /open-banking/v3.1/aisp)
-     */
-    public static Map<String, String> getResourceParamMap(MessageContext messageContext) {
-
-        log.debug("Constructing resource parameter map for validation service");
-        Map<String, String> resourceMap = new HashMap<>();
-        resourceMap.put(DOMSEnforcementConstants.RESOURCE_TAG, (String)
-                messageContext.getProperty(DOMSEnforcementConstants.REST_FULL_REQUEST_PATH));
-        resourceMap.put(DOMSEnforcementConstants.HTTP_METHOD_TAG, (String)
-                messageContext.getProperty(DOMSEnforcementConstants.REST_METHOD));
-        resourceMap.put(DOMSEnforcementConstants.CONTEXT_TAG, (String)
-                messageContext.getProperty(DOMSEnforcementConstants.REST_API_CONTEXT));
-        return resourceMap;
-    }
-
-    /**
-     * Method to extract the consent ID from the JWT token present in the request headers.
-     *
-     * @param headers Transport headers from the Axis2 message context
-     * @param consentIdClaimName Name of the claim that contains the consent ID
-     * @return Consent ID if present in the JWT token, null otherwise
-     * @throws UnsupportedEncodingException When encoding is not UTF-8
-     */
-    public static String extractConsentIdFromJwtToken(Map<String, String> headers, String consentIdClaimName)
-            throws UnsupportedEncodingException {
-
-        log.debug("Attempting to extract consent ID from JWT token");
-        String authHeader = headers.get(DOMSEnforcementConstants.AUTH_HEADER);
-        if (authHeader != null && !authHeader.isEmpty() &&
-                isValidJWTToken(authHeader.replace(DOMSEnforcementConstants.BEARER_TAG, ""))) {
-            String consentIdClaim = null;
-            if (!authHeader.contains(DOMSEnforcementConstants.BASIC_TAG)) {
-                authHeader = authHeader.replace(DOMSEnforcementConstants.BEARER_TAG, "");
-                JSONObject jwtClaims = decodeBase64(authHeader.split("\\.")[1]);
-
-                if (!jwtClaims.isNull(consentIdClaimName) && !jwtClaims.getString(consentIdClaimName).isEmpty()) {
-                    consentIdClaim = jwtClaims.getString(consentIdClaimName);
-                    log.info("Consent ID extracted successfully from JWT token");
-                }
-            }
-            return consentIdClaim;
-        }
-        log.debug("No valid JWT token found in authorization header");
-        return null;
-    }
-
-    /**
-     * Method to create the validation request payload.
-     *
-     * @param jsonPayload JSON payload as a string to be included in the request body
-     * @param requestHeaders Transport headers from the Axis2 message context
-     * @param additionalParams Additional parameters to be included in the request payload
-     * @return JSONObject representing the validation request payload
-     */
-    public static JSONObject createValidationRequestPayload(String jsonPayload,
-                                                            Map<String, String> requestHeaders,
-                                                            Map<String, Object> additionalParams) throws JSONException {
-
-        log.debug("Creating validation request payload");
-        JSONObject validationRequest = new JSONObject();
-        JSONObject headers = new JSONObject();
-
-        requestHeaders.forEach(headers::put);
-        validationRequest.put(DOMSEnforcementConstants.HEADERS_TAG, headers);
-
-        JSONObject requestPayload = new JSONObject(jsonPayload);
-        validationRequest.put(DOMSEnforcementConstants.BODY_TAG, requestPayload);
-
-        additionalParams.forEach(validationRequest::put);
-        log.debug("Validation request payload created successfully");
-        return validationRequest;
-    }
 
     /**
      * Method to generate JWT with the given payload.
@@ -149,41 +77,6 @@ public class DOMSEnforcementUtils {
     }
 
     /**
-     * Method to check whether the given string is a valid JWT token.
-     *
-     * @param jwtString JWT token string
-     * @return true if the given string is a valid JWT token, false otherwise
-     */
-    private static boolean isValidJWTToken(String jwtString) {
-
-        String[] jwtPart = jwtString.split("\\.");
-        if (jwtPart.length != 3) {
-            return false;
-        }
-        try {
-            decodeBase64(jwtPart[0]);
-            decodeBase64(jwtPart[1]);
-        } catch (UnsupportedEncodingException | JSONException | IllegalArgumentException e) {
-            log.error("Failed to decode the JWT token. %s", e);
-            return false;
-        }
-        return true;
-    }
-
-    /**
-     * Method to decode the base64 encoded JSON payload.
-     *
-     * @param payload base64 encoded payload
-     * @return Decoded JSON Object
-     * @throws UnsupportedEncodingException When encoding is not UTF-8
-     */
-    private static JSONObject decodeBase64(String payload) throws UnsupportedEncodingException {
-
-        return new JSONObject(new String(java.util.Base64.getDecoder().decode(payload),
-                String.valueOf(StandardCharsets.UTF_8)));
-    }
-
-    /**
      * Decode JWT payload into JSONObject (without validating signature).
      *
      * @param jwt JWT string
@@ -194,7 +87,7 @@ public class DOMSEnforcementUtils {
     public static JSONObject decodeJWT(String jwt)
             throws ParseException, JSONException {
 
-        if (jwt == null || jwt.isEmpty()) {
+        if (StringUtils.isBlank(jwt)) {
             throw new ParseException("JWT is null or empty", 0);
         }
 
@@ -214,6 +107,65 @@ public class DOMSEnforcementUtils {
             log.error("Failed to Base64URL decode JWT payload", e);
             throw new ParseException("Failed to decode JWT payload", 0);
         }
+    }
+
+    /**
+     * Call the blocked accounts service and return the blocked account IDs.
+     *
+     * @param accountIds set of account IDs to check
+     * @param blockedAccountsApi blocked accounts API endpoint
+     * @param basicAuthBase64 Base64-encoded Basic Auth credentials
+     * @return set of blocked account IDs
+     */
+    public static Set<String> fetchBlockedAccountsFromService(
+            Set<String> accountIds, String blockedAccountsApi, String basicAuthBase64) {
+
+        Set<String> blockedAccounts = new HashSet<>();
+
+        try {
+            JSONObject requestJson = new JSONObject();
+            requestJson.put(DOMSEnforcementConstants.ACCOUNT_IDS_TAG, new JSONArray(accountIds));
+
+            HttpClient client = HttpClient.newBuilder()
+                    .connectTimeout(Duration.ofMillis(3000))
+                    .build();
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
+                    .uri(URI.create(blockedAccountsApi))
+                    .timeout(Duration.ofMillis(3000))
+                    .header(DOMSEnforcementConstants.CONTENT_TYPE_TAG, DOMSEnforcementConstants.JSON_CONTENT_TYPE)
+                    .POST(HttpRequest.BodyPublishers.ofString(requestJson.toString(), StandardCharsets.UTF_8));
+
+            if (StringUtils.isNotBlank(basicAuthBase64)) {
+                requestBuilder.header(DOMSEnforcementConstants.AUTH_HEADER,
+                        DOMSEnforcementConstants.BASIC_TAG + basicAuthBase64);
+            } else {
+                log.warn("[DOMS] Basic Auth property not set, request for fetching blocked accounts may fail");
+            }
+
+            HttpRequest request = requestBuilder.build();
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+
+            if (response.statusCode() == 200) {
+                JSONObject responseJson = new JSONObject(response.body());
+                JSONArray blockedArray =
+                        responseJson.optJSONArray(DOMSEnforcementConstants.BLOCKED_ACCOUNT_IDS_TAG);
+
+                if (blockedArray != null) {
+                    for (int i = 0; i < blockedArray.length(); i++) {
+                        blockedAccounts.add(blockedArray.getString(i));
+                    }
+                }
+            } else {
+                log.warn("Blocked accounts service returned HTTP " + response.statusCode());
+            }
+
+        } catch (IOException | InterruptedException e) {
+            log.error("[DOMS] Error calling blocked accounts service", e);
+        }
+
+        return blockedAccounts;
     }
 
 }

@@ -27,7 +27,8 @@ public class ConfigurableProperties {
             "services/bankaccounts/bankaccountservice/sharable-accounts";
     public static final String CDS_HEADER_HOLDER_IDENTIFIER = "HID";
     public static final String ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL = "true";
-    public static final String ACCOUNT_METADATA_DATASOURCE_JNDI_NAME = "jdbc/ACCOUNT_METADATA_DB";
 
-
+    public static final String ACCOUNT_METADATA_WEBAPP_BASE_URL = "http://localhost:9766/ob/cds/account-metadata";
+    public static final String ACCOUNT_METADATA_WEBAPP_USERNAME = "is_admin@wso2.com";
+    public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD = "wso2123";
 }

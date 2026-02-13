@@ -32,6 +32,10 @@ public class CommonConstants {
     public static final String CHAR_SET = "UTF-8";
     public static final String ACCEPT_HEADER_NAME = "Accept";
     public static final String ACCEPT_HEADER_VALUE = "application/json";
+    public static final String ACCEPT_CONTENT_NAME = "Content-Type";
+    public static final String ACCEPT_CONTENT_VALUE_JSON = "application/json";
+    public static final String AUTH_HEADER = "Authorization";
+    public static final String BASIC_TAG = "Basic ";
     public static final String IS_SHARING_DURATION_UPDATED = "isSharingDurationUpdated";
     public static final String IS_CONSENT_AMENDMENT = "isConsentAmendment";
     public static final String OPENID_SCOPE = "openid";
@@ -45,6 +49,7 @@ public class CommonConstants {
     public static final String SHARING_DURATION = "sharing_duration";
     public static final String EXPIRATION_DATE_TIME = "expirationDateTime";
     public static final String SHARING_DURATION_VALUE = "sharing_duration_value";
+    public static final String SHARING_DURATION_DISPLAY_VALUE = "Sharing Period";
     public static final String CDR_ARRANGEMENT_ID = "cdr_arrangement_id";
     public static final String ID_TOKEN = "id_token";
     public static final String ID_TOKEN_CLAIMS = "id_token_claims";
@@ -128,17 +133,27 @@ public class CommonConstants {
     public static final String AUTH_TYPE = "authorizationType";
 
     //Constants Related to Joint Accounts
-    public static final String DOMS_STATUS = "DISCLOSURE_OPTIONS_STATUS";
     public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
     public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
     public static final String IS_JOINT_ACCOUNT_RESPONSE = "isJointAccount";
-    public static final String IS_JOINT_ACCOUNT = "is_joint_account";
+    public static final String JOINT_ACCOUNT_INFO_TAG = "jointAccountinfo";
     public static final String LINKED_MEMBERS = "linkedMembers";
     public static final String AUTH_RESOURCE_TYPE_LINKED = "linkedMember";
-    public static final String PRIMARY_MEMBER = "primaryMember";
-    public static final String AUTH_RESOURCE_TYPE_PRIMARY = "primary_member";
+    public static final String MEMBER_ID_TAG = "memberId";
     public static final String DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME = "domsStatus";
+    public static final String JOINT_ACCOUNT_CONSENT_ELECTION_STATUS = "jointAccountConsentElectionStatus";
+    public static final String JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED = "UNAVAILABLE";
+    public static final String IS_JOINT_ACCOUNT_PRE_APPROVAL_TAG = "is_jointAccount_pre_approval";
 
-
+    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING = "Accounts Unavailable To Share:";
+    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING = "Why can't I share these accounts?";
+    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_TOOLTIP_DESCRIPTION =
+            "There are a range of reasons why certain accounts may not be available to share."   + "<br><br>" +
+            "For joint accounts, all account holders must elect to make the account available."  + "<br><br>" +
+            "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
+                    "Please contact your bank for more details.";
+    public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
+    public static final String DISCLOSURE_OPTIONS_GET_ENDPOINT = "/disclosure-options/get";
+    public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";
 
 }

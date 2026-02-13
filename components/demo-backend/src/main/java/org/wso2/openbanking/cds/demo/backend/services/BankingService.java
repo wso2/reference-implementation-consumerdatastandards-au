@@ -27,8 +27,6 @@ import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.cds.demo.backend.model.RequestAccountIds;
 
 import java.nio.charset.StandardCharsets;
@@ -54,9 +52,6 @@ public class BankingService {
     private static final String INTERACTION_ID_HEADER = "x-fapi-interaction-id";
     private static final String ACCOUNT_INFO_HEADER = "Account-Request-Information";
     private static JsonParser jsonParser = new JsonParser();
-
-    private static final Log log =
-            LogFactory.getLog(BankingService.class);
 
     @GET
     @Path("/accounts")
@@ -973,7 +968,6 @@ public class BankingService {
     }
 
     private static JSONObject getRequest(String json) throws ParseException {
-        log.info("request" + json);
         String[] splitString = json.split("\\.");
         String base64EncodedBody = splitString[1];
         String decodedString = new String(java.util.Base64.getDecoder()

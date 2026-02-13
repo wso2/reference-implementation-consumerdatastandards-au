@@ -24,12 +24,10 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.account.metadata.service.service.AccountMetadataServiceImpl;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
@@ -37,8 +35,12 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem;
 
 import java.time.OffsetDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -207,24 +209,17 @@ public class ConsentAuthorizeUtil {
         }
     }
 
-    private static boolean isJointAccountSelectable(String accountId) {
+    private static boolean isJointAccountElectable(JSONObject accountJson) {
 
-        try {
-            String domsStatus = AccountMetadataServiceImpl.getInstance()
-                    .getAccountMetadataByKey(
-                            accountId,
-                            CommonConstants.DOMS_STATUS
-                    );
-            // Set false if DOMS status is no-sharing.
-            return !CommonConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(domsStatus);
+        // Safety: property may not exist or may not be a string
+        String electionStatus = accountJson.optString(
+                CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS,
+                ""
+        );
 
-        } catch (AccountMetadataException e) {
-            log.error("Failed to retrieve DOMS status for accountId={}");
-            // Fail-safe: do NOT disclose
-            return false;
-        }
+        return !CommonConstants.JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED
+                .equalsIgnoreCase(electionStatus);
     }
-
     /**
      * Method to validate and append consumer object to response.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
@@ -238,6 +233,7 @@ public class ConsentAuthorizeUtil {
                 new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData();
         SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData =
                 new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData();
+
         try {
 
             String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;
@@ -275,40 +271,49 @@ public class ConsentAuthorizeUtil {
                     String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
 
                     if (accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false)) {
-                        boolean isSelectable = isJointAccountSelectable(accountId);
-                        if (isSelectable) {
+
+                        boolean isJointAccountElectable = isJointAccountElectable(accountJson);
+                        if (isJointAccountElectable) {
                             List<String> linkedMembers = new ArrayList<>();
 
                             // Adding joint accounts info as addiotional properties
-                            if (accountJson.has("jointAccountinfo")) {
-                                JSONObject jointInfo = accountJson.getJSONObject("jointAccountinfo");
-                                JSONArray linkedMemberArray = jointInfo.optJSONArray("linkedMember");
+                            if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
+                                JSONObject jointInfo = accountJson.getJSONObject(CommonConstants.JOINT_ACCOUNT_INFO_TAG);
+                                JSONArray linkedMemberArray = jointInfo.optJSONArray(CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
 
                                 if (linkedMemberArray != null) {
                                     for (int j = 0; j < linkedMemberArray.length(); j++) {
                                         JSONObject memberObj = linkedMemberArray.getJSONObject(j);
-                                        linkedMembers.add(memberObj.optString("memberId"));
+                                        linkedMembers.add(memberObj.optString(CommonConstants.MEMBER_ID_TAG));
                                     }
                                 }
                             }
-                            account.setAdditionalProperty("linkedMembers", linkedMembers);
-                            account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
+                            account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
+                            account.setAdditionalProperty(CommonConstants.IS_JOINT_ACCOUNT_PRE_APPROVAL_TAG,
+                                    isJointAccountElectable);
+                            account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME)
+                                    + "<br>" + getDisplayableAccountNumber(accountId));
                             accountList.add(account);
+
                         } else {
+
                             Map<String, Object> blockedAccountMap = new HashMap<>();
-                            blockedAccountMap.put("accountId", accountId);
-                            blockedAccountMap.put("displayName", accountJson.getString(CommonConstants.DISPLAY_NAME));
+                            blockedAccountMap.put(CommonConstants.ACCOUNT_ID, accountId);
+                            blockedAccountMap.put(CommonConstants.DISPLAY_NAME, accountJson.getString(CommonConstants.DISPLAY_NAME)
+                                    + "<br>" + getDisplayableAccountNumber(accountId));
 
                             blockedAccountsList.add(blockedAccountMap);
                         }
                     } else {
-                        account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
+                        account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME)
+                                + "<br>" + getDisplayableAccountNumber(accountId));
                         accountList.add(account);
                     }
                 }
-                displayData.setDisplayData(blockedAccountsList);
 
+                displayData = setDisplayData(blockedAccountsList);
                 consumerData.setAccounts(accountList);
+
             } else {
                 log.error("Sharable accounts endpoint is not configured properly");
                 throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
@@ -318,9 +323,69 @@ public class ConsentAuthorizeUtil {
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
 
-        ConsumerAndDisplayData consumerAndDisplayData = new ConsumerAndDisplayData(consumerData, displayData);
-        return consumerAndDisplayData;
+        return new ConsumerAndDisplayData(consumerData, displayData);
     }
+
+    /**
+     * Account number masking is performed in this method. Logic is executed when the account ID length is 2 or higher.
+     * The logic is handled like this because the specification doesn't mention the exact length of an account ID.
+     * <p>
+     * If the account ID length is less than 4, mask all but the last character.
+     * If the account ID length is exactly 4, mask all but the last two characters.
+     * If the length is greater than 4, mask all but the last 4 characters.
+     *
+     * @param accountId plain account id.
+     * @return account number in the displayable masked format.
+     */
+    protected static String getDisplayableAccountNumber(String accountId) {
+
+        int accountIdLength = accountId.length();
+
+        if (accountIdLength > 1) {
+            if (accountIdLength < 4) {
+                // If the length is less than 4, mask all but the last character
+                String maskedPart = StringUtils.repeat('*', accountIdLength - 1);
+                String visiblePart = StringUtils.right(accountId, 1);
+                return maskedPart + visiblePart;
+            } else if (accountIdLength == 4) {
+                // If the length is exactly 4, mask all but the last two characters
+                return "**" + StringUtils.right(accountId, 2);
+            } else {
+                // If the length is greater than 4, mask all but the last 4 characters
+                String maskedPart = StringUtils.repeat('*', accountIdLength - 4);
+                String visiblePart = StringUtils.right(accountId, 4);
+                return maskedPart + visiblePart;
+            }
+        }
+        return accountId;
+    }
+
+    private static SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData setDisplayData(
+            List<Map<String, Object>> blockedAccountsList) {
+
+        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData =
+                new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData();
+
+        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem item =
+            new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem();
+
+        // Always initialize the list to avoid nulls in the UI layer
+        List<Map<String, Object>> safeList = (blockedAccountsList != null)
+                ? blockedAccountsList
+                : Collections.emptyList();
+
+        item.setDisplayList(safeList);
+
+        // Set UI metadata
+        item.setHeading(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING);
+        item.setSubHeading(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING);
+        item.setDescription(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_TOOLTIP_DESCRIPTION);
+
+        displayData.addItem(item);
+
+        return displayData;
+    }
+
 
     /**
      * Convert the scope string to permission enum list.
@@ -437,12 +502,59 @@ public class ConsentAuthorizeUtil {
 
         Map<String, List<String>> basicConsentData = new HashMap<>();
 
-        basicConsentData.put(CommonConstants.EXPIRATION_DATE_TITLE, Collections.singletonList(expirationDate));
+        basicConsentData.put(CommonConstants.EXPIRATION_DATE_TITLE, Collections.singletonList(
+                formatExpirationDate(expirationDate)));
         basicConsentData.put(CommonConstants.PERMISSION_TITLE, permissionsList);
-        basicConsentData.put(CommonConstants.SHARING_DURATION_VALUE,
-                Collections.singletonList(sharingDurationValue));
+        basicConsentData.put(CommonConstants.SHARING_DURATION_DISPLAY_VALUE,
+                Collections.singletonList(
+                        buildSharingDurationMessage(
+                                Long.parseLong(sharingDurationValue))
+                ));
 
         return basicConsentData;
+    }
+
+    /**
+     * Formats an ISO-8601 expiration date string into a user-friendly format.
+     * Example:
+     * Input  -> 2026-02-13T10:15:30Z
+     * Output -> 13 Feb 2026, 10:15 AM (based on system timezone)
+     *
+     * @param expirationDate ISO-8601 formatted date string
+     * @return formatted date string in "dd MMM yyyy, hh:mm a" format
+     */
+    private static String formatExpirationDate(String expirationDate) {
+
+        // Parse the ISO date string into an Instant (UTC timestamp)
+        Instant instant = Instant.parse(expirationDate);
+
+        // Formatter with readable date/time pattern,
+        // using the system default timezone for display
+        DateTimeFormatter formatter =
+                DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")
+                        .withZone(ZoneId.systemDefault());
+
+        // Format the instant into a human-readable date string
+        return formatter.format(instant);
+    }
+
+
+    /**
+     * Builds a user-friendly message describing how long data sharing
+     * will continue based on a duration given in seconds.
+     * Converts seconds → hours and handles singular/plural wording.
+     *
+     * @param seconds duration in seconds
+     * @return message indicating sharing duration in hours
+     */
+    private static String buildSharingDurationMessage(long seconds) {
+
+        // Convert seconds into hours (integer division)
+        long hours = seconds / 3600;
+
+        // Construct message with correct pluralization
+        return "Your data will be shared on-going basis for "
+                + hours + " hour" + (hours == 1 ? "" : "s") + ".";
     }
 
     /**
@@ -473,4 +585,5 @@ public class ConsentAuthorizeUtil {
 
         return dataMap;
     }
+
 }

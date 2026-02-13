@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app version="2.5" xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+                             http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+
+  <description>WSO2 Open Banking - Account Metadata API</description>
+  <display-name>WSO2 Open Banking - Account Metadata API</display-name>
+
+  <!-- Spring Context -->
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>WEB-INF/beans.xml</param-value>
+  </context-param>
+
+  <!-- Security Filter -->
+  <filter>
+    <filter-name>HttpHeaderSecurityFilter</filter-name>
+    <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+    <init-param>
+      <param-name>hstsEnabled</param-name>
+      <param-value>false</param-value>
+    </init-param>
+  </filter>
+
+  <filter-mapping>
+    <filter-name>HttpHeaderSecurityFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+
+  <!-- CXF Servlet -->
+  <servlet>
+    <servlet-name>AccountMetadataCXFServlet</servlet-name>
+    <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
+
+    <!-- Optional service list stylesheet -->
+    <init-param>
+      <param-name>service-list-stylesheet</param-name>
+      <param-value>servicelist.css</param-value>
+    </init-param>
+
+    <!-- Jersey Multipart support -->
+    <init-param>
+      <param-name>jersey.config.server.provider.classnames</param-name>
+      <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
+    </init-param>
+
+    <!-- CXF service classes -->
+    <init-param>
+      <param-name>jaxrs.serviceClasses</param-name>
+      <param-value>
+        org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.api.DisclosureOptionsManagementApi,
+        org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.api.DOMSAccountEnforcementApi
+      </param-value>
+    </init-param>
+
+    <!-- JSON Provider -->
+    <init-param>
+      <param-name>jaxrs.providers</param-name>
+      <param-value>com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider</param-value>
+    </init-param>
+
+    <load-on-startup>1</load-on-startup>
+  </servlet>
+
+  <servlet-mapping>
+    <servlet-name>AccountMetadataCXFServlet</servlet-name>
+    <url-pattern>/*</url-pattern>
+  </servlet-mapping>
+
+  <!-- Session Config -->
+  <session-config>
+    <session-timeout>60</session-timeout>
+  </session-config>
+
+</web-app>

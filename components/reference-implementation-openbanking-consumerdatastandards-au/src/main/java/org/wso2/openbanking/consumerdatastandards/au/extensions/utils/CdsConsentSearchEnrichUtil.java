@@ -20,9 +20,7 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.account.metadata.service.service.AccountMetadataServiceImpl;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
 
 import java.util.List;
@@ -57,11 +55,30 @@ public class CdsConsentSearchEnrichUtil {
         List<Map<String, Object>> searchResultList =
                 (List<Map<String, Object>>) enrichedObj;
 
-        for (Map<String, Object> consent : searchResultList) {
+        // Collect all joint account IDs from all consents
+        List<String> allJointAccountIds = new java.util.ArrayList<>();
 
-            // Extract joint account authorization IDs
+        for (Map<String, Object> consent : searchResultList) {
             List<String> jointAccountIDs = extractJointAccountIds(consent);
 
+            for (String accountId : jointAccountIDs) {
+                if (!allJointAccountIds.contains(accountId)) {
+                    allJointAccountIds.add(accountId);
+                }
+            }
+        }
+
+        // Fetch DOMS statuses for all joint accounts in a single batch call
+        Map<String, String> domsStatusMap = new java.util.HashMap<>();
+        if (!allJointAccountIds.isEmpty()) {
+            Map<String, String> fetchedStatusMap = AccountMetadataUtil.getDOMSStatusesForAccounts(allJointAccountIds);
+            if (fetchedStatusMap != null) {
+                domsStatusMap.putAll(fetchedStatusMap);
+            }
+        }
+
+        // Enrich the consent mappings with DOMS status
+        for (Map<String, Object> consent : searchResultList) {
             Object consentMappingsObj = consent.get(CommonConstants.CONSENT_MAPPING_RESOURCES);
             if (!(consentMappingsObj instanceof List)) {
                 continue;
@@ -73,21 +90,20 @@ public class CdsConsentSearchEnrichUtil {
             for (Map<String, Object> mappingItem : mappingList) {
 
                 String accountId = (String) mappingItem.get(CommonConstants.ACCOUNT_ID);
-                String authorizationId = (String) mappingItem.get(CommonConstants.AUTHORIZATION_ID);
-
-                if (accountId == null || authorizationId == null) {
-                    continue;
-                }
 
                 // Only add DOMS status if mapping belongs to a joint account
-                if (jointAccountIDs.contains(accountId)) {
-                    String domsStatus = getDOMSStatus(accountId);
+                if (allJointAccountIds.contains(accountId)) {
+                    String domsStatus = domsStatusMap.get(accountId);
 
                     if (domsStatus == null) {
                         domsStatus = CommonConstants.DOMS_STATUS_PRE_APPROVAL;
                     }
                     mappingItem.put(CommonConstants.DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME, domsStatus);
-                    log.debug("Added domsStatus=" + domsStatus + " for joint accountId=" + accountId);
+
+                    if(log.isDebugEnabled()){
+                        log.debug("Added domsStatus=" + domsStatus + " for joint accountId=" + accountId);
+                    }
+
                 }
             }
         }
@@ -161,25 +177,6 @@ public class CdsConsentSearchEnrichUtil {
      * Check if authorization type is linkedMember.
      */
     private static boolean isJointAccount(String authType) {
-        if (authType == null) {
-            return false;
-        }
-        return authType.equalsIgnoreCase("linkedMember");
-    }
-
-    /**
-     * Get the DOMS status of the account from AccountMetadataService.
-     *
-     * @param accountId account ID
-     * @return DOMS status string, e.g., "pre-approval" or "no-sharing"
-     */
-    private static String getDOMSStatus(String accountId) {
-        try {
-            return AccountMetadataServiceImpl.getInstance()
-                    .getAccountMetadataByKey(accountId, CommonConstants.DOMS_STATUS);
-        } catch (AccountMetadataException e) {
-            log.error("Failed to retrieve DOMS status for accountId=" + accountId, e);
-            return null;
-        }
+        return authType.equalsIgnoreCase(CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
     }
 }

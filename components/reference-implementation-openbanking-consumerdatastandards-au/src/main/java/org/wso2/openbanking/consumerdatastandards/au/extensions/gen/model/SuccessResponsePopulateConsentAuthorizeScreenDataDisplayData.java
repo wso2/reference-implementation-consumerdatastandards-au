@@ -1,11 +1,12 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 import javax.validation.Valid;
@@ -22,51 +23,46 @@ import javax.validation.Valid;
 )
 public class SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData {
 
-  /**
-   * UI display data list.
-   *
-   * Example:
-   * [
-   *   { "accountId": "6500001232", "displayName": "joint_account_1" }
-   * ]
-   */
-  private List<@Valid Map<String, Object>> displayData = new ArrayList<>();
+  @ApiModelProperty(value = "Display data sections for the authorization UI")
+  @JsonProperty("items")
+  private List<@Valid SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem> items =
+          new ArrayList<>();
 
-  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData() {
+  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData() {}
+
+  public List<SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem> getItems() {
+    return items;
   }
 
-  public List<Map<String, Object>> getDisplayData() {
-    return displayData;
+  public void setItems(
+          List<SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem> items) {
+    this.items = items;
   }
 
-  public void setDisplayData(List<Map<String, Object>> displayData) {
-    this.displayData = displayData;
-  }
-
-  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData
-  addDisplayDataItem(Map<String, Object> item) {
-    this.displayData.add(item);
+  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData addItem(
+          SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem item) {
+    this.items.add(item);
     return this;
   }
 
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
-    SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData that =
-            (SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData) o;
-    return Objects.equals(displayData, that.displayData);
+    if (!(o instanceof SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData)) return false;
+        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData that =
+          (SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData) o;
+        return Objects.equals(items, that.items);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(displayData);
+    return Objects.hash(items);
   }
 
   @Override
   public String toString() {
-    return "class SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData {\n" +
-            "    displayData: " + displayData + "\n" +
-            "}";
+        return "class SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData {\n" +
+          "    items: " + items + "\n" +
+          "}";
   }
 }

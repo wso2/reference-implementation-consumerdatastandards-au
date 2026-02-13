@@ -29,12 +29,12 @@ public class DOMSEnforcementConstants {
     public static final String COLON = ":";
     public static final String CONTENT_TYPE_TAG = "Content-Type";
     public static final String JWT_CONTENT_TYPE = "application/jwt";
+    public static final String JSON_CONTENT_TYPE = "application/json";
     public static final String API_KEY_VALIDATOR_USERNAME = "APIKeyValidator.Username";
     public static final String API_KEY_VALIDATOR_PASSWORD = "APIKeyValidator.Password";
     public static final String INFO_HEADER_TAG = "Account-Request-Information";
     public static final String IS_VALID = "isValid";
-    public static final String MODIFIED_PAYLOAD = "modifiedPayload";
-    public static final String CONSENT_INFO = "consentInformation";
+
     // Configs
     public static final String KEYSTORE_LOCATION_TAG = "Security.InternalKeyStore.Location";
     public static final String KEYSTORE_PASSWORD_TAG = "Security.InternalKeyStore.Password";
@@ -52,6 +52,12 @@ public class DOMSEnforcementConstants {
     public static final String HTTP_METHOD_TAG = "httpMethod";
     public static final String HEADERS_TAG = "headers";
     public static final String BODY_TAG = "body";
+    public static final String AUTH_RESOURCES_TAG = "authorizationResources";
+    public static final String CONSENT_MAPPING_RESOURCES_TAG = "consentMappingResources";
+    public static final String AUTH_TYPE_TAG = "authorizationType";
+    public static final String AUTH_ID_TAG = "authorizationId";
+    public static final String ACCELERATOR_ACCOUNT_ID_TAG = "account_id";
+    public static final String CDS_ACCOUNT_ID_TAG = "accountId";
 
     // Message context properties
     public static final String API_ELECTED_RESOURCE = "API_ELECTED_RESOURCE";
@@ -66,5 +72,10 @@ public class DOMSEnforcementConstants {
     public static final String ERROR_TITLE = "ERROR_TITLE";
     public static final String ERROR_DESCRIPTION = "ERROR_DESCRIPTION";
     public static final String CUSTOM_HTTP_SC = "CUSTOM_HTTP_SC";
+
+    // Constants related to DOMS
+    public static final String BLOCKED_ACCOUNT_IDS_TAG = "blockedAccountIds";
+    public static final String ACCOUNT_IDS_TAG = "accountIds";
+    public static final String LINKED_MEMBER_TAG = "linkedMember";
 
 }
