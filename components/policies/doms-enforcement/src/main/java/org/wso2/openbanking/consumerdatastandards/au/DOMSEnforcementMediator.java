@@ -28,6 +28,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
 import org.wso2.openbanking.consumerdatastandards.au.utils.DOMSEnforcementUtils;
+import org.wso2.openbanking.consumerdatastandards.au.utils.Generated;
 
 import java.text.ParseException;
 import java.util.HashSet;
@@ -154,13 +155,26 @@ public class DOMSEnforcementMediator extends AbstractMediator {
             log.debug("DOMS enforcement completed successfully");
 
         } catch (ParseException | JOSEException e) {
-            log.error("Error during DOMS enforcement mediation", e);
+            String errorDescription = "Error during DOMS enforcement mediation";
+            log.error(errorDescription, e);
+            setErrorResponseProperties(messageContext, "Internal Server Error",
+                    errorDescription, "500");
         }
 
         return true;
     }
     protected JSONObject decodeJWT(String accountHeaderJwt) throws ParseException {
         return DOMSEnforcementUtils.decodeJWT(accountHeaderJwt);
+    }
+
+    @Generated(message = "No testable logic")
+    private static void setErrorResponseProperties(MessageContext messageContext, String errorCode,
+                                                   String errorDescription, String httpStatusCode) {
+
+        messageContext.setProperty(DOMSEnforcementConstants.ERROR_CODE, errorCode);
+        messageContext.setProperty(DOMSEnforcementConstants.ERROR_TITLE, "CDS DOMS Policy Error");
+        messageContext.setProperty(DOMSEnforcementConstants.ERROR_DESCRIPTION, errorDescription);
+        messageContext.setProperty(DOMSEnforcementConstants.CUSTOM_HTTP_SC, httpStatusCode);
     }
 
     protected String generateJWT(String payload) throws ParseException, JOSEException {
