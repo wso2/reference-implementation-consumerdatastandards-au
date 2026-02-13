@@ -19,14 +19,13 @@ package org.wso2.openbanking.consumerdatastandards.service.dao;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.openbanking.consumerdatastandards.service.dao.queries.AccountMetadataDBQueries;
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.service.dao.queries.AccountMetadataDBQueries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Set;
 
 public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
 

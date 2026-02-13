@@ -21,10 +21,10 @@ package org.wso2.openbanking.consumerdatastandards.service.service;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.service.dao.AccountMetadataDAOImpl;
 import org.wso2.openbanking.consumerdatastandards.service.dao.queries.AccountMetadataDBQueriesMySQLImpl;
-import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.utils.connection.provider.ConnectionProvider;
 import org.wso2.openbanking.consumerdatastandards.utils.connection.provider.DatabaseConnectionProvider;
 

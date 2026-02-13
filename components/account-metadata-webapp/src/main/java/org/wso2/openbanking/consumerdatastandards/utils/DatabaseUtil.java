@@ -22,11 +22,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.openbanking.consumerdatastandards.configurations.ConfigurableProperties;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import java.sql.Connection;
 import javax.sql.DataSource;
-import java.sql.SQLException;
 
 /**
  * Utility class for connecting to Account Metadata Database.

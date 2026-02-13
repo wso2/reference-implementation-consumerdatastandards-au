@@ -18,10 +18,10 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
-import com.google.gson.JsonElement;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -54,7 +54,7 @@ public class AccountMetadataUtil {
     private static final Log log = LogFactory.getLog(AccountMetadataUtil.class);
 
     /**
-     * Private constructor to prevent instantiation
+     * Private constructor to prevent instantiation.
      */
     private AccountMetadataUtil() {
     }

@@ -23,7 +23,7 @@ import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 
 /**
- * Generic API response wrapper for JSON responses
+ * Generic API response wrapper for JSON responses.
  */
 @ApiModel(description = "API response object")
 public class ApiResponse {

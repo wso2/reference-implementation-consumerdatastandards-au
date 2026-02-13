@@ -100,7 +100,7 @@ public class CdsConsentSearchEnrichUtil {
                     }
                     mappingItem.put(CommonConstants.DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME, domsStatus);
 
-                    if(log.isDebugEnabled()){
+                    if (log.isDebugEnabled()) {
                         log.debug("Added domsStatus=" + domsStatus + " for joint accountId=" + accountId);
                     }
 

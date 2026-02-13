@@ -37,11 +37,11 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem;
 
-import java.time.OffsetDateTime;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -278,8 +278,10 @@ public class ConsentAuthorizeUtil {
 
                             // Adding joint accounts info as addiotional properties
                             if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
-                                JSONObject jointInfo = accountJson.getJSONObject(CommonConstants.JOINT_ACCOUNT_INFO_TAG);
-                                JSONArray linkedMemberArray = jointInfo.optJSONArray(CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
+                                JSONObject jointInfo = accountJson.getJSONObject(
+                                        CommonConstants.JOINT_ACCOUNT_INFO_TAG);
+                                JSONArray linkedMemberArray = jointInfo.optJSONArray(
+                                        CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
 
                                 if (linkedMemberArray != null) {
                                     for (int j = 0; j < linkedMemberArray.length(); j++) {
@@ -290,7 +292,7 @@ public class ConsentAuthorizeUtil {
                             }
                             account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
                             account.setAdditionalProperty(CommonConstants.IS_JOINT_ACCOUNT_PRE_APPROVAL_TAG,
-                                    isJointAccountElectable);
+                                    true);
                             account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME)
                                     + "<br>" + getDisplayableAccountNumber(accountId));
                             accountList.add(account);
@@ -299,7 +301,8 @@ public class ConsentAuthorizeUtil {
 
                             Map<String, Object> blockedAccountMap = new HashMap<>();
                             blockedAccountMap.put(CommonConstants.ACCOUNT_ID, accountId);
-                            blockedAccountMap.put(CommonConstants.DISPLAY_NAME, accountJson.getString(CommonConstants.DISPLAY_NAME)
+                            blockedAccountMap.put(
+                                    CommonConstants.DISPLAY_NAME, accountJson.getString(CommonConstants.DISPLAY_NAME)
                                     + "<br>" + getDisplayableAccountNumber(accountId));
 
                             blockedAccountsList.add(blockedAccountMap);
