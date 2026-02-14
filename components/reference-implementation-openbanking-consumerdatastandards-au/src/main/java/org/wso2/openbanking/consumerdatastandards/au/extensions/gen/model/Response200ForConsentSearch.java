@@ -20,6 +20,7 @@ public class Response200ForConsentSearch   {
   private String responseId;
   public enum StatusEnum {
 
+    SUCCESS(String.valueOf("SUCCESS")),
     ERROR(String.valueOf("ERROR"));
 
 

@@ -197,7 +197,8 @@ public class CommonConsentExtensionUtil {
 
     /**
      * Get epoch seconds from the given expiration date time string.
-     * @param expirationDateTime the expiration date/time as a string, either in ISO 8601 format or as epoch milliseconds
+     * @param expirationDateTime the expiration date/time as a string,
+     *                           either in ISO 8601 format or as epoch milliseconds
      * @return the number of seconds since the epoch represented by the expirationDateTime
      */
     public static long getEpochSeconds(String expirationDateTime) {

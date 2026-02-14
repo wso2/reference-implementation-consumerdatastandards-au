@@ -13,12 +13,12 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
-
 @JsonTypeName("SuccessResponsePopulateConsentAuthorizeScreenData")
 @javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
 public class SuccessResponsePopulateConsentAuthorizeScreenData   {
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData;
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData;
+  private SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData;
 
   public SuccessResponsePopulateConsentAuthorizeScreenData() {
   }
@@ -30,7 +30,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "")
   @JsonProperty("consentData")
   @Valid public SuccessResponsePopulateConsentAuthorizeScreenDataConsentData getConsentData() {
@@ -49,7 +49,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "")
   @JsonProperty("consumerData")
   @Valid public SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData getConsumerData() {
@@ -61,6 +61,26 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     this.consumerData = consumerData;
   }
 
+  public SuccessResponsePopulateConsentAuthorizeScreenData displayData(
+          SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData) {
+    this.displayData = displayData;
+    return this;
+  }
+
+  @ApiModelProperty(value = "UI related display data for the authorization screen")
+  @JsonProperty("displayData")
+  @Valid
+  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData getDisplayData() {
+    return displayData;
+  }
+
+  @JsonProperty("displayData")
+  public void setDisplayData(
+          SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData) {
+    this.displayData = displayData;
+  }
+
+  /* ================= equals / hashCode ================= */
 
   @Override
   public boolean equals(Object o) {
@@ -70,23 +90,27 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SuccessResponsePopulateConsentAuthorizeScreenData successResponsePopulateConsentAuthorizeScreenData = (SuccessResponsePopulateConsentAuthorizeScreenData) o;
-    return Objects.equals(this.consentData, successResponsePopulateConsentAuthorizeScreenData.consentData) &&
-        Objects.equals(this.consumerData, successResponsePopulateConsentAuthorizeScreenData.consumerData);
+    SuccessResponsePopulateConsentAuthorizeScreenData that =
+            (SuccessResponsePopulateConsentAuthorizeScreenData) o;
+    return Objects.equals(this.consentData, that.consentData) &&
+            Objects.equals(this.consumerData, that.consumerData) &&
+            Objects.equals(this.displayData, that.displayData);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(consentData, consumerData);
+    return Objects.hash(consentData, consumerData, displayData);
   }
+
+  /* ================= toString ================= */
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class SuccessResponsePopulateConsentAuthorizeScreenData {\n");
-    
     sb.append("    consentData: ").append(toIndentedString(consentData)).append("\n");
     sb.append("    consumerData: ").append(toIndentedString(consumerData)).append("\n");
+    sb.append("    displayData: ").append(toIndentedString(displayData)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -101,7 +125,6 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     }
     return o.toString().replace("\n", "\n    ");
   }
-
 
 }
 

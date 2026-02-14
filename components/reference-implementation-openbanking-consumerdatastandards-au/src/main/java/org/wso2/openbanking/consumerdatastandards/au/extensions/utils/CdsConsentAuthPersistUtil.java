@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2025-2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -39,9 +39,12 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.UserGrantedData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -113,6 +116,83 @@ public class CdsConsentAuthPersistUtil {
             authorizationResource.add(validateAndBuildAuthorizations(authResource, consentType, authStatus,
                     consumerInputData.getString("userId")));
 
+            Map<String, Set<String>> linkedMemberAccountMap = new HashMap<>();
+            Map<String, String> jointAccountDisclosureMap = new HashMap<>();
+
+            for (AuthorizedResourcesAuthorizedDataInner authorizedDataInner : authorizedDataInners) {
+                for (Account account : authorizedDataInner.getAccounts()) {
+
+                    Map<String, Object> additionalProps = account.getAdditionalProperties();
+                    if (additionalProps == null) {
+                        continue;
+                    }
+
+                    String accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(
+                            ConfigurableProperties.SHARABLE_ENDPOINT,
+                            account.getDisplayName().split("<br>")[0]
+                    );
+
+                    Object innerPropsObj = additionalProps.get(CommonConstants.ADDITIONAL_PROPERTIES);
+                    if (!(innerPropsObj instanceof Map)) {
+                        continue;
+                    }
+
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> innerProps = (Map<String, Object>) innerPropsObj;
+
+                    // Check for is_jointAccount_pre_approval property
+                    Object isJointAccountPreApprovalObj = innerProps.get("is_jointAccount_pre_approval");
+                    if (isJointAccountPreApprovalObj instanceof Boolean) {
+                        Boolean isJointAccountPreApproval = (Boolean) isJointAccountPreApprovalObj;
+                        String disclosureOption = isJointAccountPreApproval ? 
+                                CommonConstants.DOMS_STATUS_PRE_APPROVAL : 
+                                CommonConstants.DOMS_STATUS_NO_SHARING;
+                        jointAccountDisclosureMap.put(accountId, disclosureOption);
+
+                        if (log.isDebugEnabled()) {
+                            log.debug("Joint account found - accountId: " + accountId + 
+                                    ", disclosureOption: " + disclosureOption);
+                        }
+                    }
+
+                    Object linkedMembersObj = innerProps.get(CommonConstants.LINKED_MEMBERS);
+                    if (!(linkedMembersObj instanceof List)) {
+                        continue;
+                    }
+
+                    @SuppressWarnings("unchecked")
+                    List<String> linkedMembers = (List<String>) linkedMembersObj;
+
+                    for (String linkedMember : linkedMembers) {
+                        linkedMemberAccountMap
+                                .computeIfAbsent(linkedMember, k -> new HashSet<>())
+                                .add(accountId);
+                    }
+
+                }
+            }
+
+            // Create Authorizations for Linked Members
+            for (Map.Entry<String, Set<String>> entry : linkedMemberAccountMap.entrySet()) {
+                authorizationResource.add(getLinkedMemberAuthorization(entry));
+            }
+
+            // Add disclosure options for joint accounts
+            if (!jointAccountDisclosureMap.isEmpty()) {
+                for (Map.Entry<String, String> entry : jointAccountDisclosureMap.entrySet()) {
+                    String accountId = entry.getKey();
+                    String disclosureOption = entry.getValue();
+
+                    boolean success = AccountMetadataUtil.addDisclosureOption(
+                            List.of(accountId), disclosureOption);
+
+                    if (log.isDebugEnabled()) {
+                        log.debug("[DOMS] Disclosure option added for joint account - accountId: " + 
+                                accountId + ", status: " + (success ? "success" : "failed"));
+                    }
+                }
+            }
+
             //Convert expiration date time to validity time in seconds
             if (metadataObject != null) {
                 validityTime = getValidityTime(metadataObject);
@@ -144,12 +224,36 @@ public class CdsConsentAuthPersistUtil {
         }
     }
 
+    private static Authorization getLinkedMemberAuthorization(Map.Entry<String, Set<String>> entry) {
+        String linkedMemberUserId = entry.getKey();
+        Set<String> accountIds = entry.getValue();
+
+        Authorization linkedMemberAuthorization = new Authorization();
+        linkedMemberAuthorization.setUserId(linkedMemberUserId);
+        linkedMemberAuthorization.setType(CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
+        linkedMemberAuthorization.setStatus(CommonConstants.AUTHORIZED_STATUS);
+
+        List<Resource> linkedResources = new ArrayList<>();
+
+        for (String accountId : accountIds) {
+            Resource resource = new Resource();
+            resource.setAccountId(accountId);
+            resource.setPermission(CommonConstants.N_A);
+            resource.setStatus(CommonConstants.ACTIVE_MAPPING_STATUS);
+            linkedResources.add(resource);
+        }
+
+        linkedMemberAuthorization.setResources(linkedResources);
+        return linkedMemberAuthorization;
+    }
+
     /**
      * Method to retrieve account id from shareable endpoint and generate the authorisation resources.
      * @param authorizedDataInners List of permissions and accounts
      * @return List of Account Ids and it's Mapping
      */
-    private static List<Resource> validateAndGetResources(List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners) {
+    private static List<Resource> validateAndGetResources(
+            List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners) {
         List<Resource> resources = new ArrayList<>();
 
         String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;
@@ -164,7 +268,8 @@ public class CdsConsentAuthPersistUtil {
                 Resource resource = new Resource();
 
                 //Get Account_Id from Display Name
-                accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(accountsURL, account.getDisplayName());
+                accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(
+                        accountsURL, account.getDisplayName().split("<br>")[0]);
 
                 // Set properties from the individual 'account' and the outer 'authorizedDataInner'
                 resource.setAccountId(accountId);
