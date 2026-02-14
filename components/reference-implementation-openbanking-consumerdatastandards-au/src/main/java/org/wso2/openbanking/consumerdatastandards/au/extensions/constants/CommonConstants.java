@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2025-2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -153,7 +153,7 @@ public class CommonConstants {
             "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
                     "Please contact your bank for more details.";
     public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
-    public static final String DISCLOSURE_OPTIONS_GET_ENDPOINT = "/disclosure-options/get";
+    public static final String DISCLOSURE_OPTIONS_GET_ENDPOINT = "/disclosure-options/accounts-status";
     public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";
 
 }

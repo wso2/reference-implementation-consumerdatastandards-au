@@ -15,6 +15,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
 package org.wso2.openbanking.consumerdatastandards.service.dao;
 
 import org.slf4j.Logger;

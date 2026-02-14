@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
 @JsonTypeName("SuccessResponsePopulateConsentAuthorizeScreenData")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-01-21T11:56:41.865817100+05:30[Asia/Colombo]", comments = "Generator version: 7.19.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
 public class SuccessResponsePopulateConsentAuthorizeScreenData   {
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData;
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData;
@@ -115,6 +115,10 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     return sb.toString();
   }
 
+  /**
+   * Convert the given object to string with each line indented by 4 spaces
+   * (except the first line).
+   */
   private String toIndentedString(Object o) {
     if (o == null) {
       return "null";

@@ -98,7 +98,7 @@ public class DisclosureOptionsManagementApi {
     }
 
     @POST
-    @Path("/get")
+    @Path("/accounts-status")
     @Consumes({ "application/json" })
     @Produces({ "application/json" })
     @ApiOperation(

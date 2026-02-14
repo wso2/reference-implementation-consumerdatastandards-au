@@ -15,7 +15,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
 @JsonTypeName("SuccessResponsePopulateConsentAuthorizeScreen")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-01-21T11:56:41.865817100+05:30[Asia/Colombo]", comments = "Generator version: 7.19.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
 public class SuccessResponsePopulateConsentAuthorizeScreen   {
   private String responseId;
   public enum StatusEnum {
