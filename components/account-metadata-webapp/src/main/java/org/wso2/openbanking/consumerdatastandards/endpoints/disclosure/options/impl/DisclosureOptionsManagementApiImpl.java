@@ -31,6 +31,7 @@ import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadat
 import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadataServiceImpl;
 
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 public class DisclosureOptionsManagementApiImpl {
 
@@ -94,8 +95,8 @@ public class DisclosureOptionsManagementApiImpl {
                     .build();
         }
 
-        try {
-            java.util.Map<String, String> result = new java.util.HashMap<>();
+
+            Map<String, String> result = new java.util.HashMap<>();
             for (String acc : accountIds) {
                 if (StringUtils.isBlank(acc)) {
                     result.put(acc, null);
@@ -117,13 +118,6 @@ public class DisclosureOptionsManagementApiImpl {
 
             return Response.ok().entity(resp).build();
 
-        } catch (RuntimeException e) {
-            log.error("[DOMS] Failed to retrieve disclosure options for multiple accounts", e);
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ApiResponse(
-                            "error", "Failed to retrieve disclosure options: " + e.getMessage()))
-                    .build();
-        }
     }
 
     public static Response addDisclosureOptions(DisclosureOptionsUpdateRequest request) {
