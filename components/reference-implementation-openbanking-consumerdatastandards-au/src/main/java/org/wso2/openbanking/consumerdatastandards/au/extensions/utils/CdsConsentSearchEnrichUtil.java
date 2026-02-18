@@ -18,11 +18,14 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -56,7 +59,7 @@ public class CdsConsentSearchEnrichUtil {
                 (List<Map<String, Object>>) enrichedObj;
 
         // Collect all joint account IDs from all consents
-        List<String> allJointAccountIds = new java.util.ArrayList<>();
+        List<String> allJointAccountIds = new ArrayList<>();
 
         for (Map<String, Object> consent : searchResultList) {
             List<String> jointAccountIDs = extractJointAccountIds(consent);
@@ -93,16 +96,9 @@ public class CdsConsentSearchEnrichUtil {
 
                 // Only add DOMS status if mapping belongs to a joint account
                 if (allJointAccountIds.contains(accountId)) {
-                    String domsStatus = domsStatusMap.get(accountId);
 
-                    if (domsStatus == null) {
-                        domsStatus = CommonConstants.DOMS_STATUS_PRE_APPROVAL;
-                    }
-                    mappingItem.put(CommonConstants.DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME, domsStatus);
-
-                    if (log.isDebugEnabled()) {
-                        log.debug("Added domsStatus=" + domsStatus + " for joint accountId=" + accountId);
-                    }
+                    mappingItem.put(CommonConstants.DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME,
+                            domsStatusMap.get(accountId));
 
                 }
             }
@@ -117,31 +113,22 @@ public class CdsConsentSearchEnrichUtil {
     @SuppressWarnings("unchecked")
     private static List<String> extractJointAccountIds(Map<String, Object> consent) {
 
-        List<String> jointAccountIds = new java.util.ArrayList<>();
-        java.util.HashSet<Object> linkedMemberAuthIds = new java.util.HashSet<>();
+        List<String> jointAccountIds = new ArrayList<>();
+        HashSet<Object> linkedMemberAuthIds = new HashSet<>();
 
         // Collect linkedMember authorizationIds
         Object authResourcesObj = consent.get(CommonConstants.AUTHORIZATION_RESOURCES);
         if (authResourcesObj instanceof List) {
 
-            List<Map<String, Object>> authResourcesList =
-                    (List<Map<String, Object>>) authResourcesObj;
-
-            for (Map<String, Object> authResource : authResourcesList) {
-
-                String authType = (String) authResource.get(CommonConstants.AUTH_TYPE);
-
-                if (isJointAccount(authType)) {
-                    String authId =
-                            (String) authResource.get(CommonConstants.AUTHORIZATION_ID);
-
-                    if (authId != null) {
-                        linkedMemberAuthIds.add(authId);
-                    }
+            // Adding linkedMember auth IDs.
+            for (Map<String, Object> authResource : (List<Map<String, Object>>) authResourcesObj) {
+                if (isJointAccount((String) authResource.get(CommonConstants.AUTH_TYPE))) {
+                    linkedMemberAuthIds.add(authResource.get(CommonConstants.AUTHORIZATION_ID));
                 }
             }
         }
 
+        // if no linkedMemberAuth Ids are there sending an empty list.
         if (linkedMemberAuthIds.isEmpty()) {
             return jointAccountIds;
         }
@@ -152,20 +139,14 @@ public class CdsConsentSearchEnrichUtil {
             return jointAccountIds;
         }
 
-        List<Map<String, Object>> mappingList =
-                (List<Map<String, Object>>) mappingObj;
-
-        for (Map<String, Object> mapping : mappingList) {
-
+        for (Map<String, Object> mapping : (List<Map<String, Object>>) mappingObj) {
             String accountId =
                     (String) mapping.get(CommonConstants.ACCOUNT_ID);
             String authorizationId =
                     (String) mapping.get(CommonConstants.AUTHORIZATION_ID);
 
-            if (accountId != null && !jointAccountIds.contains(accountId) &&
-                    authorizationId != null &&
-                    linkedMemberAuthIds.contains(authorizationId)) {
-
+            if (StringUtils.isEmpty(accountId) && !jointAccountIds.contains(accountId) &&
+                    StringUtils.isEmpty(authorizationId) && linkedMemberAuthIds.contains(authorizationId)) {
                 jointAccountIds.add(accountId);
             }
         }

@@ -210,16 +210,67 @@ public class ConsentAuthorizeUtil {
     }
 
     private static boolean isJointAccountElectable(JSONObject accountJson) {
-
-        // Safety: property may not exist or may not be a string
-        String electionStatus = accountJson.optString(
-                CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS,
-                ""
-        );
-
         return !CommonConstants.JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED
-                .equalsIgnoreCase(electionStatus);
+                .equalsIgnoreCase(
+                        accountJson.optString(
+                        CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS,
+                        "")
+                );
     }
+
+    /**
+     * Handle joint account logic including electable accounts and blocked accounts.
+     *
+     * @param accountJson The account JSON object
+     * @param accountId The account ID
+     * @param account The account object to be populated
+     * @param accountList The list of eligible accounts
+     * @param blockedAccountsList The list of blocked accounts
+     */
+    private static void handleJointAccount(
+            JSONObject accountJson, String accountId,
+            SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account,
+            List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList,
+            List<Map<String, Object>> blockedAccountsList) {
+
+        if (isJointAccountElectable(accountJson)) {
+            // Handle electable joint accounts
+            List<String> linkedMembers = new ArrayList<>();
+
+            // Adding joint accounts info as additional properties
+            if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
+                // Getting the linkedMember details from the Joint account info
+                JSONArray linkedMemberArray =
+                        accountJson.getJSONObject(
+                        CommonConstants.JOINT_ACCOUNT_INFO_TAG).optJSONArray(
+                        CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
+
+                if (linkedMemberArray != null) {
+                    for (int j = 0; j < linkedMemberArray.length(); j++) {
+                        JSONObject memberObj = linkedMemberArray.getJSONObject(j);
+                        linkedMembers.add(memberObj.optString(CommonConstants.MEMBER_ID_TAG));
+                    }
+                }
+            }
+
+            account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
+            account.setDisplayName(
+                    getDisplayNameWithAccountNumber(
+                            accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+            accountList.add(account);
+
+        } else {
+            // Adding blocked joint accounts to the display data
+            Map<String, Object> blockedAccountMap = new HashMap<>();
+            blockedAccountMap.put(CommonConstants.AUTH_SCREEN_DISPLAY_LIST_ITEM_PROPERTY_NAME,
+                    getDisplayNameWithAccountNumber(
+                            accountJson.getString(
+                                    CommonConstants.DISPLAY_NAME), accountId));
+
+            blockedAccountsList.add(blockedAccountMap);
+        }
+    }
+
     /**
      * Method to validate and append consumer object to response.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
@@ -271,45 +322,12 @@ public class ConsentAuthorizeUtil {
                     String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
 
                     if (accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false)) {
-
-                        boolean isJointAccountElectable = isJointAccountElectable(accountJson);
-                        if (isJointAccountElectable) {
-                            List<String> linkedMembers = new ArrayList<>();
-
-                            // Adding joint accounts info as addiotional properties
-                            if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
-                                JSONObject jointInfo = accountJson.getJSONObject(
-                                        CommonConstants.JOINT_ACCOUNT_INFO_TAG);
-                                JSONArray linkedMemberArray = jointInfo.optJSONArray(
-                                        CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
-
-                                if (linkedMemberArray != null) {
-                                    for (int j = 0; j < linkedMemberArray.length(); j++) {
-                                        JSONObject memberObj = linkedMemberArray.getJSONObject(j);
-                                        linkedMembers.add(memberObj.optString(CommonConstants.MEMBER_ID_TAG));
-                                    }
-                                }
-                            }
-                            account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
-                            account.setAdditionalProperty(CommonConstants.IS_JOINT_ACCOUNT_PRE_APPROVAL_TAG,
-                                    true);
-                            account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME)
-                                    + "<br>" + getDisplayableAccountNumber(accountId));
-                            accountList.add(account);
-
-                        } else {
-
-                            Map<String, Object> blockedAccountMap = new HashMap<>();
-                            blockedAccountMap.put(CommonConstants.ACCOUNT_ID, accountId);
-                            blockedAccountMap.put(
-                                    CommonConstants.DISPLAY_NAME, accountJson.getString(CommonConstants.DISPLAY_NAME)
-                                    + "<br>" + getDisplayableAccountNumber(accountId));
-
-                            blockedAccountsList.add(blockedAccountMap);
-                        }
+                        handleJointAccount(accountJson, accountId, account, accountList, blockedAccountsList);
                     } else {
-                        account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME)
-                                + "<br>" + getDisplayableAccountNumber(accountId));
+                        account.setDisplayName(
+                                getDisplayNameWithAccountNumber(
+                                        accountJson.getString(CommonConstants.DISPLAY_NAME),
+                                        accountId));
                         accountList.add(account);
                     }
                 }
@@ -327,6 +345,10 @@ public class ConsentAuthorizeUtil {
         }
 
         return new ConsumerAndDisplayData(consumerData, displayData);
+    }
+
+    protected static String getDisplayNameWithAccountNumber(String displayName, String accountId) {
+        return displayName + "<br>" + getDisplayableAccountNumber(accountId);
     }
 
     /**

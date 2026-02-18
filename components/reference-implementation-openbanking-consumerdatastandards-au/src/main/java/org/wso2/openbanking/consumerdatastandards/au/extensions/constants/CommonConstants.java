@@ -143,7 +143,6 @@ public class CommonConstants {
     public static final String DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME = "domsStatus";
     public static final String JOINT_ACCOUNT_CONSENT_ELECTION_STATUS = "jointAccountConsentElectionStatus";
     public static final String JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED = "UNAVAILABLE";
-    public static final String IS_JOINT_ACCOUNT_PRE_APPROVAL_TAG = "is_jointAccount_pre_approval";
 
     public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING = "Accounts Unavailable To Share:";
     public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING = "Why can't I share these accounts?";
@@ -152,6 +151,8 @@ public class CommonConstants {
             "For joint accounts, all account holders must elect to make the account available."  + "<br><br>" +
             "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
                     "Please contact your bank for more details.";
+    public static final String AUTH_SCREEN_DISPLAY_LIST_ITEM_PROPERTY_NAME = "displayText";
+
     public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
     public static final String DISCLOSURE_OPTIONS_GET_ENDPOINT = "/disclosure-options/accounts-status";
     public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";

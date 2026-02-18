@@ -109,7 +109,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerIt
             "    heading: " + heading + "\n" +
             "    subHeading: " + subHeading + "\n" +
             "    description: " + description + "\n" +
-            "    displayData: " + displayList + "\n" +
+            "    displayList: " + displayList + "\n" +
             "}";
   }
 }

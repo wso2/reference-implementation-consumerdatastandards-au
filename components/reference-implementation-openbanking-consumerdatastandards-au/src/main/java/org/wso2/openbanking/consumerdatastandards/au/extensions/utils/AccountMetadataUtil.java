@@ -24,11 +24,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -38,6 +39,7 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.Common
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.HashMap;
@@ -60,56 +62,26 @@ public class AccountMetadataUtil {
     }
 
     /**
-     * Retrieve DOMS status for a single account from the Account Metadata Webapp.
-     * Calls POST /disclosure-options/get with a single account ID.
-     *
-     * @param accountId the account ID for which DOMS status needs to be retrieved
-     * @return the DOMS status string (e.g., "pre-approval", "no-sharing"), or null if retrieval fails
-     */
-    public static String getDOMSStatusForAccount(String accountId) {
-        if (StringUtils.isBlank(accountId)) {
-            log.warn("Invalid parameters: accountId is null or empty, Error occurred in Retrieving DOMS status");
-            return null;
-        }
-
-        // Call the batch method with a single account ID list
-        Map<String, String> statusMap = getDOMSStatusesForAccounts(List.of(accountId));
-
-        if (statusMap != null && !statusMap.isEmpty()) {
-            return statusMap.get(accountId);
-        }
-
-        return null;
-    }
-
-    /**
      * Retrieve DOMS statuses for multiple accounts from the Account Metadata Webapp.
-     * Calls POST /disclosure-options/get with list of account IDs.
+     * Calls GET /disclosure-options with comma-separated account IDs as query parameter.
      *
      * @param accountIds list of account IDs to retrieve DOMS statuses for
      * @return a Map of accountId to DOMS Status, or null if retrieval fails
      */
     public static Map<String, String> getDOMSStatusesForAccounts(List<String> accountIds) {
-        if (accountIds == null || accountIds.isEmpty()) {
-            log.warn("Invalid parameters: accountIds is null or empty");
-            return null;
-        }
-
-        String requestUrl = buildGetStatusRequestUrl();
-
-        if (log.isDebugEnabled()) {
-            log.debug("Retrieving DOMS statuses for " + accountIds.size() + " accounts from: " + requestUrl);
-        }
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost request = new HttpPost(requestUrl);
+            // Build URL with comma-separated account IDs as query parameter
+            String baseUrl = buildDisclosureOptionsUrl();
+            String accountIdParam = String.join(",", accountIds);
+            
+            URIBuilder uriBuilder = new URIBuilder(baseUrl);
+            uriBuilder.addParameter(CommonConstants.ACCOUNT_IDS, accountIdParam);
+            
+            HttpGet request = new HttpGet(uriBuilder.build());
             request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
             request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
             addBasicAuthHeader(request);
-
-            // Build request body with account IDs
-            String requestBody = buildGetStatusRequestBody(accountIds);
-            request.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
 
             HttpResponse response = client.execute(request);
 
@@ -124,12 +96,9 @@ public class AccountMetadataUtil {
 
             return extractDOMSStatusesFromBatchResponse(responseBody);
 
-        } catch (IOException e) {
-            log.error("IO Exception occurred while retrieving DOMS statuses for batch accounts", e);
-        } catch (RuntimeException e) {
-            log.error("Unexpected exception occurred while retrieving DOMS statuses for batch accounts", e);
+        } catch (IOException | URISyntaxException e) {
+            log.error("Failed to retrieve DOMS statuses for batch accounts", e);
         }
-
         return null;
     }
 
@@ -137,53 +106,35 @@ public class AccountMetadataUtil {
      * Add disclosure option for one or more accounts (joint account scenario).
      * Calls POST /disclosure-options with account IDs and disclosure option value.
      *
-     * @param accountIds list of account IDs to add disclosure option for
-     * @param disclosureOption the disclosure option value to set (e.g., "pre-approval", "no-sharing")
-     * @return true if the operation succeeded (HTTP 201 or 200), false otherwise
+     * @param accountDisclosureMap map of account ID to disclosure option value
      */
-    public static boolean addDisclosureOption(List<String> accountIds, String disclosureOption) {
-        if (accountIds == null || accountIds.isEmpty() || StringUtils.isBlank(disclosureOption)) {
-            log.warn("Invalid parameters: accountIds or disclosureOption is null or empty, " +
-                    "in adding Disclosure options");
-            return false;
-        }
-
-        String requestUrl = buildDisclosureOptionsUrl();
-
-        if (log.isDebugEnabled()) {
-            log.debug("Adding disclosure option for " + accountIds.size() + " accounts to: " + requestUrl);
-        }
+    public static int addDisclosureOption(Map<String, String> accountDisclosureMap)  {
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
+            String requestUrl = buildDisclosureOptionsUrl();
             HttpPost request = new HttpPost(requestUrl);
+
             request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
             request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
             addBasicAuthHeader(request);
 
             // Build request body with account IDs and disclosure option
-            String requestBody = buildAddDisclosureOptionRequestBody(accountIds, disclosureOption);
+            String requestBody = buildAddDisclosureOptionRequestBody(accountDisclosureMap);
             request.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
 
             HttpResponse response = client.execute(request);
-
             int statusCode = response.getStatusLine().getStatusCode();
+
             if (statusCode == HttpURLConnection.HTTP_CREATED || statusCode == HttpURLConnection.HTTP_OK) {
-                if (log.isDebugEnabled()) {
-                    log.debug("Successfully added disclosure option for accounts, HTTP Status: " + statusCode);
-                }
-                return true;
+                return 0;
             } else {
-                log.error("Failed to add disclosure option for accounts, HTTP Status: " + statusCode);
-                return false;
+                return 1;
             }
 
         } catch (IOException e) {
-            log.error("IO Exception occurred while adding disclosure option", e);
-        } catch (RuntimeException e) {
-            log.error("Unexpected exception occurred while adding disclosure option", e);
+            log.error("Failed to add DOMS statuses for joint accounts", e);
+            return 1;
         }
-
-        return false;
     }
 
     /**
@@ -191,29 +142,15 @@ public class AccountMetadataUtil {
      *
      * @param request the HTTP request to add the auth header to
      */
-    private static void addBasicAuthHeader(HttpPost request) {
-        if (StringUtils.isNotBlank(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_USERNAME)
-                && StringUtils.isNotBlank(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_PASSWORD)) {
+    private static void addBasicAuthHeader(org.apache.http.client.methods.HttpRequestBase request) {
 
-            String credentials = ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_USERNAME
-                    + ":" + ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_PASSWORD;
-            String encodedCredentials =
-                    Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+        String credentials = ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_USERNAME + ":" +
+                ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_PASSWORD;
 
-            request.addHeader(CommonConstants.AUTH_HEADER, CommonConstants.BASIC_TAG + encodedCredentials);
-        } else {
-            log.warn("Basic Auth credentials not configured for Account Metadata Webapp");
-        }
-    }
-    
-    /**
-     * Build the request URL for batch disclosure-options endpoint (multiple accounts).
-     *
-     * @return the complete request URL
-     */
-    private static String buildGetStatusRequestUrl() {
-        return ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_BASE_URL
-                + CommonConstants.DISCLOSURE_OPTIONS_GET_ENDPOINT;
+        String encodedAuth = Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
+
+        request.addHeader(CommonConstants.AUTH_HEADER, CommonConstants.BASIC_TAG + encodedAuth);
+
     }
 
     /**
@@ -227,46 +164,28 @@ public class AccountMetadataUtil {
     }
 
     /**
-     * Build the request body for batch DOMS status retrieval.
-     * Constructs JSON with account IDs list.
-     *
-     * @param accountIds the list of account IDs
-     * @return JSON request body as string
-     */
-    private static String buildGetStatusRequestBody(List<String> accountIds) {
-        JsonObject requestBody = new JsonObject();
-        Gson gson = new Gson();
-        requestBody.add(CommonConstants.ACCOUNT_IDS, gson.toJsonTree(accountIds));
-        return requestBody.toString();
-    }
-
-    /**
      * Build the request body for adding disclosure option.
-     * Constructs JSON with account IDs list and disclosure option value.
-     * Format: { "data": [{ "accountID": "...", "disclosureOption": "..."}...] }
+     * Constructs JSON array with account IDs list and disclosure option value.
+     * Format: [{ "accountId": "...", "disclosureOption": "..."}...]
      *
-     * @param accountIds the list of account IDs
-     * @param disclosureOption the disclosure option value
+     * @param accountDisclosureMap map of account IDs to disclosure option values
      * @return JSON request body as string
      */
-    private static String buildAddDisclosureOptionRequestBody(List<String> accountIds, String disclosureOption) {
-        JsonObject requestBody = new JsonObject();
+    private static String buildAddDisclosureOptionRequestBody(Map<String, String> accountDisclosureMap) {
         JsonArray dataArray = new JsonArray();
 
-        for (String accountId : accountIds) {
+        for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
             JsonObject accountData = new JsonObject();
-            accountData.addProperty(CommonConstants.ACCOUNT_ID, accountId);
-            accountData.addProperty(CommonConstants.DISCLOSURE_OPTION_FIELD, disclosureOption);
+            accountData.addProperty(CommonConstants.ACCOUNT_ID, entry.getKey());
+            accountData.addProperty(CommonConstants.DISCLOSURE_OPTION_FIELD, entry.getValue());
             dataArray.add(accountData);
         }
 
-        requestBody.add(CommonConstants.DATA, dataArray);
-        return requestBody.toString();
+        return dataArray.toString();
     }
 
     /**
      * Extract DOMS statuses from batch API response body.
-     * Expects a JSON response with structure: { "status": "success", "data": { "ACC1": "pre-approval", ... } }
      * Returns a Map of account IDs to their DOMS statuses.
      *
      * @param responseBody the JSON response body as a string
@@ -277,44 +196,27 @@ public class AccountMetadataUtil {
 
         try {
             Gson gson = new Gson();
-            JsonObject responseJson = gson.fromJson(responseBody, JsonObject.class);
+            JsonElement responseElement = gson.fromJson(responseBody, JsonElement.class);
 
-            if (responseJson == null) {
-                log.warn("Response body is not valid JSON");
-                return statusMap;
-            }
-
-            // Extract data field
-            if (responseJson.has(CommonConstants.DATA)) {
-                JsonElement dataObj = responseJson.get(CommonConstants.DATA);
-
-                // Handle case where data is an object/map with account IDs as keys
-                if (dataObj.isJsonObject()) {
-                    JsonObject dataMap = dataObj.getAsJsonObject();
-                    for (String accountId : dataMap.keySet()) {
-                        JsonElement valueElement = dataMap.get(accountId);
-                        // Check if value is not null before converting to string
-                        if (valueElement != null && !valueElement.isJsonNull()) {
-                            String domsStatus = valueElement.getAsString();
-                            statusMap.put(accountId, domsStatus);
-                        } else {
-                            log.warn("DOMS status value is null for account: " + accountId);
+            if (responseElement != null && responseElement.isJsonArray()) {
+                JsonArray responseArray = responseElement.getAsJsonArray();
+                for (JsonElement itemElement : responseArray) {
+                    if (itemElement != null && itemElement.isJsonObject()) {
+                        JsonObject item = itemElement.getAsJsonObject();
+                        JsonElement accountIdElement = item.get(CommonConstants.ACCOUNT_ID);
+                        JsonElement statusElement = item.get(CommonConstants.DISCLOSURE_OPTION_FIELD);
+                        if (accountIdElement != null && !accountIdElement.isJsonNull()
+                                && statusElement != null && !statusElement.isJsonNull()) {
+                            statusMap.put(accountIdElement.getAsString(), statusElement.getAsString());
                         }
                     }
                 }
-            }
-
-            if (statusMap.isEmpty()) {
-                log.warn("DOMS status data not found in batch response body");
-            }
+            } 
 
             return statusMap;
 
         } catch (JsonSyntaxException e) {
             log.error("Failed to parse batch response JSON", e);
-            return statusMap;
-        } catch (RuntimeException e) {
-            log.error("Unexpected exception occurred while extracting DOMS statuses from batch response", e);
             return statusMap;
         }
     }
