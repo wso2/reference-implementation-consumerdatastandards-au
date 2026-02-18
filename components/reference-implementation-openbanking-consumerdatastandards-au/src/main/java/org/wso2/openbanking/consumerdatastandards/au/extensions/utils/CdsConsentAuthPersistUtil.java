@@ -222,6 +222,11 @@ public class CdsConsentAuthPersistUtil {
         }
     }
 
+    /**
+     * Builds authorization for linked members with their associated accounts.
+     * @param entry Map entry containing linked member user ID and their account IDs
+     * @return Authorization object with linked member details and accounts
+     */
     private static Authorization getLinkedMemberAuthorization(Map.Entry<String, Set<String>> entry) {
         String linkedMemberUserId = entry.getKey();
         Set<String> accountIds = entry.getValue();

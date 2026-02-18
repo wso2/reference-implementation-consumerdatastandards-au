@@ -209,6 +209,11 @@ public class ConsentAuthorizeUtil {
         }
     }
 
+    /**
+     * Checks if a joint account is electable based on its election status.
+     * @param accountJson The account JSON object containing joint account election status
+     * @return true if the account is electable (not in NOT_ELECTED status), false otherwise
+     */
     private static boolean isJointAccountElectable(JSONObject accountJson) {
         return !CommonConstants.JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED
                 .equalsIgnoreCase(
@@ -347,6 +352,12 @@ public class ConsentAuthorizeUtil {
         return new ConsumerAndDisplayData(consumerData, displayData);
     }
 
+    /**
+     * Combines display name with a masked account number for display purposes.
+     * @param displayName The account display name
+     * @param accountId The account ID to be masked and appended
+     * @return A formatted string containing display name and masked account number separated by line break
+     */
     protected static String getDisplayNameWithAccountNumber(String displayName, String accountId) {
         return displayName + "<br>" + getDisplayableAccountNumber(accountId);
     }
@@ -385,6 +396,11 @@ public class ConsentAuthorizeUtil {
         return accountId;
     }
 
+    /**
+     * Creates and populates display data for blocked/unavailable accounts.
+     * @param blockedAccountsList List of blocked accounts to be displayed
+     * @return SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData containing display information for blocked accounts
+     */
     private static SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData setDisplayData(
             List<Map<String, Object>> blockedAccountsList) {
 
