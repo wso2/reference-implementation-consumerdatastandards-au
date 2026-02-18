@@ -16,12 +16,12 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au.utils;
+package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.base.ServerConfiguration;
-import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,13 +42,13 @@ public class KeyStoreUtils {
     private static ServerConfiguration serverConfigs = ServerConfiguration.getInstance();
 
     private static final String keyStoreLocation = serverConfigs
-            .getFirstProperty(DOMSEnforcementConstants.KEYSTORE_LOCATION_TAG);
+            .getFirstProperty(CDSEnforcementConstants.KEYSTORE_LOCATION_TAG);
     private static final char[] keyStorePassword = serverConfigs
-            .getFirstProperty(DOMSEnforcementConstants.KEYSTORE_PASSWORD_TAG).toCharArray();
+            .getFirstProperty(CDSEnforcementConstants.KEYSTORE_PASSWORD_TAG).toCharArray();
     private static final String keyAlias = serverConfigs
-            .getFirstProperty(DOMSEnforcementConstants.SIGNING_ALIAS_TAG);
+            .getFirstProperty(CDSEnforcementConstants.SIGNING_ALIAS_TAG);
     private static final String keyPassword = serverConfigs
-            .getFirstProperty(DOMSEnforcementConstants.SIGNING_KEY_PASSWORD);
+            .getFirstProperty(CDSEnforcementConstants.SIGNING_KEY_PASSWORD);
 
     private static volatile Key key;
 
@@ -61,7 +61,7 @@ public class KeyStoreUtils {
     public static Key getSigningKey() {
 
         if (key == null) {
-            synchronized (DOMSEnforcementUtils.class) {
+            synchronized (CDSEnforcementUtils.class) {
                 if (key == null) {
                     log.debug("Initializing signing key from keystore");
                     try (FileInputStream is = new FileInputStream(getKeyStoreLocation())) {

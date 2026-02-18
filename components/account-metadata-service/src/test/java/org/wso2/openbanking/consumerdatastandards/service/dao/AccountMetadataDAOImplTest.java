@@ -64,6 +64,19 @@ public class AccountMetadataDAOImplTest {
             return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ?, LAST_UPDATED_TIMESTAMP = ?" +
                     " WHERE ACCOUNT_ID = ?";
         }
+
+        @Override
+        public String getBlockedAccountsQuery(int size) {
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    placeholders.append(",");
+                }
+                placeholders.append("?");
+            }
+            return "SELECT ACCOUNT_ID FROM fs_account_doms_status WHERE ACCOUNT_ID IN ("
+                    + placeholders.toString() + ") AND DISCLOSURE_OPTION_STATUS = 'no-sharing'";
+        }
     }
 
     @Test
@@ -163,6 +176,55 @@ public class AccountMetadataDAOImplTest {
         accountMap.put("acc-700", "no-sharing");
 
         dao.addBatchDisclosureOptions(connection, accountMap);
+    }
+
+    @Test
+    public void testGetBlockedAccountsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        Mockito.when(resultSet.getString("ACCOUNT_ID"))
+                .thenReturn("acc-1").thenReturn("acc-3");
+
+        List<String> result = dao.getBlockedAccounts(connection, 
+                Arrays.asList("acc-1", "acc-2", "acc-3"));
+
+        Assert.assertEquals(result.size(), 2);
+        Assert.assertTrue(result.contains("acc-1"));
+        Assert.assertTrue(result.contains("acc-3"));
+    }
+
+    @Test
+    public void testGetBlockedAccountsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(false);
+
+        List<String> result = dao.getBlockedAccounts(connection,
+                Arrays.asList("acc-1", "acc-2"));
+
+        Assert.assertEquals(result.size(), 0);
+    }
+
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBlockedAccountsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString()))
+                .thenThrow(new SQLException("bad"));
+
+        dao.getBlockedAccounts(connection, Arrays.asList("acc-1", "acc-2"));
     }
 
     @Test

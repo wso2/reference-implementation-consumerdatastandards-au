@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au.utils;
+package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 
 /**
  * An annotation to make methods skip code coverage. Use only with a valid reason to skip

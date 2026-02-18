@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au;
+package org.wso2.openbanking.consumerdatastandards.au.policy;
 
 import com.nimbusds.jose.JOSEException;
 import org.apache.commons.logging.Log;
@@ -26,9 +26,9 @@ import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
-import org.wso2.openbanking.consumerdatastandards.au.utils.DOMSEnforcementUtils;
-import org.wso2.openbanking.consumerdatastandards.au.utils.Generated;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.utils.CDSEnforcementUtils;
+import org.wso2.openbanking.consumerdatastandards.au.policy.utils.Generated;
 
 import java.text.ParseException;
 import java.util.HashSet;
@@ -38,9 +38,9 @@ import java.util.Set;
 /**
  * Mediator to remove DOMS-blocked accounts from the Account-Request-Information JWT header.
  */
-public class DOMSEnforcementMediator extends AbstractMediator {
+public class CDSEnforcementMediator extends AbstractMediator {
 
-    private static final Log log = LogFactory.getLog(DOMSEnforcementMediator.class);
+    private static final Log log = LogFactory.getLog(CDSEnforcementMediator.class);
 
     private String domsGetApi;
     private String domsBasicAuthCredentials;
@@ -69,7 +69,7 @@ public class DOMSEnforcementMediator extends AbstractMediator {
             Map<String, String> headers = (Map<String, String>)
                     axis2Ctx.getProperty(org.apache.axis2.context.MessageContext.TRANSPORT_HEADERS);
 
-            String accountHeaderJwt = headers.get(DOMSEnforcementConstants.INFO_HEADER_TAG);
+            String accountHeaderJwt = headers.get(CDSEnforcementConstants.INFO_HEADER_TAG);
 
             // Decode JWT
             JSONObject payload = new JSONObject(accountHeaderJwt);
@@ -77,7 +77,7 @@ public class DOMSEnforcementMediator extends AbstractMediator {
             //collect linkedMember authorization Ids
             Set<String> linkedMemberAuthIds = new HashSet<>();
 
-            JSONArray authorizationResources = payload.optJSONArray(DOMSEnforcementConstants.AUTH_RESOURCES_TAG);
+            JSONArray authorizationResources = payload.optJSONArray(CDSEnforcementConstants.AUTH_RESOURCES_TAG);
             if (authorizationResources != null) {
                 JSONArray filteredAuthorizationResources = new JSONArray();
 
@@ -85,9 +85,9 @@ public class DOMSEnforcementMediator extends AbstractMediator {
                     JSONObject authResource = authorizationResources.getJSONObject(i);
 
                     // Removing Auth resources of linked members
-                    if (DOMSEnforcementConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(
-                            authResource.optString(DOMSEnforcementConstants.AUTH_TYPE_TAG))) {
-                        String linkedAuthId = authResource.optString(DOMSEnforcementConstants.AUTH_ID_TAG);
+                    if (CDSEnforcementConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(
+                            authResource.optString(CDSEnforcementConstants.AUTH_TYPE_TAG))) {
+                        String linkedAuthId = authResource.optString(CDSEnforcementConstants.AUTH_ID_TAG);
                         if (linkedAuthId != null && !linkedAuthId.isEmpty()) {
                             linkedMemberAuthIds.add(linkedAuthId);
                         }
@@ -101,11 +101,11 @@ public class DOMSEnforcementMediator extends AbstractMediator {
                     filteredAuthorizationResources.put(authResource);
                 }
 
-                payload.put(DOMSEnforcementConstants.AUTH_RESOURCES_TAG, filteredAuthorizationResources);
+                payload.put(CDSEnforcementConstants.AUTH_RESOURCES_TAG, filteredAuthorizationResources);
             }
 
             JSONArray consentMappingResources =
-                    payload.optJSONArray(DOMSEnforcementConstants.CONSENT_MAPPING_RESOURCES_TAG);
+                    payload.optJSONArray(CDSEnforcementConstants.CONSENT_MAPPING_RESOURCES_TAG);
             if (consentMappingResources == null) {
                 log.warn("No consentMappingResources array found in JWT, skipping DOMS enforcement.");
                 return true;
@@ -116,13 +116,13 @@ public class DOMSEnforcementMediator extends AbstractMediator {
                 JSONObject mappingResource = consentMappingResources.getJSONObject(i);
 
                 // exclude linked-member accounts in DOMS call
-                if (linkedMemberAuthIds.contains(mappingResource.optString(DOMSEnforcementConstants.AUTH_ID_TAG))) {
+                if (linkedMemberAuthIds.contains(mappingResource.optString(CDSEnforcementConstants.AUTH_ID_TAG))) {
                     continue;
                 }
-                accountIds.add(mappingResource.optString(DOMSEnforcementConstants.ACCELERATOR_ACCOUNT_ID_TAG));
+                accountIds.add(mappingResource.optString(CDSEnforcementConstants.ACCELERATOR_ACCOUNT_ID_TAG));
             }
 
-            Set<String> blockedAccounts = DOMSEnforcementUtils.fetchBlockedAccountsFromService(
+            Set<String> blockedAccounts = CDSEnforcementUtils.fetchBlockedAccountsFromService(
                     accountIds, blockedAccountsApi, basicAuthBase64);
 
             JSONArray filteredConsentMappings = new JSONArray();
@@ -131,14 +131,14 @@ public class DOMSEnforcementMediator extends AbstractMediator {
                 JSONObject mappingResource = consentMappingResources.getJSONObject(i);
 
                 // Removing consentMappingResources of linked-members
-                if (linkedMemberAuthIds.contains(mappingResource.optString(DOMSEnforcementConstants.AUTH_ID_TAG))) {
+                if (linkedMemberAuthIds.contains(mappingResource.optString(CDSEnforcementConstants.AUTH_ID_TAG))) {
                     continue;
                 }
 
-                String accountId = mappingResource.optString(DOMSEnforcementConstants.ACCELERATOR_ACCOUNT_ID_TAG);
+                String accountId = mappingResource.optString(CDSEnforcementConstants.ACCELERATOR_ACCOUNT_ID_TAG);
                 if (!blockedAccounts.contains(accountId)) {
-                    mappingResource.put(DOMSEnforcementConstants.CDS_ACCOUNT_ID_TAG, accountId);
-                    mappingResource.remove(DOMSEnforcementConstants.ACCELERATOR_ACCOUNT_ID_TAG);
+                    mappingResource.put(CDSEnforcementConstants.CDS_ACCOUNT_ID_TAG, accountId);
+                    mappingResource.remove(CDSEnforcementConstants.ACCELERATOR_ACCOUNT_ID_TAG);
                     filteredConsentMappings.put(mappingResource);
                 } else {
                     if (log.isDebugEnabled()) {
@@ -147,10 +147,10 @@ public class DOMSEnforcementMediator extends AbstractMediator {
                 }
             }
 
-            payload.put(DOMSEnforcementConstants.CONSENT_MAPPING_RESOURCES_TAG, filteredConsentMappings);
+            payload.put(CDSEnforcementConstants.CONSENT_MAPPING_RESOURCES_TAG, filteredConsentMappings);
 
             String signedJwt = generateJWT(payload.toString());
-            headers.put(DOMSEnforcementConstants.INFO_HEADER_TAG, signedJwt);
+            headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, signedJwt);
 
             log.debug("DOMS enforcement completed successfully");
 
@@ -164,20 +164,20 @@ public class DOMSEnforcementMediator extends AbstractMediator {
         return true;
     }
     protected JSONObject decodeJWT(String accountHeaderJwt) throws ParseException {
-        return DOMSEnforcementUtils.decodeJWT(accountHeaderJwt);
+        return CDSEnforcementUtils.decodeJWT(accountHeaderJwt);
     }
 
     @Generated(message = "No testable logic")
     private static void setErrorResponseProperties(MessageContext messageContext, String errorCode,
                                                    String errorDescription, String httpStatusCode) {
 
-        messageContext.setProperty(DOMSEnforcementConstants.ERROR_CODE, errorCode);
-        messageContext.setProperty(DOMSEnforcementConstants.ERROR_TITLE, "CDS DOMS Policy Error");
-        messageContext.setProperty(DOMSEnforcementConstants.ERROR_DESCRIPTION, errorDescription);
-        messageContext.setProperty(DOMSEnforcementConstants.CUSTOM_HTTP_SC, httpStatusCode);
+        messageContext.setProperty(CDSEnforcementConstants.ERROR_CODE, errorCode);
+        messageContext.setProperty(CDSEnforcementConstants.ERROR_TITLE, "CDS DOMS Policy Error");
+        messageContext.setProperty(CDSEnforcementConstants.ERROR_DESCRIPTION, errorDescription);
+        messageContext.setProperty(CDSEnforcementConstants.CUSTOM_HTTP_SC, httpStatusCode);
     }
 
     protected String generateJWT(String payload) throws ParseException, JOSEException {
-        return DOMSEnforcementUtils.generateJWT(payload);
+        return CDSEnforcementUtils.generateJWT(payload);
     }
 }

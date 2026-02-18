@@ -36,8 +36,8 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
-  <artifactId>doms-enforcement-payload-mediator</artifactId>
-  <name>WSO2 Financial Services APIM Mediation Policies - DOMS Enforcement Payload Mediator</name>
+  <artifactId>cds-enforcement-payload-mediator</artifactId>
+  <name>WSO2 Financial Services APIM Mediation Policies - CDS Enforcement Payload Mediator</name>
 
   <dependencies>
 

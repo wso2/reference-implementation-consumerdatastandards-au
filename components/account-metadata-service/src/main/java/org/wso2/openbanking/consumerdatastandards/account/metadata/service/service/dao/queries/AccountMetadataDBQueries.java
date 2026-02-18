@@ -48,4 +48,13 @@ public interface AccountMetadataDBQueries {
      */
     String getBatchUpdateDisclosureOptionQuery();
 
+    /**
+     * Get the SQL query for retrieving blocked accounts with no-sharing status.
+     * Uses IN clause for batch retrieval.
+     *
+     * @param accountCount the number of accounts to query
+     * @return the SQL query with placeholders
+     */
+    String getBlockedAccountsQuery(int accountCount);
+
 }

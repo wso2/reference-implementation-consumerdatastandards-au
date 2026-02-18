@@ -31,6 +31,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,6 +152,43 @@ public class AccountMetadataServiceImplTest {
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
         service.updateBatchDisclosureOptions(accountMap);
+    }
+
+    @Test
+    public void testGetBlockedAccounts() throws Exception {
+        List<String> expectedResult = Arrays.asList("acc-111", "acc-333");
+        
+        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-111", "acc-222", "acc-333")))
+                .thenReturn(expectedResult);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        List<String> result = service.getBlockedAccounts(Arrays.asList("acc-111", "acc-222", "acc-333"));
+
+        Assert.assertEquals(result, expectedResult);
+        Mockito.verify(metadataDAO).getBlockedAccounts(connection, Arrays.asList("acc-111", "acc-222", "acc-333"));
+    }
+
+    @Test
+    public void testGetBlockedAccountsEmpty() throws Exception {
+        List<String> expectedResult = Collections.emptyList();
+        
+        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-444", "acc-555")))
+                .thenReturn(expectedResult);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        List<String> result = service.getBlockedAccounts(Arrays.asList("acc-444", "acc-555"));
+
+        Assert.assertEquals(result, Collections.emptyList());
+    }
+
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBlockedAccountsDaoException() throws Exception {
+        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-666", "acc-777")))
+                .thenThrow(new AccountMetadataException("dao error"));
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
+        service.getBlockedAccounts(Arrays.asList("acc-666", "acc-777"));
     }
 
     private void resetSingleton() throws Exception {

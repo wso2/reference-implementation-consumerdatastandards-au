@@ -1,5 +1,5 @@
 <!--
- ~ DOMS Enforcement Policy - Safe Version
+ ~ CDS Enforcement Policy 
  ~ Updates the Account-Request-Information header if accounts are blocked
 -->
 
@@ -11,7 +11,7 @@
 <property name="originalAcceptHeader" expression="$trp:Accept"/>
 
 <!-- Engage the DOMS Enforcement Mediator -->
-<class name="org.wso2.openbanking.consumerdatastandards.au.DOMSEnforcementMediator">
+<class name="org.wso2.openbanking.consumerdatastandards.au.policy.CDSEnforcementMediator">
     <!-- Optional: pass any properties your mediator needs -->
     <property name="domsGetApi" value="{{domsGetApi}}"/>
     <property name="domsBasicAuthCredentials" value="{{domsBasicAuthCredentials}}"/>

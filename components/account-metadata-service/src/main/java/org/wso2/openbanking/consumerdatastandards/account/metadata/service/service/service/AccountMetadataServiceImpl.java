@@ -156,4 +156,22 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
         }
     }
 
+    /**
+     * Retrieve list of accounts with no-sharing status (blocked accounts).
+     *
+     * @param accountIds the list of account IDs
+     * @return list of blocked account IDs
+     * @throws AccountMetadataException if an error occurs
+     */
+    @Override
+    public List<String> getBlockedAccounts(List<String> accountIds) throws AccountMetadataException {
+
+        try (Connection conn = connectionProvider.getConnection()) {
+            return metadataDAO.getBlockedAccounts(conn, accountIds);
+        } catch (SQLException e) {
+            log.error("Error retrieving blocked accounts", e);
+            throw new AccountMetadataException("Failed to retrieve blocked accounts", e);
+        }
+    }
+
 }

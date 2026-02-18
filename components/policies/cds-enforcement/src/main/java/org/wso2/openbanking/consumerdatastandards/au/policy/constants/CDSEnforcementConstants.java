@@ -16,12 +16,12 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au.constants;
+package org.wso2.openbanking.consumerdatastandards.au.policy.constants;
 
 /**
  * Constants class for the Consent Enforcement Policy.
  */
-public class DOMSEnforcementConstants {
+public class CDSEnforcementConstants {
 
     public static final String AUTH_HEADER = "Authorization";
     public static final String BEARER_TAG = "Bearer ";

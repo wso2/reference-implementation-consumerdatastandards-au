@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au.utils;
+package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -31,7 +31,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
 
 import java.io.IOException;
 import java.net.URI;
@@ -48,17 +48,15 @@ import java.util.Set;
 /**
  * Utility class for the Consent Enforcement Policy.
  */
-public class DOMSEnforcementUtils {
+public class CDSEnforcementUtils {
 
-    private static final Log log = LogFactory.getLog(DOMSEnforcementUtils.class);
+    private static final Log log = LogFactory.getLog(CDSEnforcementUtils.class);
 
     /**
      * Method to generate JWT with the given payload.
      *
      * @param payload JSON payload as a string to be included in the JWT claims
      * @return Serialized JWT as a string
-     * @throws ParseException
-     * @throws JOSEException
      */
     public static String generateJWT(String payload) throws ParseException, JOSEException {
 
@@ -124,7 +122,7 @@ public class DOMSEnforcementUtils {
 
         try {
             JSONObject requestJson = new JSONObject();
-            requestJson.put(DOMSEnforcementConstants.ACCOUNT_IDS_TAG, new JSONArray(accountIds));
+            requestJson.put(CDSEnforcementConstants.ACCOUNT_IDS_TAG, new JSONArray(accountIds));
 
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofMillis(3000))
@@ -133,12 +131,12 @@ public class DOMSEnforcementUtils {
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                     .uri(URI.create(blockedAccountsApi))
                     .timeout(Duration.ofMillis(3000))
-                    .header(DOMSEnforcementConstants.CONTENT_TYPE_TAG, DOMSEnforcementConstants.JSON_CONTENT_TYPE)
+                    .header(CDSEnforcementConstants.CONTENT_TYPE_TAG, CDSEnforcementConstants.JSON_CONTENT_TYPE)
                     .POST(HttpRequest.BodyPublishers.ofString(requestJson.toString(), StandardCharsets.UTF_8));
 
             if (StringUtils.isNotBlank(basicAuthBase64)) {
-                requestBuilder.header(DOMSEnforcementConstants.AUTH_HEADER,
-                        DOMSEnforcementConstants.BASIC_TAG + basicAuthBase64);
+                requestBuilder.header(CDSEnforcementConstants.AUTH_HEADER,
+                        CDSEnforcementConstants.BASIC_TAG + basicAuthBase64);
             } else {
                 log.warn("[DOMS] Basic Auth property not set, request for fetching blocked accounts may fail");
             }
@@ -150,7 +148,7 @@ public class DOMSEnforcementUtils {
             if (response.statusCode() == 200) {
                 JSONObject responseJson = new JSONObject(response.body());
                 JSONArray blockedArray =
-                        responseJson.optJSONArray(DOMSEnforcementConstants.BLOCKED_ACCOUNT_IDS_TAG);
+                        responseJson.optJSONArray(CDSEnforcementConstants.BLOCKED_ACCOUNT_IDS_TAG);
 
                 if (blockedArray != null) {
                     for (int i = 0; i < blockedArray.length(); i++) {

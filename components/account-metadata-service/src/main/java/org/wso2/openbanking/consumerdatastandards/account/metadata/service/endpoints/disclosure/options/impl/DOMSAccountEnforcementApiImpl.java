@@ -20,7 +20,6 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.service.endp
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.model.DOMSBlockedAccountsRequest;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.model.DOMSBlockedAccountsResponse;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
@@ -29,7 +28,6 @@ import org.wso2.openbanking.consumerdatastandards.account.metadata.service.servi
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -54,22 +52,20 @@ public class DOMSAccountEnforcementApiImpl {
      */
     public static Response getBlockedAccounts(DOMSBlockedAccountsRequest request) {
 
+        if (request == null) {
+            log.error("[DOMS] No accounts provided in get blocked accounts request");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .build();
+        }
         List<String> blockedAccounts = new ArrayList<>();
 
         try {
-            // Get disclosure options for all accounts in one batch call
-            Map<String, String> domsStatusMap = accountMetadataService.getBatchDisclosureOptions(
+            // Query database directly for blocked accounts with no-sharing status
+            blockedAccounts = accountMetadataService.getBlockedAccounts(
                     request.getAccountIds());
 
-            // Filter accounts with no-sharing status
-            for (Map.Entry<String, String> entry : domsStatusMap.entrySet()) {
-                if (CommonConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(entry.getValue())) {
-                    blockedAccounts.add(entry.getKey());
-                }
-            }
-
         } catch (AccountMetadataException e) {
-            log.error("Error checking DOMS status for batch accounts", e);
+            log.error("Error retrieving blocked accounts from database", e);
             // Fail-safe behavior: return empty list
         }
 

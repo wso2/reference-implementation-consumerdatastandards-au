@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au.utils;
+package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -35,21 +35,21 @@ import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
-public class DOMSEnforcementUtilsTest {
+public class CDSEnforcementUtilsTest {
 
     @Test(expectedExceptions = ParseException.class)
     public void testDecodeJwtRejectsBlank() throws Exception {
-        DOMSEnforcementUtils.decodeJWT(" ");
+        CDSEnforcementUtils.decodeJWT(" ");
     }
 
     @Test(expectedExceptions = ParseException.class)
     public void testDecodeJwtRejectsInvalidFormat() throws Exception {
-        DOMSEnforcementUtils.decodeJWT("one.two");
+        CDSEnforcementUtils.decodeJWT("one.two");
     }
 
     @Test(expectedExceptions = ParseException.class)
     public void testDecodeJwtRejectsInvalidBase64() throws Exception {
-        DOMSEnforcementUtils.decodeJWT("aaa.###.bbb");
+        CDSEnforcementUtils.decodeJWT("aaa.###.bbb");
     }
 
     @Test
@@ -63,7 +63,7 @@ public class DOMSEnforcementUtilsTest {
                 .encodeToString(payload.toString().getBytes(StandardCharsets.UTF_8));
         String jwt = "header." + encodedPayload + ".signature";
 
-        JSONObject decoded = DOMSEnforcementUtils.decodeJWT(jwt);
+        JSONObject decoded = CDSEnforcementUtils.decodeJWT(jwt);
 
         Assert.assertEquals(decoded.getString("sub"), "user-1");
         Assert.assertEquals(decoded.getString("aud"), "doms");
@@ -80,7 +80,7 @@ public class DOMSEnforcementUtilsTest {
             accounts.add("acc-2");
             accounts.add("acc-3");
 
-            Set<String> blocked = DOMSEnforcementUtils.fetchBlockedAccountsFromService(
+            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
                     accounts, serverUrl, "");
 
             Assert.assertEquals(blocked.size(), 2);
@@ -100,7 +100,7 @@ public class DOMSEnforcementUtilsTest {
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-1");
 
-            Set<String> blocked = DOMSEnforcementUtils.fetchBlockedAccountsFromService(
+            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
                     accounts, serverUrl, "");
 
             Assert.assertTrue(blocked.isEmpty());
@@ -114,7 +114,7 @@ public class DOMSEnforcementUtilsTest {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-        Set<String> blocked = DOMSEnforcementUtils.fetchBlockedAccountsFromService(
+        Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
                 accounts, "http://localhost:1/blocked", "");
 
         Assert.assertTrue(blocked.isEmpty());
@@ -130,7 +130,7 @@ public class DOMSEnforcementUtilsTest {
             accounts.add("acc-1");
 
             String basicAuth = Base64.getEncoder().encodeToString("user:pass".getBytes());
-            Set<String> blocked = DOMSEnforcementUtils.fetchBlockedAccountsFromService(
+            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
                     accounts, serverUrl, basicAuth);
 
             Assert.assertEquals(blocked.size(), 1);
@@ -148,7 +148,7 @@ public class DOMSEnforcementUtilsTest {
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-2");
 
-            Set<String> blocked = DOMSEnforcementUtils.fetchBlockedAccountsFromService(
+            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
                     accounts, serverUrl, "");
 
             Assert.assertEquals(blocked.size(), 1);

@@ -52,4 +52,13 @@ public interface AccountMetadataService {
      * @throws AccountMetadataException if an error occurs
      */
     void updateBatchDisclosureOptions(Map<String, String> accountDisclosureMap) throws AccountMetadataException;
+
+    /**
+     * Retrieve list of accounts with no-sharing status (blocked accounts).
+     *
+     * @param accountIds the list of account IDs
+     * @return list of blocked account IDs
+     * @throws AccountMetadataException if an error occurs
+     */
+    List<String> getBlockedAccounts(List<String> accountIds) throws AccountMetadataException;
 }

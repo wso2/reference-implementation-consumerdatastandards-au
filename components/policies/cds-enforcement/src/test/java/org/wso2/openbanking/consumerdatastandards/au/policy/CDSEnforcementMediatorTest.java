@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.au;
+package org.wso2.openbanking.consumerdatastandards.au.policy;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.au.constants.DOMSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DOMSEnforcementMediatorTest {
+public class CDSEnforcementMediatorTest {
 
     private Axis2MessageContext synapseMessageContext;
     private MessageContext axis2MessageContext;
@@ -57,7 +57,7 @@ public class DOMSEnforcementMediatorTest {
 
     @Test
     public void testMediateFiltersBlockedAccountsAndUpdatesHeader() throws Exception {
-        TestableDOMSEnforcementMediator mediator = new TestableDOMSEnforcementMediator();
+        TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
         HttpServer server = startBlockedAccountsServer("{\"blockedAccountIds\":[\"acc-2\"]}");
         try {
             String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
@@ -80,12 +80,12 @@ public class DOMSEnforcementMediatorTest {
             accounts.put(new JSONObject().put("account_id", "acc-3").put("authorizationId", "linked-1"));
             payload.put("consentMappingResources", accounts);
 
-            headers.put(DOMSEnforcementConstants.INFO_HEADER_TAG, payload.toString());
+            headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, payload.toString());
 
             boolean result = mediator.mediate(synapseMessageContext);
 
             Assert.assertTrue(result);
-            Assert.assertEquals(headers.get(DOMSEnforcementConstants.INFO_HEADER_TAG), "signed.jwt");
+            Assert.assertEquals(headers.get(CDSEnforcementConstants.INFO_HEADER_TAG), "signed.jwt");
 
             JSONObject updatedPayload = new JSONObject(mediator.generatedPayload);
             JSONArray updatedAuthResources = updatedPayload.getJSONArray("authorizationResources");
@@ -103,10 +103,10 @@ public class DOMSEnforcementMediatorTest {
 
     @Test
     public void testMediateSkipsWhenNoConsentMappingResources() throws Exception {
-        TestableDOMSEnforcementMediator mediator = new TestableDOMSEnforcementMediator();
+        TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
 
         JSONObject payload = new JSONObject();
-        headers.put(DOMSEnforcementConstants.INFO_HEADER_TAG, payload.toString());
+        headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, payload.toString());
 
         boolean result = mediator.mediate(synapseMessageContext);
 
@@ -116,14 +116,14 @@ public class DOMSEnforcementMediatorTest {
 
     @Test(expectedExceptions = org.json.JSONException.class)
     public void testMediateHandlesDecodeError() throws Exception {
-        TestableDOMSEnforcementMediator mediator = new TestableDOMSEnforcementMediator();
+        TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
 
-        headers.put(DOMSEnforcementConstants.INFO_HEADER_TAG, "{not-json");
+        headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, "{not-json");
 
         mediator.mediate(synapseMessageContext);
     }
 
-    private static class TestableDOMSEnforcementMediator extends DOMSEnforcementMediator {
+    private static class TestableCDSEnforcementMediator extends CDSEnforcementMediator {
 
         private String generatedPayload;
 

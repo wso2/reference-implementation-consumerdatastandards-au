@@ -34,9 +34,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -66,13 +64,11 @@ public class DOMSAccountEnforcementApiImplTest {
     }
 
     @Test
-    public void testGetBlockedAccountsFiltersNoSharing() throws Exception {
-        Map<String, String> batchResult = new HashMap<>();
-        batchResult.put("acc-1", "no-sharing");
-        batchResult.put("acc-2", "pre-approval");
+    public void testGetBlockedAccountsSuccess() throws Exception {
+        List<String> blockedAccounts = Arrays.asList("acc-1", "acc-3");
         
-        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2", "acc-3")))
-            .thenReturn(batchResult);
+        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-1", "acc-2", "acc-3")))
+            .thenReturn(blockedAccounts);
 
         DOMSBlockedAccountsRequest request = new DOMSBlockedAccountsRequest();
         request.setAccountIds(Arrays.asList("acc-1", "acc-2", "acc-3"));
@@ -82,17 +78,15 @@ public class DOMSAccountEnforcementApiImplTest {
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         DOMSBlockedAccountsResponse body = (DOMSBlockedAccountsResponse) response.getEntity();
         List<String> blocked = body.getBlockedAccountIds();
-        Assert.assertEquals(blocked, List.of("acc-1"));
+        Assert.assertEquals(blocked, Arrays.asList("acc-1", "acc-3"));
     }
 
     @Test
-    public void testGetBlockedAccountsEmptyWhenNoNoSharing() throws Exception {
-        Map<String, String> batchResult = new HashMap<>();
-        batchResult.put("acc-1", "pre-approval");
-        batchResult.put("acc-2", "pre-approval");
+    public void testGetBlockedAccountsEmpty() throws Exception {
+        List<String> blockedAccounts = Collections.emptyList();
         
-        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
-            .thenReturn(batchResult);
+        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-1", "acc-2")))
+            .thenReturn(blockedAccounts);
 
         DOMSBlockedAccountsRequest request = new DOMSBlockedAccountsRequest();
         request.setAccountIds(Arrays.asList("acc-1", "acc-2"));

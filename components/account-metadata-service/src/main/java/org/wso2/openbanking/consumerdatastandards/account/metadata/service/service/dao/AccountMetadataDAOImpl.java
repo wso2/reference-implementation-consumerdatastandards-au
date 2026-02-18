@@ -28,6 +28,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -143,6 +144,37 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
         } catch (SQLException e) {
             log.error("Error batch updating disclosure options", e);
             throw new AccountMetadataException("Failed to batch update disclosure options", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<String> getBlockedAccounts(Connection conn, List<String> accountIds)
+            throws AccountMetadataException {
+
+        String sql = dbQueries.getBlockedAccountsQuery(accountIds.size());
+        List<String> blockedAccounts = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < accountIds.size(); i++) {
+                stmt.setString(i + 1, accountIds.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    blockedAccounts.add(rs.getString("ACCOUNT_ID"));
+                }
+            }
+            if (log.isDebugEnabled()) {
+                log.debug("Retrieved " + blockedAccounts.size() + " blocked accounts.");
+            }
+            return blockedAccounts;
+
+        } catch (SQLException e) {
+            log.error("Error retrieving blocked accounts", e);
+            throw new AccountMetadataException("Failed to retrieve blocked accounts", e);
         }
     }
 
