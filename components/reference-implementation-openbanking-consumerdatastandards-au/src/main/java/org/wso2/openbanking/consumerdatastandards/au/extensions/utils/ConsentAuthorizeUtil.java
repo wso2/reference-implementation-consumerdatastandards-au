@@ -399,7 +399,8 @@ public class ConsentAuthorizeUtil {
     /**
      * Creates and populates display data for blocked/unavailable accounts.
      * @param blockedAccountsList List of blocked accounts to be displayed
-     * @return SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData containing display information for blocked accounts
+     * @return SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData
+     * containing display information for blocked accounts
      */
     private static SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData setDisplayData(
             List<Map<String, Object>> blockedAccountsList) {

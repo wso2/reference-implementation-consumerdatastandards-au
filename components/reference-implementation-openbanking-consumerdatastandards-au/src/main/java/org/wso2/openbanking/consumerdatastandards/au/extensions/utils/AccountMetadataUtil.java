@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
@@ -70,7 +71,8 @@ public class AccountMetadataUtil {
      */
     public static Map<String, String> getDOMSStatusesForAccounts(List<String> accountIds) {
 
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             // Build URL with comma-separated account IDs as query parameter
             String baseUrl = buildDisclosureOptionsUrl();
             String accountIdParam = String.join(",", accountIds);
@@ -110,7 +112,9 @@ public class AccountMetadataUtil {
      */
     public static int addDisclosureOption(Map<String, String> accountDisclosureMap)  {
 
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             String requestUrl = buildDisclosureOptionsUrl();
             HttpPost request = new HttpPost(requestUrl);
 
