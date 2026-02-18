@@ -25,8 +25,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.ApiResponse;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionItem;
-import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionsBulkResponse;
-import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionsUpdateRequest;
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadataServiceImpl;
@@ -36,6 +34,7 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -72,127 +71,162 @@ public class DisclosureOptionsManagementApiImplTest {
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "error");
+        Assert.assertNotNull(body);
     }
 
     @Test
     public void testUpdateDisclosureOptionsBadRequestOnInvalidStatus() {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "invalid");
+        List<DisclosureOptionItem> request = buildRequest("invalid");
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "error");
+        Assert.assertNotNull(body);
     }
 
     @Test
     public void testUpdateDisclosureOptionsSuccess() throws Exception {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "no-sharing");
+        List<DisclosureOptionItem> request = buildRequest("no-sharing");
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "success");
-        Mockito.verify(metadataDAO).updateDisclosureOption(connection, "acc-1", "no-sharing");
+        Assert.assertNotNull(body);
+        Mockito.verify(metadataDAO).updateBatchDisclosureOptions(connection, 
+                Collections.singletonMap("acc-1", "no-sharing"));
     }
 
     @Test
     public void testUpdateDisclosureOptionsServiceError() throws Exception {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "pre-approval");
+        List<DisclosureOptionItem> request = buildRequest("pre-approval");
         Mockito.doThrow(new AccountMetadataException("fail"))
             .when(metadataDAO)
-            .updateDisclosureOption(connection, "acc-1", "pre-approval");
+            .updateBatchDisclosureOptions(connection, Collections.singletonMap("acc-1", "pre-approval"));
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "error");
+        Assert.assertNotNull(body);
     }
 
     @Test
     public void testGetDisclosureOptionsBadRequestOnEmpty() {
-        Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions(Collections.emptyList());
+        Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("");
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "error");
+        Assert.assertNotNull(body);
+    }
+
+    @Test
+    public void testGetDisclosureOptionsBadRequestOnBlankIds() {
+        Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("   ");
+
+        Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
+        ApiResponse body = (ApiResponse) response.getEntity();
+        Assert.assertNotNull(body);
     }
 
     @Test
     public void testGetDisclosureOptionsSuccess() throws Exception {
-        List<String> accounts = Arrays.asList("acc-1", " ");
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-1")).thenReturn("pre-approval");
+        Map<String, String> batchResult = new HashMap<>();
+        batchResult.put("acc-1", "pre-approval");
+        batchResult.put("acc-2", "no-sharing");
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
+                .thenReturn(batchResult);
 
-        Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions(accounts);
+        Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("acc-1,acc-2");
 
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        DisclosureOptionsBulkResponse body = (DisclosureOptionsBulkResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "success");
-        Map<String, String> data = body.getData();
-        Assert.assertEquals(data.get("acc-1"), "pre-approval");
-        Assert.assertNull(data.get(" "));
+        @SuppressWarnings("unchecked")
+        List<DisclosureOptionItem> body = (List<DisclosureOptionItem>) response.getEntity();
+        Assert.assertNotNull(body);
+        Assert.assertEquals(body.size(), 2);
+        Assert.assertTrue(body.stream().anyMatch(item ->
+            "acc-1".equals(item.getAccountId()) && "pre-approval".equals(item.getDisclosureOption())));
+    }
+
+    @Test
+    public void testGetDisclosureOptionsWithSpaces() throws Exception {
+        Map<String, String> batchResult = new HashMap<>();
+        batchResult.put("acc-1", "pre-approval");
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
+                .thenReturn(batchResult);
+
+        Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("acc-1 , acc-2");
+
+        Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+        @SuppressWarnings("unchecked")
+        List<DisclosureOptionItem> body = (List<DisclosureOptionItem>) response.getEntity();
+        Assert.assertEquals(body.size(), 1);
     }
 
     @Test
     public void testAddDisclosureOptionsCreatedWhenAllNew() throws Exception {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "no-sharing");
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-1")).thenReturn(null);
+        List<DisclosureOptionItem> request = buildRequest("no-sharing");
+        Map<String, String> batchResult = new HashMap<>();
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1")))
+                .thenReturn(batchResult);
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "success");
-        Mockito.verify(metadataDAO).addDisclosureOption(connection, "acc-1", "no-sharing");
+        Assert.assertNotNull(body);
+        Mockito.verify(metadataDAO).addBatchDisclosureOptions(connection, 
+                Collections.singletonMap("acc-1", "no-sharing"));
     }
 
     @Test
     public void testAddDisclosureOptionsOkWhenExisting() throws Exception {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "no-sharing");
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-1")).thenReturn("pre-approval");
+        List<DisclosureOptionItem> request = buildRequest("no-sharing");
+        Map<String, String> existingMap = Collections.singletonMap("acc-1", "pre-approval");
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, List.of("acc-1")))
+                .thenReturn(existingMap);
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "success");
+        Assert.assertNotNull(body);
     }
 
     @Test
     public void testAddDisclosureOptionsBadRequestOnInvalidStatus() {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "invalid");
+        List<DisclosureOptionItem> request = buildRequest("invalid");
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "error");
+        Assert.assertNotNull(body);
     }
 
     @Test
     public void testAddDisclosureOptionsServiceError() throws Exception {
-        DisclosureOptionsUpdateRequest request = buildRequest("acc-1", "pre-approval");
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-1"))
+        List<DisclosureOptionItem> request = buildRequest("pre-approval");
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, List.of("acc-1")))
             .thenThrow(new AccountMetadataException("fail"));
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
         ApiResponse body = (ApiResponse) response.getEntity();
-        Assert.assertEquals(body.getStatus(), "error");
+        Assert.assertNotNull(body);
     }
 
-    private DisclosureOptionsUpdateRequest buildRequest(String accountId, String status) {
+    private List<DisclosureOptionItem> buildRequest(String status) {
         DisclosureOptionItem item = new DisclosureOptionItem();
-        item.setAccountID(accountId);
+        item.setAccountId("acc-1");
         item.setDisclosureOption(status);
-
-        DisclosureOptionsUpdateRequest request = new DisclosureOptionsUpdateRequest();
-        request.setData(Collections.singletonList(item));
-        return request;
+        return Collections.singletonList(item);
     }
 
     private void resetSingleton() throws Exception {

@@ -18,9 +18,8 @@
 
 package org.wso2.openbanking.consumerdatastandards.service.service;
 
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.service.dao.AccountMetadataDAOImpl;
@@ -30,6 +29,8 @@ import org.wso2.openbanking.consumerdatastandards.utils.connection.provider.Data
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 
 public class AccountMetadataServiceImpl implements AccountMetadataService {
 
@@ -37,7 +38,7 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
 
     private final AccountMetadataDAO metadataDAO;
     private final ConnectionProvider connectionProvider;
-    private static final Logger log = LoggerFactory.getLogger(AccountMetadataServiceImpl.class);
+    private static final Log log = LogFactory.getLog(AccountMetadataServiceImpl.class);
 
 
     // private constructor
@@ -91,69 +92,65 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
     }
 
     /**
-     * Add disclosure option for a joint account.
+     * Resets the singleton instance. For testing purposes only.
+     */
+    static synchronized void resetInstance() {
+        instance = null;
+    }
+
+    /**
+     * Batch retrieve disclosure options for multiple accounts.
      *
-     * @param accountId the account ID
-     * @param disclosureOptionStatus the disclosure option status (e.g., "pre-approval", "no-sharing")
+     * @param accountIds the list of account IDs
+     * @return map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    public void addDisclosureOption(String accountId, String disclosureOptionStatus)
+    @Override
+    public Map<String, String> getBatchDisclosureOptions(List<String> accountIds)
             throws AccountMetadataException {
 
-        if (StringUtils.isBlank(accountId) || StringUtils.isBlank(disclosureOptionStatus)) {
-            throw new AccountMetadataException("Account ID or disclosure option status is not provided.");
-        }
-
         try (Connection conn = connectionProvider.getConnection()) {
-            metadataDAO.addDisclosureOption(conn, accountId, disclosureOptionStatus);
-        } catch (AccountMetadataException | SQLException e) {
-            log.error("Error while adding disclosure option for accountId: {}", accountId, e);
-            throw new AccountMetadataException(
-                    "Failed to add disclosure option for accountId: " + accountId, e);
+            return metadataDAO.getBatchDisclosureOptions(conn, accountIds);
+        } catch (SQLException e) {
+            log.error("Error batch retrieving disclosure options", e);
+            throw new AccountMetadataException("Failed to batch retrieve disclosure options", e);
         }
     }
 
     /**
-     * Update disclosure option for a joint account.
+     * Batch add disclosure options for multiple accounts.
      *
-     * @param accountId the account ID
-     * @param disclosureOptionStatus the disclosure option status (e.g., "pre-approval", "no-sharing")
+     * @param accountDisclosureMap map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    public void updateDisclosureOption(String accountId, String disclosureOptionStatus)
+    @Override
+    public void addBatchDisclosureOptions(Map<String, String> accountDisclosureMap)
             throws AccountMetadataException {
 
-        if (StringUtils.isBlank(accountId) || StringUtils.isBlank(disclosureOptionStatus)) {
-            throw new AccountMetadataException("Account ID or disclosure option status is not provided.");
-        }
-
         try (Connection conn = connectionProvider.getConnection()) {
-            metadataDAO.updateDisclosureOption(conn, accountId, disclosureOptionStatus);
-        } catch (AccountMetadataException | SQLException e) {
-            log.error("Error while updating disclosure option for accountId: {}", accountId, e);
-            throw new AccountMetadataException(
-                    "Failed to update disclosure option for accountId: " + accountId, e);
+            metadataDAO.addBatchDisclosureOptions(conn, accountDisclosureMap);
+        } catch (SQLException e) {
+            log.error("Error batch adding disclosure options", e);
+            throw new AccountMetadataException("Failed to batch add disclosure options", e);
         }
     }
 
     /**
-     * Retrieve disclosure option status for a joint account.
+     * Batch update disclosure options for multiple accounts.
      *
-     * @param accountId the account ID
-     * @return the disclosure option status, or null if not found
+     * @param accountDisclosureMap map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    public String getDisclosureOption(String accountId) throws AccountMetadataException {
-
-        if (StringUtils.isBlank(accountId)) {
-            throw new AccountMetadataException("Account ID is invalid");
-        }
+    @Override
+    public void updateBatchDisclosureOptions(Map<String, String> accountDisclosureMap)
+            throws AccountMetadataException {
 
         try (Connection conn = connectionProvider.getConnection()) {
-            return metadataDAO.getDisclosureOption(conn, accountId);
-        } catch (AccountMetadataException | SQLException e) {
-            log.error("Error retrieving disclosure option for accountId: {}", accountId, e);
-            throw new AccountMetadataException("Failed to retrieve disclosure option", e);
+            metadataDAO.updateBatchDisclosureOptions(conn, accountDisclosureMap);
+        } catch (SQLException e) {
+            log.error("Error batch updating disclosure options", e);
+            throw new AccountMetadataException("Failed to batch update disclosure options", e);
         }
     }
+
 }

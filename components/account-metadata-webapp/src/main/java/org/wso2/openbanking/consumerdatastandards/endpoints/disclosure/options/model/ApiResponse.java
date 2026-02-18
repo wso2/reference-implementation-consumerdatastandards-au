@@ -29,33 +29,14 @@ import io.swagger.annotations.ApiModelProperty;
 public class ApiResponse {
 
     @ApiModelProperty(
-            value = "Response status",
-            example = "success"
-    )
-    @JsonProperty("status")
-    private String status;
-
-    @ApiModelProperty(
             value = "Response message",
             example = "Disclosure options updated successfully"
     )
     @JsonProperty("message")
     private String message;
 
-    public ApiResponse() {
-    }
-
-    public ApiResponse(String status, String message) {
-        this.status = status;
+    public ApiResponse(String message) {
         this.message = message;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
     }
 
     public String getMessage() {
@@ -65,4 +46,5 @@ public class ApiResponse {
     public void setMessage(String message) {
         this.message = message;
     }
+
 }

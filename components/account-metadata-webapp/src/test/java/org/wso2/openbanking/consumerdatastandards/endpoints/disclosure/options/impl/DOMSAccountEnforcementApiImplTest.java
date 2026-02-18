@@ -25,7 +25,6 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DOMSBlockedAccountsRequest;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DOMSBlockedAccountsResponse;
-import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadataServiceImpl;
 import org.wso2.openbanking.consumerdatastandards.utils.connection.provider.ConnectionProvider;
@@ -33,7 +32,10 @@ import org.wso2.openbanking.consumerdatastandards.utils.connection.provider.Conn
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -64,10 +66,12 @@ public class DOMSAccountEnforcementApiImplTest {
 
     @Test
     public void testGetBlockedAccountsFiltersNoSharing() throws Exception {
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-1")).thenReturn("no-sharing");
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-2")).thenReturn("pre-approval");
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-3"))
-            .thenThrow(new AccountMetadataException("fail"));
+        Map<String, String> batchResult = new HashMap<>();
+        batchResult.put("acc-1", "no-sharing");
+        batchResult.put("acc-2", "pre-approval");
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2", "acc-3")))
+            .thenReturn(batchResult);
 
         DOMSBlockedAccountsRequest request = new DOMSBlockedAccountsRequest();
         request.setAccountIds(Arrays.asList("acc-1", "acc-2", "acc-3"));
@@ -77,7 +81,27 @@ public class DOMSAccountEnforcementApiImplTest {
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
         DOMSBlockedAccountsResponse body = (DOMSBlockedAccountsResponse) response.getEntity();
         List<String> blocked = body.getBlockedAccountIds();
-        Assert.assertEquals(blocked, Arrays.asList("acc-1"));
+        Assert.assertEquals(blocked, List.of("acc-1"));
+    }
+
+    @Test
+    public void testGetBlockedAccountsEmptyWhenNoNoSharing() throws Exception {
+        Map<String, String> batchResult = new HashMap<>();
+        batchResult.put("acc-1", "pre-approval");
+        batchResult.put("acc-2", "pre-approval");
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
+            .thenReturn(batchResult);
+
+        DOMSBlockedAccountsRequest request = new DOMSBlockedAccountsRequest();
+        request.setAccountIds(Arrays.asList("acc-1", "acc-2"));
+
+        Response response = DOMSAccountEnforcementApiImpl.getBlockedAccounts(request);
+
+        Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
+        DOMSBlockedAccountsResponse body = (DOMSBlockedAccountsResponse) response.getEntity();
+        List<String> blocked = body.getBlockedAccountIds();
+        Assert.assertEquals(blocked, Collections.emptyList());
     }
 
     private void resetSingleton() throws Exception {

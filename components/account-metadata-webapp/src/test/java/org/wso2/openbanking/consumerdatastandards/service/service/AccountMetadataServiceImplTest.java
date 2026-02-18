@@ -29,6 +29,10 @@ import org.wso2.openbanking.consumerdatastandards.utils.connection.provider.Conn
 import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AccountMetadataServiceImplTest {
 
@@ -50,95 +54,6 @@ public class AccountMetadataServiceImplTest {
     }
 
     @Test
-    public void testAddDisclosureOption() throws Exception {
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.addDisclosureOption("acc-123", "no-sharing");
-
-        Mockito.verify(metadataDAO).addDisclosureOption(
-                connection, "acc-123", "no-sharing");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testAddDisclosureOptionBlankAccountId() throws Exception {
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.addDisclosureOption(" ", "no-sharing");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testAddDisclosureOptionConnectionFailure() throws Exception {
-        ConnectionProvider failingProvider = Mockito.mock(ConnectionProvider.class);
-        Mockito.when(failingProvider.getConnection()).thenThrow(new SQLException("db down"));
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, failingProvider);
-
-        service.addDisclosureOption("acc-000", "pre-approval");
-    }
-
-    @Test
-    public void testGetDisclosureOption() throws Exception {
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-456"))
-                .thenReturn("pre-approval");
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-        String status = service.getDisclosureOption("acc-456");
-
-        Assert.assertEquals(status, "pre-approval");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testUpdateDisclosureOptionBlankStatus() throws Exception {
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.updateDisclosureOption("acc-789", "");
-    }
-
-    @Test
-    public void testUpdateDisclosureOptionSuccess() throws Exception {
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.updateDisclosureOption("acc-789", "pre-approval");
-
-        Mockito.verify(metadataDAO).updateDisclosureOption(connection, "acc-789", "pre-approval");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testUpdateDisclosureOptionBlankAccountId() throws Exception {
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.updateDisclosureOption(" ", "no-sharing");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testUpdateDisclosureOptionDaoException() throws Exception {
-        Mockito.doThrow(new AccountMetadataException("dao error"))
-                .when(metadataDAO)
-                .updateDisclosureOption(connection, "acc-999", "no-sharing");
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.updateDisclosureOption("acc-999", "no-sharing");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testGetDisclosureOptionBlankAccountId() throws Exception {
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.getDisclosureOption(" ");
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testGetDisclosureOptionDaoException() throws Exception {
-        Mockito.when(metadataDAO.getDisclosureOption(connection, "acc-777"))
-                .thenThrow(new AccountMetadataException("dao error"));
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.getDisclosureOption("acc-777");
-    }
-
-    @Test
     public void testGetInstanceWithMetadataDaoOnly() throws Exception {
         resetSingleton();
 
@@ -155,6 +70,86 @@ public class AccountMetadataServiceImplTest {
         AccountMetadataServiceImpl serviceAgain = AccountMetadataServiceImpl.getInstance();
 
         Assert.assertSame(service, serviceAgain);
+    }
+
+    @Test
+    public void testGetBatchDisclosureOptions() throws Exception {
+        Map<String, String> expectedResult = new HashMap<>();
+        expectedResult.put("acc-111", "pre-approval");
+        expectedResult.put("acc-222", "no-sharing");
+        
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-111", "acc-222")))
+                .thenReturn(expectedResult);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        Map<String, String> result = service.getBatchDisclosureOptions(Arrays.asList("acc-111", "acc-222"));
+
+        Assert.assertEquals(result, expectedResult);
+        Mockito.verify(metadataDAO).getBatchDisclosureOptions(connection, Arrays.asList("acc-111", "acc-222"));
+    }
+
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchDisclosureOptionsDaoException() throws Exception {
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, List.of("acc-333")))
+                .thenThrow(new AccountMetadataException("dao error"));
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
+        service.getBatchDisclosureOptions(List.of("acc-333"));
+    }
+
+    @Test
+    public void testAddBatchDisclosureOptions() throws Exception {
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-444", "no-sharing");
+        accountMap.put("acc-555", "pre-approval");
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
+        service.addBatchDisclosureOptions(accountMap);
+
+        Mockito.verify(metadataDAO).addBatchDisclosureOptions(connection, accountMap);
+    }
+
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testAddBatchDisclosureOptionsDaoException() throws Exception {
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-666", "no-sharing");
+        
+        Mockito.doThrow(new AccountMetadataException("dao error"))
+                .when(metadataDAO)
+                .addBatchDisclosureOptions(connection, accountMap);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
+        service.addBatchDisclosureOptions(accountMap);
+    }
+
+    @Test
+    public void testUpdateBatchDisclosureOptions() throws Exception {
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-777", "pre-approval");
+        accountMap.put("acc-888", "no-sharing");
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
+        service.updateBatchDisclosureOptions(accountMap);
+
+        Mockito.verify(metadataDAO).updateBatchDisclosureOptions(connection, accountMap);
+    }
+
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testUpdateBatchDisclosureOptionsDaoException() throws Exception {
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-999", "pre-approval");
+        
+        Mockito.doThrow(new AccountMetadataException("dao error"))
+                .when(metadataDAO)
+                .updateBatchDisclosureOptions(connection, accountMap);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
+        service.updateBatchDisclosureOptions(accountMap);
     }
 
     private void resetSingleton() throws Exception {

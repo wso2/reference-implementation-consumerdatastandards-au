@@ -20,34 +20,33 @@ package org.wso2.openbanking.consumerdatastandards.service.service;
 
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 
+import java.util.List;
+import java.util.Map;
+
 public interface AccountMetadataService {
 
     /**
-     * Add disclosure option for a joint account.
+     * Batch retrieve disclosure options for multiple accounts.
      *
-     * @param accountId the account ID
-     * @param disclosureOptionStatus the disclosure option status (e.g., "pre-approval", "no-sharing")
+     * @param accountIds the list of account IDs
+     * @return map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    void addDisclosureOption(String accountId, String disclosureOptionStatus)
-            throws AccountMetadataException;
+    Map<String, String> getBatchDisclosureOptions(List<String> accountIds) throws AccountMetadataException;
 
     /**
-     * Update disclosure option for a joint account.
+     * Batch add disclosure options for multiple accounts.
      *
-     * @param accountId the account ID
-     * @param disclosureOptionStatus the disclosure option status (e.g., "pre-approval", "no-sharing")
+     * @param accountDisclosureMap map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    void updateDisclosureOption(String accountId, String disclosureOptionStatus)
-            throws AccountMetadataException;
+    void addBatchDisclosureOptions(Map<String, String> accountDisclosureMap) throws AccountMetadataException;
 
     /**
-     * Retrieve disclosure option status for a joint account.
+     * Batch update disclosure options for multiple accounts.
      *
-     * @param accountId the account ID
-     * @return the disclosure option status, or null if not found
+     * @param accountDisclosureMap map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    String getDisclosureOption(String accountId) throws AccountMetadataException;
+    void updateBatchDisclosureOptions(Map<String, String> accountDisclosureMap) throws AccountMetadataException;
 }

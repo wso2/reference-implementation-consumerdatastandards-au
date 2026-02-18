@@ -23,8 +23,6 @@ package org.wso2.openbanking.consumerdatastandards.configurations;
  */
 public class ConfigurableProperties {
 
-    public static final String SHARABLE_ENDPOINT = "http://localhost:9766/api/openbanking/cds/backend/" +
-            "services/bankaccounts/bankaccountservice/sharable-accounts";
     public static final String ACCOUNT_METADATA_DATASOURCE_JNDI_NAME = "jdbc/ACCOUNT_METADATA_DB";
 
 }

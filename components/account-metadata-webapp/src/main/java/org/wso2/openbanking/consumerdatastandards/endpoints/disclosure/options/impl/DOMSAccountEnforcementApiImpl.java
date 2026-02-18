@@ -29,6 +29,7 @@ import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadat
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.Response;
 
@@ -49,22 +50,26 @@ public class DOMSAccountEnforcementApiImpl {
 
         List<String> blockedAccounts = new ArrayList<>();
 
-        for (String accountId : request.getAccountIds()) {
-            try {
-                String domsStatus = accountMetadataService.getDisclosureOption(accountId);
+        try {
+            // Get disclosure options for all accounts in one batch call
+            Map<String, String> domsStatusMap = accountMetadataService.getBatchDisclosureOptions(
+                    request.getAccountIds());
 
-                if (CommonConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(domsStatus)) {
-                    blockedAccounts.add(accountId);
+            // Filter accounts with no-sharing status
+            for (Map.Entry<String, String> entry : domsStatusMap.entrySet()) {
+                if (CommonConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(entry.getValue())) {
+                    blockedAccounts.add(entry.getKey());
                 }
-
-            } catch (AccountMetadataException e) {
-                log.error("Error checking DOMS status for accountId: " + accountId, e);
-                // Fail-safe behavior: treat as not blocked
             }
+
+        } catch (AccountMetadataException e) {
+            log.error("Error checking DOMS status for batch accounts", e);
+            // Fail-safe behavior: return empty list
         }
 
         return Response.ok(
                 new DOMSBlockedAccountsResponse(blockedAccounts)
         ).build();
+
     }
 }

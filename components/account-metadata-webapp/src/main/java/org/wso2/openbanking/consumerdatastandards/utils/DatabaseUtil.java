@@ -18,8 +18,8 @@
 
 package org.wso2.openbanking.consumerdatastandards.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.configurations.ConfigurableProperties;
 
 import java.sql.Connection;
@@ -34,7 +34,7 @@ import javax.sql.DataSource;
  */
 public class DatabaseUtil {
 
-    private static final Logger log = LoggerFactory.getLogger(DatabaseUtil.class);
+    private static final Log log = LogFactory.getLog(DatabaseUtil.class);
     private static final DataSource dataSource;
 
     static {
@@ -42,7 +42,7 @@ public class DatabaseUtil {
             InitialContext ctx = new InitialContext();
             String jndiName = ConfigurableProperties.ACCOUNT_METADATA_DATASOURCE_JNDI_NAME;
 
-            log.debug("Initializing Account Metadata datasource using JNDI name: {}", jndiName);
+            log.debug("Initializing Account Metadata datasource");
 
             dataSource = (DataSource) ctx.lookup(jndiName);
 
@@ -53,8 +53,8 @@ public class DatabaseUtil {
             throw new ExceptionInInitializerError(e);
 
         } catch (ClassCastException e) {
-            log.error("JNDI resource is not a DataSource: {}",
-                    ConfigurableProperties.ACCOUNT_METADATA_DATASOURCE_JNDI_NAME, e);
+            log.error("JNDI resource is not a DataSource: " +
+                    ConfigurableProperties.ACCOUNT_METADATA_DATASOURCE_JNDI_NAME + e);
             throw new ExceptionInInitializerError(e);
         }
     }

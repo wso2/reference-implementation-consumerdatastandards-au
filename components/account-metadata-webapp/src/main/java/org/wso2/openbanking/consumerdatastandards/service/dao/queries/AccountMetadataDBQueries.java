@@ -22,26 +22,28 @@ package org.wso2.openbanking.consumerdatastandards.service.dao.queries;
 public interface AccountMetadataDBQueries {
 
     // DB Queries related to DOMS Feature.
+    /**
+     * Get the SQL query for retrieving disclosure options for multiple accounts.
+     * Uses IN clause for batch retrieval.
+     *
+     * @param accountCount the number of accounts to query
+     * @return the SQL query with placeholders
+     */
+    String getBatchGetDisclosureOptionQuery(int accountCount);
 
     /**
-     * Get the SQL query for adding a new disclosure option.
+     * Get the SQL query for batch adding disclosure options.
+     * Uses batch insert for multiple accounts.
      *
-     * @return the SQL query
+     * @return the SQL query for batch insert
      */
-    String getAddDisclosureOptionQuery();
+    String getBatchAddDisclosureOptionQuery();
 
     /**
-     * Get the SQL query for updating an existing disclosure option.
+     * Get the SQL query for batch updating disclosure options using CASE statement.
      *
-     * @return the SQL query
+     * @return the SQL query for batch update
      */
-    String getUpdateDisclosureOptionQuery();
-
-    /**
-     * Get the SQL query for retrieving a disclosure option.
-     *
-     * @return the SQL query
-     */
-    String getGetDisclosureOptionQuery();
+    String getBatchUpdateDisclosureOptionQuery();
 
 }

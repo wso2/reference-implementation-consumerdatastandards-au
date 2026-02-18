@@ -1,4 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+ ~ Copyright (c) 2026, WSO2 LLC. (https://www.wso2.com).
+ ~
+ ~ WSO2 LLC. licenses this file to you under the Apache License,
+ ~ Version 2.0 (the "License"); you may not use this file except
+ ~ in compliance with the License.
+ ~ You may obtain a copy of the License at
+ ~
+ ~     http://www.apache.org/licenses/LICENSE-2.0
+ ~
+ ~ Unless required by applicable law or agreed to in writing,
+ ~ software distributed under the License is distributed on an
+ ~ "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ ~ KIND, either express or implied. See the License for the
+ ~ specific language governing permissions and limitations
+ ~ under the License.
+ -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -16,6 +34,39 @@
   <artifactId>reference-implementation-openbanking-account-metadata</artifactId>
   <name>WSO2 Open Banking Toolkit - Account Metadata API</name>
   <packaging>war</packaging>
+
+  <!-- Child-level overrides to patch CVEs + align versions without changing parent -->
+  <properties>
+    <!-- Align ALL Jackson artifacts (databind/core/annotations/jsr310/jaxrs, etc.) -->
+    <jackson.version>2.17.1</jackson.version>
+
+    <!-- Patch org.json:json vulnerabilities -->
+    <orgjson.version>20240303</orgjson.version>
+
+    <!-- Modern test dependencies (replace deprecated mockito-all; bump TestNG if required by scanner) -->
+    <mockito.version>5.11.0</mockito.version>
+    <testng.version>7.10.2</testng.version>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Force consistent Jackson versions (overrides parent jackson-databind:2.12.0) -->
+      <dependency>
+        <groupId>com.fasterxml.jackson</groupId>
+        <artifactId>jackson-bom</artifactId>
+        <version>${jackson.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <!-- Override org.json:json to a patched version -->
+      <dependency>
+        <groupId>org.json</groupId>
+        <artifactId>json</artifactId>
+        <version>${orgjson.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <dependency>
@@ -56,10 +107,13 @@
       <artifactId>httpclient</artifactId>
       <version>4.5.14</version>
     </dependency>
+
+    <!-- Patched via child dependencyManagement override above -->
     <dependency>
       <groupId>org.json</groupId>
       <artifactId>json</artifactId>
     </dependency>
+
     <dependency>
       <groupId>com.google.code.gson</groupId>
       <artifactId>gson</artifactId>
@@ -82,16 +136,23 @@
       <version>2.1.0</version>
       <scope>compile</scope>
     </dependency>
+
+    <!-- If your scanner enforces TestNG patching, pin it here -->
     <dependency>
       <groupId>org.testng</groupId>
       <artifactId>testng</artifactId>
+      <version>${testng.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Replace deprecated mockito-all -->
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-common</artifactId>

@@ -24,14 +24,18 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.ApiResponse;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionItem;
-import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionsBulkResponse;
-import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionsUpdateRequest;
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadataService;
 import org.wso2.openbanking.consumerdatastandards.service.service.AccountMetadataServiceImpl;
 
-import javax.ws.rs.core.Response;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.core.Response;
 
 public class DisclosureOptionsManagementApiImpl {
 
@@ -43,136 +47,154 @@ public class DisclosureOptionsManagementApiImpl {
         // Prevent instantiation
     }
 
-    public static Response updateDisclosureOptions(DisclosureOptionsUpdateRequest request) {
+    public static Response updateDisclosureOptions(List<DisclosureOptionItem> request) {
 
-        if (request == null || request.getData() == null || request.getData().isEmpty()) {
-            log.warn("[DOMS] No disclosure options provided to update");
+        if (request == null || request.isEmpty()) {
+            log.error("[DOMS] No disclosure options provided to update");
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ApiResponse("error", "No disclosure options provided"))
+                    .entity(new ApiResponse("No disclosure options provided"))
                     .build();
         }
 
         try {
-            for (DisclosureOptionItem item : request.getData()) {
-
-                // Validate disclosure option status
+            Map<String, String> accountDisclosureMap = new HashMap<>();
+            
+            // Validate and build map
+            for (DisclosureOptionItem item : request) {
                 String disclosureOptionStatus = item.getDisclosureOption();
                 if (isNotValidDOMSStatus(disclosureOptionStatus)) {
-                    log.warn("[DOMS] Invalid disclosure option status for account: " +
-                            item.getAccountID() + " - " + disclosureOptionStatus);
+                    log.error("[DOMS] Invalid disclosure option status for account: " +
+                            item.getAccountId() + " - " + disclosureOptionStatus);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ApiResponse("error",
+                            .entity(new ApiResponse(
                                     "Invalid disclosure option status. " +
                                             "Allowed values: no-sharing, pre-approval"))
                             .build();
                 }
-
-                // Calling the addOrUpdate DOMS status for joint accounts method from the AccountMetadataService class
-                accountMetadataService.updateDisclosureOption(
-                        item.getAccountID(), disclosureOptionStatus);
+                accountDisclosureMap.put(item.getAccountId(), disclosureOptionStatus);
             }
 
+            // Batch update
+            accountMetadataService.updateBatchDisclosureOptions(accountDisclosureMap);
+
             return Response.ok()
-                    .entity(new ApiResponse("success", "Disclosure options updated successfully"))
+                    .entity(new ApiResponse("Disclosure options updated successfully"))
                     .build();
 
         } catch (AccountMetadataException e) {
             log.error("[DOMS] Failed to update disclosure options via AccountMetadataService", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(new ApiResponse(
-                            "error", "Failed to update disclosure options: " + e.getMessage()))
+                            "Failed to update disclosure options: " + e.getMessage()))
                     .build();
         }
     }
 
-    public static Response getDisclosureOptions(java.util.List<String> accountIds) {
+    public static Response getDisclosureOptions(String accountIds) {
 
-
-        if (accountIds == null || accountIds.isEmpty()) {
-            log.warn("[DOMS] accountIds are missing in get request");
+        if (StringUtils.isBlank(accountIds)) {
+            log.error("[DOMS] accountIds are missing in get request");
             return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ApiResponse("error", "At least one accountId is required"))
-                    .build();
-        }
-
-
-            Map<String, String> result = new java.util.HashMap<>();
-            for (String acc : accountIds) {
-                if (StringUtils.isBlank(acc)) {
-                    result.put(acc, null);
-                    continue;
-                }
-                try {
-                    String status = accountMetadataService.getDisclosureOption(acc);
-                    result.put(acc, status);
-                } catch (AccountMetadataException e) {
-                    // put null to keep processing other accounts
-                    result.put(acc, null);
-                    log.error("[DOMS] Error retrieving status for account: " + acc, e);
-                }
-            }
-
-            DisclosureOptionsBulkResponse resp =
-                    new DisclosureOptionsBulkResponse(
-                            "success", result);
-
-            return Response.ok().entity(resp).build();
-
-    }
-
-    public static Response addDisclosureOptions(DisclosureOptionsUpdateRequest request) {
-
-        if (request == null || request.getData() == null || request.getData().isEmpty()) {
-            log.warn("[DOMS] No disclosure options provided to add");
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ApiResponse("error", "No disclosure options provided"))
+                    .entity(new ApiResponse("At least one accountId is required"))
                     .build();
         }
 
         try {
-            boolean anyExisted = false;
+            // Split comma-separated account IDs and trim whitespace
+            List<String> accountIdList = Arrays.asList(accountIds.split(","));
+            accountIdList = accountIdList.stream()
+                    .map(String::trim)
+                    .filter(StringUtils::isNotBlank)
+                    .collect(Collectors.toList());
 
-            for (DisclosureOptionItem item : request.getData()) {
+            if (accountIdList.isEmpty()) {
+                log.error("[DOMS] No valid accountIds found after parsing");
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity(new ApiResponse("At least one valid accountId is required"))
+                        .build();
+            }
 
-                // Validate disclosure option status
+            Map<String, String> result = accountMetadataService.getBatchDisclosureOptions(accountIdList);
+            
+            // Convert map to array of objects
+            List<DisclosureOptionItem> responseList = result.entrySet().stream()
+                    .map(entry -> new DisclosureOptionItem(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList());
+            
+            return Response.ok().entity(responseList).build();
+
+        } catch (AccountMetadataException e) {
+            log.error("[DOMS] Error batch retrieving disclosure options", e);
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(new ApiResponse("Failed to retrieve disclosure options: " + e.getMessage()))
+                    .build();
+        }
+
+    }
+
+    public static Response addDisclosureOptions(List<DisclosureOptionItem> request) {
+
+        if (request == null || request.isEmpty()) {
+            log.error("[DOMS] No disclosure options provided to add");
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(new ApiResponse("No disclosure options provided"))
+                    .build();
+        }
+
+        try {
+            Map<String, String> accountDisclosureMap = new HashMap<>();
+            List<String> accountIdsToCheck = new ArrayList<>();
+
+            // Validate and collect accounts
+            for (DisclosureOptionItem item : request) {
                 String disclosureOptionStatus = item.getDisclosureOption();
                 if (isNotValidDOMSStatus(disclosureOptionStatus)) {
                     log.warn("[DOMS] Invalid disclosure option status for account: " +
-                            item.getAccountID() + " - " + disclosureOptionStatus);
+                            item.getAccountId() + " - " + disclosureOptionStatus);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ApiResponse("error",
+                            .entity(new ApiResponse(
                                     "Invalid disclosure option status. " +
                                             "Allowed values: no-sharing, pre-approval"))
                             .build();
                 }
+                accountDisclosureMap.put(item.getAccountId(), disclosureOptionStatus);
+                accountIdsToCheck.add(item.getAccountId());
+            }
 
-                // Check if disclosure option already exists for this account
-                String existingStatus = accountMetadataService.getDisclosureOption(item.getAccountID());
-                if (existingStatus == null) {
-                    // Use the AccountMetadataService to add disclosure option for each account
-                    accountMetadataService.addDisclosureOption(
-                            item.getAccountID(), disclosureOptionStatus);
-                } else {
-                    anyExisted = true;
+            // Batch check for existing accounts
+            Map<String, String> existingStatuses = accountMetadataService.getBatchDisclosureOptions(accountIdsToCheck);
+
+            // Filter to only add new accounts
+            Map<String, String> newAccounts = new HashMap<>();
+            for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
+                if (!existingStatuses.containsKey(entry.getKey())) {
+                    newAccounts.put(entry.getKey(), entry.getValue());
                 }
             }
 
-            // Return 201 Created if all were new, 200 OK if any already existed (updates)
+            boolean anyExisted = !existingStatuses.isEmpty();
+
+            if (!newAccounts.isEmpty()) {
+                accountMetadataService.addBatchDisclosureOptions(newAccounts);
+            }
+
+            // Return 201 Created if all were new, 200 OK if any of account already existed
             if (anyExisted) {
                 return Response.ok()
-                        .entity(new ApiResponse("success",
-                                "Disclosure options already exists for the account"))
+                        .entity(new ApiResponse(
+                                "Some disclosure options already exist for the accounts"))
                         .build();
             } else {
                 return Response.status(Response.Status.CREATED)
-                        .entity(new ApiResponse("success", "Disclosure options added successfully"))
+                        .entity(new ApiResponse(
+                                "Disclosure options added successfully"))
                         .build();
             }
 
         } catch (AccountMetadataException e) {
             log.error("[DOMS] Failed to add disclosure options via AccountMetadataService", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ApiResponse("error", "Failed to add disclosure options: "
+                    .entity(new ApiResponse("Failed to add disclosure options: "
                             + e.getMessage()))
                     .build();
         }

@@ -24,16 +24,20 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.Authorization;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.impl.DisclosureOptionsManagementApiImpl;
-import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionsGetRequest;
-import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionsUpdateRequest;
+import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DisclosureOptionItem;
+import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
+
+import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 /**
@@ -54,7 +58,6 @@ public class DisclosureOptionsManagementApi {
     @ApiOperation(
             value = "Update disclosure options for one or more accounts",
             notes = "Allows updating disclosure option status for multiple account IDs",
-            response = Void.class,
             authorizations = {
                     @Authorization(value = "OAuth2", scopes = {}),
                     @Authorization(value = "BasicAuth")
@@ -67,8 +70,8 @@ public class DisclosureOptionsManagementApi {
             @ApiResponse(code = 500, message = "Server Error")
     })
     public Response updateDisclosureOptionsPut(
-            @Valid @NotNull DisclosureOptionsUpdateRequest request
-    ) throws Exception {
+            @Valid @NotNull List<DisclosureOptionItem> request
+    ) throws AccountMetadataException {
         return DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
     }
 
@@ -79,7 +82,6 @@ public class DisclosureOptionsManagementApi {
     @ApiOperation(
             value = "Add disclosure options for one or more accounts",
             notes = "Allows adding disclosure option status for multiple account IDs",
-            response = Void.class,
             authorizations = {
                     @Authorization(value = "OAuth2", scopes = {}),
                     @Authorization(value = "BasicAuth")
@@ -92,19 +94,18 @@ public class DisclosureOptionsManagementApi {
             @ApiResponse(code = 500, message = "Server Error")
     })
     public Response addDisclosureOptionsPost(
-            @Valid @NotNull DisclosureOptionsUpdateRequest request
-    ) throws Exception {
+            @Valid @NotNull List<DisclosureOptionItem> request
+    ) throws AccountMetadataException {
         return DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
     }
 
-    @POST
-    @Path("/accounts-status")
-    @Consumes({ "application/json" })
+    @GET
     @Produces({ "application/json" })
     @ApiOperation(
             value = "Get disclosure options for multiple accounts",
-            notes = "Retrieve disclosure option statuses for multiple account IDs",
-            response = Void.class,
+            notes = "Retrieve disclosure option statuses for multiple account IDs (comma-separated)",
+            response = DisclosureOptionItem.class,
+            responseContainer = "List",
             authorizations = {
                     @Authorization(value = "OAuth2", scopes = {}),
                     @Authorization(value = "BasicAuth")
@@ -116,10 +117,10 @@ public class DisclosureOptionsManagementApi {
             @ApiResponse(code = 400, message = "Bad Request"),
             @ApiResponse(code = 500, message = "Server Error")
     })
-    public Response getDisclosureOptionsPost(
-            @Valid @NotNull DisclosureOptionsGetRequest request
-    ) throws Exception {
-        return DisclosureOptionsManagementApiImpl.getDisclosureOptions(request.getAccountIds());
+    public Response getDisclosureOptionsGet(
+            @QueryParam("accountIds") @NotNull String accountIds
+    ) throws AccountMetadataException {
+        return DisclosureOptionsManagementApiImpl.getDisclosureOptions(accountIds);
     }
 
 }

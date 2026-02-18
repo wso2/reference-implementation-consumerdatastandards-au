@@ -32,7 +32,7 @@ public class DisclosureOptionItem {
             required = true
     )
     @NotBlank
-    private String accountID;
+    private String accountId;
 
     @ApiModelProperty(
             value = "Disclosure option status",
@@ -42,12 +42,21 @@ public class DisclosureOptionItem {
     @NotBlank
     private String disclosureOption;
 
-    public String getAccountID() {
-        return accountID;
+    public DisclosureOptionItem(String accountId, String disclosureOption) {
+        this.accountId = accountId;
+        this.disclosureOption = disclosureOption;
     }
 
-    public void setAccountID(String accountID) {
-        this.accountID = accountID;
+    public DisclosureOptionItem() {
+
+    }
+
+    public String getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(String accountId) {
+        this.accountId = accountId;
     }
 
     public String getDisclosureOption() {

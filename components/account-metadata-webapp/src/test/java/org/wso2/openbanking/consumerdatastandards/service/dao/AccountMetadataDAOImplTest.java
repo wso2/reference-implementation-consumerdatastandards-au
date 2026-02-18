@@ -28,123 +28,173 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class AccountMetadataDAOImplTest {
 
     private static class TestQueries implements AccountMetadataDBQueries {
 
         @Override
-        public String getAddDisclosureOptionQuery() {
-            return "INSERT";
+        public String getBatchGetDisclosureOptionQuery(int size) {
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < size; i++) {
+                if (i > 0) {
+                    placeholders.append(",");
+                }
+                placeholders.append("?");
+            }
+            return "SELECT ACCOUNT_ID, DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN ("
+                    + placeholders.toString() + ")";
         }
 
         @Override
-        public String getUpdateDisclosureOptionQuery() {
-            return "UPDATE";
+        public String getBatchAddDisclosureOptionQuery() {
+            return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTION_STATUS, LAST_UPDATED_TIMESTAMP)" +
+                    " VALUES (?, ?, ?)";
         }
 
         @Override
-        public String getGetDisclosureOptionQuery() {
-            return "SELECT";
+        public String getBatchUpdateDisclosureOptionQuery() {
+            return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ?, LAST_UPDATED_TIMESTAMP = ?" +
+                    " WHERE ACCOUNT_ID = ?";
         }
     }
 
     @Test
-    public void testAddDisclosureOptionSuccess() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
-
-        Mockito.when(connection.prepareStatement("INSERT")).thenReturn(statement);
-        Mockito.when(statement.executeUpdate()).thenReturn(1);
-
-        dao.addDisclosureOption(connection, "acc-100", "no-sharing");
-
-        Mockito.verify(statement).setString(1, "acc-100");
-        Mockito.verify(statement).setString(2, "no-sharing");
-        Mockito.verify(statement).executeUpdate();
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testAddDisclosureOptionSqlException() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-
-        Mockito.when(connection.prepareStatement("INSERT"))
-                .thenThrow(new SQLException("bad"));
-
-        dao.addDisclosureOption(connection, "acc-101", "pre-approval");
-    }
-
-    @Test
-    public void testUpdateDisclosureOptionSuccess() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
-
-        Mockito.when(connection.prepareStatement("UPDATE")).thenReturn(statement);
-        Mockito.when(statement.executeUpdate()).thenReturn(1);
-
-        dao.updateDisclosureOption(connection, "acc-200", "pre-approval");
-
-        Mockito.verify(statement).setString(1, "pre-approval");
-        Mockito.verify(statement).setString(2, "acc-200");
-        Mockito.verify(statement).executeUpdate();
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testUpdateDisclosureOptionSqlException() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-
-        Mockito.when(connection.prepareStatement("UPDATE"))
-                .thenThrow(new SQLException("bad"));
-
-        dao.updateDisclosureOption(connection, "acc-201", "no-sharing");
-    }
-
-    @Test
-    public void testGetDisclosureOptionFound() throws Exception {
+    public void testGetBatchDisclosureOptionsSuccess() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
         PreparedStatement statement = Mockito.mock(PreparedStatement.class);
         ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-        Mockito.when(connection.prepareStatement("SELECT")).thenReturn(statement);
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
         Mockito.when(statement.executeQuery()).thenReturn(resultSet);
-        Mockito.when(resultSet.next()).thenReturn(true);
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        Mockito.when(resultSet.getString("ACCOUNT_ID"))
+                .thenReturn("acc-400").thenReturn("acc-401");
         Mockito.when(resultSet.getString("DISCLOSURE_OPTION_STATUS"))
-                .thenReturn("no-sharing");
+                .thenReturn("no-sharing").thenReturn("pre-approval");
 
-        String status = dao.getDisclosureOption(connection, "acc-300");
+        Map<String, String> result = dao.getBatchDisclosureOptions(connection, 
+                Arrays.asList("acc-400", "acc-401"));
 
-        Assert.assertEquals(status, "no-sharing");
+        Assert.assertEquals(result.size(), 2);
+        Assert.assertEquals(result.get("acc-400"), "no-sharing");
+        Assert.assertEquals(result.get("acc-401"), "pre-approval");
     }
 
     @Test
-    public void testGetDisclosureOptionNotFound() throws Exception {
+    public void testGetBatchDisclosureOptionsEmpty() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
         PreparedStatement statement = Mockito.mock(PreparedStatement.class);
         ResultSet resultSet = Mockito.mock(ResultSet.class);
 
-        Mockito.when(connection.prepareStatement("SELECT")).thenReturn(statement);
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
         Mockito.when(statement.executeQuery()).thenReturn(resultSet);
         Mockito.when(resultSet.next()).thenReturn(false);
 
-        String status = dao.getDisclosureOption(connection, "acc-301");
+        Map<String, String> result = dao.getBatchDisclosureOptions(connection,
+                List.of("acc-500"));
 
-        Assert.assertNull(status);
+        Assert.assertEquals(result.size(), 0);
     }
 
     @Test(expectedExceptions = AccountMetadataException.class)
-    public void testGetDisclosureOptionSqlException() throws Exception {
+    public void testGetBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
 
-        Mockito.when(connection.prepareStatement("SELECT"))
+        Mockito.when(connection.prepareStatement(Mockito.anyString()))
                 .thenThrow(new SQLException("bad"));
 
-        dao.getDisclosureOption(connection, "acc-302");
+        dao.getBatchDisclosureOptions(connection, List.of("acc-501"));
+    }
+
+    @Test
+    public void testAddBatchDisclosureOptionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-600", "no-sharing");
+        accountMap.put("acc-601", "pre-approval");
+
+        dao.addBatchDisclosureOptions(connection, accountMap);
+
+        Mockito.verify(statement, Mockito.times(2)).setString(
+                Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(
+                Mockito.eq(2), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setTimestamp(
+                Mockito.eq(3), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    @Test
+    public void testAddBatchDisclosureOptionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.addBatchDisclosureOptions(connection, new HashMap<>());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testAddBatchDisclosureOptionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-700", "no-sharing");
+
+        dao.addBatchDisclosureOptions(connection, accountMap);
+    }
+
+    @Test
+    public void testUpdateBatchDisclosureOptionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        Map<String, String> accountMap = new HashMap<>();
+        accountMap.put("acc-800", "no-sharing");
+        accountMap.put("acc-801", "pre-approval");
+
+        dao.updateBatchDisclosureOptions(connection, accountMap);
+
+        Mockito.verify(statement, Mockito.times(2)).setString(
+                Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setTimestamp(
+                Mockito.eq(2), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2)).setString(
+                Mockito.eq(3), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    @Test
+    public void testUpdateBatchDisclosureOptionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.updateBatchDisclosureOptions(connection, new HashMap<>());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 }

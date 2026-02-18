@@ -21,40 +21,40 @@ package org.wso2.openbanking.consumerdatastandards.service.dao;
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 
 import java.sql.Connection;
+import java.util.List;
+import java.util.Map;
 
 public interface AccountMetadataDAO {
 
     /**
-     * Add disclosure option for an account.
+     * Batch retrieve disclosure options for multiple accounts.
      *
      * @param conn the database connection
-     * @param accountId the account ID
-     * @param disclosureOptionStatus the disclosure option status
+     * @param accountIds the list of account IDs
+     * @return map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    void addDisclosureOption(Connection conn, String accountId, String disclosureOptionStatus)
+    Map<String, String> getBatchDisclosureOptions(Connection conn, List<String> accountIds)
             throws AccountMetadataException;
 
     /**
-     * Update disclosure option for an account.
+     * Batch add disclosure options for multiple accounts.
      *
      * @param conn the database connection
-     * @param accountId the account ID
-     * @param disclosureOptionStatus the disclosure option status
+     * @param accountDisclosureMap map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    void updateDisclosureOption(Connection conn, String accountId, String disclosureOptionStatus)
+    void addBatchDisclosureOptions(Connection conn, Map<String, String> accountDisclosureMap)
             throws AccountMetadataException;
 
     /**
-     * Retrieve disclosure option status for an account.
+     * Batch update disclosure options for multiple accounts.
      *
      * @param conn the database connection
-     * @param accountId the account ID
-     * @return the disclosure option status, or null if not found
+     * @param accountDisclosureMap map of account ID to disclosure option status
      * @throws AccountMetadataException if an error occurs
      */
-    String getDisclosureOption(Connection conn, String accountId)
+    void updateBatchDisclosureOptions(Connection conn, Map<String, String> accountDisclosureMap)
             throws AccountMetadataException;
 
 }

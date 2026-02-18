@@ -18,8 +18,8 @@
 
 package org.wso2.openbanking.consumerdatastandards.service.dao;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.service.dao.queries.AccountMetadataDBQueries;
 
@@ -27,10 +27,15 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
 
-    private static final Logger log = LoggerFactory.getLogger(AccountMetadataDAOImpl.class);
+    private static final Log log = LogFactory.getLog(AccountMetadataDAOImpl.class);
 
     private final AccountMetadataDBQueries dbQueries;
 
@@ -42,74 +47,96 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
      * {@inheritDoc}
      */
     @Override
-    public void addDisclosureOption(Connection conn, String accountId, String disclosureOptionStatus)
+    public Map<String, String> getBatchDisclosureOptions(Connection conn, List<String> accountIds)
             throws AccountMetadataException {
 
-        String sql = dbQueries.getAddDisclosureOptionQuery();
+        String sql = dbQueries.getBatchGetDisclosureOptionQuery(accountIds.size());
+        Map<String, String> resultMap = new HashMap<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, accountId);
-            stmt.setString(2, disclosureOptionStatus);
-
-            int rowsAffected = stmt.executeUpdate();
-            log.debug("Added disclosure option for accountId: {}, status: {}, rows affected: {}",
-                    accountId, disclosureOptionStatus, rowsAffected);
-
-        } catch (SQLException e) {
-            log.error("Error adding disclosure option for accountId: {}", accountId, e);
-            throw new AccountMetadataException("Failed to add disclosure option", e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void updateDisclosureOption(Connection conn, String accountId, String disclosureOptionStatus)
-            throws AccountMetadataException {
-
-        String sql = dbQueries.getUpdateDisclosureOptionQuery();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, disclosureOptionStatus);
-            stmt.setString(2, accountId);
-
-            int rowsAffected = stmt.executeUpdate();
-
-            log.debug("Updated disclosure option for accountId: {}, status: {}, rows affected: {}",
-                    accountId, disclosureOptionStatus, rowsAffected);
-
-        } catch (SQLException e) {
-            log.error("Error updating disclosure option for accountId: {}", accountId, e);
-            throw new AccountMetadataException("Failed to update disclosure option", e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getDisclosureOption(Connection conn, String accountId)
-            throws AccountMetadataException {
-
-        String sql = dbQueries.getGetDisclosureOptionQuery();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            stmt.setString(1, accountId);
+            for (int i = 0; i < accountIds.size(); i++) {
+                stmt.setString(i + 1, accountIds.get(i));
+            }
 
             try (ResultSet rs = stmt.executeQuery()) {
-                if (rs.next()) {
+                while (rs.next()) {
+                    String accountId = rs.getString("ACCOUNT_ID");
                     String status = rs.getString("DISCLOSURE_OPTION_STATUS");
-                    log.debug("Retrieved disclosure option for accountId: {}, status: {}", accountId, status);
-                    return status;
+                    resultMap.put(accountId, status);
                 }
             }
-            log.debug("No disclosure option found for accountId: {}", accountId);
-            return null;
+            if (log.isDebugEnabled()) {
+                log.debug("Retrieved disclosure options for " +  resultMap.size() + "accounts.");
+            }
+            return resultMap;
 
         } catch (SQLException e) {
-            log.error("Error retrieving disclosure option for accountId: {}", accountId, e);
-            throw new AccountMetadataException("Failed to retrieve disclosure option", e);
+            log.error("Error retrieving batch disclosure options", e);
+            throw new AccountMetadataException("Failed to retrieve batch disclosure options", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addBatchDisclosureOptions(Connection conn, Map<String, String> accountDisclosureMap)
+            throws AccountMetadataException {
+
+        if (accountDisclosureMap == null || accountDisclosureMap.isEmpty()) {
+            return;
+        }
+
+        String sql = dbQueries.getBatchAddDisclosureOptionQuery();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
+                stmt.setString(1, entry.getKey());
+                stmt.setString(2, entry.getValue());
+                stmt.setTimestamp(3, new Timestamp((new Date()).getTime()));
+                stmt.addBatch();
+            }
+
+            int[] results = stmt.executeBatch();
+            if (log.isDebugEnabled()) {
+                log.debug("Batch added disclosure options for " + results.length + "accounts.");
+            }
+
+        } catch (SQLException e) {
+            log.error("Error batch adding disclosure options", e);
+            throw new AccountMetadataException("Failed to batch add disclosure options", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateBatchDisclosureOptions(Connection conn, Map<String, String> accountDisclosureMap)
+            throws AccountMetadataException {
+
+        if (accountDisclosureMap == null || accountDisclosureMap.isEmpty()) {
+            return;
+        }
+
+        String sql = dbQueries.getBatchUpdateDisclosureOptionQuery();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
+                stmt.setString(1, entry.getValue());
+                stmt.setTimestamp(2, new Timestamp((new Date()).getTime()));
+                stmt.setString(3, entry.getKey());
+                stmt.addBatch();
+            }
+
+            int[] results = stmt.executeBatch();
+            if (log.isDebugEnabled()) {
+                log.debug("Batch updated disclosure options for " + results.length + "accounts.");
+            }
+
+        } catch (SQLException e) {
+            log.error("Error batch updating disclosure options", e);
+            throw new AccountMetadataException("Failed to batch update disclosure options", e);
         }
     }
 

@@ -24,6 +24,7 @@ import io.swagger.annotations.Authorization;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.impl.DOMSAccountEnforcementApiImpl;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DOMSBlockedAccountsRequest;
 import org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.model.DOMSBlockedAccountsResponse;
+import org.wso2.openbanking.consumerdatastandards.exceptions.AccountMetadataException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -56,7 +57,7 @@ public class DOMSAccountEnforcementApi {
     )
     public Response getBlockedAccounts(
             @Valid @NotNull DOMSBlockedAccountsRequest request
-    ) throws Exception {
+    ) throws AccountMetadataException {
         return DOMSAccountEnforcementApiImpl.getBlockedAccounts(request);
     }
 }

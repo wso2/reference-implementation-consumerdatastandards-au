@@ -24,27 +24,35 @@ public class AccountMetadataDBQueriesMySQLImpl implements AccountMetadataDBQueri
      * {@inheritDoc}
      */
     @Override
-    public String getAddDisclosureOptionQuery() {
-        return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTION_STATUS) " +
-                "VALUES (?, ?)";
+    public String getBatchGetDisclosureOptionQuery(int accountCount) {
+        StringBuilder query = new StringBuilder(
+                "SELECT ACCOUNT_ID, DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN (");
+        for (int i = 0; i < accountCount; i++) {
+            query.append("?");
+            if (i < accountCount - 1) {
+                query.append(",");
+            }
+        }
+        query.append(")");
+        return query.toString();
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getUpdateDisclosureOptionQuery() {
-        return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ? " +
-                "WHERE ACCOUNT_ID = ?";
+    public String getBatchAddDisclosureOptionQuery() {
+        return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTION_STATUS, LAST_UPDATED_TIMESTAMP) " +
+                "VALUES (?, ?, ?)";
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public String getGetDisclosureOptionQuery() {
-        return "SELECT DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status " +
-                "WHERE ACCOUNT_ID = ?";
+    public String getBatchUpdateDisclosureOptionQuery() {
+        return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ?, " +
+                "LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ?";
     }
 
 }
