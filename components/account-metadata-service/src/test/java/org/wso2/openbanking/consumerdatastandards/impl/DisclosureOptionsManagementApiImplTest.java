@@ -16,17 +16,17 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.endpoints.disclosure.options.impl;
+package org.wso2.openbanking.consumerdatastandards.impl;
 
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.impl.DisclosureOptionsManagementApiImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.model.ApiResponse;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.model.DisclosureOptionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.impl.DisclosureOptionsManagementApiImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.DisclosureOptionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.ModelApiResponse;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.service.AccountMetadataServiceImpl;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils.connection.provider.ConnectionProvider;
@@ -71,7 +71,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(null);
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
@@ -82,7 +82,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
@@ -93,7 +93,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
         Mockito.verify(metadataDAO).updateBatchDisclosureOptions(connection, 
                 Collections.singletonMap("acc-1", "no-sharing"));
@@ -109,7 +109,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
@@ -118,7 +118,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("");
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
@@ -127,7 +127,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("   ");
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
@@ -178,7 +178,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.CREATED.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
         Mockito.verify(metadataDAO).addBatchDisclosureOptions(connection, 
                 Collections.singletonMap("acc-1", "no-sharing"));
@@ -189,13 +189,13 @@ public class DisclosureOptionsManagementApiImplTest {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
         Map<String, String> existingMap = Collections.singletonMap("acc-1", "pre-approval");
         
-        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, List.of("acc-1")))
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
                 .thenReturn(existingMap);
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
@@ -206,20 +206,20 @@ public class DisclosureOptionsManagementApiImplTest {
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 
     @Test
     public void testAddDisclosureOptionsServiceError() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("pre-approval");
-        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, List.of("acc-1")))
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
             .thenThrow(new AccountMetadataException("fail"));
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
         Assert.assertEquals(response.getStatus(), Response.Status.INTERNAL_SERVER_ERROR.getStatusCode());
-        ApiResponse body = (ApiResponse) response.getEntity();
+        ModelApiResponse body = (ModelApiResponse) response.getEntity();
         Assert.assertNotNull(body);
     }
 

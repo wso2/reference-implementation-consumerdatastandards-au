@@ -230,6 +230,8 @@
                 <exclude>**/exceptions/**</exclude>
                 <exclude>**/endpoints/**/api/**</exclude>
                 <exclude>**/endpoints/**/model/**</exclude>
+                <exclude>**/api/**</exclude>
+                <exclude>**/model/**</exclude>
                 <exclude>**/service/dao/queries/**</exclude>
                 <exclude>**/utils/connection/**</exclude>
               </excludes>

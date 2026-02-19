@@ -92,12 +92,12 @@ public class AccountMetadataServiceImplTest {
 
     @Test(expectedExceptions = AccountMetadataException.class)
     public void testGetBatchDisclosureOptionsDaoException() throws Exception {
-        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, List.of("acc-333")))
+        Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-333")))
                 .thenThrow(new AccountMetadataException("dao error"));
 
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-        service.getBatchDisclosureOptions(List.of("acc-333"));
+        service.getBatchDisclosureOptions(Collections.singletonList("acc-333"));
     }
 
     @Test

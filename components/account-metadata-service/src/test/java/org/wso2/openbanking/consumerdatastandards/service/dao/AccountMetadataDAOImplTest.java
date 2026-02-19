@@ -114,7 +114,7 @@ public class AccountMetadataDAOImplTest {
         Mockito.when(resultSet.next()).thenReturn(false);
 
         Map<String, String> result = dao.getBatchDisclosureOptions(connection,
-                List.of("acc-500"));
+            Arrays.asList("acc-500"));
 
         Assert.assertEquals(result.size(), 0);
     }
@@ -127,7 +127,7 @@ public class AccountMetadataDAOImplTest {
         Mockito.when(connection.prepareStatement(Mockito.anyString()))
                 .thenThrow(new SQLException("bad"));
 
-        dao.getBatchDisclosureOptions(connection, List.of("acc-501"));
+        dao.getBatchDisclosureOptions(connection, Arrays.asList("acc-501"));
     }
 
     @Test
