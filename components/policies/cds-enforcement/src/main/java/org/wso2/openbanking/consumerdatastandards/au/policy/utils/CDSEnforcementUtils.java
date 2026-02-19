@@ -35,6 +35,7 @@ import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforce
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -108,10 +109,10 @@ public class CDSEnforcementUtils {
     }
 
     /**
-     * Call the blocked accounts service and return the blocked account IDs.
+     * Call disclosure options GET endpoint and return blocked account IDs.
      *
      * @param accountIds set of account IDs to check
-     * @param blockedAccountsApi blocked accounts API endpoint
+     * @param blockedAccountsApi disclosure options API endpoint
      * @param basicAuthBase64 Base64-encoded Basic Auth credentials
      * @return set of blocked account IDs
      */
@@ -120,19 +121,25 @@ public class CDSEnforcementUtils {
 
         Set<String> blockedAccounts = new HashSet<>();
 
+        if (accountIds == null || accountIds.isEmpty()) {
+            return blockedAccounts;
+        }
+
         try {
-            JSONObject requestJson = new JSONObject();
-            requestJson.put(CDSEnforcementConstants.ACCOUNT_IDS_TAG, new JSONArray(accountIds));
+            String accountIdsParam = URLEncoder.encode(
+                    String.join(",", accountIds), StandardCharsets.UTF_8);
+            String requestUrl = blockedAccountsApi + "?" + CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="
+                + accountIdsParam;
 
             HttpClient client = HttpClient.newBuilder()
                     .connectTimeout(Duration.ofMillis(3000))
                     .build();
 
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(blockedAccountsApi))
+                    .uri(URI.create(requestUrl))
                     .timeout(Duration.ofMillis(3000))
-                    .header(CDSEnforcementConstants.CONTENT_TYPE_TAG, CDSEnforcementConstants.JSON_CONTENT_TYPE)
-                    .POST(HttpRequest.BodyPublishers.ofString(requestJson.toString(), StandardCharsets.UTF_8));
+                    .header(CDSEnforcementConstants.ACCEPT_TAG, CDSEnforcementConstants.JSON_CONTENT_TYPE)
+                    .GET();
 
             if (StringUtils.isNotBlank(basicAuthBase64)) {
                 requestBuilder.header(CDSEnforcementConstants.AUTH_HEADER,
@@ -146,21 +153,30 @@ public class CDSEnforcementUtils {
 
 
             if (response.statusCode() == 200) {
-                JSONObject responseJson = new JSONObject(response.body());
-                JSONArray blockedArray =
-                        responseJson.optJSONArray(CDSEnforcementConstants.BLOCKED_ACCOUNT_IDS_TAG);
+                JSONArray disclosureOptions = new JSONArray(response.body());
 
-                if (blockedArray != null) {
-                    for (int i = 0; i < blockedArray.length(); i++) {
-                        blockedAccounts.add(blockedArray.getString(i));
+                for (int i = 0; i < disclosureOptions.length(); i++) {
+                    JSONObject accountDisclosure = disclosureOptions.optJSONObject(i);
+                    if (accountDisclosure == null) {
+                        continue;
+                    }
+
+                    String disclosureOption =
+                            accountDisclosure.optString(CDSEnforcementConstants.DISCLOSURE_OPTION_TAG, null);
+                    if (CDSEnforcementConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(disclosureOption)) {
+                        String accountId = accountDisclosure.optString(
+                                CDSEnforcementConstants.CDS_ACCOUNT_ID_TAG, null);
+                        if (StringUtils.isNotBlank(accountId)) {
+                            blockedAccounts.add(accountId);
+                        }
                     }
                 }
             } else {
-                log.warn("Blocked accounts service returned HTTP " + response.statusCode());
+                log.warn("Disclosure options service returned HTTP " + response.statusCode());
             }
 
         } catch (IOException | InterruptedException e) {
-            log.error("[DOMS] Error calling blocked accounts service", e);
+            log.error("[DOMS] Error calling disclosure options service", e);
         }
 
         return blockedAccounts;

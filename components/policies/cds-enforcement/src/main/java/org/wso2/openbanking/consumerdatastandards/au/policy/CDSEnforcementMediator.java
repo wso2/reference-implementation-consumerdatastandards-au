@@ -157,8 +157,8 @@ public class CDSEnforcementMediator extends AbstractMediator {
         } catch (ParseException | JOSEException e) {
             String errorDescription = "Error during DOMS enforcement mediation";
             log.error(errorDescription, e);
-            setErrorResponseProperties(messageContext, "Internal Server Error",
-                    errorDescription, "500");
+            setErrorResponseProperties(messageContext,
+                    errorDescription);
         }
 
         return true;
@@ -168,13 +168,13 @@ public class CDSEnforcementMediator extends AbstractMediator {
     }
 
     @Generated(message = "No testable logic")
-    private static void setErrorResponseProperties(MessageContext messageContext, String errorCode,
-                                                   String errorDescription, String httpStatusCode) {
+    private static void setErrorResponseProperties(MessageContext messageContext,
+                                                   String errorDescription) {
 
-        messageContext.setProperty(CDSEnforcementConstants.ERROR_CODE, errorCode);
+        messageContext.setProperty(CDSEnforcementConstants.ERROR_CODE, "Internal Server Error");
         messageContext.setProperty(CDSEnforcementConstants.ERROR_TITLE, "CDS DOMS Policy Error");
         messageContext.setProperty(CDSEnforcementConstants.ERROR_DESCRIPTION, errorDescription);
-        messageContext.setProperty(CDSEnforcementConstants.CUSTOM_HTTP_SC, httpStatusCode);
+        messageContext.setProperty(CDSEnforcementConstants.CUSTOM_HTTP_SC, "500");
     }
 
     protected String generateJWT(String payload) throws ParseException, JOSEException {

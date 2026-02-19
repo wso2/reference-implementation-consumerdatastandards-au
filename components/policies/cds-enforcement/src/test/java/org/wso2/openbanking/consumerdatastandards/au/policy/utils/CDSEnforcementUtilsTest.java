@@ -21,9 +21,11 @@ package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.Test;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -72,7 +74,11 @@ public class CDSEnforcementUtilsTest {
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
         HttpServer server = startBlockedAccountsServer(
-                "{\"blockedAccountIds\":[\"acc-1\",\"acc-3\"]}");
+            "["
+                + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"},"
+                + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"pre-approval\"},"
+                + "{\"accountId\":\"acc-3\",\"disclosureOption\":\"no-sharing\"}"
+                + "]");
         try {
             String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
             Set<String> accounts = new HashSet<>();
@@ -94,7 +100,7 @@ public class CDSEnforcementUtilsTest {
     @Test
     public void testFetchBlockedAccountsFromServiceNon200() throws Exception {
         HttpServer server = startBlockedAccountsServerWithStatus(
-                "{\"blockedAccountIds\":[\"acc-1\"]}", 500);
+                "[]", 500);
         try {
             String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
             Set<String> accounts = new HashSet<>();
@@ -190,6 +196,11 @@ public class CDSEnforcementUtilsTest {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            Assert.assertEquals(exchange.getRequestMethod(), "GET");
+            String query = exchange.getRequestURI().getRawQuery();
+            Assert.assertNotNull(query);
+            Assert.assertTrue(query.contains(CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="));
+
             try (InputStream requestBody = exchange.getRequestBody()) {
                 while (requestBody.read() != -1) {
                     // Consume request body to avoid client-side issues.
@@ -213,6 +224,11 @@ public class CDSEnforcementUtilsTest {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            Assert.assertEquals(exchange.getRequestMethod(), "GET");
+            String query = exchange.getRequestURI().getRawQuery();
+            Assert.assertNotNull(query);
+            Assert.assertTrue(query.contains(CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="));
+
             try (InputStream requestBody = exchange.getRequestBody()) {
                 while (requestBody.read() != -1) {
                     // Consume request body
@@ -227,11 +243,13 @@ public class CDSEnforcementUtilsTest {
                 Assert.assertNull(authHeader, "Authorization header should not be present");
             }
 
-            // Return a valid response
-            JSONObject response = new JSONObject();
-            response.put("blockedAccountIds", new org.json.JSONArray()
-                    .put(expectedAuthHeader != null ? "acc-1" : "acc-2"));
-            byte[] responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
+                JSONArray response = new JSONArray()
+                    .put(new JSONObject()
+                        .put(CDSEnforcementConstants.CDS_ACCOUNT_ID_TAG,
+                            expectedAuthHeader != null ? "acc-1" : "acc-2")
+                        .put(CDSEnforcementConstants.DISCLOSURE_OPTION_TAG,
+                            CDSEnforcementConstants.DOMS_STATUS_NO_SHARING));
+                byte[] responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, responseBytes.length);
             try (OutputStream responseStream = exchange.getResponseBody()) {

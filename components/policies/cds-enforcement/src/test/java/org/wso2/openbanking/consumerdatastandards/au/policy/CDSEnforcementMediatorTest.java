@@ -58,7 +58,10 @@ public class CDSEnforcementMediatorTest {
     @Test
     public void testMediateFiltersBlockedAccountsAndUpdatesHeader() throws Exception {
         TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
-        HttpServer server = startBlockedAccountsServer("{\"blockedAccountIds\":[\"acc-2\"]}");
+        HttpServer server = startBlockedAccountsServer("["
+            + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"no-sharing\"},"
+            + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"pre-approval\"}"
+            + "]");
         try {
             String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
             mediator.setDomsGetApi(serverUrl);
@@ -151,6 +154,11 @@ public class CDSEnforcementMediatorTest {
 
         @Override
         public void handle(HttpExchange exchange) throws IOException {
+            Assert.assertEquals(exchange.getRequestMethod(), "GET");
+            String query = exchange.getRequestURI().getRawQuery();
+            Assert.assertNotNull(query);
+            Assert.assertTrue(query.contains(CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="));
+
             try (InputStream requestBody = exchange.getRequestBody()) {
                 while (requestBody.read() != -1) {
                     // Consume request body to avoid client-side issues.

@@ -34,6 +34,7 @@ public class CDSEnforcementConstants {
     public static final String API_KEY_VALIDATOR_PASSWORD = "APIKeyValidator.Password";
     public static final String INFO_HEADER_TAG = "Account-Request-Information";
     public static final String IS_VALID = "isValid";
+    public static final String ACCEPT_TAG = "Accept";
 
     // Configs
     public static final String KEYSTORE_LOCATION_TAG = "Security.InternalKeyStore.Location";
@@ -74,8 +75,9 @@ public class CDSEnforcementConstants {
     public static final String CUSTOM_HTTP_SC = "CUSTOM_HTTP_SC";
 
     // Constants related to DOMS
-    public static final String BLOCKED_ACCOUNT_IDS_TAG = "blockedAccountIds";
     public static final String ACCOUNT_IDS_TAG = "accountIds";
     public static final String LINKED_MEMBER_TAG = "linkedMember";
+    public static final String DISCLOSURE_OPTION_TAG = "disclosureOption";
+    public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
 
 }
