@@ -86,54 +86,6 @@
   <!-- Build plugins -->
   <build>
     <plugins>
-      <!-- JaCoCo for coverage -->
-      <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>default-prepare-agent</id>
-            <goals><goal>prepare-agent</goal></goals>
-          </execution>
-          <execution>
-            <id>default-prepare-agent-integration</id>
-            <goals><goal>prepare-agent-integration</goal></goals>
-          </execution>
-          <execution>
-            <id>default-report</id>
-            <goals><goal>report</goal></goals>
-          </execution>
-          <execution>
-            <id>default-report-integration</id>
-            <goals><goal>report-integration</goal></goals>
-          </execution>
-          <execution>
-            <id>default-check</id>
-            <goals><goal>check</goal></goals>
-            <configuration>
-              <rules>
-                <rule implementation="org.jacoco.maven.RuleConfiguration">
-                  <element>BUNDLE</element>
-                  <limits>
-                    <limit implementation="org.jacoco.report.check.Limit">
-                      <counter>INSTRUCTION</counter>
-                      <value>COVEREDRATIO</value>
-                      <minimum>0.0</minimum>
-                    </limit>
-                  </limits>
-                </rule>
-              </rules>
-            </configuration>
-          </execution>
-        </executions>
-        <configuration>
-          <excludes>
-            <exclude>**/*Constants.class</exclude>
-            <exclude>**/KeyStoreUtils.class</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
       <!-- Compiler plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -195,7 +147,8 @@
       <plugin>
         <groupId>com.github.spotbugs</groupId>
         <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.8.2.0</version> <configuration>
+        <version>4.8.2.0</version>
+        <configuration>
         <effort>Max</effort>
         <threshold>Low</threshold>
         <xmlOutput>true</xmlOutput>
