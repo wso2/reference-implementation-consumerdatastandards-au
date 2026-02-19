@@ -44,7 +44,7 @@
     <dependency>
       <groupId>org.apache.synapse</groupId>
       <artifactId>synapse-core</artifactId>
-      <version>2.1.7-wso2v217</version>
+      <version>4.0.0-wso2v255</version>
       <scope>provided</scope>
     </dependency>
 
