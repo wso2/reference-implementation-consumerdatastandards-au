@@ -18,12 +18,16 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.configurations;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.config.AccountMetadataConfigParser;
 
 /**
  * This class holds configurable properties for the CDS Open Banking implementation.
  */
 public class ConfigurableProperties {
+
+    private static final Log log = LogFactory.getLog(ConfigurableProperties.class);
 
     public static final String SHARABLE_ENDPOINT = "http://<IS_HOST>:<PORT>/api/openbanking/cds/backend/" +
             "services/bankaccounts/bankaccountservice/sharable-accounts";
@@ -41,6 +45,12 @@ public class ConfigurableProperties {
 
         ACCOUNT_METADATA_WEBAPP_USERNAME = configParser.getServiceExtensionsBasicAuthUsername();
         ACCOUNT_METADATA_WEBAPP_PASSWORD = configParser.getServiceExtensionsBasicAuthPassword();
+
+        if (ACCOUNT_METADATA_WEBAPP_USERNAME == null || ACCOUNT_METADATA_WEBAPP_PASSWORD == null) {
+            log.warn("Account metadata webapp credentials not configured. " +
+                    "Ensure Basic authentication credentials are set in the depolyment.toml file.");
+        }
+
     }
 
 }
