@@ -51,8 +51,7 @@
     <init-param>
       <param-name>jaxrs.serviceClasses</param-name>
       <param-value>
-        org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.api.DisclosureOptionsManagementApi,
-        org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.api.DOMSAccountEnforcementApi
+        org.wso2.openbanking.consumerdatastandards.account.metadata.service.api.DisclosureOptionsApi
       </param-value>
     </init-param>
 
