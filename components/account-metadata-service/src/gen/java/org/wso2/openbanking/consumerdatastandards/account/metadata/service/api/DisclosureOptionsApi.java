@@ -1,6 +1,6 @@
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.api;
 
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.impl.DisclosureOptionsManagementApiImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.impl.DisclosureOptionsManagementApiImpl;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.DisclosureOptionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.ModelApiResponse;
 
@@ -9,8 +9,6 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.*;
 
-import java.io.InputStream;
-import java.util.Map;
 import java.util.List;
 import javax.validation.constraints.*;
 import javax.validation.Valid;
