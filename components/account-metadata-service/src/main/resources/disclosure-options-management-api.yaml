@@ -1,0 +1,158 @@
+openapi: 3.0.3
+info:
+  title: Disclosure Options Management API
+  version: 1.0.0
+  description: API for managing disclosure options for one or more accounts.
+
+paths:
+  /disclosure-options:
+    get:
+      tags:
+        - Disclosure Options
+      summary: Get disclosure options for multiple accounts
+      description: Retrieve disclosure option statuses for multiple account IDs (comma-separated).
+      operationId: getDisclosureOptionsGet
+      parameters:
+        - name: accountIds
+          in: query
+          required: true
+          description: Comma-separated account IDs
+          schema:
+            type: string
+            example: "143-000-B1234,143-000-B5678"
+      responses:
+        '200':
+          description: Disclosure options retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DisclosureOptionItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    post:
+      tags:
+        - Disclosure Options
+      summary: Add disclosure options for one or more accounts
+      description: Allows adding disclosure option status for multiple account IDs.
+      operationId: addDisclosureOptionsPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DisclosureOptionItem'
+      responses:
+        '201':
+          description: Disclosure options added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    put:
+      tags:
+        - Disclosure Options
+      summary: Update disclosure options for one or more accounts
+      description: Allows updating disclosure option status for multiple account IDs.
+      operationId: updateDisclosureOptionsPut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DisclosureOptionItem'
+      responses:
+        '200':
+          description: Disclosure options updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.com/oauth/token
+          scopes: {}
+
+  schemas:
+    DisclosureOptionItem:
+      type: object
+      required:
+        - accountId
+        - disclosureOption
+      properties:
+        accountId:
+          type: string
+          description: Account ID
+          example: 143-000-B1234
+        disclosureOption:
+          type: string
+          description: Disclosure option status
+          example: no-sharing
+
+    ApiResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Response message
+          example: Disclosure options updated successfully
+

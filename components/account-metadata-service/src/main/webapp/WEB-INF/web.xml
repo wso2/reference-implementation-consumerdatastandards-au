@@ -18,6 +18,7 @@
   <filter>
     <filter-name>HttpHeaderSecurityFilter</filter-name>
     <filter-class>org.apache.catalina.filters.HttpHeaderSecurityFilter</filter-class>
+    <!-- HSTS handled at reverse proxy level -->
     <init-param>
       <param-name>hstsEnabled</param-name>
       <param-value>false</param-value>
@@ -50,8 +51,7 @@
     <init-param>
       <param-name>jaxrs.serviceClasses</param-name>
       <param-value>
-        org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.api.DisclosureOptionsManagementApi,
-        org.wso2.openbanking.consumerdatastandards.account.metadata.service.endpoints.disclosure.options.api.DOMSAccountEnforcementApi
+        org.wso2.openbanking.consumerdatastandards.account.metadata.service.api.DisclosureOptionsApi
       </param-value>
     </init-param>
 
