@@ -25,6 +25,7 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.Common
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class CdsConsentSearchEnrichUtil {
         }
 
         // Fetch DOMS statuses for all joint accounts in a single batch call
-        Map<String, String> domsStatusMap = new java.util.HashMap<>();
+        Map<String, String> domsStatusMap = new HashMap<>();
         if (!allJointAccountIds.isEmpty()) {
             Map<String, String> fetchedStatusMap = AccountMetadataUtil.getDOMSStatusesForAccounts(allJointAccountIds);
             if (fetchedStatusMap != null) {
@@ -145,8 +146,8 @@ public class CdsConsentSearchEnrichUtil {
             String authorizationId =
                     (String) mapping.get(CommonConstants.AUTHORIZATION_ID);
 
-            if (StringUtils.isEmpty(accountId) && !jointAccountIds.contains(accountId) &&
-                    StringUtils.isEmpty(authorizationId) && linkedMemberAuthIds.contains(authorizationId)) {
+            if (StringUtils.isNotBlank(accountId) && !jointAccountIds.contains(accountId) &&
+                    StringUtils.isNotBlank(authorizationId) && linkedMemberAuthIds.contains(authorizationId)) {
                 jointAccountIds.add(accountId);
             }
         }
@@ -158,6 +159,6 @@ public class CdsConsentSearchEnrichUtil {
      * Check if authorization type is linkedMember.
      */
     private static boolean isJointAccount(String authType) {
-        return authType.equalsIgnoreCase(CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
+        return CommonConstants.AUTH_RESOURCE_TYPE_LINKED.equalsIgnoreCase(authType);
     }
 }
