@@ -29,6 +29,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -58,6 +59,10 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
     @Override
     public Map<String, String> getBatchDisclosureOptions(Connection conn, List<String> accountIds)
             throws AccountMetadataException {
+
+        if (accountIds == null || accountIds.isEmpty()) {
+            return Collections.emptyMap();
+        }
 
         String sql = dbQueries.getBatchGetDisclosureOptionQuery(accountIds.size());
         Map<String, String> resultMap = new HashMap<>();
@@ -153,6 +158,10 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
     @Override
     public List<String> getBlockedAccounts(Connection conn, List<String> accountIds)
             throws AccountMetadataException {
+
+        if (accountIds == null || accountIds.isEmpty()) {
+            return Collections.emptyList();
+        }
 
         String sql = dbQueries.getBlockedAccountsQuery(accountIds.size());
         List<String> blockedAccounts = new ArrayList<>();

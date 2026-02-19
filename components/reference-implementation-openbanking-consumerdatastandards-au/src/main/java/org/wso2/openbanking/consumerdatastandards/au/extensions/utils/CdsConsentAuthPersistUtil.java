@@ -195,6 +195,12 @@ public class CdsConsentAuthPersistUtil {
                         displayName.split("<br>")[0]
                 );
 
+                if (StringUtils.isEmpty(accountId)) {
+                    log.warn("Could not resolve accountId for displayName: "
+                            + displayName.split("<br>")[0]);
+                    continue;
+                }
+
                 Object innerPropsObj = additionalProps.get(CommonConstants.ADDITIONAL_PROPERTIES);
                 if (!(innerPropsObj instanceof Map)) {
                     continue;
