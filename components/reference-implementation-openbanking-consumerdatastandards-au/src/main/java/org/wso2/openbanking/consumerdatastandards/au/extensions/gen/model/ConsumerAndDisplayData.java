@@ -3,6 +3,8 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModel;
 
+import java.util.List;
+
 /**
  * Generic display-related data required by the authorization UI.
  */
@@ -15,10 +17,10 @@ import io.swagger.annotations.ApiModel;
 )
 public class ConsumerAndDisplayData {
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData;
-  private SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData;
+  private List<AdditionalDisplayDataSection> displayData;
 
   public ConsumerAndDisplayData(SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
-                                SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData) {
+                                List<AdditionalDisplayDataSection> displayData) {
     this.consumerData = consumerData;
     this.displayData = displayData;
   }
@@ -27,7 +29,7 @@ public class ConsumerAndDisplayData {
     return consumerData;
   }
 
-  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData getDisplayData() {
+  public List<AdditionalDisplayDataSection> getDisplayData() {
     return displayData;
   }
 }
