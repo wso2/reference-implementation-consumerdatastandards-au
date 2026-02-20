@@ -29,6 +29,7 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErr
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AuthorizationFailureException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalDisplayDataSection;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenRequestBody;
@@ -36,11 +37,11 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CommonConsentExtensionUtil;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ConsentAuthorizeUtil;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +87,8 @@ public class PopulateConsentAuthorizeScreenApiImpl {
                     consumerAndDisplayData.getConsumerData();
 
             //CDS Unavailable account list
-            SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData =
+            List<AdditionalDisplayDataSection>
+                    additionalDisplayData =
                     consumerAndDisplayData.getDisplayData();
 
             //Set consent data to return to accelerator
@@ -94,7 +96,7 @@ public class PopulateConsentAuthorizeScreenApiImpl {
                     new SuccessResponsePopulateConsentAuthorizeScreenData();
             screenData.setConsentData(consentData);
             screenData.setConsumerData(consumerData);
-            screenData.setDisplayData(displayData);
+            screenData.setAdditionalDisplayData(additionalDisplayData);
 
             SuccessResponsePopulateConsentAuthorizeScreen response =
                     new SuccessResponsePopulateConsentAuthorizeScreen();

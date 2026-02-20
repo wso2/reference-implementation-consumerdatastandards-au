@@ -1,24 +1,22 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model;
 
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.*;
+
 import javax.validation.Valid;
 
-import io.swagger.annotations.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
 @JsonTypeName("SuccessResponsePopulateConsentAuthorizeScreenData")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2025-09-19T15:45:23.929498+05:30[Asia/Colombo]", comments = "Generator version: 7.12.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-02-20T15:47:46.918170600+05:30[Asia/Colombo]", comments = "Generator version: 7.20.0")
 public class SuccessResponsePopulateConsentAuthorizeScreenData   {
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData;
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData;
-  private SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData;
+  private @Valid List<@Valid AdditionalDisplayDataSection> additionalDisplayData = new ArrayList<>();
 
   public SuccessResponsePopulateConsentAuthorizeScreenData() {
   }
@@ -61,26 +59,42 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     this.consumerData = consumerData;
   }
 
-  public SuccessResponsePopulateConsentAuthorizeScreenData displayData(
-          SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData) {
-    this.displayData = displayData;
+  /**
+   * Additional display data sections for the authorization screen
+   **/
+  public SuccessResponsePopulateConsentAuthorizeScreenData additionalDisplayData(List<@Valid AdditionalDisplayDataSection> additionalDisplayData) {
+    this.additionalDisplayData = additionalDisplayData;
     return this;
   }
 
-  @ApiModelProperty(value = "UI related display data for the authorization screen")
-  @JsonProperty("displayData")
-  @Valid
-  public SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData getDisplayData() {
-    return displayData;
+
+  @ApiModelProperty(value = "Additional display data sections for the authorization screen")
+  @JsonProperty("additionalDisplayData")
+  @Valid public List<@Valid AdditionalDisplayDataSection> getAdditionalDisplayData() {
+    return additionalDisplayData;
   }
 
-  @JsonProperty("displayData")
-  public void setDisplayData(
-          SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData) {
-    this.displayData = displayData;
+  @JsonProperty("additionalDisplayData")
+  public void setAdditionalDisplayData(List<@Valid AdditionalDisplayDataSection> additionalDisplayData) {
+    this.additionalDisplayData = additionalDisplayData;
   }
 
-  /* ================= equals / hashCode ================= */
+  public SuccessResponsePopulateConsentAuthorizeScreenData addAdditionalDisplayDataItem(AdditionalDisplayDataSection additionalDisplayDataItem) {
+    if (this.additionalDisplayData == null) {
+      this.additionalDisplayData = new ArrayList<>();
+    }
+
+    this.additionalDisplayData.add(additionalDisplayDataItem);
+    return this;
+  }
+
+  public SuccessResponsePopulateConsentAuthorizeScreenData removeAdditionalDisplayDataItem(AdditionalDisplayDataSection additionalDisplayDataItem) {
+    if (additionalDisplayDataItem != null && this.additionalDisplayData != null) {
+      this.additionalDisplayData.remove(additionalDisplayDataItem);
+    }
+
+    return this;
+  }
 
   @Override
   public boolean equals(Object o) {
@@ -90,27 +104,25 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SuccessResponsePopulateConsentAuthorizeScreenData that =
-            (SuccessResponsePopulateConsentAuthorizeScreenData) o;
-    return Objects.equals(this.consentData, that.consentData) &&
-            Objects.equals(this.consumerData, that.consumerData) &&
-            Objects.equals(this.displayData, that.displayData);
+    SuccessResponsePopulateConsentAuthorizeScreenData successResponsePopulateConsentAuthorizeScreenData = (SuccessResponsePopulateConsentAuthorizeScreenData) o;
+    return Objects.equals(this.consentData, successResponsePopulateConsentAuthorizeScreenData.consentData) &&
+            Objects.equals(this.consumerData, successResponsePopulateConsentAuthorizeScreenData.consumerData) &&
+            Objects.equals(this.additionalDisplayData, successResponsePopulateConsentAuthorizeScreenData.additionalDisplayData);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(consentData, consumerData, displayData);
+    return Objects.hash(consentData, consumerData, additionalDisplayData);
   }
-
-  /* ================= toString ================= */
 
   @Override
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class SuccessResponsePopulateConsentAuthorizeScreenData {\n");
+
     sb.append("    consentData: ").append(toIndentedString(consentData)).append("\n");
     sb.append("    consumerData: ").append(toIndentedString(consumerData)).append("\n");
-    sb.append("    displayData: ").append(toIndentedString(displayData)).append("\n");
+    sb.append("    additionalDisplayData: ").append(toIndentedString(additionalDisplayData)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -125,6 +137,5 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     }
     return o.toString().replace("\n", "\n    ");
   }
-
 }
 
