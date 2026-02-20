@@ -29,19 +29,16 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErr
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalDisplayDataSection;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.DisplayListItem;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem;
 
-import java.time.Instant;
 import java.time.OffsetDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -236,7 +233,8 @@ public class ConsentAuthorizeUtil {
             JSONObject accountJson, String accountId,
             SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account,
             List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList,
-            List<Map<String, Object>> blockedAccountsList) {
+            List<DisplayListItem>
+                blockedAccountsList) {
 
         if (isJointAccountElectable(accountJson)) {
             // Handle electable joint accounts
@@ -266,13 +264,12 @@ public class ConsentAuthorizeUtil {
 
         } else {
             // Adding blocked joint accounts to the display data
-            Map<String, Object> blockedAccountMap = new HashMap<>();
-            blockedAccountMap.put(CommonConstants.AUTH_SCREEN_DISPLAY_LIST_ITEM_PROPERTY_NAME,
-                    getDisplayNameWithAccountNumber(
-                            accountJson.getString(
-                                    CommonConstants.DISPLAY_NAME), accountId));
-
-            blockedAccountsList.add(blockedAccountMap);
+            DisplayListItem
+                    blockedAccountItem =
+                new DisplayListItem();
+            blockedAccountItem.setDisplayText(getDisplayNameWithAccountNumber(
+                accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+            blockedAccountsList.add(blockedAccountItem);
         }
     }
 
@@ -287,8 +284,8 @@ public class ConsentAuthorizeUtil {
 
         SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData =
                 new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData();
-        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData =
-                new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData();
+        List<AdditionalDisplayDataSection> displayData =
+                new ArrayList<>();
 
         try {
 
@@ -316,7 +313,8 @@ public class ConsentAuthorizeUtil {
 
                 List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList =
                         new ArrayList<>();
-                List<Map<String, Object>> blockedAccountsList = new ArrayList<>();
+                List<DisplayListItem>
+                    blockedAccountsList = new ArrayList<>();
 
                 for (int i = 0; i < accountsJSON.length(); i++) {
 
@@ -399,20 +397,23 @@ public class ConsentAuthorizeUtil {
     /**
      * Creates and populates display data for blocked/unavailable accounts.
      * @param blockedAccountsList List of blocked accounts to be displayed
-     * @return SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData
+     * @return List of display data sections
      * containing display information for blocked accounts
      */
-    private static SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData setDisplayData(
-            List<Map<String, Object>> blockedAccountsList) {
+    private static List<AdditionalDisplayDataSection>
+    setDisplayData(
+            List<DisplayListItem>
+                blockedAccountsList) {
 
-        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData displayData =
-                new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayData();
+        List<AdditionalDisplayDataSection> displayData =
+                new ArrayList<>();
 
-        SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem item =
-            new SuccessResponsePopulateConsentAuthorizeScreenDataDisplayDataInnerItem();
+        AdditionalDisplayDataSection item =
+            new AdditionalDisplayDataSection();
 
         // Always initialize the list to avoid nulls in the UI layer
-        List<Map<String, Object>> safeList = (blockedAccountsList != null)
+        List<DisplayListItem> safeList =
+            (blockedAccountsList != null)
                 ? blockedAccountsList
                 : Collections.emptyList();
 
@@ -423,7 +424,7 @@ public class ConsentAuthorizeUtil {
         item.setSubHeading(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING);
         item.setDescription(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_TOOLTIP_DESCRIPTION);
 
-        displayData.addItem(item);
+        displayData.add(item);
 
         return displayData;
     }
@@ -544,8 +545,7 @@ public class ConsentAuthorizeUtil {
 
         Map<String, List<String>> basicConsentData = new HashMap<>();
 
-        basicConsentData.put(CommonConstants.EXPIRATION_DATE_TITLE, Collections.singletonList(
-                formatExpirationDate(expirationDate)));
+        basicConsentData.put(CommonConstants.EXPIRATION_DATE_TITLE, Collections.singletonList(expirationDate));
         basicConsentData.put(CommonConstants.PERMISSION_TITLE, permissionsList);
         basicConsentData.put(CommonConstants.SHARING_DURATION_DISPLAY_VALUE,
                 Collections.singletonList(
@@ -555,31 +555,6 @@ public class ConsentAuthorizeUtil {
 
         return basicConsentData;
     }
-
-    /**
-     * Formats an ISO-8601 expiration date string into a user-friendly format.
-     * Example:
-     * Input  -> 2026-02-13T10:15:30Z
-     * Output -> 13 Feb 2026, 10:15 AM (based on system timezone)
-     *
-     * @param expirationDate ISO-8601 formatted date string
-     * @return formatted date string in "dd MMM yyyy, hh:mm a" format
-     */
-    private static String formatExpirationDate(String expirationDate) {
-
-        // Parse the ISO date string into an Instant (UTC timestamp)
-        Instant instant = Instant.parse(expirationDate);
-
-        // Formatter with readable date/time pattern,
-        // using the system default timezone for display
-        DateTimeFormatter formatter =
-                DateTimeFormatter.ofPattern("dd MMM yyyy, hh:mm a")
-                        .withZone(ZoneId.systemDefault());
-
-        // Format the instant into a human-readable date string
-        return formatter.format(instant);
-    }
-
 
     /**
      * Builds a user-friendly message describing how long data sharing
