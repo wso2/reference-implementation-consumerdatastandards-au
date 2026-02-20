@@ -217,7 +217,7 @@ definitions:
         type: string
         example: 'https://www.mockcompany.com.au/logos/logo1.png'
       tos_uri:
-        description: 'URL string that points to a human-readable terms of service document for the Software Product'
+        description: 'URL string that points to a human-readable terms of core document for the Software Product'
         type: string
         example: 'https://www.mockcompany.com.au/tos.html'
       policy_uri:

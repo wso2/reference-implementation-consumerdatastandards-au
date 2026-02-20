@@ -16,13 +16,15 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.configurations;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.constants;
 
 /**
- * This class holds configurable properties for the CDS Open Banking implementation.
+ * This class holds common constants for the CDS Open Banking implementation.
  */
-public class ConfigurableProperties {
+public class CommonConstants {
 
-    public static final String ACCOUNT_METADATA_DATASOURCE_JNDI_NAME = "jdbc/ACCOUNT_METADATA_DB";
+    //Constants Related to Joint Accounts
+    public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
+    public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
 
 }

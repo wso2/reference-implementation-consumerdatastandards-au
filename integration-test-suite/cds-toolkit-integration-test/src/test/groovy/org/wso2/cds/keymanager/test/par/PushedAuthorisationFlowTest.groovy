@@ -371,7 +371,7 @@ class PushedAuthorisationFlowTest extends AUTest {
 
         Assert.assertEquals(parResponse.statusCode(), AUConstants.STATUS_CODE_400)
         Assert.assertEquals(AUTestUtil.parseResponseBody(parResponse, AUConstants.ERROR_DESCRIPTION),
-                "Error retrieving service provider tenant domain for client_id: ${incorrectClientId}")
+                "Error retrieving core provider tenant domain for client_id: ${incorrectClientId}")
         Assert.assertEquals(AUTestUtil.parseResponseBody(parResponse, AUConstants.ERROR),
                 "Service provider metadata retrieval failed")
     }
@@ -564,7 +564,7 @@ class PushedAuthorisationFlowTest extends AUTest {
         def error = AUTestUtil.parseResponseBody(response, AUConstants.ERROR)
 
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_400)
-        Assert.assertEquals(errorDesc, "Error retrieving service provider tenant domain for client_id: $invalidClientId")
+        Assert.assertEquals(errorDesc, "Error retrieving core provider tenant domain for client_id: $invalidClientId")
         Assert.assertEquals(error, "Service provider metadata retrieval failed")
     }
 }

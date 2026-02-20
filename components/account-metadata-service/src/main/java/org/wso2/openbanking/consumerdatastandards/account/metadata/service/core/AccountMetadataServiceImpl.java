@@ -16,16 +16,16 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.service;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.core;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.AccountMetadataDAO;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.AccountMetadataDAOImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.queries.AccountMetadataDBQueriesMySQLImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils.connection.provider.ConnectionProvider;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils.connection.provider.DatabaseConnectionProvider;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAO;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAOImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDBQueriesMySQLImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.ConnectionProvider;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.DatabaseConnectionProvider;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Implementation of account metadata service operations.
+ * Implementation of account metadata core operations.
  */
 public class AccountMetadataServiceImpl implements AccountMetadataService {
 
@@ -155,23 +155,4 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
             throw new AccountMetadataException("Failed to batch update disclosure options", e);
         }
     }
-
-    /**
-     * Retrieve list of accounts with no-sharing status (blocked accounts).
-     *
-     * @param accountIds the list of account IDs
-     * @return list of blocked account IDs
-     * @throws AccountMetadataException if an error occurs
-     */
-    @Override
-    public List<String> getBlockedAccounts(List<String> accountIds) throws AccountMetadataException {
-
-        try (Connection conn = connectionProvider.getConnection()) {
-            return metadataDAO.getBlockedAccounts(conn, accountIds);
-        } catch (SQLException e) {
-            log.error("Error retrieving blocked accounts", e);
-            throw new AccountMetadataException("Failed to retrieve blocked accounts", e);
-        }
-    }
-
 }

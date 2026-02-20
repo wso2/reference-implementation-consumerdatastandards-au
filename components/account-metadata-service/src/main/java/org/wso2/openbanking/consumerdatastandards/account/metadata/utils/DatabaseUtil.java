@@ -16,11 +16,11 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.utils;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.configurations.ConfigurableProperties;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.configurations.ConfigurableProperties;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -53,8 +53,9 @@ public class DatabaseUtil {
             throw new ExceptionInInitializerError(e);
 
         } catch (ClassCastException e) {
-            log.error("JNDI resource is not a DataSource: " +
-                    ConfigurableProperties.ACCOUNT_METADATA_DATASOURCE_JNDI_NAME + e);
+            String errorMessage = "JNDI resource is not a DataSource: "
+                    + ConfigurableProperties.ACCOUNT_METADATA_DATASOURCE_JNDI_NAME;
+            log.error(errorMessage, e);
             throw new ExceptionInInitializerError(e);
         }
     }

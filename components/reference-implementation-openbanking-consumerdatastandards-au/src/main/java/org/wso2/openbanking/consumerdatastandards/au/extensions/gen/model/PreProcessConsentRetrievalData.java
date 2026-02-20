@@ -65,7 +65,7 @@ public class PreProcessConsentRetrievalData   {
   }
 
   /**
-   * Request headers sent by the TPP. Filtered set of headers are sent to the external service.
+   * Request headers sent by the TPP. Filtered set of headers are sent to the external core.
    **/
   public PreProcessConsentRetrievalData requestHeaders(Object requestHeaders) {
     this.requestHeaders = requestHeaders;
@@ -73,7 +73,7 @@ public class PreProcessConsentRetrievalData   {
   }
 
   
-  @ApiModelProperty(value = "Request headers sent by the TPP. Filtered set of headers are sent to the external service.")
+  @ApiModelProperty(value = "Request headers sent by the TPP. Filtered set of headers are sent to the external core.")
   @JsonProperty("requestHeaders")
   public Object getRequestHeaders() {
     return requestHeaders;

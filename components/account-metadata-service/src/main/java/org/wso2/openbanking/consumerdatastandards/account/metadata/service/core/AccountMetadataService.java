@@ -16,9 +16,9 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.service;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.core;
 
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 
 import java.util.List;
 import java.util.Map;
@@ -53,12 +53,4 @@ public interface AccountMetadataService {
      */
     void updateBatchDisclosureOptions(Map<String, String> accountDisclosureMap) throws AccountMetadataException;
 
-    /**
-     * Retrieve list of accounts with no-sharing status (blocked accounts).
-     *
-     * @param accountIds the list of account IDs
-     * @return list of blocked account IDs
-     * @throws AccountMetadataException if an error occurs
-     */
-    List<String> getBlockedAccounts(List<String> accountIds) throws AccountMetadataException;
 }

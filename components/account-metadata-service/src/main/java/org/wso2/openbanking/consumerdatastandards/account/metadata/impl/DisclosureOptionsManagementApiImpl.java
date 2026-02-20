@@ -16,17 +16,17 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.impl;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.impl;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.constants.CommonConstants;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.DisclosureOptionItem;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.ModelApiResponse;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.service.AccountMetadataService;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.service.AccountMetadataServiceImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.constants.CommonConstants;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.DisclosureOptionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.ModelApiResponse;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.core.AccountMetadataService;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.core.AccountMetadataServiceImpl;
 
 import java.util.ArrayList;
 import java.util.Arrays;

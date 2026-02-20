@@ -16,19 +16,18 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.queries.AccountMetadataDBQueries;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDBQueries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,7 +77,7 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
                 }
             }
             if (log.isDebugEnabled()) {
-                log.debug("Retrieved disclosure options for " +  resultMap.size() + "accounts.");
+                log.debug("Retrieved disclosure options for " +  resultMap.size() + " accounts.");
             }
             return resultMap;
 
@@ -102,16 +101,18 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
         String sql = dbQueries.getBatchAddDisclosureOptionQuery();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            Timestamp currentTimestamp =  new Timestamp((new Date()).getTime());
             for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
                 stmt.setString(1, entry.getKey());
                 stmt.setString(2, entry.getValue());
-                stmt.setTimestamp(3, new Timestamp((new Date()).getTime()));
+                stmt.setTimestamp(3, currentTimestamp);
                 stmt.addBatch();
             }
 
             int[] results = stmt.executeBatch();
             if (log.isDebugEnabled()) {
-                log.debug("Batch added disclosure options for " + results.length + "accounts.");
+                log.debug("Batch added disclosure options for " + results.length + " accounts.");
             }
 
         } catch (SQLException e) {
@@ -134,56 +135,23 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
         String sql = dbQueries.getBatchUpdateDisclosureOptionQuery();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            Timestamp currentTimestamp =  new Timestamp((new Date()).getTime());
             for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
                 stmt.setString(1, entry.getValue());
-                stmt.setTimestamp(2, new Timestamp((new Date()).getTime()));
+                stmt.setTimestamp(2, currentTimestamp);
                 stmt.setString(3, entry.getKey());
                 stmt.addBatch();
             }
 
             int[] results = stmt.executeBatch();
             if (log.isDebugEnabled()) {
-                log.debug("Batch updated disclosure options for " + results.length + "accounts.");
+                log.debug("Batch updated disclosure options for " + results.length + " accounts.");
             }
 
         } catch (SQLException e) {
             log.error("Error batch updating disclosure options", e);
             throw new AccountMetadataException("Failed to batch update disclosure options", e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public List<String> getBlockedAccounts(Connection conn, List<String> accountIds)
-            throws AccountMetadataException {
-
-        if (accountIds == null || accountIds.isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        String sql = dbQueries.getBlockedAccountsQuery(accountIds.size());
-        List<String> blockedAccounts = new ArrayList<>();
-
-        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
-            for (int i = 0; i < accountIds.size(); i++) {
-                stmt.setString(i + 1, accountIds.get(i));
-            }
-
-            try (ResultSet rs = stmt.executeQuery()) {
-                while (rs.next()) {
-                    blockedAccounts.add(rs.getString("ACCOUNT_ID"));
-                }
-            }
-            if (log.isDebugEnabled()) {
-                log.debug("Retrieved " + blockedAccounts.size() + " blocked accounts.");
-            }
-            return blockedAccounts;
-
-        } catch (SQLException e) {
-            log.error("Error retrieving blocked accounts", e);
-            throw new AccountMetadataException("Failed to retrieve blocked accounts", e);
         }
     }
 

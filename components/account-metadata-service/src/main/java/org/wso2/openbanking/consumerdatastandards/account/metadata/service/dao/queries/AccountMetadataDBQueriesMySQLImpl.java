@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.queries;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries;
 
 /**
  * MySQL implementation of account metadata database queries.
@@ -58,21 +58,5 @@ public class AccountMetadataDBQueriesMySQLImpl implements AccountMetadataDBQueri
                 "LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ?";
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public String getBlockedAccountsQuery(int accountCount) {
-        StringBuilder query = new StringBuilder(
-                "SELECT ACCOUNT_ID FROM fs_account_doms_status WHERE ACCOUNT_ID IN (");
-        for (int i = 0; i < accountCount; i++) {
-            query.append("?");
-            if (i < accountCount - 1) {
-                query.append(",");
-            }
-        }
-        query.append(") AND DISCLOSURE_OPTION_STATUS = 'no-sharing'");
-        return query.toString();
-    }
 
 }

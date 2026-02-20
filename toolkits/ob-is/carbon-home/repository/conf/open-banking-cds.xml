@@ -19,9 +19,9 @@
 
 <Server xmlns="http://wso2.org/projects/carbon/open-banking-cds.xml">
     <DCR>
-        <!--if true validate the policy,client,terms of service,logo uris -->
+        <!--if true validate the policy,client,terms of core,logo uris -->
         <EnableURIValidation>false</EnableURIValidation>
-        <!--if true validate the hostnames of policy,client,terms of service, logo uris match with the hostname of redirect uri-->
+        <!--if true validate the hostnames of policy,client,terms of core, logo uris match with the hostname of redirect uri-->
         <EnableHostNameValidation>false</EnableHostNameValidation>
     </DCR>
     <ConsentManagement>

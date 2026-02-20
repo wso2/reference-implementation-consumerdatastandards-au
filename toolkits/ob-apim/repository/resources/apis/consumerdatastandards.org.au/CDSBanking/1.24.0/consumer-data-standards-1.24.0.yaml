@@ -7645,7 +7645,7 @@ components:
           type: string
         purposeCode:
           description: Purpose of the payment.  Format is defined by NPP standards
-            for the x2p1.01 overlay service
+            for the x2p1.01 overlay core
           type: string
       type: object
       x-conditional:
@@ -7669,7 +7669,7 @@ components:
         x2p101Payload:
           $ref: '#/components/schemas/BankingTransactionDetail_allOf_extendedData_x2p101Payload'
         service:
-          description: 'Identifier of the applicable overlay service. Valid values
+          description: 'Identifier of the applicable overlay core. Valid values
             are: X2P1.01'
           enum:
             - X2P1.01
@@ -8730,7 +8730,7 @@ components:
           type: string
           x-cds-type: DateTimeString
         expectedResolutionTime:
-          description: The date and time that full service is expected to resume (if
+          description: The date and time that full core is expected to resume (if
             known). Should not be present if the status property has a value of OK.
           type: string
           x-cds-type: DateTimeString
