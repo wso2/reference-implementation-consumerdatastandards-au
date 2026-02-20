@@ -45,7 +45,7 @@ public class Request   {
   }
 
   /**
-   * Request headers sent by the TPP. Filtered set of headers are sent to the external core.
+   * Request headers sent by the TPP. Filtered set of headers are sent to the external service.
    **/
   public Request requestHeaders(Object requestHeaders) {
     this.requestHeaders = requestHeaders;
@@ -53,7 +53,7 @@ public class Request   {
   }
 
   
-  @ApiModelProperty(value = "Request headers sent by the TPP. Filtered set of headers are sent to the external core.")
+  @ApiModelProperty(value = "Request headers sent by the TPP. Filtered set of headers are sent to the external service.")
   @JsonProperty("requestHeaders")
   public Object getRequestHeaders() {
     return requestHeaders;

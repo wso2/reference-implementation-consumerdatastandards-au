@@ -48,7 +48,7 @@ class RESTKeyManagerRequestBuilder {
     }
 
     /**
-     * Create rest_api_admin core provider.
+     * Create rest_api_admin service provider.
      */
     void createDCRApplication() {
         URI dcrEndpoint = new URI("${auConfiguration.getServerGatewayURL()}" + AUConstants.REST_API_CLIENT_REGISTRATION_ENDPOINT)

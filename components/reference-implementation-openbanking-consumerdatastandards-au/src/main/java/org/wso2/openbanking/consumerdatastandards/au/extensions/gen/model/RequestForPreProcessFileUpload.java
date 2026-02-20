@@ -106,7 +106,7 @@ public class RequestForPreProcessFileUpload   {
   }
 
   /**
-   * Request headers sent by the TPP. Filtered set of headers are sent to the external core.
+   * Request headers sent by the TPP. Filtered set of headers are sent to the external service.
    **/
   public RequestForPreProcessFileUpload requestHeaders(Object requestHeaders) {
     this.requestHeaders = requestHeaders;
@@ -114,7 +114,7 @@ public class RequestForPreProcessFileUpload   {
   }
 
   
-  @ApiModelProperty(value = "Request headers sent by the TPP. Filtered set of headers are sent to the external core.")
+  @ApiModelProperty(value = "Request headers sent by the TPP. Filtered set of headers are sent to the external service.")
   @JsonProperty("requestHeaders")
   public Object getRequestHeaders() {
     return requestHeaders;
