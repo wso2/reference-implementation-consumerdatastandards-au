@@ -16,15 +16,13 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.service.dao;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.AccountMetadataDAO;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.AccountMetadataDAOImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.queries.AccountMetadataDBQueries;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDBQueries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,25 +31,11 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AccountMetadataDAOImplTest {
 
     private static class TestQueries implements AccountMetadataDBQueries {
-
-        @Override
-        public String getBatchGetDisclosureOptionQuery(int size) {
-            StringBuilder placeholders = new StringBuilder();
-            for (int i = 0; i < size; i++) {
-                if (i > 0) {
-                    placeholders.append(",");
-                }
-                placeholders.append("?");
-            }
-            return "SELECT ACCOUNT_ID, DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN ("
-                    + placeholders.toString() + ")";
-        }
 
         @Override
         public String getBatchAddDisclosureOptionQuery() {
@@ -66,7 +50,7 @@ public class AccountMetadataDAOImplTest {
         }
 
         @Override
-        public String getBlockedAccountsQuery(int size) {
+        public String getBatchGetDisclosureOptionQuery(int size) {
             StringBuilder placeholders = new StringBuilder();
             for (int i = 0; i < size; i++) {
                 if (i > 0) {
@@ -74,8 +58,8 @@ public class AccountMetadataDAOImplTest {
                 }
                 placeholders.append("?");
             }
-            return "SELECT ACCOUNT_ID FROM fs_account_doms_status WHERE ACCOUNT_ID IN ("
-                    + placeholders.toString() + ") AND DISCLOSURE_OPTION_STATUS = 'no-sharing'";
+            return "SELECT ACCOUNT_ID, DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN ("
+                    + placeholders.toString() + ")";
         }
     }
 
@@ -176,55 +160,6 @@ public class AccountMetadataDAOImplTest {
         accountMap.put("acc-700", "no-sharing");
 
         dao.addBatchDisclosureOptions(connection, accountMap);
-    }
-
-    @Test
-    public void testGetBlockedAccountsSuccess() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
-        ResultSet resultSet = Mockito.mock(ResultSet.class);
-
-        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
-        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
-        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
-        Mockito.when(resultSet.getString("ACCOUNT_ID"))
-                .thenReturn("acc-1").thenReturn("acc-3");
-
-        List<String> result = dao.getBlockedAccounts(connection, 
-                Arrays.asList("acc-1", "acc-2", "acc-3"));
-
-        Assert.assertEquals(result.size(), 2);
-        Assert.assertTrue(result.contains("acc-1"));
-        Assert.assertTrue(result.contains("acc-3"));
-    }
-
-    @Test
-    public void testGetBlockedAccountsEmpty() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
-        ResultSet resultSet = Mockito.mock(ResultSet.class);
-
-        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
-        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
-        Mockito.when(resultSet.next()).thenReturn(false);
-
-        List<String> result = dao.getBlockedAccounts(connection,
-                Arrays.asList("acc-1", "acc-2"));
-
-        Assert.assertEquals(result.size(), 0);
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testGetBlockedAccountsSqlException() throws Exception {
-        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
-        Connection connection = Mockito.mock(Connection.class);
-
-        Mockito.when(connection.prepareStatement(Mockito.anyString()))
-                .thenThrow(new SQLException("bad"));
-
-        dao.getBlockedAccounts(connection, Arrays.asList("acc-1", "acc-2"));
     }
 
     @Test

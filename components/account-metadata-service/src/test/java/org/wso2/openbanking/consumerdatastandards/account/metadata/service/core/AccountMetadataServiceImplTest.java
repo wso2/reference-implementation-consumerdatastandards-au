@@ -16,16 +16,15 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.service.service;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.core;
 
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.AccountMetadataDAO;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.service.AccountMetadataServiceImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils.connection.provider.ConnectionProvider;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAO;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.ConnectionProvider;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -33,7 +32,6 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AccountMetadataServiceImplTest {
@@ -152,43 +150,6 @@ public class AccountMetadataServiceImplTest {
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
         service.updateBatchDisclosureOptions(accountMap);
-    }
-
-    @Test
-    public void testGetBlockedAccounts() throws Exception {
-        List<String> expectedResult = Arrays.asList("acc-111", "acc-333");
-        
-        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-111", "acc-222", "acc-333")))
-                .thenReturn(expectedResult);
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-        List<String> result = service.getBlockedAccounts(Arrays.asList("acc-111", "acc-222", "acc-333"));
-
-        Assert.assertEquals(result, expectedResult);
-        Mockito.verify(metadataDAO).getBlockedAccounts(connection, Arrays.asList("acc-111", "acc-222", "acc-333"));
-    }
-
-    @Test
-    public void testGetBlockedAccountsEmpty() throws Exception {
-        List<String> expectedResult = Collections.emptyList();
-        
-        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-444", "acc-555")))
-                .thenReturn(expectedResult);
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-        List<String> result = service.getBlockedAccounts(Arrays.asList("acc-444", "acc-555"));
-
-        Assert.assertEquals(result, Collections.emptyList());
-    }
-
-    @Test(expectedExceptions = AccountMetadataException.class)
-    public void testGetBlockedAccountsDaoException() throws Exception {
-        Mockito.when(metadataDAO.getBlockedAccounts(connection, Arrays.asList("acc-666", "acc-777")))
-                .thenThrow(new AccountMetadataException("dao error"));
-
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-
-        service.getBlockedAccounts(Arrays.asList("acc-666", "acc-777"));
     }
 
     private void resetSingleton() throws Exception {

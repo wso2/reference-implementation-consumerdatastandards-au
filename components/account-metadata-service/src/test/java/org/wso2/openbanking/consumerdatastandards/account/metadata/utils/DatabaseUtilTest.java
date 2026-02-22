@@ -16,15 +16,14 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.utils;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.utils;
 
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils.DatabaseUtil;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.utils.connection.provider.DatabaseConnectionProvider;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.DatabaseConnectionProvider;
 
 import java.sql.Connection;
 import java.sql.SQLException;
