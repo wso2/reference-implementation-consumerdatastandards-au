@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions;
 
 /**
  * Exception for account metadata operations.

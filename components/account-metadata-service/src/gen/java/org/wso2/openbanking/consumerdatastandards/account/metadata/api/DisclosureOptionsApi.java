@@ -1,8 +1,8 @@
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.api;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.api;
 
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.impl.DisclosureOptionsManagementApiImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.DisclosureOptionItem;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.model.ModelApiResponse;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.impl.DisclosureOptionsManagementApiImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.DisclosureOptionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.ModelApiResponse;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.Response;

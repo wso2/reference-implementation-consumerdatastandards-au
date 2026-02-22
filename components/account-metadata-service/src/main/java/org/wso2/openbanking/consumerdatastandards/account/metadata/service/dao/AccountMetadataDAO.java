@@ -16,9 +16,9 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 
 import java.sql.Connection;
 import java.util.List;
@@ -58,17 +58,6 @@ public interface AccountMetadataDAO {
      * @throws AccountMetadataException if an error occurs
      */
     void updateBatchDisclosureOptions(Connection conn, Map<String, String> accountDisclosureMap)
-            throws AccountMetadataException;
-
-    /**
-     * Retrieve accounts with no-sharing status (blocked accounts).
-     *
-     * @param conn the database connection
-     * @param accountIds the list of account IDs
-     * @return list of blocked account IDs
-     * @throws AccountMetadataException if an error occurs
-     */
-    List<String> getBlockedAccounts(Connection conn, List<String> accountIds)
             throws AccountMetadataException;
 
 }
