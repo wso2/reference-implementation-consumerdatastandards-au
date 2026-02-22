@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.service.dao.queries;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries;
 
 /**
  * Database queries for account metadata operations.
@@ -47,14 +47,5 @@ public interface AccountMetadataDBQueries {
      * @return the SQL query for batch update
      */
     String getBatchUpdateDisclosureOptionQuery();
-
-    /**
-     * Get the SQL query for retrieving blocked accounts with no-sharing status.
-     * Uses IN clause for batch retrieval.
-     *
-     * @param accountCount the number of accounts to query
-     * @return the SQL query with placeholders
-     */
-    String getBlockedAccountsQuery(int accountCount);
 
 }

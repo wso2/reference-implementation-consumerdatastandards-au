@@ -171,7 +171,7 @@ public class AccountMetadataConfigParser {
     }
 
     /**
-     * Get service extensions basic auth username.
+     * Get core extensions basic auth username.
      * Same as FinancialServicesConfigParser.getServiceExtensionsEndpointSecurityBasicAuthUsername()
      *
      * @return username or null
@@ -182,7 +182,7 @@ public class AccountMetadataConfigParser {
     }
 
     /**
-     * Get service extensions basic auth password.
+     * Get core extensions basic auth password.
      * Same as FinancialServicesConfigParser.getServiceExtensionsEndpointSecurityBasicAuthPassword()
      *
      * @return password or null

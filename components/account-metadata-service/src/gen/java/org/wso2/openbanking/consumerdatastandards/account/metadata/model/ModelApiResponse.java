@@ -1,10 +1,8 @@
-package org.wso2.openbanking.consumerdatastandards.account.metadata.service.model;
+package org.wso2.openbanking.consumerdatastandards.account.metadata.model;
 
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import io.swagger.annotations.ApiModelProperty;
-import javax.validation.constraints.*;
 
-import io.swagger.annotations.*;
 import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonProperty;
 

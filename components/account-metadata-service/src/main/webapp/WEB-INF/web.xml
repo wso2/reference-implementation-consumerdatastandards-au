@@ -35,7 +35,7 @@
     <servlet-name>AccountMetadataCXFServlet</servlet-name>
     <servlet-class>org.apache.cxf.jaxrs.servlet.CXFNonSpringJaxrsServlet</servlet-class>
 
-    <!-- Optional service list stylesheet -->
+    <!-- Optional core list stylesheet -->
     <init-param>
       <param-name>service-list-stylesheet</param-name>
       <param-value>servicelist.css</param-value>
@@ -47,11 +47,11 @@
       <param-value>org.glassfish.jersey.media.multipart.MultiPartFeature</param-value>
     </init-param>
 
-    <!-- CXF service classes -->
+    <!-- CXF core classes -->
     <init-param>
       <param-name>jaxrs.serviceClasses</param-name>
       <param-value>
-        org.wso2.openbanking.consumerdatastandards.account.metadata.service.api.DisclosureOptionsApi
+          org.wso2.openbanking.consumerdatastandards.account.metadata.api.DisclosureOptionsApi
       </param-value>
     </init-param>
 
