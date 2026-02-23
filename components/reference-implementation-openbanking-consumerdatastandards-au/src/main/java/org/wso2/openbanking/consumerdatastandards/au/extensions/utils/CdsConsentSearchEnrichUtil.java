@@ -18,6 +18,8 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -26,9 +28,10 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Utility to enrich consent search response by adding "domsStatus" for joint accounts.
@@ -43,11 +46,9 @@ public class CdsConsentSearchEnrichUtil {
      * @param enrichedObj the searchData object containing enrichedSearchResult
      * @return enriched searchData wrapped in SuccessResponseForConsentSearchData
      */
-    @SuppressWarnings("unchecked")
     public static SuccessResponseForConsentSearchData enrichDOMSStatus(Object enrichedObj) {
 
-        SuccessResponseForConsentSearchData searchData =
-                new SuccessResponseForConsentSearchData();
+        SuccessResponseForConsentSearchData searchData = new SuccessResponseForConsentSearchData();
 
         searchData.setEnrichedSearchResult(enrichedObj);
 
@@ -56,44 +57,54 @@ public class CdsConsentSearchEnrichUtil {
             return searchData;
         }
 
-        List<Map<String, Object>> searchResultList =
-                (List<Map<String, Object>>) enrichedObj;
+        JSONArray searchResultArray;
+        try {
+            searchResultArray = new JSONArray(enrichedObj);
+        } catch (Exception e) {
+            log.warn("Failed to convert enrichedSearchResult to JSONArray, skipping DOMS enrichment", e);
+            return searchData;
+        }
 
         // Collect all joint account IDs from all consents
-        List<String> allJointAccountIds = new ArrayList<>();
+        Set<String> allJointAccountIds = new HashSet<>();
 
-        for (Map<String, Object> consent : searchResultList) {
-            List<String> jointAccountIDs = extractJointAccountIds(consent);
-
-            for (String accountId : jointAccountIDs) {
-                if (!allJointAccountIds.contains(accountId)) {
-                    allJointAccountIds.add(accountId);
-                }
+        for (int i = 0; i < searchResultArray.length(); i++) {
+            JSONObject consent = searchResultArray.optJSONObject(i);
+            if (consent == null) {
+                continue;
             }
+            allJointAccountIds.addAll(extractJointAccountIds(consent));
         }
 
         // Fetch DOMS statuses for all joint accounts in a single batch call
         Map<String, String> domsStatusMap = new HashMap<>();
         if (!allJointAccountIds.isEmpty()) {
-            Map<String, String> fetchedStatusMap = AccountMetadataUtil.getDOMSStatusesForAccounts(allJointAccountIds);
+            Map<String, String> fetchedStatusMap =
+                    AccountMetadataUtil.getDOMSStatusesForAccounts(new ArrayList<>(allJointAccountIds));
             if (fetchedStatusMap != null) {
                 domsStatusMap.putAll(fetchedStatusMap);
             }
         }
 
         // Enrich the consent mappings with DOMS status
-        for (Map<String, Object> consent : searchResultList) {
-            Object consentMappingsObj = consent.get(CommonConstants.CONSENT_MAPPING_RESOURCES);
-            if (!(consentMappingsObj instanceof List)) {
+        for (int i = 0; i < searchResultArray.length(); i++) {
+            JSONObject consent = searchResultArray.optJSONObject(i);
+            if (consent == null) {
                 continue;
             }
 
-            List<Map<String, Object>> mappingList =
-                    (List<Map<String, Object>>) consentMappingsObj;
+            JSONArray mappingList = consent.optJSONArray(CommonConstants.CONSENT_MAPPING_RESOURCES);
+            if (mappingList == null) {
+                continue;
+            }
 
-            for (Map<String, Object> mappingItem : mappingList) {
+            for (int j = 0; j < mappingList.length(); j++) {
+                JSONObject mappingItem = mappingList.optJSONObject(j);
+                if (mappingItem == null) {
+                    continue;
+                }
 
-                String accountId = (String) mappingItem.get(CommonConstants.ACCOUNT_ID);
+                String accountId = mappingItem.optString(CommonConstants.ACCOUNT_ID, null);
 
                 // Only add DOMS status if mapping belongs to a joint account
                 if (allJointAccountIds.contains(accountId)) {
@@ -105,26 +116,35 @@ public class CdsConsentSearchEnrichUtil {
             }
         }
 
+        searchData.setEnrichedSearchResult(searchResultArray.toList());
+
         return searchData;
     }
 
     /**
      * Extract Joint account IDs corresponding to consents.
      */
-    @SuppressWarnings("unchecked")
-    private static List<String> extractJointAccountIds(Map<String, Object> consent) {
+    private static List<String> extractJointAccountIds(JSONObject consent) {
 
         List<String> jointAccountIds = new ArrayList<>();
-        HashSet<Object> linkedMemberAuthIds = new HashSet<>();
+        Set<String> linkedMemberAuthIds = new HashSet<>();
 
         // Collect linkedMember authorizationIds
-        Object authResourcesObj = consent.get(CommonConstants.AUTHORIZATION_RESOURCES);
-        if (authResourcesObj instanceof List) {
+        JSONArray authResources = consent.optJSONArray(CommonConstants.AUTHORIZATION_RESOURCES);
+        if (authResources != null) {
 
             // Adding linkedMember auth IDs.
-            for (Map<String, Object> authResource : (List<Map<String, Object>>) authResourcesObj) {
-                if (isJointAccount((String) authResource.get(CommonConstants.AUTH_TYPE))) {
-                    linkedMemberAuthIds.add(authResource.get(CommonConstants.AUTHORIZATION_ID));
+            for (int i = 0; i < authResources.length(); i++) {
+                JSONObject authResource = authResources.optJSONObject(i);
+                if (authResource == null) {
+                    continue;
+                }
+                String authType = authResource.optString(CommonConstants.AUTH_TYPE, null);
+                if (isJointAccount(authType)) {
+                    String authorizationId = authResource.optString(CommonConstants.AUTHORIZATION_ID, null);
+                    if (StringUtils.isNotBlank(authorizationId)) {
+                        linkedMemberAuthIds.add(authorizationId);
+                    }
                 }
             }
         }
@@ -135,16 +155,18 @@ public class CdsConsentSearchEnrichUtil {
         }
 
         // Mapping linkedMember authIds to accountIds
-        Object mappingObj = consent.get(CommonConstants.CONSENT_MAPPING_RESOURCES);
-        if (!(mappingObj instanceof List)) {
+        JSONArray mappingResources = consent.optJSONArray(CommonConstants.CONSENT_MAPPING_RESOURCES);
+        if (mappingResources == null) {
             return jointAccountIds;
         }
 
-        for (Map<String, Object> mapping : (List<Map<String, Object>>) mappingObj) {
-            String accountId =
-                    (String) mapping.get(CommonConstants.ACCOUNT_ID);
-            String authorizationId =
-                    (String) mapping.get(CommonConstants.AUTHORIZATION_ID);
+        for (int i = 0; i < mappingResources.length(); i++) {
+            JSONObject mapping = mappingResources.optJSONObject(i);
+            if (mapping == null) {
+                continue;
+            }
+            String accountId = mapping.optString(CommonConstants.ACCOUNT_ID, null);
+            String authorizationId = mapping.optString(CommonConstants.AUTHORIZATION_ID, null);
 
             if (StringUtils.isNotBlank(accountId) && !jointAccountIds.contains(accountId) &&
                     StringUtils.isNotBlank(authorizationId) && linkedMemberAuthIds.contains(authorizationId)) {

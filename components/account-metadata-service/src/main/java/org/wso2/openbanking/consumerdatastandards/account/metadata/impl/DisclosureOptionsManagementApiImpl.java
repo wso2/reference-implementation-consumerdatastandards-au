@@ -87,47 +87,46 @@ public class DisclosureOptionsManagementApiImpl {
                 }
             }
 
+            Map<String, String> existingStatuses =
+                    accountMetadataService.getBatchDisclosureOptions(accountIdsToCheck);
 
-                Map<String, String> existingStatuses =
-                        accountMetadataService.getBatchDisclosureOptions(accountIdsToCheck);
-
-                Map<String, String> existingAccountsToUpdate = new HashMap<>();
-                for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
-                    if (existingStatuses.containsKey(entry.getKey())) {
-                        existingAccountsToUpdate.put(entry.getKey(), entry.getValue());
-                    }
+            Map<String, String> existingAccountsToUpdate = new HashMap<>();
+            for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
+                if (existingStatuses.containsKey(entry.getKey())) {
+                    existingAccountsToUpdate.put(entry.getKey(), entry.getValue());
                 }
+            }
 
-                List<String> nonExistingAccountIds = accountIdsToCheck.stream()
-                    .filter(accountId -> !existingStatuses.containsKey(accountId))
-                    .distinct()
-                    .collect(Collectors.toList());
+            List<String> nonExistingAccountIds = accountIdsToCheck.stream()
+                .filter(accountId -> !existingStatuses.containsKey(accountId))
+                .distinct()
+                .collect(Collectors.toList());
 
-                if (!existingAccountsToUpdate.isEmpty()) {
-                    accountMetadataService.updateBatchDisclosureOptions(existingAccountsToUpdate);
-                }
+            if (!existingAccountsToUpdate.isEmpty()) {
+                accountMetadataService.updateBatchDisclosureOptions(existingAccountsToUpdate);
+            }
 
-                if (nonExistingAccountIds.isEmpty()) {
-                    return Response.ok()
-                            .entity(new ModelApiResponse()
-                                    .message("Disclosure options updated successfully"))
-                            .build();
-                }
-
-                if (existingAccountsToUpdate.isEmpty()) {
-                    return Response.ok()
-                            .entity(new ModelApiResponse()
-                                    .message("No disclosure options were updated. AccountId(s) do not exist: "
-                                            + String.join(", ", nonExistingAccountIds)))
-                            .build();
-                }
-
+            if (nonExistingAccountIds.isEmpty()) {
                 return Response.ok()
                         .entity(new ModelApiResponse()
-                                .message("Disclosure options updated successfully for existing accounts. " +
-                                        "AccountId(s) do not exist: "
+                                .message("Disclosure options updated successfully"))
+                        .build();
+            }
+
+            if (existingAccountsToUpdate.isEmpty()) {
+                return Response.ok()
+                        .entity(new ModelApiResponse()
+                                .message("No disclosure options were updated. AccountId(s) do not exist: "
                                         + String.join(", ", nonExistingAccountIds)))
                         .build();
+            }
+
+            return Response.ok()
+                    .entity(new ModelApiResponse()
+                            .message("Disclosure options updated successfully for existing accounts. " +
+                                    "AccountId(s) do not exist: "
+                                    + String.join(", ", nonExistingAccountIds)))
+                    .build();
 
         } catch (AccountMetadataException e) {
             log.error("[DOMS] Failed to update disclosure options via AccountMetadataService", e);
@@ -253,8 +252,7 @@ public class DisclosureOptionsManagementApiImpl {
             if (anyExisted) {
                 return Response.ok()
                         .entity(new ModelApiResponse().message(
-                                "Disclosure options " + message +
-                                        "already exist for account(s): "
+                                "Disclosure options " + message + "already exist for account(s): "
                                         + String.join(", ", existingAccountIds)))
                         .build();
             } else {
