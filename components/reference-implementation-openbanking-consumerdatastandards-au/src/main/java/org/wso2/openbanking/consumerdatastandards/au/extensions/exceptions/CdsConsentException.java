@@ -18,6 +18,7 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 
 /**
