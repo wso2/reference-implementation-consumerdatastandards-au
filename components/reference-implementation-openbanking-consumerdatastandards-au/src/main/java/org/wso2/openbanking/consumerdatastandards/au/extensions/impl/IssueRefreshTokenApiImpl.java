@@ -34,8 +34,7 @@ public class IssueRefreshTokenApiImpl {
      * @param issueRefreshTokenRequestBody - the request body containing the consent validity information
      * @return SuccessResponseIssueRefreshToken containing the decision and validity period for the refresh token
      */
-    public static Response handleIssueRefreshToken(IssueRefreshTokenRequestBody
-                                                           issueRefreshTokenRequestBody) {
+    public static Response handleIssueRefreshToken(IssueRefreshTokenRequestBody issueRefreshTokenRequestBody) {
 
         SuccessResponseIssueRefreshToken successResponseIssueRefreshToken = new SuccessResponseIssueRefreshToken();
         successResponseIssueRefreshToken.setResponseId(issueRefreshTokenRequestBody.getRequestId());

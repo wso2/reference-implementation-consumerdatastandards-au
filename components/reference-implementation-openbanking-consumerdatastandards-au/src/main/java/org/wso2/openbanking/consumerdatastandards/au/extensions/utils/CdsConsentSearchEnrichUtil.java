@@ -18,20 +18,20 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.utils;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.HashSet;
 
 /**
  * Utility to enrich consent search response by adding "domsStatus" for joint accounts.
@@ -49,7 +49,6 @@ public class CdsConsentSearchEnrichUtil {
     public static SuccessResponseForConsentSearchData enrichDOMSStatus(Object enrichedObj) {
 
         SuccessResponseForConsentSearchData searchData = new SuccessResponseForConsentSearchData();
-
         searchData.setEnrichedSearchResult(enrichedObj);
 
         if (!(enrichedObj instanceof List)) {
@@ -117,7 +116,6 @@ public class CdsConsentSearchEnrichUtil {
         }
 
         searchData.setEnrichedSearchResult(searchResultArray.toList());
-
         return searchData;
     }
 

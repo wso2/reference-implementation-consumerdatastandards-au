@@ -61,9 +61,7 @@ public class DisclosureOptionsManagementApiImpl {
         if (request == null || request.isEmpty()) {
             log.error("[DOMS] No disclosure options provided to update");
             return Response.status(Response.Status.BAD_REQUEST)
-                .entity(new ModelApiResponse()
-                    .message("No disclosure options provided"))
-                    .build();
+                .entity(new ModelApiResponse().message("No disclosure options provided")).build();
         }
 
         try {
@@ -80,10 +78,8 @@ public class DisclosureOptionsManagementApiImpl {
                     log.error("[DOMS] Invalid disclosure option status for account: " +
                             item.getAccountId() + " - " + disclosureOptionStatus);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ModelApiResponse().message(
-                                    "Invalid disclosure option status. " +
-                                            "Allowed values: no-sharing, pre-approval"))
-                            .build();
+                            .entity(new ModelApiResponse().message("Invalid disclosure option status. " +
+                                    "Allowed values: no-sharing, pre-approval")).build();
                 }
             }
 
@@ -156,16 +152,13 @@ public class DisclosureOptionsManagementApiImpl {
         try {
             // Split comma-separated account IDs and trim whitespace
             List<String> accountIdList = Arrays.asList(accountIds.split(","));
-            accountIdList = accountIdList.stream()
-                    .map(String::trim)
-                    .filter(StringUtils::isNotBlank)
+            accountIdList = accountIdList.stream().map(String::trim).filter(StringUtils::isNotBlank)
                     .collect(Collectors.toList());
 
             if (accountIdList.isEmpty()) {
                 log.error("[DOMS] No valid accountIds found after parsing");
-                return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ModelApiResponse()
-                        .message("At least one valid accountId is required"))
+                return Response.status(Response.Status.BAD_REQUEST).entity(new ModelApiResponse()
+                                .message("At least one valid accountId is required"))
                         .build();
             }
 
@@ -181,8 +174,8 @@ public class DisclosureOptionsManagementApiImpl {
         } catch (AccountMetadataException e) {
             log.error("[DOMS] Error batch retrieving disclosure options", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                .entity(new ModelApiResponse().message(
-                    "Failed to retrieve disclosure options: " + e.getMessage()))
+                    .entity(new ModelApiResponse().message(
+                            "Failed to retrieve disclosure options: " + e.getMessage()))
                     .build();
         }
 
@@ -199,8 +192,8 @@ public class DisclosureOptionsManagementApiImpl {
         if (request == null || request.isEmpty()) {
             log.error("[DOMS] No disclosure options provided to add");
             return Response.status(Response.Status.BAD_REQUEST)
-                .entity(new ModelApiResponse()
-                    .message("No disclosure options provided"))
+                    .entity(new ModelApiResponse()
+                            .message("No disclosure options provided"))
                     .build();
         }
 
@@ -215,13 +208,11 @@ public class DisclosureOptionsManagementApiImpl {
                     accountDisclosureMap.put(item.getAccountId(), disclosureOptionStatus);
                     accountIdsToCheck.add(item.getAccountId());
                 } else {
-                    log.error("[DOMS] Invalid disclosure option status for account: " +
-                            item.getAccountId() + " - " + disclosureOptionStatus);
-                    return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ModelApiResponse().message(
+                    log.error("[DOMS] Invalid disclosure option status for account: " + item.getAccountId() + " - "
+                            + disclosureOptionStatus);
+                    return Response.status(Response.Status.BAD_REQUEST).entity(new ModelApiResponse().message(
                                     "Invalid disclosure option status provided for " + item.getAccountId() +
-                                            ", Allowed values: pre-approval, no-sharing"))
-                            .build();
+                                            ", Allowed values: pre-approval, no-sharing")).build();
                 }
             }
 
@@ -236,8 +227,7 @@ public class DisclosureOptionsManagementApiImpl {
                 }
             }
 
-            List<String> existingAccountIds = accountIdsToCheck.stream()
-                    .filter(existingStatuses::containsKey)
+            List<String> existingAccountIds = accountIdsToCheck.stream().filter(existingStatuses::containsKey)
                     .collect(Collectors.toList());
 
             boolean anyExisted = !existingStatuses.isEmpty();
@@ -253,20 +243,16 @@ public class DisclosureOptionsManagementApiImpl {
                 return Response.ok()
                         .entity(new ModelApiResponse().message(
                                 "Disclosure options " + message + "already exist for account(s): "
-                                        + String.join(", ", existingAccountIds)))
-                        .build();
+                                        + String.join(", ", existingAccountIds))).build();
             } else {
                 return Response.status(Response.Status.CREATED)
-                        .entity(new ModelApiResponse().message(
-                                "Disclosure options added successfully"))
-                        .build();
+                        .entity(new ModelApiResponse().message("Disclosure options added successfully")).build();
             }
 
         } catch (AccountMetadataException e) {
             log.error("[DOMS] Failed to add disclosure options via AccountMetadataService", e);
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity(new ModelApiResponse().message("Failed to add disclosure options: "
-                            + e.getMessage()))
+                    .entity(new ModelApiResponse().message("Failed to add disclosure options: " + e.getMessage()))
                     .build();
         }
     }

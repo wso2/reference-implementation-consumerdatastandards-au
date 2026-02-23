@@ -160,8 +160,7 @@ public class AccountMetadataUtil {
      * @return the complete request URL
      */
     private static String buildDisclosureOptionsUrl() {
-        return ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_BASE_URL
-                + CommonConstants.DISCLOSURE_OPTIONS_ENDPOINT;
+        return ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_BASE_URL + CommonConstants.DISCLOSURE_OPTIONS_ENDPOINT;
     }
 
     /**
@@ -181,7 +180,6 @@ public class AccountMetadataUtil {
             accountData.addProperty(CommonConstants.DISCLOSURE_OPTION_FIELD, entry.getValue());
             dataArray.add(accountData);
         }
-
         return dataArray.toString();
     }
 

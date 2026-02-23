@@ -41,8 +41,7 @@ public class EnrichConsentSearchApiImpl {
             EnrichConsentSearchRequestBody requestBody) {
 
         if (requestBody.getData() == null) {
-            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\":\"Missing data field in request\"}")
-                    .build();
+            return Response.status(Response.Status.BAD_REQUEST).entity("Missing data field in request").build();
         }
 
         SuccessResponseForConsentSearch response = new SuccessResponseForConsentSearch();
