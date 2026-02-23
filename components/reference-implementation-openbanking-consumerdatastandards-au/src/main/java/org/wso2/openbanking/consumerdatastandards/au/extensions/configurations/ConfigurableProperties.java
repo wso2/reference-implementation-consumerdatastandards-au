@@ -20,7 +20,6 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.configurations;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.config.AccountMetadataConfigParser;
 
 /**
  * This class holds configurable properties for the CDS Open Banking implementation.
@@ -29,28 +28,13 @@ public class ConfigurableProperties {
 
     private static final Log log = LogFactory.getLog(ConfigurableProperties.class);
 
-    public static final String SHARABLE_ENDPOINT = "http://localhost:9766/api/openbanking/cds/backend/" +
+    public static final String SHARABLE_ENDPOINT = "http://<IS_HOST>:<PORT>/api/openbanking/cds/backend/" +
             "services/bankaccounts/bankaccountservice/sharable-accounts";
     public static final String CDS_HEADER_HOLDER_IDENTIFIER = "HID";
     public static final String ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL = "true";
 
-    public static final String ACCOUNT_METADATA_WEBAPP_BASE_URL = "http://localhost:9766/ob/cds/account-metadata";
-    public static final String ACCOUNT_METADATA_WEBAPP_USERNAME;
-    public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD;
-
-    static {
-
-        // Read basic auth credentials from AccountMetadataConfigParser
-        AccountMetadataConfigParser configParser = AccountMetadataConfigParser.getInstance();
-
-        ACCOUNT_METADATA_WEBAPP_USERNAME = configParser.getServiceExtensionsBasicAuthUsername();
-        ACCOUNT_METADATA_WEBAPP_PASSWORD = configParser.getServiceExtensionsBasicAuthPassword();
-
-        if (ACCOUNT_METADATA_WEBAPP_USERNAME == null || ACCOUNT_METADATA_WEBAPP_PASSWORD == null) {
-            log.warn("Account metadata webapp credentials not configured. " +
-                    "Ensure Basic authentication credentials are set in the depolyment.toml file.");
-        }
-
-    }
+    public static final String ACCOUNT_METADATA_WEBAPP_BASE_URL = "http://<IS_HOST>:<PORT>/ob/cds/account-metadata";
+    public static final String ACCOUNT_METADATA_WEBAPP_USERNAME = "<ACCOUNT_METADATA_USERNAME>";
+    public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD = "<ACCOUNT_METADATA_PASSWORD>";
 
 }
