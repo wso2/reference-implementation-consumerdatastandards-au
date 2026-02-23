@@ -28,13 +28,14 @@ public class ConfigurableProperties {
 
     private static final Log log = LogFactory.getLog(ConfigurableProperties.class);
 
-    public static final String SHARABLE_ENDPOINT = "http://<IS_HOST>:<PORT>/api/openbanking/cds/backend/" +
+    public static final String SHARABLE_ENDPOINT = "http://<IAM_HOST>:<PORT>/api/openbanking/cds/backend/" +
             "services/bankaccounts/bankaccountservice/sharable-accounts";
     public static final String CDS_HEADER_HOLDER_IDENTIFIER = "HID";
     public static final String ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL = "true";
 
-    public static final String ACCOUNT_METADATA_WEBAPP_BASE_URL = "http://<IS_HOST>:<PORT>/ob/cds/account-metadata";
-    public static final String ACCOUNT_METADATA_WEBAPP_USERNAME = "<ACCOUNT_METADATA_USERNAME>";
-    public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD = "<ACCOUNT_METADATA_PASSWORD>";
+    public static final String ACCOUNT_METADATA_WEBAPP_BASE_URL =
+            "http://<ACCOUNT_METADATA_WEBAPP_HOST>:<PORT>/ob/cds/account-metadata";
+    public static final String ACCOUNT_METADATA_WEBAPP_USERNAME = "<ACCOUNT_METADATA_WEBAPP_USERNAME>";
+    public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD = "<ACCOUNT_METADATA_WEBAPP_PASSWORD>";
 
 }

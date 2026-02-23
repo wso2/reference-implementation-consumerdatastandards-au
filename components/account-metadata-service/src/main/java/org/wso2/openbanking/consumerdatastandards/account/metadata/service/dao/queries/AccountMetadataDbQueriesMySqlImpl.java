@@ -21,7 +21,7 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.
 /**
  * MySQL implementation of account metadata database queries.
  */
-public class AccountMetadataDBQueriesMySQLImpl implements AccountMetadataDBQueries {
+public class AccountMetadataDbQueriesMySqlImpl implements AccountMetadataDbQueries {
 
     /**
      * {@inheritDoc}
@@ -57,6 +57,4 @@ public class AccountMetadataDBQueriesMySQLImpl implements AccountMetadataDBQueri
         return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ?, " +
                 "LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ?";
     }
-
-
 }

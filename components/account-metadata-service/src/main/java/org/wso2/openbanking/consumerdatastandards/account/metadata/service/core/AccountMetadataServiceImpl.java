@@ -23,7 +23,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAOImpl;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDBQueriesMySQLImpl;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueriesMySqlImpl;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.ConnectionProvider;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.DatabaseConnectionProvider;
 
@@ -46,7 +46,7 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
 
     // private constructor
     private AccountMetadataServiceImpl() {
-        this(new AccountMetadataDAOImpl(new AccountMetadataDBQueriesMySQLImpl()), new DatabaseConnectionProvider());
+        this(new AccountMetadataDAOImpl(new AccountMetadataDbQueriesMySqlImpl()), new DatabaseConnectionProvider());
     }
 
     private AccountMetadataServiceImpl(AccountMetadataDAO metadataDAO) {

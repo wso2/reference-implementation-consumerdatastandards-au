@@ -34,7 +34,6 @@ public class EnrichConsentSearchApiImpl {
     /**
      * Handle enrich consent search request to enrich and transform consent search results
      * before sending the response back to the accelerator.
-     *
      * @param requestBody - the request body containing consent search results to be enriched
      * @return Response containing the enriched consent search data
      */
@@ -42,14 +41,11 @@ public class EnrichConsentSearchApiImpl {
             EnrichConsentSearchRequestBody requestBody) {
 
         if (requestBody.getData() == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\":\"Missing data field in request\"}")
+            return Response.status(Response.Status.BAD_REQUEST).entity("{\"error\":\"Missing data field in request\"}")
                     .build();
         }
 
-
-        SuccessResponseForConsentSearch response =
-                new SuccessResponseForConsentSearch();
+        SuccessResponseForConsentSearch response = new SuccessResponseForConsentSearch();
 
         // Adding DOMS status to the search result.
         SuccessResponseForConsentSearchData searchData =
@@ -61,8 +57,4 @@ public class EnrichConsentSearchApiImpl {
 
         return Response.status(Response.Status.OK).entity(new JSONObject(response).toString()).build();
     }
-
 }
-
-
-

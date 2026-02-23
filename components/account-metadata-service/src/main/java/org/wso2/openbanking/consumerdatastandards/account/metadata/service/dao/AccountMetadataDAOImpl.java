@@ -21,7 +21,7 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
-import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDBQueries;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueries;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -41,14 +41,14 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
 
     private static final Log log = LogFactory.getLog(AccountMetadataDAOImpl.class);
 
-    private final AccountMetadataDBQueries dbQueries;
+    private final AccountMetadataDbQueries dbQueries;
 
     /**
      * Constructs a new DAO with the specified query provider.
      *
      * @param sqlStatements the database query provider
      */
-    public AccountMetadataDAOImpl(AccountMetadataDBQueries sqlStatements) {
+    public AccountMetadataDAOImpl(AccountMetadataDbQueries sqlStatements) {
         this.dbQueries = sqlStatements;
     }
 

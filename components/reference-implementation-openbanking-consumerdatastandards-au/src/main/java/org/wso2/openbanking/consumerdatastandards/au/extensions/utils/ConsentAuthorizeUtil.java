@@ -30,7 +30,6 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.Common
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalDisplayDataSection;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.DisplayListItem;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
@@ -153,7 +152,6 @@ public class ConsentAuthorizeUtil {
 
             //Check if consent amendment flow
             if (requiredData.containsKey(CommonConstants.CDR_ARRANGEMENT_ID)) {
-
                 //TODO: Implement Consent Amendment
             } else {
                 //Set additional Property isConsentAmendment
@@ -193,14 +191,16 @@ public class ConsentAuthorizeUtil {
      * Method to retrieve consumer data from request object.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
      * @param userId The user id of the authenticated user.
-     * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
+     * @param consumerData Consumer data model to be populated.
+     * @param displayData Display data model to be populated.
      */
-    public static ConsumerAndDisplayData cdsConsumerDataRetrieval(
-            JSONObject jsonRequestBody, String userId) throws CdsConsentException {
+    public static void cdsConsumerDataRetrieval(JSONObject jsonRequestBody, String userId,
+            SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
+            List<AdditionalDisplayDataSection> displayData) throws CdsConsentException {
 
         // Append consumer data to response
         try {
-            return validateAndAppendConsumerObjectToResponse(jsonRequestBody, userId);
+            validateAndAppendConsumerObjectToResponse(jsonRequestBody, userId, consumerData, displayData);
         } catch (CdsConsentException e) {
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
@@ -277,20 +277,14 @@ public class ConsentAuthorizeUtil {
      * Method to validate and append consumer object to response.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
      * @param userId The user id of the authenticated user.
-     * @return SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData object containing the consumer data.
+         * @param consumerData Consumer data model to be populated.
+         * @param displayData Display data model to be populated.
      */
-    public static ConsumerAndDisplayData
-    validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, String userId) throws CdsConsentException {
-
-        SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData =
-                new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData();
-        List<AdditionalDisplayDataSection> displayData =
-                new ArrayList<>();
-
+    public static void validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, String userId,
+                          SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
+                          List<AdditionalDisplayDataSection> displayData) throws CdsConsentException {
         try {
-
             String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;
-
             if (StringUtils.isNotBlank(accountsURL)) {
                 Map<String, String> parameters = new HashMap<>();
                 parameters.put(CommonConstants.USER_ID_KEY_NAME, userId);
@@ -301,7 +295,7 @@ public class ConsentAuthorizeUtil {
                 if (StringUtils.isBlank(accountData)) {
                     log.error("Unable to load accounts data for the user: " + userId);
                     throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
-                            "Exception occurred while getting accounts data");
+                        "Exception occurred while getting accounts data");
                 }
 
                 JSONObject jsonAccountData = new JSONObject(accountData);
@@ -312,9 +306,9 @@ public class ConsentAuthorizeUtil {
                 jsonRequestBody.put(CommonConstants.ACCOUNTS, accountsJSON);
 
                 List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList =
-                        new ArrayList<>();
-                List<DisplayListItem>
-                    blockedAccountsList = new ArrayList<>();
+                    new ArrayList<>();
+
+                List<DisplayListItem> blockedAccountsList = new ArrayList<>();
 
                 for (int i = 0; i < accountsJSON.length(); i++) {
 
@@ -327,17 +321,16 @@ public class ConsentAuthorizeUtil {
                     if (accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false)) {
                         handleJointAccount(accountJson, accountId, account, accountList, blockedAccountsList);
                     } else {
-                        account.setDisplayName(
-                                getDisplayNameWithAccountNumber(
-                                        accountJson.getString(CommonConstants.DISPLAY_NAME),
-                                        accountId));
+                        account.setDisplayName(getDisplayNameWithAccountNumber(
+                                        accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
                         accountList.add(account);
                     }
                 }
 
-                displayData = setDisplayData(blockedAccountsList);
+                List<AdditionalDisplayDataSection> resolvedDisplayData = setDisplayData(blockedAccountsList);
+                displayData.clear();
+                displayData.addAll(resolvedDisplayData);
                 consumerData.setAccounts(accountList);
-
             } else {
                 log.error("Sharable accounts endpoint is not configured properly");
                 throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
@@ -346,8 +339,6 @@ public class ConsentAuthorizeUtil {
         } catch (CdsConsentException e) {
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consumer data retrieval failed");
         }
-
-        return new ConsumerAndDisplayData(consumerData, displayData);
     }
 
     /**
@@ -372,7 +363,6 @@ public class ConsentAuthorizeUtil {
      * @return account number in the displayable masked format.
      */
     protected static String getDisplayableAccountNumber(String accountId) {
-
         int accountIdLength = accountId.length();
 
         if (accountIdLength > 1) {
@@ -391,6 +381,7 @@ public class ConsentAuthorizeUtil {
                 return maskedPart + visiblePart;
             }
         }
+
         return accountId;
     }
 
@@ -400,22 +391,13 @@ public class ConsentAuthorizeUtil {
      * @return List of display data sections
      * containing display information for blocked accounts
      */
-    private static List<AdditionalDisplayDataSection>
-    setDisplayData(
-            List<DisplayListItem>
-                blockedAccountsList) {
+    private static List<AdditionalDisplayDataSection> setDisplayData(List<DisplayListItem> blockedAccountsList) {
+        List<AdditionalDisplayDataSection> displayData = new ArrayList<>();
 
-        List<AdditionalDisplayDataSection> displayData =
-                new ArrayList<>();
-
-        AdditionalDisplayDataSection item =
-            new AdditionalDisplayDataSection();
+        AdditionalDisplayDataSection item = new AdditionalDisplayDataSection();
 
         // Always initialize the list to avoid nulls in the UI layer
-        List<DisplayListItem> safeList =
-            (blockedAccountsList != null)
-                ? blockedAccountsList
-                : Collections.emptyList();
+        List<DisplayListItem> safeList = (blockedAccountsList != null) ? blockedAccountsList : Collections.emptyList();
 
         item.setDisplayList(safeList);
 
