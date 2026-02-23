@@ -109,8 +109,9 @@ public class AccountMetadataUtil {
      * Calls POST /disclosure-options with account IDs and disclosure option value.
      *
      * @param accountDisclosureMap map of account ID to disclosure option value
+     * @return true if disclosure options are added successfully, false otherwise
      */
-    public static int addDisclosureOption(Map<String, String> accountDisclosureMap)  {
+    public static boolean addDisclosureOption(Map<String, String> accountDisclosureMap) {
 
         RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
 
@@ -129,15 +130,11 @@ public class AccountMetadataUtil {
             HttpResponse response = client.execute(request);
             int statusCode = response.getStatusLine().getStatusCode();
 
-            if (statusCode == HttpURLConnection.HTTP_CREATED || statusCode == HttpURLConnection.HTTP_OK) {
-                return 0;
-            } else {
-                return 1;
-            }
+            return statusCode == HttpURLConnection.HTTP_CREATED || statusCode == HttpURLConnection.HTTP_OK;
 
         } catch (IOException e) {
             log.error("Failed to add DOMS statuses for joint accounts", e);
-            return 1;
+            return false;
         }
     }
 

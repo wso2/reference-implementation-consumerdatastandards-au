@@ -229,12 +229,10 @@ public class ConsentAuthorizeUtil {
      * @param accountList The list of eligible accounts
      * @param blockedAccountsList The list of blocked accounts
      */
-    private static void handleJointAccount(
-            JSONObject accountJson, String accountId,
+    private static void handleJointAccount(JSONObject accountJson, String accountId,
             SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account,
             List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList,
-            List<DisplayListItem>
-                blockedAccountsList) {
+            List<DisplayListItem> blockedAccountsList) {
 
         if (isJointAccountElectable(accountJson)) {
             // Handle electable joint accounts
@@ -257,18 +255,15 @@ public class ConsentAuthorizeUtil {
             }
 
             account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
-            account.setDisplayName(
-                    getDisplayNameWithAccountNumber(
-                            accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+            account.setDisplayName(getDisplayNameWithAccountNumber(
+                    accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
             accountList.add(account);
 
         } else {
             // Adding blocked joint accounts to the display data
-            DisplayListItem
-                    blockedAccountItem =
-                new DisplayListItem();
+            DisplayListItem blockedAccountItem = new DisplayListItem();
             blockedAccountItem.setDisplayText(getDisplayNameWithAccountNumber(
-                accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+                    accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
             blockedAccountsList.add(blockedAccountItem);
         }
     }
@@ -277,8 +272,8 @@ public class ConsentAuthorizeUtil {
      * Method to validate and append consumer object to response.
      * @param jsonRequestBody The JSON object representing the request object of authorization request.
      * @param userId The user id of the authenticated user.
-         * @param consumerData Consumer data model to be populated.
-         * @param displayData Display data model to be populated.
+     * @param consumerData Consumer data model to be populated.
+     * @param displayData Display data model to be populated.
      */
     public static void validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, String userId,
                           SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
