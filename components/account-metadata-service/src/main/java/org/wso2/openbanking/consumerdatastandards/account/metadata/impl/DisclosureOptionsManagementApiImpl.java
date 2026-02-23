@@ -253,8 +253,7 @@ public class DisclosureOptionsManagementApiImpl {
             if (anyExisted) {
                 return Response.ok()
                         .entity(new ModelApiResponse().message(
-                                "Disclosure options " + message +
-                                        "already exist for account(s): "
+                                "Disclosure options " + message + "already exist for account(s): "
                                         + String.join(", ", existingAccountIds)))
                         .build();
             } else {

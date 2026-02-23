@@ -42,42 +42,6 @@ public class DatabaseUtilTest {
     private static final String INITIAL_CONTEXT_FACTORY_KEY = "java.naming.factory.initial";
     private static final String ORIGINAL_CONTEXT_FACTORY = System.getProperty(INITIAL_CONTEXT_FACTORY_KEY);
 
-    @BeforeClass
-    public void setUp() {
-        DataSource dataSource = Mockito.mock(DataSource.class);
-        Connection connection = Mockito.mock(Connection.class);
-        try {
-            Mockito.when(dataSource.getConnection()).thenReturn(connection);
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        TestInitialContextFactory.setDataSource(dataSource);
-        System.setProperty(INITIAL_CONTEXT_FACTORY_KEY, TestInitialContextFactory.class.getName());
-    }
-
-    @AfterClass
-    public void tearDown() {
-        if (ORIGINAL_CONTEXT_FACTORY == null) {
-            System.clearProperty(INITIAL_CONTEXT_FACTORY_KEY);
-        } else {
-            System.setProperty(INITIAL_CONTEXT_FACTORY_KEY, ORIGINAL_CONTEXT_FACTORY);
-        }
-    }
-
-    @Test
-    public void testDatabaseUtilGetConnection() throws Exception {
-        Connection connection = DatabaseUtil.getConnection();
-        Assert.assertNotNull(connection);
-    }
-
-    @Test
-    public void testDatabaseConnectionProviderDelegates() throws Exception {
-        DatabaseConnectionProvider provider = new DatabaseConnectionProvider();
-        Connection connection = provider.getConnection();
-        Assert.assertNotNull(connection);
-    }
-
     public static class TestInitialContextFactory implements InitialContextFactory {
 
         private static DataSource dataSource;
@@ -238,4 +202,41 @@ public class DatabaseUtilTest {
             }
         }
     }
+
+    @BeforeClass
+    public void setUp() {
+        DataSource dataSource = Mockito.mock(DataSource.class);
+        Connection connection = Mockito.mock(Connection.class);
+        try {
+            Mockito.when(dataSource.getConnection()).thenReturn(connection);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        TestInitialContextFactory.setDataSource(dataSource);
+        System.setProperty(INITIAL_CONTEXT_FACTORY_KEY, TestInitialContextFactory.class.getName());
+    }
+
+    @AfterClass
+    public void tearDown() {
+        if (ORIGINAL_CONTEXT_FACTORY == null) {
+            System.clearProperty(INITIAL_CONTEXT_FACTORY_KEY);
+        } else {
+            System.setProperty(INITIAL_CONTEXT_FACTORY_KEY, ORIGINAL_CONTEXT_FACTORY);
+        }
+    }
+
+    @Test
+    public void testDatabaseUtilGetConnection() throws Exception {
+        Connection connection = DatabaseUtil.getConnection();
+        Assert.assertNotNull(connection);
+    }
+
+    @Test
+    public void testDatabaseConnectionProviderDelegates() throws Exception {
+        DatabaseConnectionProvider provider = new DatabaseConnectionProvider();
+        Connection connection = provider.getConnection();
+        Assert.assertNotNull(connection);
+    }
+
 }
