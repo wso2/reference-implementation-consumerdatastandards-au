@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2025-2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,14 +18,23 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.extensions.configurations;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * This class holds configurable properties for the CDS Open Banking implementation.
  */
 public class ConfigurableProperties {
 
-    public static final String SHARABLE_ENDPOINT = "http://IAM_HOST:9766/api/openbanking/cds/backend/" +
+    private static final Log log = LogFactory.getLog(ConfigurableProperties.class);
+
+    public static final String SHARABLE_ENDPOINT = "http://<IS_HOST>:<PORT>/api/openbanking/cds/backend/" +
             "services/bankaccounts/bankaccountservice/sharable-accounts";
     public static final String CDS_HEADER_HOLDER_IDENTIFIER = "HID";
     public static final String ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL = "true";
+
+    public static final String ACCOUNT_METADATA_WEBAPP_BASE_URL = "http://<IS_HOST>:<PORT>/ob/cds/account-metadata";
+    public static final String ACCOUNT_METADATA_WEBAPP_USERNAME = "<ACCOUNT_METADATA_USERNAME>";
+    public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD = "<ACCOUNT_METADATA_PASSWORD>";
 
 }

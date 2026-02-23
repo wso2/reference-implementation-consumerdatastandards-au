@@ -152,6 +152,11 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.apache.ws.commons.axiom.wso2</groupId>
+            <artifactId>axiom</artifactId>
+            <version>${axiom.wso2.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -159,7 +164,14 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>${maven.checkstyleplugin.version}</version>
+                <version>3.1.0</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.puppycrawl.tools</groupId>
+                        <artifactId>checkstyle</artifactId>
+                        <version>8.23</version>
+                    </dependency>
+                </dependencies>
                 <executions>
                     <execution>
                         <id>validate</id>
@@ -176,6 +188,7 @@
                             <failsOnError>true</failsOnError>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>
                             <excludes>**/gen/**/**</excludes>
+                            <cacheFile>${project.build.directory}/checkstyle-cachefile</cacheFile>
                         </configuration>
                         <goals>
                             <goal>check</goal>
@@ -183,6 +196,7 @@
                     </execution>
                 </executions>
             </plugin>
+
             <plugin>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
@@ -285,6 +299,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
 
