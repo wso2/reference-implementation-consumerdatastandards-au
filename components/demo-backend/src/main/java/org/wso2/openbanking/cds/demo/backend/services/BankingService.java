@@ -639,7 +639,7 @@ public class BankingService {
                 "        \"endToEndId\": \"0987\",\n" +
                 "        \"purposeCode\": \"0456\"\n" +
                 "      },\n" +
-                "      \"core\": \"X2P1.01\"\n" +
+                "      \"service\": \"X2P1.01\"\n" +
                 "    }\n" +
                 "  }";
         return jsonParser.parse(transactionJson).getAsJsonObject();
