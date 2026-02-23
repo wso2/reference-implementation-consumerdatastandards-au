@@ -7,7 +7,6 @@ import io.swagger.annotations.*;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.EnrichConsentSearchRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ErrorResponse;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Response200ForConsentSearch;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.impl.EnrichConsentSearchApiImpl;
 
 import java.io.InputStream;
 import java.util.Map;
@@ -38,6 +37,6 @@ public class EnrichConsentSearchResponseApi {
         @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
     })
     public Response enrichConsentSearchResponsePost(@Valid @NotNull EnrichConsentSearchRequestBody enrichConsentSearchRequestBody) {
-        return EnrichConsentSearchApiImpl.handleEnrichSearchPost(enrichConsentSearchRequestBody);
+        return Response.ok().entity("magic!").build();
     }
 }
