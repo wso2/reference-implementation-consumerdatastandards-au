@@ -26,17 +26,17 @@ public class Response200ForConsentSearch   {
     private String value;
 
     StatusEnum (String v) {
-        value = v;
+      value = v;
     }
 
     public String value() {
-        return value;
+      return value;
     }
 
     @Override
     @JsonValue
     public String toString() {
-        return String.valueOf(value);
+      return String.valueOf(value);
     }
 
     /**
@@ -44,26 +44,26 @@ public class Response200ForConsentSearch   {
      * <a href="https://download.oracle.com/otndocs/jcp/jaxrs-2_0-fr-eval-spec/index.html">See JAX RS 2.0 Specification, section 3.2, p. 12</a>
      */
     public static StatusEnum fromString(String s) {
-        for (StatusEnum b : StatusEnum.values()) {
-            // using Objects.toString() to be safe if value type non-object type
-            // because types like 'int' etc. will be auto-boxed
-            if (java.util.Objects.toString(b.value).equals(s)) {
-                return b;
-            }
+      for (StatusEnum b : StatusEnum.values()) {
+        // using Objects.toString() to be safe if value type non-object type
+        // because types like 'int' etc. will be auto-boxed
+        if (java.util.Objects.toString(b.value).equals(s)) {
+          return b;
         }
-        throw new IllegalArgumentException("Unexpected string value '" + s + "'");
+      }
+      throw new IllegalArgumentException("Unexpected string value '" + s + "'");
     }
 
     @JsonCreator
     public static StatusEnum fromValue(String value) {
       for (StatusEnum b : StatusEnum.values()) {
         if (b.value.equals(value)) {
-                return b;
-            }
+          return b;
         }
-        throw new IllegalArgumentException("Unexpected value '" + value + "'");
+      }
+      throw new IllegalArgumentException("Unexpected value '" + value + "'");
     }
-}
+  }
 
   private StatusEnum status;
   private Object data;
@@ -74,10 +74,10 @@ public class Response200ForConsentSearch   {
 
   @JsonCreator
   public Response200ForConsentSearch(
-    @JsonProperty(required = true, value = "responseId") String responseId,
-    @JsonProperty(required = true, value = "status") StatusEnum status,
-    @JsonProperty(required = true, value = "data") Object data,
-    @JsonProperty(required = true, value = "errorCode") Integer errorCode
+          @JsonProperty(required = true, value = "responseId") String responseId,
+          @JsonProperty(required = true, value = "status") StatusEnum status,
+          @JsonProperty(required = true, value = "data") Object data,
+          @JsonProperty(required = true, value = "errorCode") Integer errorCode
   ) {
     this.responseId = responseId;
     this.status = status;
@@ -92,7 +92,7 @@ public class Response200ForConsentSearch   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "")
   @JsonProperty(required = true, value = "responseId")
   @NotNull public String getResponseId() {
@@ -112,7 +112,7 @@ public class Response200ForConsentSearch   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "Indicates the outcome of the request. For a failed operation, this should be set to ERROR.")
   @JsonProperty(required = true, value = "status")
   @NotNull public StatusEnum getStatus() {
@@ -132,7 +132,7 @@ public class Response200ForConsentSearch   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = ":\"Custom error object to response back\"")
   @JsonProperty(required = true, value = "data")
   @NotNull public Object getData() {
@@ -152,7 +152,7 @@ public class Response200ForConsentSearch   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "If any HTTP error code to return.")
   @JsonProperty(required = true, value = "errorCode")
   @NotNull public Integer getErrorCode() {
@@ -175,9 +175,9 @@ public class Response200ForConsentSearch   {
     }
     Response200ForConsentSearch response200ForConsentSearch = (Response200ForConsentSearch) o;
     return Objects.equals(this.responseId, response200ForConsentSearch.responseId) &&
-        Objects.equals(this.status, response200ForConsentSearch.status) &&
-        Objects.equals(this.data, response200ForConsentSearch.data) &&
-        Objects.equals(this.errorCode, response200ForConsentSearch.errorCode);
+            Objects.equals(this.status, response200ForConsentSearch.status) &&
+            Objects.equals(this.data, response200ForConsentSearch.data) &&
+            Objects.equals(this.errorCode, response200ForConsentSearch.errorCode);
   }
 
   @Override
@@ -189,6 +189,7 @@ public class Response200ForConsentSearch   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Response200ForConsentSearch {\n");
+
     sb.append("    responseId: ").append(toIndentedString(responseId)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    data: ").append(toIndentedString(data)).append("\n");

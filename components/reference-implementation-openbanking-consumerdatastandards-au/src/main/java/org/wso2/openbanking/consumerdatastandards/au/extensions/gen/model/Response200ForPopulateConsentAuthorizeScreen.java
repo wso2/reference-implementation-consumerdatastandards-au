@@ -47,7 +47,7 @@ public class Response200ForPopulateConsentAuthorizeScreen   {
       for (StatusEnum b : StatusEnum.values()) {
         // using Objects.toString() to be safe if value type non-object type
         // because types like 'int' etc. will be auto-boxed
-        if (Objects.toString(b.value).equals(s)) {
+        if (java.util.Objects.toString(b.value).equals(s)) {
           return b;
         }
       }
