@@ -56,8 +56,8 @@ public class Response200ForConsentSearch   {
 
     @JsonCreator
     public static StatusEnum fromValue(String value) {
-      for (StatusEnum b : StatusEnum.values()) {
-        if (b.value.equals(value)) {
+        for (StatusEnum b : StatusEnum.values()) {
+            if (b.value.equals(value)) {
                 return b;
             }
         }
@@ -189,6 +189,7 @@ public class Response200ForConsentSearch   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class Response200ForConsentSearch {\n");
+    
     sb.append("    responseId: ").append(toIndentedString(responseId)).append("\n");
     sb.append("    status: ").append(toIndentedString(status)).append("\n");
     sb.append("    data: ").append(toIndentedString(data)).append("\n");

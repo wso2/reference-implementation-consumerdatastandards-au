@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2025-2026, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2025, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -29,8 +29,6 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErr
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.AuthorizationFailureException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalDisplayDataSection;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.ConsumerAndDisplayData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.PopulateConsentAuthorizeScreenRequestBody;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreen;
@@ -40,12 +38,10 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.Succes
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.CommonConsentExtensionUtil;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.utils.ConsentAuthorizeUtil;
 
+import javax.ws.rs.core.Response;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.ws.rs.core.Response;
 
 /**
  * Implementation for Populate Consent Authorize Screen API.
@@ -78,28 +74,17 @@ public class PopulateConsentAuthorizeScreenApiImpl {
             SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData =
                     ConsentAuthorizeUtil.cdsConsentRetrieval(jsonRequestBody, requiredData);
 
-            //Getting Consumer and Display Data
-            ConsumerAndDisplayData consumerAndDisplayData =
-                    ConsentAuthorizeUtil.cdsConsumerDataRetrieval(jsonRequestBody, userId);
-
             //CDS account list retrieval step
             SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData =
-                    consumerAndDisplayData.getConsumerData();
-
-            //CDS Unavailable account list
-            List<AdditionalDisplayDataSection>
-                    additionalDisplayData =
-                    consumerAndDisplayData.getDisplayData();
+                    ConsentAuthorizeUtil.cdsConsumerDataRetrieval(jsonRequestBody, userId);
 
             //Set consent data to return to accelerator
             SuccessResponsePopulateConsentAuthorizeScreenData screenData =
                     new SuccessResponsePopulateConsentAuthorizeScreenData();
             screenData.setConsentData(consentData);
             screenData.setConsumerData(consumerData);
-            screenData.setAdditionalDisplayData(additionalDisplayData);
 
-            SuccessResponsePopulateConsentAuthorizeScreen response =
-                    new SuccessResponsePopulateConsentAuthorizeScreen();
+            SuccessResponsePopulateConsentAuthorizeScreen response = new SuccessResponsePopulateConsentAuthorizeScreen();
             response.setResponseId(requestId);
             response.setStatus(SuccessResponsePopulateConsentAuthorizeScreen.StatusEnum.SUCCESS);
             response.setData(screenData);
@@ -132,8 +117,7 @@ public class PopulateConsentAuthorizeScreenApiImpl {
     /**
      * Extracts required data from the given request object.
      *
-     * @param jsonRequestBody The JSON object representing the request payload from which
-     *                        required data will be extracted.
+     * @param jsonRequestBody The JSON object representing the request payload from which required data will be extracted.
      * @return A map containing the extracted data, or error information if extraction fails.
      * @throws CdsConsentException If there is an error while parsing the request object or extracting required data.
      */
@@ -207,8 +191,7 @@ public class PopulateConsentAuthorizeScreenApiImpl {
             }
         } catch (ParseException e) {
             log.error("Error while parsing the request object", e);
-            throw new CdsConsentException(
-                    CdsErrorEnum.UNEXPECTED_ERROR, "Error while parsing the request object: " + e);
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR, "Error while parsing the request object: " + e);
         }
         return dataMap;
     }
