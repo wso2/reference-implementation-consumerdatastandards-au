@@ -16,7 +16,6 @@
  ~ specific language governing permissions and limitations
  ~ under the License.
  -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
@@ -53,6 +52,11 @@
     </dependency>
 
     <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <scope>provided</scope>
@@ -63,13 +67,6 @@
       <artifactId>javax.ws.rs-api</artifactId>
       <scope>provided</scope>
     </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>${commons.lang3.version}</version>
-    </dependency>
-
     <dependency>
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpclient</artifactId>
@@ -124,7 +121,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>2.19.2</version>
+      <version>${jackson.annotations.version}</version>
       <scope>compile</scope>
     </dependency>
 
@@ -196,8 +193,6 @@
                 <exclude>**/exceptions/**</exclude>
                 <exclude>**/endpoints/**/api/**</exclude>
                 <exclude>**/endpoints/**/model/**</exclude>
-                <exclude>**/api/**</exclude>
-                <exclude>**/model/**</exclude>
                 <exclude>**/service/dao/queries/**</exclude>
                 <exclude>**/utils/connection/**</exclude>
               </excludes>
@@ -219,16 +214,14 @@
       </plugin>
     </plugins>
   </build>
-
   <properties>
     <build.helper.maven.plugin.version>3.3.0</build.helper.maven.plugin.version>
     <jersey.common.version>2.35</jersey.common.version>
     <pax.logging.api.version>2.1.0</pax.logging.api.version>
-    <commons.lang3.version>3.18.0</commons.lang3.version>
     <httpclient.version>4.5.14</httpclient.version>
     <org.json.version>20231013</org.json.version>
     <testng.version>7.7.0</testng.version>
     <commons.codec.version>1.21.0</commons.codec.version>
+    <jackson.annotations.version>2.19.2</jackson.annotations.version>
   </properties>
-
 </project>
