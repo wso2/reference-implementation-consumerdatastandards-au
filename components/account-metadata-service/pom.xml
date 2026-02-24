@@ -191,7 +191,6 @@
                 <exclude>**/configurations/**</exclude>
                 <exclude>**/constants/**</exclude>
                 <exclude>**/exceptions/**</exclude>
-                <exclude>**/gen/**</exclude>
                 <exclude>**/api/**</exclude>
                 <exclude>**/model/**</exclude>
                 <exclude>**/service/dao/queries/**</exclude>
