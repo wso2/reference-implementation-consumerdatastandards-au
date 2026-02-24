@@ -34,13 +34,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
       security:
         - OAuth2: []
         - BasicAuth: []
@@ -65,19 +65,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where disclosure options were added
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
       security:
         - OAuth2: []
         - BasicAuth: []
@@ -102,19 +105,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where disclosure options were updated
         '400':
           description: Bad Request
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
       security:
         - OAuth2: []
         - BasicAuth: []
@@ -148,11 +154,10 @@ components:
           description: Disclosure option status
           example: no-sharing
 
-    ApiResponse:
+    ErrorResponse:
       type: object
       properties:
-        message:
+        error_description:
           type: string
-          description: Response message
-          example: Disclosure options updated successfully
-
+          description: Error description
+          example: Invalid disclosure option status. Allowed values are no-sharing, pre-approval
