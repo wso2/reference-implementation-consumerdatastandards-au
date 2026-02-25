@@ -25,60 +25,30 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.Assert;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CDSEnforcementUtilsTest {
-
-    @Test(expectedExceptions = ParseException.class)
-    public void testDecodeJwtRejectsBlank() throws Exception {
-        CDSEnforcementUtils.decodeJWT(" ");
-    }
-
-    @Test(expectedExceptions = ParseException.class)
-    public void testDecodeJwtRejectsInvalidFormat() throws Exception {
-        CDSEnforcementUtils.decodeJWT("one.two");
-    }
-
-    @Test(expectedExceptions = ParseException.class)
-    public void testDecodeJwtRejectsInvalidBase64() throws Exception {
-        CDSEnforcementUtils.decodeJWT("aaa.###.bbb");
-    }
-
-    @Test
-    public void testDecodeJwtReturnsPayload() throws Exception {
-        JSONObject payload = new JSONObject();
-        payload.put("sub", "user-1");
-        payload.put("aud", "doms");
-
-        String encodedPayload = Base64.getUrlEncoder()
-                .withoutPadding()
-                .encodeToString(payload.toString().getBytes(StandardCharsets.UTF_8));
-        String jwt = "header." + encodedPayload + ".signature";
-
-        JSONObject decoded = CDSEnforcementUtils.decodeJWT(jwt);
-
-        Assert.assertEquals(decoded.getString("sub"), "user-1");
-        Assert.assertEquals(decoded.getString("aud"), "doms");
-    }
+/**
+ * Unit tests for {@link CDSAccountValidationUtils}.
+ */
+public class CDSAccountValidationUtilsTest {
 
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
         HttpServer server = startBlockedAccountsServer(
-            "["
-                + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"},"
-                + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"pre-approval\"},"
-                + "{\"accountId\":\"acc-3\",\"disclosureOption\":\"no-sharing\"}"
-                + "]");
+                "["
+                        + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"},"
+                        + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"pre-approval\"},"
+                        + "{\"accountId\":\"acc-3\",\"disclosureOption\":\"no-sharing\"}"
+                        + "]");
         try {
             String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
             Set<String> accounts = new HashSet<>();
@@ -86,7 +56,7 @@ public class CDSEnforcementUtilsTest {
             accounts.add("acc-2");
             accounts.add("acc-3");
 
-            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
+                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
                     accounts, serverUrl, "");
 
             Assert.assertEquals(blocked.size(), 2);
@@ -106,7 +76,7 @@ public class CDSEnforcementUtilsTest {
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-1");
 
-            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
+                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
                     accounts, serverUrl, "");
 
             Assert.assertTrue(blocked.isEmpty());
@@ -120,7 +90,7 @@ public class CDSEnforcementUtilsTest {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-        Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
+        Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
                 accounts, "http://localhost:1/blocked", "");
 
         Assert.assertTrue(blocked.isEmpty());
@@ -136,7 +106,7 @@ public class CDSEnforcementUtilsTest {
             accounts.add("acc-1");
 
             String basicAuth = Base64.getEncoder().encodeToString("user:pass".getBytes());
-            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
+                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
                     accounts, serverUrl, basicAuth);
 
             Assert.assertEquals(blocked.size(), 1);
@@ -154,7 +124,7 @@ public class CDSEnforcementUtilsTest {
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-2");
 
-            Set<String> blocked = CDSEnforcementUtils.fetchBlockedAccountsFromService(
+                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
                     accounts, serverUrl, "");
 
             Assert.assertEquals(blocked.size(), 1);
@@ -199,7 +169,7 @@ public class CDSEnforcementUtilsTest {
             Assert.assertEquals(exchange.getRequestMethod(), "GET");
             String query = exchange.getRequestURI().getRawQuery();
             Assert.assertNotNull(query);
-            Assert.assertTrue(query.contains(CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="));
+            Assert.assertTrue(query.contains(CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="));
 
             try (InputStream requestBody = exchange.getRequestBody()) {
                 while (requestBody.read() != -1) {
@@ -227,7 +197,7 @@ public class CDSEnforcementUtilsTest {
             Assert.assertEquals(exchange.getRequestMethod(), "GET");
             String query = exchange.getRequestURI().getRawQuery();
             Assert.assertNotNull(query);
-            Assert.assertTrue(query.contains(CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="));
+            Assert.assertTrue(query.contains(CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="));
 
             try (InputStream requestBody = exchange.getRequestBody()) {
                 while (requestBody.read() != -1) {
@@ -243,13 +213,13 @@ public class CDSEnforcementUtilsTest {
                 Assert.assertNull(authHeader, "Authorization header should not be present");
             }
 
-                JSONArray response = new JSONArray()
+            JSONArray response = new JSONArray()
                     .put(new JSONObject()
-                        .put(CDSEnforcementConstants.CDS_ACCOUNT_ID_TAG,
-                            expectedAuthHeader != null ? "acc-1" : "acc-2")
-                        .put(CDSEnforcementConstants.DISCLOSURE_OPTION_TAG,
-                            CDSEnforcementConstants.DOMS_STATUS_NO_SHARING));
-                byte[] responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
+                        .put(CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG,
+                                    expectedAuthHeader != null ? "acc-1" : "acc-2")
+                        .put(CDSAccountValidationConstants.DISCLOSURE_OPTION_TAG,
+                            CDSAccountValidationConstants.DOMS_STATUS_NO_SHARING));
+            byte[] responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
             exchange.getResponseHeaders().add("Content-Type", "application/json");
             exchange.sendResponseHeaders(200, responseBytes.length);
             try (OutputStream responseStream = exchange.getResponseBody()) {

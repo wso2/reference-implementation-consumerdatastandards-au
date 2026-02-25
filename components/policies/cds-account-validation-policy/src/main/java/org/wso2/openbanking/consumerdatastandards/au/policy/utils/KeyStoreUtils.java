@@ -21,7 +21,7 @@ package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.carbon.base.ServerConfiguration;
-import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -42,13 +42,13 @@ public class KeyStoreUtils {
     private static ServerConfiguration serverConfigs = ServerConfiguration.getInstance();
 
     private static final String keyStoreLocation = serverConfigs
-            .getFirstProperty(CDSEnforcementConstants.KEYSTORE_LOCATION_TAG);
+            .getFirstProperty(CDSAccountValidationConstants.KEYSTORE_LOCATION_TAG);
     private static final char[] keyStorePassword = serverConfigs
-            .getFirstProperty(CDSEnforcementConstants.KEYSTORE_PASSWORD_TAG).toCharArray();
+            .getFirstProperty(CDSAccountValidationConstants.KEYSTORE_PASSWORD_TAG).toCharArray();
     private static final String keyAlias = serverConfigs
-            .getFirstProperty(CDSEnforcementConstants.SIGNING_ALIAS_TAG);
+            .getFirstProperty(CDSAccountValidationConstants.SIGNING_ALIAS_TAG);
     private static final String keyPassword = serverConfigs
-            .getFirstProperty(CDSEnforcementConstants.SIGNING_KEY_PASSWORD);
+            .getFirstProperty(CDSAccountValidationConstants.SIGNING_KEY_PASSWORD);
 
     private static volatile Key key;
 
@@ -61,7 +61,7 @@ public class KeyStoreUtils {
     public static Key getSigningKey() {
 
         if (key == null) {
-            synchronized (CDSEnforcementUtils.class) {
+            synchronized (CDSAccountValidationUtils.class) {
                 if (key == null) {
                     log.debug("Initializing signing key from keystore");
                     try (FileInputStream is = new FileInputStream(getKeyStoreLocation())) {

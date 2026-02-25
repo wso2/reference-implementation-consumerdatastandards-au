@@ -29,9 +29,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
-import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 
 import java.io.IOException;
 import java.net.URI;
@@ -49,9 +48,9 @@ import java.util.Set;
 /**
  * Utility class for the Consent Enforcement Policy.
  */
-public class CDSEnforcementUtils {
+public class CDSAccountValidationUtils {
 
-    private static final Log log = LogFactory.getLog(CDSEnforcementUtils.class);
+    private static final Log log = LogFactory.getLog(CDSAccountValidationUtils.class);
 
     /**
      * Method to generate JWT with the given payload.
@@ -76,36 +75,24 @@ public class CDSEnforcementUtils {
     }
 
     /**
-     * Decode JWT payload into JSONObject (without validating signature).
+     * Fetch all blocked account IDs by checking both the disclosure options
+     * and secondary accounts services.
      *
-     * @param jwt JWT string
-     * @return Decoded payload as JSONObject
-     * @throws ParseException if JWT format is invalid
-     * @throws JSONException if payload is not valid JSON
+     * @param accountIds set of account IDs to check
+     * @param baseUrl base URL of the account metadata webapp
+     * @param userId user ID for the secondary accounts query
+     * @param basicAuthBase64 Base64-encoded Basic Auth credentials
+     * @return combined set of blocked account IDs from both services
      */
-    public static JSONObject decodeJWT(String jwt)
-            throws ParseException, JSONException {
+    public static Set<String> fetchAllBlockedAccounts(
+            Set<String> accountIds, String baseUrl, String userId, String basicAuthBase64) {
 
-        if (StringUtils.isBlank(jwt)) {
-            throw new ParseException("JWT is null or empty", 0);
-        }
+        String disclosureOptionsApi = baseUrl + CDSAccountValidationConstants.DISCLOSURE_OPTIONS_PATH;
 
-        String[] jwtParts = jwt.split("\\.");
-        if (jwtParts.length != 3) {
-            throw new ParseException("Invalid JWT format", 0);
-        }
+        Set<String> blockedAccounts = fetchBlockedJointAccountsFromService(accountIds, disclosureOptionsApi,
+                basicAuthBase64);
 
-        try {
-            byte[] decodedBytes = java.util.Base64.getUrlDecoder().decode(jwtParts[1]);
-            String decodedPayload = new String(decodedBytes, StandardCharsets.UTF_8);
-
-            log.debug("Decoded JWT payload: " + decodedPayload);
-            return new JSONObject(decodedPayload);
-
-        } catch (IllegalArgumentException e) {
-            log.error("Failed to Base64URL decode JWT payload", e);
-            throw new ParseException("Failed to decode JWT payload", 0);
-        }
+        return blockedAccounts;
     }
 
     /**
@@ -116,7 +103,7 @@ public class CDSEnforcementUtils {
      * @param basicAuthBase64 Base64-encoded Basic Auth credentials
      * @return set of blocked account IDs
      */
-    public static Set<String> fetchBlockedAccountsFromService(
+    static Set<String> fetchBlockedJointAccountsFromService(
             Set<String> accountIds, String blockedAccountsApi, String basicAuthBase64) {
 
         Set<String> blockedAccounts = new HashSet<>();
@@ -126,31 +113,26 @@ public class CDSEnforcementUtils {
         }
 
         try {
-            String accountIdsParam = URLEncoder.encode(
-                    String.join(",", accountIds), StandardCharsets.UTF_8);
-            String requestUrl = blockedAccountsApi + "?" + CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="
-                + accountIdsParam;
+            String accountIdsParam = URLEncoder.encode(String.join(",", accountIds), StandardCharsets.UTF_8);
+            String requestUrl = blockedAccountsApi + "?" + CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="
+                    + accountIdsParam;
 
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofMillis(3000))
-                    .build();
+            HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(3000)).build();
 
-            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
-                    .uri(URI.create(requestUrl))
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(requestUrl))
                     .timeout(Duration.ofMillis(3000))
-                    .header(CDSEnforcementConstants.ACCEPT_TAG, CDSEnforcementConstants.JSON_CONTENT_TYPE)
-                    .GET();
+                    .header(CDSAccountValidationConstants.ACCEPT_TAG,
+                            CDSAccountValidationConstants.JSON_CONTENT_TYPE).GET();
 
             if (StringUtils.isNotBlank(basicAuthBase64)) {
-                requestBuilder.header(CDSEnforcementConstants.AUTH_HEADER,
-                        CDSEnforcementConstants.BASIC_TAG + basicAuthBase64);
+                requestBuilder.header(CDSAccountValidationConstants.AUTH_HEADER,
+                        CDSAccountValidationConstants.BASIC_TAG + basicAuthBase64);
             } else {
                 log.warn("[DOMS] Basic Auth property not set, request for fetching blocked accounts may fail");
             }
 
             HttpRequest request = requestBuilder.build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
 
             if (response.statusCode() == 200) {
                 JSONArray disclosureOptions = new JSONArray(response.body());
@@ -162,10 +144,10 @@ public class CDSEnforcementUtils {
                     }
 
                     String disclosureOption =
-                            accountDisclosure.optString(CDSEnforcementConstants.DISCLOSURE_OPTION_TAG, null);
-                    if (CDSEnforcementConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(disclosureOption)) {
+                            accountDisclosure.optString(CDSAccountValidationConstants.DISCLOSURE_OPTION_TAG, null);
+                    if (CDSAccountValidationConstants.DOMS_STATUS_NO_SHARING.equalsIgnoreCase(disclosureOption)) {
                         String accountId = accountDisclosure.optString(
-                                CDSEnforcementConstants.CDS_ACCOUNT_ID_TAG, null);
+                                CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG, null);
                         if (StringUtils.isNotBlank(accountId)) {
                             blockedAccounts.add(accountId);
                         }
@@ -181,5 +163,4 @@ public class CDSEnforcementUtils {
 
         return blockedAccounts;
     }
-
 }

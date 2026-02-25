@@ -29,7 +29,7 @@ import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
-import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSEnforcementConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,7 +39,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CDSEnforcementMediatorTest {
+/**
+ * Unit tests for {@link CDSAccountValidationMediator}.
+ */
+public class CDSAccountValidationMediatorTest {
 
     private Axis2MessageContext synapseMessageContext;
     private MessageContext axis2MessageContext;
@@ -57,24 +60,24 @@ public class CDSEnforcementMediatorTest {
 
     @Test
     public void testMediateFiltersBlockedAccountsAndUpdatesHeader() throws Exception {
-        TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
-        HttpServer server = startBlockedAccountsServer("["
-            + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"no-sharing\"},"
-            + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"pre-approval\"}"
-            + "]");
+        TestableCDSAccountValidationMediator mediator = new TestableCDSAccountValidationMediator();
+        HttpServer server = startDisclosureOptionsServer("["
+                + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"no-sharing\"},"
+                + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"pre-approval\"}"
+                + "]");
         try {
-            String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
-            mediator.setDomsGetApi(serverUrl);
-            mediator.setDomsBasicAuthCredentials("dGVzdDp0ZXN0");
+            String serverBaseUrl = "http://localhost:" + server.getAddress().getPort();
+            mediator.setWebappBaseURL(serverBaseUrl);
+            mediator.setBasicAuthCredentials("dGVzdDp0ZXN0");
 
             JSONObject payload = new JSONObject();
             JSONArray authorizationResources = new JSONArray();
             authorizationResources.put(new JSONObject()
-                .put("authorizationType", "linkedMember")
-                .put("authorizationId", "linked-1"));
+                    .put("authorizationType", "linkedMember")
+                    .put("authorizationId", "linked-1"));
             authorizationResources.put(new JSONObject()
-                .put("authorizationType", "user")
-                .put("authorizationId", "auth-2"));
+                    .put("authorizationType", "user")
+                    .put("authorizationId", "auth-2"));
             payload.put("authorizationResources", authorizationResources);
 
             JSONArray accounts = new JSONArray();
@@ -83,12 +86,12 @@ public class CDSEnforcementMediatorTest {
             accounts.put(new JSONObject().put("account_id", "acc-3").put("authorizationId", "linked-1"));
             payload.put("consentMappingResources", accounts);
 
-            headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, payload.toString());
+            headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, payload.toString());
 
             boolean result = mediator.mediate(synapseMessageContext);
 
             Assert.assertTrue(result);
-            Assert.assertEquals(headers.get(CDSEnforcementConstants.INFO_HEADER_TAG), "signed.jwt");
+            Assert.assertEquals(headers.get(CDSAccountValidationConstants.INFO_HEADER_TAG), "signed.jwt");
 
             JSONObject updatedPayload = new JSONObject(mediator.generatedPayload);
             JSONArray updatedAuthResources = updatedPayload.getJSONArray("authorizationResources");
@@ -106,10 +109,10 @@ public class CDSEnforcementMediatorTest {
 
     @Test
     public void testMediateSkipsWhenNoConsentMappingResources() throws Exception {
-        TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
+        TestableCDSAccountValidationMediator mediator = new TestableCDSAccountValidationMediator();
 
         JSONObject payload = new JSONObject();
-        headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, payload.toString());
+        headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, payload.toString());
 
         boolean result = mediator.mediate(synapseMessageContext);
 
@@ -119,14 +122,14 @@ public class CDSEnforcementMediatorTest {
 
     @Test(expectedExceptions = org.json.JSONException.class)
     public void testMediateHandlesDecodeError() throws Exception {
-        TestableCDSEnforcementMediator mediator = new TestableCDSEnforcementMediator();
+        TestableCDSAccountValidationMediator mediator = new TestableCDSAccountValidationMediator();
 
-        headers.put(CDSEnforcementConstants.INFO_HEADER_TAG, "{not-json");
+        headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, "{not-json");
 
         mediator.mediate(synapseMessageContext);
     }
 
-    private static class TestableCDSEnforcementMediator extends CDSEnforcementMediator {
+    private static class TestableCDSAccountValidationMediator extends CDSAccountValidationMediator {
 
         private String generatedPayload;
 
@@ -137,9 +140,9 @@ public class CDSEnforcementMediatorTest {
         }
     }
 
-    private static HttpServer startBlockedAccountsServer(String responseBody) throws IOException {
+    private static HttpServer startDisclosureOptionsServer(String responseBody) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/blocked", new BlockedAccountsHandler(responseBody));
+        server.createContext("/disclosure-options", new BlockedAccountsHandler(responseBody));
         server.setExecutor(null);
         server.start();
         return server;
@@ -157,7 +160,7 @@ public class CDSEnforcementMediatorTest {
             Assert.assertEquals(exchange.getRequestMethod(), "GET");
             String query = exchange.getRequestURI().getRawQuery();
             Assert.assertNotNull(query);
-            Assert.assertTrue(query.contains(CDSEnforcementConstants.ACCOUNT_IDS_TAG + "="));
+            Assert.assertTrue(query.contains(CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="));
 
             try (InputStream requestBody = exchange.getRequestBody()) {
                 while (requestBody.read() != -1) {
