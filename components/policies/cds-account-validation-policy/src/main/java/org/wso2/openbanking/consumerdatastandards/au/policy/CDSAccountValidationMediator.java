@@ -53,10 +53,17 @@ public class CDSAccountValidationMediator extends AbstractMediator {
         this.basicAuthCredentials = basicAuthCredentials;
     }
 
+    /**
+     * Enforces DOMS account validation for the account information header by removing linked-member
+     * authorization resources, filtering blocked accounts, and updating the signed header payload.
+     *
+     * @param messageContext Synapse message context containing transport headers and mediation properties
+     * @return {@code true} to continue the mediation flow
+     */
     @Override
     public boolean mediate(MessageContext messageContext) {
 
-        log.debug("Starting DOMS enforcement mediation");
+        log.debug("Starting CDS mediation policy");
 
         try {
             org.apache.axis2.context.MessageContext axis2Ctx =
@@ -88,7 +95,7 @@ public class CDSAccountValidationMediator extends AbstractMediator {
                             linkedMemberAuthIds.add(linkedAuthId);
                         }
                         if (log.isDebugEnabled()) {
-                            log.debug("Removing linkedMember authorization resource. authorizationId="
+                            log.debug("Removing linkedMember authorization resource. authorizationId= "
                                     + linkedAuthId);
                         }
                         continue;
@@ -103,7 +110,7 @@ public class CDSAccountValidationMediator extends AbstractMediator {
             JSONArray consentMappingResources =
                     payload.optJSONArray(CDSAccountValidationConstants.CONSENT_MAPPING_RESOURCES_TAG);
             if (consentMappingResources == null) {
-                log.warn("No consentMappingResources array found in JWT, skipping DOMS enforcement.");
+                log.warn("No consentMappingResources array found in JWT, skipping CDS mediation policy.");
                 return true;
             }
 
@@ -141,20 +148,20 @@ public class CDSAccountValidationMediator extends AbstractMediator {
                     filteredConsentMappings.put(mappingResource);
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Blocking DOMS account: " + accountId);
+                        log.debug("[CDS-policy] Blocking account: " + accountId);
                     }
                 }
             }
 
             payload.put(CDSAccountValidationConstants.CONSENT_MAPPING_RESOURCES_TAG, filteredConsentMappings);
 
-            String signedJwt = generateJWT(payload.toString());
+            String signedJwt = CDSAccountValidationUtils.generateJWT(payload.toString());
             headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, signedJwt);
 
-            log.debug("DOMS enforcement completed successfully");
+            log.debug("CDS mediation completed successfully");
 
         } catch (ParseException | JOSEException e) {
-            String errorDescription = "Error during DOMS enforcement mediation";
+            String errorDescription = "Error during CDS mediation policy";
             log.error(errorDescription, e);
             setErrorResponseProperties(messageContext, errorDescription);
         }
@@ -162,6 +169,12 @@ public class CDSAccountValidationMediator extends AbstractMediator {
         return true;
     }
 
+    /**
+     * Sets standardized error response properties in the message context when CDS mediation fails.
+     *
+     * @param messageContext Synapse message context used to propagate error details
+     * @param errorDescription description of the error encountered during mediation
+     */
     @Generated(message = "No testable logic")
     private static void setErrorResponseProperties(MessageContext messageContext,
                                                    String errorDescription) {
@@ -172,7 +185,4 @@ public class CDSAccountValidationMediator extends AbstractMediator {
         messageContext.setProperty(CDSAccountValidationConstants.CUSTOM_HTTP_SC, "500");
     }
 
-    protected String generateJWT(String payload) throws ParseException, JOSEException {
-        return CDSAccountValidationUtils.generateJWT(payload);
-    }
 }
