@@ -38,6 +38,7 @@ public class PersistAuthorizedConsentApi {
     })
     public Response persistAuthorizedConsentPost(@Valid @NotNull PersistAuthorizedConsentRequestBody persistAuthorizedConsentRequestBody)
             throws CdsConsentException, JsonProcessingException {
+
         return PersistAuthorizedConsentApiImpl.handlePersistAuthorizedConsent(persistAuthorizedConsentRequestBody);
     }
 }
