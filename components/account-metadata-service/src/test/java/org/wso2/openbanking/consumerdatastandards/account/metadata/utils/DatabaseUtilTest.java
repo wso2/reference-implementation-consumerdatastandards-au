@@ -22,7 +22,9 @@ import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.configurations.ConfigurableProperties;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.DatabaseConnectionProvider;
 
 import java.sql.Connection;
@@ -44,14 +46,16 @@ public class DatabaseUtilTest {
 
     private static final String INITIAL_CONTEXT_FACTORY_KEY = "java.naming.factory.initial";
     private static final String ORIGINAL_CONTEXT_FACTORY = System.getProperty(INITIAL_CONTEXT_FACTORY_KEY);
+    private DataSource dataSource;
+    private Connection connection;
 
     /**
      * Initializes a mock datasource and registers a test initial context factory.
      */
     @BeforeClass
     public void setUp() {
-        DataSource dataSource = Mockito.mock(DataSource.class);
-        Connection connection = Mockito.mock(Connection.class);
+        dataSource = Mockito.mock(DataSource.class);
+        connection = Mockito.mock(Connection.class);
         try {
             Mockito.when(dataSource.getConnection()).thenReturn(connection);
         } catch (SQLException e) {
@@ -75,6 +79,15 @@ public class DatabaseUtilTest {
     }
 
     /**
+     * Resets mock interactions and stubbing before each test to avoid order dependency.
+     */
+    @BeforeMethod
+    public void resetMocks() throws SQLException {
+        Mockito.reset(dataSource, connection);
+        Mockito.when(dataSource.getConnection()).thenReturn(connection);
+    }
+
+    /**
      * Verifies that a JDBC connection can be obtained via {@link DatabaseUtil}.
      *
      * @throws Exception if connection retrieval fails
@@ -83,6 +96,10 @@ public class DatabaseUtilTest {
     public void testDatabaseUtilGetConnection() throws Exception {
         Connection connection = DatabaseUtil.getConnection();
         Assert.assertNotNull(connection);
+        Assert.assertSame(connection, this.connection);
+        Assert.assertEquals(TestInitialContextFactory.getLastLookupName(),
+                ConfigurableProperties.ACCOUNT_METADATA_DATASOURCE_JNDI_NAME);
+        Mockito.verify(dataSource).getConnection();
     }
 
     /**
@@ -95,6 +112,26 @@ public class DatabaseUtilTest {
         DatabaseConnectionProvider provider = new DatabaseConnectionProvider();
         Connection connection = provider.getConnection();
         Assert.assertNotNull(connection);
+        Assert.assertSame(connection, this.connection);
+        Mockito.verify(dataSource).getConnection();
+    }
+
+    /**
+     * Verifies that connection failures from the DataSource are propagated as SQLExceptions.
+     *
+     * @throws Exception if setup fails
+     */
+    @Test
+    public void testDatabaseUtilGetConnectionFailure() throws Exception {
+        SQLException expected = new SQLException("connection down");
+        Mockito.when(dataSource.getConnection()).thenThrow(expected);
+
+        try {
+            DatabaseUtil.getConnection();
+            Assert.fail("Expected SQLException to be thrown");
+        } catch (SQLException ex) {
+            Assert.assertSame(ex, expected);
+        }
     }
 
     /**
@@ -103,6 +140,7 @@ public class DatabaseUtilTest {
     public static class TestInitialContextFactory implements InitialContextFactory {
 
         private static DataSource dataSource;
+        private static String lastLookupName;
 
         /**
          * Sets the datasource returned by lookups from the test context.
@@ -111,6 +149,10 @@ public class DatabaseUtilTest {
          */
         public static void setDataSource(DataSource dataSource) {
             TestInitialContextFactory.dataSource = dataSource;
+        }
+
+        public static String getLastLookupName() {
+            return lastLookupName;
         }
 
         /**
@@ -131,11 +173,13 @@ public class DatabaseUtilTest {
 
             @Override
             public Object lookup(String name) {
+                lastLookupName = name;
                 return dataSource;
             }
 
             @Override
             public Object lookup(Name name) {
+                lastLookupName = name == null ? null : name.toString();
                 return dataSource;
             }
 

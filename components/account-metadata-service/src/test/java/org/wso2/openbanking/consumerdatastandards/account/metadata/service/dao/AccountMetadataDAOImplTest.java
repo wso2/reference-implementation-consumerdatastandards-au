@@ -135,7 +135,7 @@ public class AccountMetadataDAOImplTest {
      *
      * @throws Exception if setup or invocation fails
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testGetBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
@@ -143,7 +143,8 @@ public class AccountMetadataDAOImplTest {
         Mockito.when(connection.prepareStatement(Mockito.anyString()))
                 .thenThrow(new SQLException("bad"));
 
-        dao.getBatchDisclosureOptions(connection, Arrays.asList("acc-501"));
+        assertAccountMetadataException(() ->
+            dao.getBatchDisclosureOptions(connection, Arrays.asList("acc-501")));
     }
 
     /**
@@ -166,6 +167,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, accountMap);
 
+        Assert.assertTrue(Mockito.mockingDetails(statement).getInvocations().size() > 0);
         Mockito.verify(statement, Mockito.times(2)).setString(
                 Mockito.eq(1), Mockito.anyString());
         Mockito.verify(statement, Mockito.times(2)).setString(
@@ -188,6 +190,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, new HashMap<>());
 
+        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -196,7 +199,7 @@ public class AccountMetadataDAOImplTest {
      *
      * @throws Exception if setup or invocation fails
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testAddBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
@@ -206,7 +209,8 @@ public class AccountMetadataDAOImplTest {
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-700", "no-sharing");
 
-        dao.addBatchDisclosureOptions(connection, accountMap);
+        assertAccountMetadataException(() ->
+            dao.addBatchDisclosureOptions(connection, accountMap));
     }
 
     /**
@@ -229,6 +233,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.updateBatchDisclosureOptions(connection, accountMap);
 
+        Assert.assertTrue(Mockito.mockingDetails(statement).getInvocations().size() > 0);
         Mockito.verify(statement, Mockito.times(2)).setString(
                 Mockito.eq(1), Mockito.anyString());
         Mockito.verify(statement, Mockito.times(2)).setTimestamp(
@@ -251,6 +256,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.updateBatchDisclosureOptions(connection, new HashMap<>());
 
+        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -284,6 +290,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, null);
 
+        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -300,6 +307,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.updateBatchDisclosureOptions(connection, null);
 
+        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -309,7 +317,7 @@ public class AccountMetadataDAOImplTest {
      *
      * @throws Exception if setup or invocation fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testUpdateBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
@@ -319,6 +327,24 @@ public class AccountMetadataDAOImplTest {
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-901", "no-sharing");
 
-        dao.updateBatchDisclosureOptions(connection, accountMap);
+        assertAccountMetadataException(() ->
+                dao.updateBatchDisclosureOptions(connection, accountMap));
+    }
+
+    private void assertAccountMetadataException(ThrowingRunnable action) throws Exception {
+        try {
+            action.run();
+            Assert.fail("Expected AccountMetadataException to be thrown");
+        } catch (AccountMetadataException ex) {
+            Assert.assertNotNull(ex.getMessage());
+        }
+    }
+
+    private void assertNoInteractions(Object mock) {
+        Assert.assertTrue(Mockito.mockingDetails(mock).getInvocations().isEmpty());
+    }
+
+    private interface ThrowingRunnable {
+        void run() throws Exception;
     }
 }

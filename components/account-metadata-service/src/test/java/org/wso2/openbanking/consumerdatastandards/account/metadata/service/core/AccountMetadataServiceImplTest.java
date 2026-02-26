@@ -117,14 +117,14 @@ public class AccountMetadataServiceImplTest {
      *
      * @throws Exception if test setup fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testGetBatchDisclosureOptionsDaoException() throws Exception {
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-333")))
                 .thenThrow(new AccountMetadataException("dao error"));
 
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-        service.getBatchDisclosureOptions(Collections.singletonList("acc-333"));
+        assertAccountMetadataException(() -> service.getBatchDisclosureOptions(Collections.singletonList("acc-333")));
     }
 
     /**
@@ -152,7 +152,7 @@ public class AccountMetadataServiceImplTest {
      *
      * @throws Exception if test setup fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testAddBatchDisclosureOptionsDaoException() throws Exception {
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-666", "no-sharing");
@@ -163,7 +163,7 @@ public class AccountMetadataServiceImplTest {
 
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-        service.addBatchDisclosureOptions(accountMap);
+        assertAccountMetadataException(() -> service.addBatchDisclosureOptions(accountMap));
     }
 
     /**
@@ -191,7 +191,7 @@ public class AccountMetadataServiceImplTest {
      *
      * @throws Exception if test setup fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testUpdateBatchDisclosureOptionsDaoException() throws Exception {
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-999", "pre-approval");
@@ -202,7 +202,7 @@ public class AccountMetadataServiceImplTest {
 
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-        service.updateBatchDisclosureOptions(accountMap);
+        assertAccountMetadataException(() -> service.updateBatchDisclosureOptions(accountMap));
     }
 
     /**
@@ -212,7 +212,7 @@ public class AccountMetadataServiceImplTest {
      *
      * @throws Exception if test setup fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testGetBatchDisclosureOptionsConnectionException() throws Exception {
         ConnectionProvider failingProvider = new ConnectionProvider() {
             @Override
@@ -223,7 +223,7 @@ public class AccountMetadataServiceImplTest {
 
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, failingProvider);
 
-        service.getBatchDisclosureOptions(Collections.singletonList("acc-1000"));
+        assertAccountMetadataException(() -> service.getBatchDisclosureOptions(Collections.singletonList("acc-1000")));
     }
 
     /**
@@ -233,7 +233,7 @@ public class AccountMetadataServiceImplTest {
      *
      * @throws Exception if test setup fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testAddBatchDisclosureOptionsConnectionException() throws Exception {
         ConnectionProvider failingProvider = new ConnectionProvider() {
             @Override
@@ -246,7 +246,7 @@ public class AccountMetadataServiceImplTest {
 
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-1001", "no-sharing");
-        service.addBatchDisclosureOptions(accountMap);
+        assertAccountMetadataException(() -> service.addBatchDisclosureOptions(accountMap));
     }
 
     /**
@@ -256,7 +256,7 @@ public class AccountMetadataServiceImplTest {
      *
      * @throws Exception if test setup fails (expected exception is verified by TestNG)
      */
-    @Test(expectedExceptions = AccountMetadataException.class)
+    @Test
     public void testUpdateBatchDisclosureOptionsConnectionException() throws Exception {
         ConnectionProvider failingProvider = new ConnectionProvider() {
             @Override
@@ -269,7 +269,7 @@ public class AccountMetadataServiceImplTest {
 
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-1002", "pre-approval");
-        service.updateBatchDisclosureOptions(accountMap);
+        assertAccountMetadataException(() -> service.updateBatchDisclosureOptions(accountMap));
     }
 
     /**
@@ -302,5 +302,18 @@ public class AccountMetadataServiceImplTest {
         Field instanceField = AccountMetadataServiceImpl.class.getDeclaredField("instance");
         instanceField.setAccessible(true);
         instanceField.set(null, null);
+    }
+
+    private void assertAccountMetadataException(ThrowingRunnable action) throws Exception {
+        try {
+            action.run();
+            Assert.fail("Expected AccountMetadataException to be thrown");
+        } catch (AccountMetadataException ex) {
+            Assert.assertNotNull(ex.getMessage());
+        }
+    }
+
+    private interface ThrowingRunnable {
+        void run() throws Exception;
     }
 }
