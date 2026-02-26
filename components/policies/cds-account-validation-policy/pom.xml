@@ -65,11 +65,17 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-inline</artifactId>
+      <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-
   <build>
     <plugins>
       <plugin>
@@ -153,5 +159,6 @@
     <carbon.apimgt.impl.version>9.30.10</carbon.apimgt.impl.version>
     <jacoco.plugin.version>0.8.11</jacoco.plugin.version>
     <spotbugs.plugin.version>4.8.2.0</spotbugs.plugin.version>
+    <mockito.version>4.11.0</mockito.version>
   </properties>
 </project>

@@ -18,20 +18,19 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Base64;
 import java.util.HashSet;
 import java.util.Set;
@@ -43,188 +42,162 @@ public class CDSAccountValidationUtilsTest {
 
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
-        HttpServer server = startBlockedAccountsServer(
-                "["
-                        + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"},"
-                        + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"pre-approval\"},"
-                        + "{\"accountId\":\"acc-3\",\"disclosureOption\":\"no-sharing\"}"
-                        + "]");
-        try {
-            String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpClient.Builder clientBuilder = Mockito.mock(HttpClient.Builder.class);
+        HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+
+        Mockito.when(clientBuilder.connectTimeout(Mockito.any())).thenReturn(clientBuilder);
+        Mockito.when(clientBuilder.build()).thenReturn(client);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        Mockito.when(response.body()).thenReturn("["
+                + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"},"
+                + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"pre-approval\"},"
+                + "{\"accountId\":\"acc-3\",\"disclosureOption\":\"no-sharing\"}"
+                + "]");
+        Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+                .thenReturn(response);
+
+        try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
+            mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
+
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-1");
             accounts.add("acc-2");
             accounts.add("acc-3");
 
-                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, serverUrl, "");
+            Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
+                    accounts, "http://localhost/blocked", "");
 
             Assert.assertEquals(blocked.size(), 2);
             Assert.assertTrue(blocked.contains("acc-1"));
             Assert.assertTrue(blocked.contains("acc-3"));
-        } finally {
-            server.stop(0);
+
+            ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+            Mockito.verify(client).send(requestCaptor.capture(), Mockito.<HttpResponse.BodyHandler<String>>any());
+            Assert.assertTrue(requestCaptor.getValue().uri().toString().contains("accountIds="));
         }
     }
 
     @Test
     public void testFetchBlockedAccountsFromServiceNon200() throws Exception {
-        HttpServer server = startBlockedAccountsServerWithStatus(
-                "[]", 500);
-        try {
-            String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpClient.Builder clientBuilder = Mockito.mock(HttpClient.Builder.class);
+        HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+
+        Mockito.when(clientBuilder.connectTimeout(Mockito.any())).thenReturn(clientBuilder);
+        Mockito.when(clientBuilder.build()).thenReturn(client);
+        Mockito.when(response.statusCode()).thenReturn(500);
+        Mockito.when(response.body()).thenReturn("[]");
+        Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+                .thenReturn(response);
+
+        try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
+            mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
+
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-1");
 
-                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, serverUrl, "");
+            Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
+                    accounts, "http://localhost/blocked", "");
 
             Assert.assertTrue(blocked.isEmpty());
-        } finally {
-            server.stop(0);
         }
     }
 
     @Test
-    public void testFetchBlockedAccountsFromServiceIoError() {
-        Set<String> accounts = new HashSet<>();
-        accounts.add("acc-1");
+    public void testFetchBlockedAccountsFromServiceIoError() throws Exception {
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpClient.Builder clientBuilder = Mockito.mock(HttpClient.Builder.class);
 
-        Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                accounts, "http://localhost:1/blocked", "");
+        Mockito.when(clientBuilder.connectTimeout(Mockito.any())).thenReturn(clientBuilder);
+        Mockito.when(clientBuilder.build()).thenReturn(client);
+        Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+                .thenThrow(new IOException("Connection failed"));
 
-        Assert.assertTrue(blocked.isEmpty());
+        try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
+            mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
+
+            Set<String> accounts = new HashSet<>();
+            accounts.add("acc-1");
+
+            Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
+                    accounts, "http://localhost/blocked", "");
+
+            Assert.assertTrue(blocked.isEmpty());
+        }
     }
 
     @Test
     public void testFetchBlockedAccountsWithAuthHeader() throws Exception {
-        String expectedAuth = "Basic " + Base64.getEncoder().encodeToString("user:pass".getBytes());
-        HttpServer server = startAuthVerifyingServer(expectedAuth);
-        try {
-            String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpClient.Builder clientBuilder = Mockito.mock(HttpClient.Builder.class);
+        HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+
+        Mockito.when(clientBuilder.connectTimeout(Mockito.any())).thenReturn(clientBuilder);
+        Mockito.when(clientBuilder.build()).thenReturn(client);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        Mockito.when(response.body()).thenReturn(new JSONArray()
+                .put(new JSONObject()
+                        .put(CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG, "acc-1")
+                        .put(CDSAccountValidationConstants.DISCLOSURE_OPTION_TAG,
+                                CDSAccountValidationConstants.DOMS_STATUS_NO_SHARING))
+                .toString());
+        Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+                .thenReturn(response);
+
+        try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
+            mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
+
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-1");
 
             String basicAuth = Base64.getEncoder().encodeToString("user:pass".getBytes());
-                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, serverUrl, basicAuth);
+            Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
+                    accounts, "http://localhost/blocked", basicAuth);
 
             Assert.assertEquals(blocked.size(), 1);
             Assert.assertTrue(blocked.contains("acc-1"));
-        } finally {
-            server.stop(0);
+
+            ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+            Mockito.verify(client).send(requestCaptor.capture(), Mockito.<HttpResponse.BodyHandler<String>>any());
+            Assert.assertEquals(requestCaptor.getValue().headers().firstValue("Authorization").orElse(null),
+                    "Basic " + basicAuth);
         }
     }
 
     @Test
     public void testFetchBlockedAccountsWithoutAuthHeader() throws Exception {
-        HttpServer server = startAuthVerifyingServer(null);
-        try {
-            String serverUrl = "http://localhost:" + server.getAddress().getPort() + "/blocked";
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpClient.Builder clientBuilder = Mockito.mock(HttpClient.Builder.class);
+        HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+
+        Mockito.when(clientBuilder.connectTimeout(Mockito.any())).thenReturn(clientBuilder);
+        Mockito.when(clientBuilder.build()).thenReturn(client);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        Mockito.when(response.body()).thenReturn(new JSONArray()
+                .put(new JSONObject()
+                        .put(CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG, "acc-2")
+                        .put(CDSAccountValidationConstants.DISCLOSURE_OPTION_TAG,
+                                CDSAccountValidationConstants.DOMS_STATUS_NO_SHARING))
+                .toString());
+        Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+                .thenReturn(response);
+
+        try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
+            mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
+
             Set<String> accounts = new HashSet<>();
             accounts.add("acc-2");
 
-                Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, serverUrl, "");
+            Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
+                    accounts, "http://localhost/blocked", "");
 
             Assert.assertEquals(blocked.size(), 1);
             Assert.assertTrue(blocked.contains("acc-2"));
-        } finally {
-            server.stop(0);
-        }
-    }
 
-    private static HttpServer startAuthVerifyingServer(String expectedAuthHeader) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/blocked", new AuthVerifyingHandler(expectedAuthHeader));
-        server.setExecutor(null);
-        server.start();
-        return server;
-    }
-
-    private static HttpServer startBlockedAccountsServer(String responseBody) throws IOException {
-        return startBlockedAccountsServerWithStatus(responseBody, 200);
-    }
-
-    private static HttpServer startBlockedAccountsServerWithStatus(String responseBody, int statusCode)
-            throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/blocked", new BlockedAccountsHandler(responseBody, statusCode));
-        server.setExecutor(null);
-        server.start();
-        return server;
-    }
-
-    private static class BlockedAccountsHandler implements HttpHandler {
-        private final String responseBody;
-        private final int statusCode;
-
-        private BlockedAccountsHandler(String responseBody, int statusCode) {
-            this.responseBody = responseBody;
-            this.statusCode = statusCode;
-        }
-
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            Assert.assertEquals(exchange.getRequestMethod(), "GET");
-            String query = exchange.getRequestURI().getRawQuery();
-            Assert.assertNotNull(query);
-            Assert.assertTrue(query.contains(CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="));
-
-            try (InputStream requestBody = exchange.getRequestBody()) {
-                while (requestBody.read() != -1) {
-                    // Consume request body to avoid client-side issues.
-                }
-            }
-            byte[] responseBytes = responseBody.getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().add("Content-Type", "application/json");
-            exchange.sendResponseHeaders(statusCode, responseBytes.length);
-            try (OutputStream responseStream = exchange.getResponseBody()) {
-                responseStream.write(responseBytes);
-            }
-        }
-    }
-
-    private static class AuthVerifyingHandler implements HttpHandler {
-        private final String expectedAuthHeader;
-
-        private AuthVerifyingHandler(String expectedAuthHeader) {
-            this.expectedAuthHeader = expectedAuthHeader;
-        }
-
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            Assert.assertEquals(exchange.getRequestMethod(), "GET");
-            String query = exchange.getRequestURI().getRawQuery();
-            Assert.assertNotNull(query);
-            Assert.assertTrue(query.contains(CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="));
-
-            try (InputStream requestBody = exchange.getRequestBody()) {
-                while (requestBody.read() != -1) {
-                    // Consume request body
-                }
-            }
-
-            // Verify auth header is set correctly
-            String authHeader = exchange.getRequestHeaders().getFirst("Authorization");
-            if (expectedAuthHeader != null) {
-                Assert.assertEquals(authHeader, expectedAuthHeader, "Authorization header mismatch");
-            } else {
-                Assert.assertNull(authHeader, "Authorization header should not be present");
-            }
-
-            JSONArray response = new JSONArray()
-                    .put(new JSONObject()
-                        .put(CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG,
-                                    expectedAuthHeader != null ? "acc-1" : "acc-2")
-                        .put(CDSAccountValidationConstants.DISCLOSURE_OPTION_TAG,
-                            CDSAccountValidationConstants.DOMS_STATUS_NO_SHARING));
-            byte[] responseBytes = response.toString().getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().add("Content-Type", "application/json");
-            exchange.sendResponseHeaders(200, responseBytes.length);
-            try (OutputStream responseStream = exchange.getResponseBody()) {
-                responseStream.write(responseBytes);
-            }
+            ArgumentCaptor<HttpRequest> requestCaptor = ArgumentCaptor.forClass(HttpRequest.class);
+            Mockito.verify(client).send(requestCaptor.capture(), Mockito.<HttpResponse.BodyHandler<String>>any());
+            Assert.assertFalse(requestCaptor.getValue().headers().firstValue("Authorization").isPresent());
         }
     }
 }

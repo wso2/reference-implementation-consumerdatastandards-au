@@ -18,24 +18,20 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.policy;
 
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 import org.apache.axis2.context.MessageContext;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetSocketAddress;
-import java.nio.charset.StandardCharsets;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,23 +57,34 @@ public class CDSAccountValidationMediatorTest {
     @Test(expectedExceptions = ExceptionInInitializerError.class)
     public void testMediateFiltersBlockedAccountsAndUpdatesHeader() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
-        HttpServer server = startDisclosureOptionsServer("["
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpClient.Builder clientBuilder = Mockito.mock(HttpClient.Builder.class);
+        HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+
+        Mockito.when(clientBuilder.connectTimeout(Mockito.any())).thenReturn(clientBuilder);
+        Mockito.when(clientBuilder.build()).thenReturn(client);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        Mockito.when(response.body()).thenReturn("["
                 + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"no-sharing\"},"
                 + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"pre-approval\"}"
-                + "]");
-        try {
-            String serverBaseUrl = "http://localhost:" + server.getAddress().getPort();
-            mediator.setWebappBaseURL(serverBaseUrl);
+            + "]");
+        Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+            .thenReturn(response);
+
+        try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
+            mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
+
+            mediator.setWebappBaseURL("http://localhost");
             mediator.setBasicAuthCredentials("dGVzdDp0ZXN0");
 
             JSONObject payload = new JSONObject();
             JSONArray authorizationResources = new JSONArray();
             authorizationResources.put(new JSONObject()
-                    .put("authorizationType", "linkedMember")
-                    .put("authorizationId", "linked-1"));
+                .put("authorizationType", "linkedMember")
+                .put("authorizationId", "linked-1"));
             authorizationResources.put(new JSONObject()
-                    .put("authorizationType", "user")
-                    .put("authorizationId", "auth-2"));
+                .put("authorizationType", "user")
+                .put("authorizationId", "auth-2"));
             payload.put("authorizationResources", authorizationResources);
 
             JSONArray accounts = new JSONArray();
@@ -89,8 +96,6 @@ public class CDSAccountValidationMediatorTest {
             headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, payload.toString());
 
             mediator.mediate(synapseMessageContext);
-        } finally {
-            server.stop(0);
         }
     }
 
@@ -115,41 +120,5 @@ public class CDSAccountValidationMediatorTest {
         headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, "{not-json");
 
         mediator.mediate(synapseMessageContext);
-    }
-
-    private static HttpServer startDisclosureOptionsServer(String responseBody) throws IOException {
-        HttpServer server = HttpServer.create(new InetSocketAddress(0), 0);
-        server.createContext("/disclosure-options", new BlockedAccountsHandler(responseBody));
-        server.setExecutor(null);
-        server.start();
-        return server;
-    }
-
-    private static class BlockedAccountsHandler implements HttpHandler {
-        private final String responseBody;
-
-        private BlockedAccountsHandler(String responseBody) {
-            this.responseBody = responseBody;
-        }
-
-        @Override
-        public void handle(HttpExchange exchange) throws IOException {
-            Assert.assertEquals(exchange.getRequestMethod(), "GET");
-            String query = exchange.getRequestURI().getRawQuery();
-            Assert.assertNotNull(query);
-            Assert.assertTrue(query.contains(CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="));
-
-            try (InputStream requestBody = exchange.getRequestBody()) {
-                while (requestBody.read() != -1) {
-                    // Consume request body to avoid client-side issues.
-                }
-            }
-            byte[] responseBytes = responseBody.getBytes(StandardCharsets.UTF_8);
-            exchange.getResponseHeaders().add("Content-Type", "application/json");
-            exchange.sendResponseHeaders(200, responseBytes.length);
-            try (OutputStream responseStream = exchange.getResponseBody()) {
-                responseStream.write(responseBytes);
-            }
-        }
     }
 }
