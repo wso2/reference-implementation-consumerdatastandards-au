@@ -40,6 +40,9 @@ import java.util.Set;
  */
 public class CDSAccountValidationUtilsTest {
 
+        private static final String ACCOUNT_METADATA_WEBAPP_BASE_URL = "http://account-metadata-webapp-base-url";
+        private static final String DOMS_ENDPOINT = ACCOUNT_METADATA_WEBAPP_BASE_URL + "/disclosure-options";
+
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -66,7 +69,7 @@ public class CDSAccountValidationUtilsTest {
             accounts.add("acc-3");
 
             Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, "http://localhost/blocked", "");
+                    accounts, DOMS_ENDPOINT, "");
 
             Assert.assertEquals(blocked.size(), 2);
             Assert.assertTrue(blocked.contains("acc-1"));
@@ -98,7 +101,7 @@ public class CDSAccountValidationUtilsTest {
             accounts.add("acc-1");
 
             Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, "http://localhost/blocked", "");
+                    accounts, DOMS_ENDPOINT, "");
 
             Assert.assertTrue(blocked.isEmpty());
         }
@@ -121,7 +124,7 @@ public class CDSAccountValidationUtilsTest {
             accounts.add("acc-1");
 
             Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, "http://localhost/blocked", "");
+                    accounts, DOMS_ENDPOINT, "");
 
             Assert.assertTrue(blocked.isEmpty());
         }
@@ -153,7 +156,7 @@ public class CDSAccountValidationUtilsTest {
 
             String basicAuth = Base64.getEncoder().encodeToString("user:pass".getBytes());
             Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, "http://localhost/blocked", basicAuth);
+                    accounts, DOMS_ENDPOINT, basicAuth);
 
             Assert.assertEquals(blocked.size(), 1);
             Assert.assertTrue(blocked.contains("acc-1"));
@@ -190,7 +193,7 @@ public class CDSAccountValidationUtilsTest {
             accounts.add("acc-2");
 
             Set<String> blocked = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
-                    accounts, "http://localhost/blocked", "");
+                    accounts, DOMS_ENDPOINT, "");
 
             Assert.assertEquals(blocked.size(), 1);
             Assert.assertTrue(blocked.contains("acc-2"));
