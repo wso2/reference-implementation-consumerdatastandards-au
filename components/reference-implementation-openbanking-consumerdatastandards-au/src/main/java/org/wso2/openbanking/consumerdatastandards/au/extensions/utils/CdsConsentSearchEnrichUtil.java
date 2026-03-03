@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
@@ -59,7 +60,7 @@ public class CdsConsentSearchEnrichUtil {
         JSONArray searchResultArray;
         try {
             searchResultArray = new JSONArray(enrichedObj);
-        } catch (Exception e) {
+        } catch (JSONException e) {
             log.warn("Failed to convert enrichedSearchResult to JSONArray, skipping DOMS enrichment", e);
             return searchData;
         }

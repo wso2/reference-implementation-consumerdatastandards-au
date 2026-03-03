@@ -244,7 +244,7 @@ public class ConsentAuthorizeUtil {
                 JSONArray linkedMemberArray =
                         accountJson.getJSONObject(
                         CommonConstants.JOINT_ACCOUNT_INFO_TAG).optJSONArray(
-                        CommonConstants.AUTH_RESOURCE_TYPE_LINKED);
+                        CommonConstants.LINKED_MEMBER_TAG_IN_SHARABLE_ENDPOINT);
 
                 if (linkedMemberArray != null) {
                     for (int j = 0; j < linkedMemberArray.length(); j++) {

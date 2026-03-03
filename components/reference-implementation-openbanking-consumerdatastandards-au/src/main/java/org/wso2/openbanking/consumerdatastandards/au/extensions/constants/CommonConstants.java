@@ -131,6 +131,7 @@ public class CommonConstants {
     public static final String AUTHORIZATION_ID = "authorizationId";
     public static final String AUTHORIZATION_RESOURCES = "authorizationResources";
     public static final String AUTH_TYPE = "authorizationType";
+    public static final String DEFAULT_AUTH_TYPE = "authorization";
 
     //Constants Related to Joint Accounts
     public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
@@ -138,7 +139,8 @@ public class CommonConstants {
     public static final String IS_JOINT_ACCOUNT_RESPONSE = "isJointAccount";
     public static final String JOINT_ACCOUNT_INFO_TAG = "jointAccountinfo";
     public static final String LINKED_MEMBERS = "linkedMembers";
-    public static final String AUTH_RESOURCE_TYPE_LINKED = "linkedMember";
+    public static final String LINKED_MEMBER_TAG_IN_SHARABLE_ENDPOINT = "linkedMember";
+    public static final String AUTH_RESOURCE_TYPE_LINKED = "linked_member";
     public static final String MEMBER_ID_TAG = "memberId";
     public static final String DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME = "domsStatus";
     public static final String JOINT_ACCOUNT_CONSENT_ELECTION_STATUS = "jointAccountConsentElectionStatus";
@@ -151,10 +153,9 @@ public class CommonConstants {
             "For joint accounts, all account holders must elect to make the account available."  + "<br><br>" +
             "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
                     "Please contact your bank for more details.";
-    public static final String AUTH_SCREEN_DISPLAY_LIST_ITEM_PROPERTY_NAME = "displayText";
+    public static final String AUTH_RESOURCE_TYPE_PRIMARY = "primary_member";
 
     public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
-    public static final String DISCLOSURE_OPTIONS_GET_ENDPOINT = "/disclosure-options/accounts-status";
     public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";
 
 }
