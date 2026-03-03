@@ -52,7 +52,7 @@ public class CDSAccountValidationConstants {
 
     // Constants related to DOMS
     public static final String ACCOUNT_IDS_TAG = "accountIds";
-    public static final String LINKED_MEMBER_TAG = "linkedMember";
+    public static final String LINKED_MEMBER_TAG = "linked_member";
     public static final String DISCLOSURE_OPTION_TAG = "disclosureOption";
     public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
 
