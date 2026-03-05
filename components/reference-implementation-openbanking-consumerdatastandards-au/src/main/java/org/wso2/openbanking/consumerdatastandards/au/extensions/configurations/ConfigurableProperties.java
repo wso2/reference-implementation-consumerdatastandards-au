@@ -37,5 +37,7 @@ public class ConfigurableProperties {
             "http://<ACCOUNT_METADATA_WEBAPP_HOST>:<PORT>/ob/cds/account-metadata";
     public static final String ACCOUNT_METADATA_WEBAPP_USERNAME = "<ACCOUNT_METADATA_WEBAPP_USERNAME>";
     public static final String ACCOUNT_METADATA_WEBAPP_PASSWORD = "<ACCOUNT_METADATA_WEBAPP_PASSWORD>";
+    public static final int ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS = 5000;
+    public static final int ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS = 10000;
 
 }

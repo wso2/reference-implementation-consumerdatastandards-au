@@ -71,7 +71,11 @@ public class AccountMetadataUtil {
      */
     public static Map<String, String> getDOMSStatusesForAccounts(List<String> accountIds) {
 
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
+
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             // Build URL with comma-separated account IDs as query parameter
             String baseUrl = buildDisclosureOptionsUrl();
@@ -113,7 +117,10 @@ public class AccountMetadataUtil {
      */
     public static boolean addDisclosureOption(Map<String, String> accountDisclosureMap) {
 
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
 
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             String requestUrl = buildDisclosureOptionsUrl();
