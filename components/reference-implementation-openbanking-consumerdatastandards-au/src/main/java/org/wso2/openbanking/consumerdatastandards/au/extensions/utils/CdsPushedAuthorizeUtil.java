@@ -35,7 +35,8 @@ public class CdsPushedAuthorizeUtil {
 
     /**
      * Validates the CDS pushed authorization request object.
-     * @param requestObject The request object to be validated, typically representing the CDS pushed authorization request payload.
+     * @param requestObject The request object to be validated, typically representing the CDS pushed authorization
+     *                      request payload.
      * @return A JSONObject containing error details if validation fails, or {@code null} if all validations pass.
      * @throws JsonProcessingException If an error occurs while converting the request object to a JSON representation.
      */

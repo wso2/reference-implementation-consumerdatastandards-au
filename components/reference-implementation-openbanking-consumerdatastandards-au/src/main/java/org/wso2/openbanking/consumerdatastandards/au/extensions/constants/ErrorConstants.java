@@ -82,4 +82,5 @@ public class ErrorConstants {
     public static final String INVALID_REQUEST_OBJECT = "invalid_request_object";
     public static final String EMPTY_CDR_ARRANGEMENT_ID = "Empty cdr-arrangement-id sent in the request";
     public static final String INVALID_SHARING_DURATION = "Invalid sharing_duration value";
+
 }
