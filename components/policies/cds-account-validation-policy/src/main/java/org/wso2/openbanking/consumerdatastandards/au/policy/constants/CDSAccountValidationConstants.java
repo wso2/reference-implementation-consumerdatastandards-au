@@ -59,4 +59,8 @@ public class CDSAccountValidationConstants {
     // Account-metadata webapp API paths
     public static final String DISCLOSURE_OPTIONS_PATH = "/disclosure-options";
 
+    // Timeouts
+    public static final int HTTP_CLIENT_CONNECT_TIMEOUT_MILLIS = 3000;
+    public static final int HTTP_REQUEST_TIMEOUT_MILLIS = 3000;
+
 }
