@@ -1,12 +1,8 @@
 package org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model;
 
 import com.fasterxml.jackson.annotation.*;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.*;
-import javax.validation.Valid;
-
-import io.swagger.annotations.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,6 +17,8 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner   {
   private Boolean selected;
   private String displayName;
+  private String title;
+  private String description;
   private Map<String, Object> additionalProperties = new HashMap<>();
 
   public SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner() {
@@ -74,6 +72,46 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccoun
   }
 
   /**
+   * Tooltip title shown for the account in UI
+   **/
+  public SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner tooltipTitle(String tooltipTitle) {
+    this.title = tooltipTitle;
+    return this;
+  }
+
+
+  @ApiModelProperty(value = "Tooltip title shown for the account in UI")
+  @JsonProperty("tooltipTitle")
+  public String getTitle() {
+    return title;
+  }
+
+  @JsonProperty("tooltipTitle")
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  /**
+   * Tooltip text shown for the account in UI
+   **/
+  public SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner tooltipDescription(String tooltipDescription) {
+    this.description = tooltipDescription;
+    return this;
+  }
+
+
+  @ApiModelProperty(value = "Tooltip text shown for the account in UI")
+  @JsonProperty("tooltipDescription")
+  public String getDescription() {
+    return description;
+  }
+
+  @JsonProperty("tooltipDescription")
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  /**
    * Get any additional properties that are not explicitly defined in the OpenAPI spec
    * @return a map of additional properties
    */
@@ -104,6 +142,8 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccoun
     SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner = (SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner) o;
     return Objects.equals(this.selected, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.selected) &&
             Objects.equals(this.displayName, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.displayName) &&
+            Objects.equals(this.title, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.title) &&
+            Objects.equals(this.description, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.description) &&
             Objects.equals(this.additionalProperties, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.additionalProperties); // Include additional properties in equals
   }
 
@@ -120,6 +160,8 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccoun
     sb.append("    selected: ").append(toIndentedString(selected)).append("\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n"); // Include additional properties in toString
+    sb.append("    title: ").append(toIndentedString(title)).append("\n");
+    sb.append("    descripition: ").append(toIndentedString(description)).append("\n");
     sb.append("}");
     return sb.toString();
   }

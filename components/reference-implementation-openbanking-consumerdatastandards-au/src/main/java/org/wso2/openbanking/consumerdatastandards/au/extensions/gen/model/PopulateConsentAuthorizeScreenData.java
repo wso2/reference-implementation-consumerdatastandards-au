@@ -32,7 +32,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(example = "An UUID", value = "")
   @JsonProperty("consentId")
   public String getConsentId() {
@@ -51,7 +51,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(example = "Username", value = "")
   @JsonProperty("userId")
   public String getUserId() {
@@ -71,7 +71,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "Custom object with request parameters")
   @JsonProperty("requestParameters")
   public Object getRequestParameters() {
@@ -90,7 +90,7 @@ public class PopulateConsentAuthorizeScreenData   {
     return this;
   }
 
-  
+
   @ApiModelProperty(value = "")
   @JsonProperty("consentResource")
   @Valid public StoredDetailedConsentResourceData getConsentResource() {
@@ -113,9 +113,9 @@ public class PopulateConsentAuthorizeScreenData   {
     }
     PopulateConsentAuthorizeScreenData populateConsentAuthorizeScreenData = (PopulateConsentAuthorizeScreenData) o;
     return Objects.equals(this.consentId, populateConsentAuthorizeScreenData.consentId) &&
-        Objects.equals(this.userId, populateConsentAuthorizeScreenData.userId) &&
-        Objects.equals(this.requestParameters, populateConsentAuthorizeScreenData.requestParameters) &&
-        Objects.equals(this.consentResource, populateConsentAuthorizeScreenData.consentResource);
+            Objects.equals(this.userId, populateConsentAuthorizeScreenData.userId) &&
+            Objects.equals(this.requestParameters, populateConsentAuthorizeScreenData.requestParameters) &&
+            Objects.equals(this.consentResource, populateConsentAuthorizeScreenData.consentResource);
   }
 
   @Override
@@ -127,7 +127,7 @@ public class PopulateConsentAuthorizeScreenData   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PopulateConsentAuthorizeScreenData {\n");
-    
+
     sb.append("    consentId: ").append(toIndentedString(consentId)).append("\n");
     sb.append("    userId: ").append(toIndentedString(userId)).append("\n");
     sb.append("    requestParameters: ").append(toIndentedString(requestParameters)).append("\n");
