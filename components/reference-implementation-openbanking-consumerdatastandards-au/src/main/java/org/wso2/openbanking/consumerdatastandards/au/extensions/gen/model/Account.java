@@ -20,6 +20,7 @@ import java.util.Objects;
 public class Account  {
   private String displayName;
   private Map<String, Object> additionalProperties = new HashMap<>();
+  private String tooltipDescription;
 
   public Account() {
   }
@@ -51,6 +52,17 @@ public class Account  {
     this.displayName = displayName;
   }
 
+  @ApiModelProperty(value = "Tooltip text shown for the account in UI")
+  @JsonProperty("tooltipDescription")
+  public String getTooltipDescription() {
+    return tooltipDescription;
+  }
+
+  @JsonProperty("tooltipDescription")
+  public void setTooltipDescription(String tooltipDescription) {
+    this.tooltipDescription = tooltipDescription;
+  }
+
   @JsonAnyGetter
   public Map<String, Object> getAdditionalProperties() {
     return this.additionalProperties;
@@ -71,8 +83,9 @@ public class Account  {
       return false;
     }
     Account account = (Account) o;
-    return Objects.equals(this.displayName, account.displayName) && Objects.equals(this.additionalProperties,
-            account.additionalProperties);
+    return Objects.equals(this.displayName, account.displayName) &&
+            Objects.equals(this.tooltipDescription, account.tooltipDescription)
+            && Objects.equals(this.additionalProperties, account.additionalProperties);
   }
 
   @Override
@@ -86,6 +99,7 @@ public class Account  {
     sb.append("class Account {\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
+    sb.append("    tooltipDescription: ").append(toIndentedString(tooltipDescription)).append("\n");
     sb.append("}");
     return sb.toString();
   }

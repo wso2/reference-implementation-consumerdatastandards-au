@@ -258,6 +258,7 @@ public class ConsentAuthorizeUtil {
             account.setDisplayName(getDisplayNameWithAccountNumber(
                     accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
             accountList.add(account);
+            account.setTooltipDescription(buildJointAccountTooltipDescription(linkedMembers.size()));
 
         } else {
             // Adding blocked joint accounts to the display data
@@ -266,6 +267,20 @@ public class ConsentAuthorizeUtil {
                     accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
             blockedAccountsList.add(blockedAccountItem);
         }
+    }
+
+    /**
+     * Builds tooltip description text for selectable joint accounts.
+     *
+     * @param linkedMembersCount number of linked members for the account
+     * @return formatted tooltip description
+     */
+    private static String buildJointAccountTooltipDescription(int linkedMembersCount) {
+        return linkedMembersCount
+                + " other account holder(s) can share this joint account data at any time,"
+                + " without each other&rsquo;s permission. <br/><br/>"
+                + " You can change sharing preferences for this account by going to"
+                + " &lsquo;Settings &gt;Data sharing &gt; Account permissions&rsquo;";
     }
 
     /**

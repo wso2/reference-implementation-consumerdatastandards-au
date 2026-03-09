@@ -21,6 +21,7 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner   {
   private Boolean selected;
   private String displayName;
+  private String tooltipDescription;
   private Map<String, Object> additionalProperties = new HashMap<>();
 
   public SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner() {
@@ -74,6 +75,26 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccoun
   }
 
   /**
+   * Tooltip text shown for the account in UI
+   **/
+  public SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner tooltipDescription(String tooltipDescription) {
+    this.tooltipDescription = tooltipDescription;
+    return this;
+  }
+
+
+  @ApiModelProperty(value = "Tooltip text shown for the account in UI")
+  @JsonProperty("tooltipDescription")
+  public String getTooltipDescription() {
+    return tooltipDescription;
+  }
+
+  @JsonProperty("tooltipDescription")
+  public void setTooltipDescription(String tooltipDescription) {
+    this.tooltipDescription = tooltipDescription;
+  }
+
+  /**
    * Get any additional properties that are not explicitly defined in the OpenAPI spec
    * @return a map of additional properties
    */
@@ -104,6 +125,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccoun
     SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner = (SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner) o;
     return Objects.equals(this.selected, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.selected) &&
             Objects.equals(this.displayName, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.displayName) &&
+            Objects.equals(this.tooltipDescription, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.tooltipDescription) &&
             Objects.equals(this.additionalProperties, successResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner.additionalProperties); // Include additional properties in equals
   }
 
@@ -120,6 +142,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccoun
     sb.append("    selected: ").append(toIndentedString(selected)).append("\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n"); // Include additional properties in toString
+    sb.append("    tooltipDescription: ").append(toIndentedString(tooltipDescription)).append("\n");
     sb.append("}");
     return sb.toString();
   }

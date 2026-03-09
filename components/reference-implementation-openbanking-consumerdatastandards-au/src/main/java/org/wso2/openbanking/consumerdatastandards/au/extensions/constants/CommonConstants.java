@@ -132,6 +132,16 @@ public class CommonConstants {
     public static final String AUTHORIZATION_RESOURCES = "authorizationResources";
     public static final String AUTH_TYPE = "authorizationType";
     public static final String DEFAULT_AUTH_TYPE = "authorization";
+    public static final String AUTH_RESOURCE_TYPE_PRIMARY = "primary_member";
+
+    // Content for unavailable accounts section
+    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING = "Accounts Unavailable To Share:";
+    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING = "Why can't I share these accounts?";
+    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_TOOLTIP_DESCRIPTION =
+            "There are a range of reasons why certain accounts may not be available to share."   + "<br><br>" +
+                    "For joint accounts, all account holders must elect to make the account available."  + "<br><br>" +
+                    "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
+                    "Please contact your bank for more details.";
 
     //Constants Related to Joint Accounts
     public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
@@ -145,16 +155,6 @@ public class CommonConstants {
     public static final String DOMS_STATUS_SEARCH_ENRICH_PROPERTY_NAME = "domsStatus";
     public static final String JOINT_ACCOUNT_CONSENT_ELECTION_STATUS = "jointAccountConsentElectionStatus";
     public static final String JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED = "UNAVAILABLE";
-
-    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING = "Accounts Unavailable To Share:";
-    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING = "Why can't I share these accounts?";
-    public static final String AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_TOOLTIP_DESCRIPTION =
-            "There are a range of reasons why certain accounts may not be available to share."   + "<br><br>" +
-            "For joint accounts, all account holders must elect to make the account available."  + "<br><br>" +
-            "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
-                    "Please contact your bank for more details.";
-    public static final String AUTH_RESOURCE_TYPE_PRIMARY = "primary_member";
-
     public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
     public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";
 
