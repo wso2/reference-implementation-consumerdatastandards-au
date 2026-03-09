@@ -157,5 +157,6 @@ public class CommonConstants {
     public static final String JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED = "UNAVAILABLE";
     public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
     public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";
+    public static final String JOINT_ACCOUNT_TOOLTIP_TITLE = "&check; Pre-approval enabled";
 
 }

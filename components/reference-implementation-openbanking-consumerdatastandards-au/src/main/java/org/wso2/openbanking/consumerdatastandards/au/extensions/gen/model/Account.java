@@ -6,9 +6,7 @@ import io.swagger.annotations.ApiModelProperty;
 import java.util.HashMap;
 import java.util.Map;
 import javax.validation.constraints.*;
-import javax.validation.Valid;
 
-import io.swagger.annotations.*;
 import java.util.Objects;
 
 /**
@@ -20,7 +18,8 @@ import java.util.Objects;
 public class Account  {
   private String displayName;
   private Map<String, Object> additionalProperties = new HashMap<>();
-  private String tooltipDescription;
+  private String title;
+  private String description;
 
   public Account() {
   }
@@ -54,13 +53,32 @@ public class Account  {
 
   @ApiModelProperty(value = "Tooltip text shown for the account in UI")
   @JsonProperty("tooltipDescription")
-  public String getTooltipDescription() {
-    return tooltipDescription;
+  public String getDescription() {
+    return description;
   }
 
   @JsonProperty("tooltipDescription")
-  public void setTooltipDescription(String tooltipDescription) {
-    this.tooltipDescription = tooltipDescription;
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  @ApiModelProperty(value = "Tooltip title shown for the account in UI")
+  @JsonProperty("tooltipTitle")
+  public String getTitle() {
+    return title;
+  }
+
+  @JsonProperty("tooltipTitle")
+  public void setTitle(String title) {
+    this.title = title;
+  }
+
+  /**
+   * Tooltip text shown for the account in UI
+   **/
+  public Account tooltipDescription(String tooltipDescription) {
+    this.description = tooltipDescription;
+    return this;
   }
 
   @JsonAnyGetter
@@ -84,13 +102,14 @@ public class Account  {
     }
     Account account = (Account) o;
     return Objects.equals(this.displayName, account.displayName) &&
-            Objects.equals(this.tooltipDescription, account.tooltipDescription)
+            Objects.equals(this.description, account.description) &&
+            Objects.equals(this.title, account.title)
             && Objects.equals(this.additionalProperties, account.additionalProperties);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(displayName, additionalProperties);
+    return Objects.hash(displayName, description, title, additionalProperties);
   }
 
   @Override
@@ -99,7 +118,8 @@ public class Account  {
     sb.append("class Account {\n");
     sb.append("    displayName: ").append(toIndentedString(displayName)).append("\n");
     sb.append("    additionalProperties: ").append(toIndentedString(additionalProperties)).append("\n");
-    sb.append("    tooltipDescription: ").append(toIndentedString(tooltipDescription)).append("\n");
+    sb.append("    title: ").append(toIndentedString(title)).append("\n");
+    sb.append("    description: ").append(toIndentedString(description)).append("\n");
     sb.append("}");
     return sb.toString();
   }

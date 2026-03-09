@@ -258,7 +258,8 @@ public class ConsentAuthorizeUtil {
             account.setDisplayName(getDisplayNameWithAccountNumber(
                     accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
             accountList.add(account);
-            account.setTooltipDescription(buildJointAccountTooltipDescription(linkedMembers.size()));
+            account.setTitle(CommonConstants.JOINT_ACCOUNT_TOOLTIP_TITLE);
+            account.setDescription(buildJointAccountTooltipDescription(linkedMembers.size()));
 
         } else {
             // Adding blocked joint accounts to the display data
