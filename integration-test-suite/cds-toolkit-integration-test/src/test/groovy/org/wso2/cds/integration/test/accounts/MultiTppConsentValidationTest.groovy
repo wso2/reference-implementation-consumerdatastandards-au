@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,12 +18,12 @@
 
 package org.wso2.cds.integration.test.accounts
 
+import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
 import org.wso2.cds.test.framework.constant.AUConstants
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import org.wso2.cds.test.framework.request_builder.AURegistrationRequestBuilder
-import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 import io.restassured.response.Response
 import org.testng.Assert
 import org.testng.annotations.AfterClass

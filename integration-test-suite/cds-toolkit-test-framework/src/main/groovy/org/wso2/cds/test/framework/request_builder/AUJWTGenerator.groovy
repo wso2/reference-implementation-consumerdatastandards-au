@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -37,10 +37,10 @@ import com.nimbusds.jose.Payload
 import com.nimbusds.jose.crypto.RSASSASigner
 import com.nimbusds.jwt.JWT
 import com.nimbusds.jwt.SignedJWT
-import org.wso2.openbanking.test.framework.request_builder.JSONRequestGenerator
-import org.wso2.openbanking.test.framework.request_builder.PayloadGenerator
+import org.wso2.bfsi.test.framework.request_builder.JSONRequestGenerator
+import org.wso2.bfsi.test.framework.request_builder.PayloadGenerator
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
-import org.wso2.openbanking.test.framework.keystore.OBKeyStore
+import org.wso2.bfsi.test.framework.keystore.KeyStore
 import org.apache.commons.lang3.StringUtils
 import org.bouncycastle.jce.provider.BouncyCastleProvider
 import org.json.JSONException
@@ -113,11 +113,11 @@ class AUJWTGenerator {
                     .keyID(thumbprint).type(JOSEObjectType.JWT).build()
             signingKey = AUKeyStore.getMockCDRSigningKey()
         } else {
-            Certificate certificate = OBKeyStore.getApplicationCertificate()
-            String thumbprint = OBKeyStore.getJwkThumbPrintForSHA1(certificate)
+            Certificate certificate = KeyStore.getApplicationCertificate()
+            String thumbprint = KeyStore.getJwkThumbPrintForSHA1(certificate)
             header = new JWSHeader.Builder(JWSAlgorithm.parse(getSigningAlgorithm()))
                     .keyID(thumbprint).type(JOSEObjectType.JWT).build()
-            signingKey = OBKeyStore.getApplicationSigningKey()
+            signingKey = KeyStore.getApplicationSigningKey()
         }
         JWSObject jwsObject = new JWSObject(header, new Payload(claims))
         JWSSigner signer = new RSASSASigner((PrivateKey) signingKey)

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,16 +18,15 @@
 
 package org.wso2.cds.test.framework.configuration
 
+import org.wso2.bfsi.test.framework.configuration.CommonConfigurationService
 import org.wso2.bfsi.test.framework.exception.TestFrameworkException
 import org.wso2.cds.test.framework.constant.AUConfigConstants
-import org.wso2.openbanking.test.framework.configuration.OBConfigurationService
-import org.wso2.openbanking.test.framework.constant.OBConfigConstants
 import org.yaml.snakeyaml.Yaml
 
 /**
  * Class for provide configuration data to the API publishing steps.
  */
-class APIConfigurationService extends OBConfigurationService {
+class APIConfigurationService extends CommonConfigurationService {
 
     public Map<String, Map<String, Map<String, String>>> readProvisioningConfigs() {
 

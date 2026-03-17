@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,16 +18,15 @@
 
 package org.wso2.cds.test.framework.configuration
 
-
-import org.wso2.openbanking.test.framework.configuration.OBConfigurationService
-import org.wso2.openbanking.test.framework.constant.OBConfigConstants
+import org.wso2.bfsi.test.framework.configuration.CommonConfigurationService
+import org.wso2.bfsi.test.framework.constant.ConfigConstants
 import org.wso2.cds.test.framework.constant.AUConfigConstants
 
 /**
  * Class for provide configuration data to the AU layers and AU tests
  * This class provide OB configuration and AU configuration.
  */
-class AUConfigurationService extends OBConfigurationService {
+class AUConfigurationService extends CommonConfigurationService {
 
     /**
      * Get Mock CDR Register enabled
@@ -252,7 +251,7 @@ class AUConfigurationService extends OBConfigurationService {
      * Get Sharable Account Url
      */
     String getSharableAccountUrl() {
-        return configuration.get(OBConfigConstants.SERVER + "." + AUConfigConstants.SHARABLE_ACCOUNT_URL)
+        return configuration.get(ConfigConstants.SERVER + "." + AUConfigConstants.SHARABLE_ACCOUNT_URL)
     }
 
     /**

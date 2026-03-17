@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -19,7 +19,7 @@
 package org.wso2.cds.test.framework.request_builder
 
 import com.nimbusds.oauth2.sdk.ResponseType
-import org.wso2.openbanking.test.framework.request_builder.OBRegistrationRequestBuilder
+import org.wso2.bfsi.test.framework.request_builder.RegistrationRequestBuilder
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
 import io.restassured.RestAssured
 import io.restassured.config.EncoderConfig
@@ -34,7 +34,7 @@ import org.wso2.cds.test.framework.constant.AUConstants
 /**
  * Class that provides DCR functions for tests
  */
-class AURegistrationRequestBuilder extends OBRegistrationRequestBuilder {
+class AURegistrationRequestBuilder extends RegistrationRequestBuilder {
 
     private AUConfigurationService auConfiguration
 

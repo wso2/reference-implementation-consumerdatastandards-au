@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,13 +18,13 @@
 
 package org.wso2.cds.integration.test.authflow
 
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
+import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.constant.AUAccountScope
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
-import org.wso2.openbanking.test.framework.automation.NavigationAutomationStep
 import org.openqa.selenium.support.ui.ExpectedConditions
 import org.openqa.selenium.support.ui.WebDriverWait
 

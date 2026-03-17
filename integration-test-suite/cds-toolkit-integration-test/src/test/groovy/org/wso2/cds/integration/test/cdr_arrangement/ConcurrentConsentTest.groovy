@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024, WSO2 LLC. (https://www.wso2.com).
+ * Copyright (c) 2024 - 2026, WSO2 LLC. (https://www.wso2.com).
  *
  * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
@@ -18,6 +18,7 @@
 
 package org.wso2.cds.integration.test.cdr_arrangement
 
+import org.wso2.bfsi.test.framework.automation.AutomationMethod
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
 import org.wso2.cds.test.framework.constant.AUAccountProfile
@@ -28,7 +29,6 @@ import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
 import org.wso2.cds.test.framework.utility.AURestAsRequestBuilder
 import org.wso2.cds.test.framework.utility.AUTestUtil
-import org.wso2.openbanking.test.framework.automation.AutomationMethod
 import io.restassured.response.Response
 import org.testng.Assert
 import org.testng.annotations.Test
