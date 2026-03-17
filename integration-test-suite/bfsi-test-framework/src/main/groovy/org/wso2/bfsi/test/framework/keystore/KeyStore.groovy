@@ -108,8 +108,8 @@ class KeyStore {
      * @throws TestFrameworkException
      */
     static Key getApplicationSigningKey(Integer tppNumber = null) throws TestFrameworkException {
-        return getSigningKey(obConfiguration.getAppKeyStoreLocation(tppNumber), obConfiguration.getAppKeyStorePWD(tppNumber)
-                , obConfiguration.getAppKeyStoreAlias(tppNumber))
+        return getSigningKey(obConfiguration.getAppKeyStoreLocation(tppNumber), obConfiguration.getAppKeyStorePWD(tppNumber),
+                obConfiguration.getAppKeyStoreAlias(tppNumber))
     }
 
     /**
@@ -202,8 +202,8 @@ class KeyStore {
      */
     static Certificate getApplicationCertificate(Integer tppNumber = null) throws TestFrameworkException {
         java.security.KeyStore keyStore = getApplicationKeyStore(tppNumber)
-        return getCertificate(keyStore, obConfiguration.getAppKeyStoreAlias(tppNumber)
-                , obConfiguration.getAppKeyStorePWD(tppNumber))
+        return getCertificate(keyStore, obConfiguration.getAppKeyStoreAlias(tppNumber),
+                obConfiguration.getAppKeyStorePWD(tppNumber))
     }
 
     /**

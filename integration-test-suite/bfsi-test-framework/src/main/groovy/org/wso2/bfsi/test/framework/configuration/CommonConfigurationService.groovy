@@ -231,7 +231,7 @@ class CommonConfigurationService {
             return psuConfig.get(0).get(ConfigConstants.CREDENTIALS).(ConfigConstants.USERS_USER_NAME)
         }
             return psuConfig.get(psuIndex).get(ConfigConstants.CREDENTIALS).get(ConfigConstants.USERS_USER_NAME)
-        }
+    }
 
     String getUserPSUPWD(Integer psuIndex = getPsuNumber()) {
         if (psuIndex == null) {
