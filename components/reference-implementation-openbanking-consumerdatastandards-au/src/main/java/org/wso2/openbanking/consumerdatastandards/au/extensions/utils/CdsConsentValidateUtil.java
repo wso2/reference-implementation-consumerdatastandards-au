@@ -102,9 +102,11 @@ public class CdsConsentValidateUtil {
      * consent status, and expiry.
      *
      * @param dataPayload     The request data payload to be validated, typically representing the API request body.
-     * @param consentPayload  The consent resource payload associated with the request, typically representing the consent object.
+     * @param consentPayload  The consent resource payload associated with the request, typically representing
+     *                        the consent object.
      * @param requestId       The unique identifier for the request, used for tracking and response purposes.
-     * @return                A {@link JSONObject} representing the validation result. If validation passes, a success response is returned;
+     * @return                A {@link JSONObject} representing the validation result. If validation passes, a success
+     * response is returned;
      *                        otherwise, an error response is returned.
      * @throws Exception      If validation fails due to invalid input, expired consent, or JSON processing errors.
      */

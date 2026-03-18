@@ -34,17 +34,17 @@ public class IssueRefreshTokenApiImpl {
      * @param issueRefreshTokenRequestBody - the request body containing the consent validity information
      * @return SuccessResponseIssueRefreshToken containing the decision and validity period for the refresh token
      */
-    public static Response handleIssueRefreshToken(IssueRefreshTokenRequestBody
-                                                           issueRefreshTokenRequestBody) {
+    public static Response handleIssueRefreshToken(IssueRefreshTokenRequestBody issueRefreshTokenRequestBody) {
 
         SuccessResponseIssueRefreshToken successResponseIssueRefreshToken = new SuccessResponseIssueRefreshToken();
         successResponseIssueRefreshToken.setResponseId(issueRefreshTokenRequestBody.getRequestId());
         successResponseIssueRefreshToken.setStatus(SuccessResponseIssueRefreshToken.StatusEnum.SUCCESS);
 
-        SuccessResponseIssueRefreshTokenData successResponseIssueRefreshTokenData = new SuccessResponseIssueRefreshTokenData();
+        SuccessResponseIssueRefreshTokenData successResponseIssueRefreshTokenData =
+                new SuccessResponseIssueRefreshTokenData();
 
         //If consent validity period is 0 or null, do not issue refresh token
-        if(issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == 0 ||
+        if (issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == 0 ||
                 issueRefreshTokenRequestBody.getData().getConsentValidityPeriod() == null) {
 
             successResponseIssueRefreshTokenData.setIssueRefreshToken(false);
@@ -54,7 +54,8 @@ public class IssueRefreshTokenApiImpl {
             long consentValidityPeriod = issueRefreshTokenRequestBody.getData().getConsentValidityPeriod();
             long consentCreatedPeriod = issueRefreshTokenRequestBody.getData().getConsentCreatedTime();
 
-            successResponseIssueRefreshTokenData.setRefreshTokenValidityPeriod(consentValidityPeriod - consentCreatedPeriod);
+            successResponseIssueRefreshTokenData.setRefreshTokenValidityPeriod(
+                    consentValidityPeriod - consentCreatedPeriod);
         }
 
         successResponseIssueRefreshToken.setData(successResponseIssueRefreshTokenData);
