@@ -13,7 +13,13 @@ This project provides the Reference Implementation for the Australian Consumer D
 
 ## Overview
 
-This toolkit provides a comprehensive solution for implementing Australian CDS specifications, including:
+With the release of Open Banking 4.0.0, it has introduced OpenAPI based extensions such that the toolkit developer
+can implement Open Banking specification requirements in their preferred programming language.
+The custom developed extensions can be deployed externally and tested separately without restarting the WSO2 servers.
+
+The OpenAPI extension can be found from [here](https://ob.docs.wso2.com/en/latest/references/accelerator-extensions-api/).
+
+This reference implementation provides a comprehensive solution for implementing Open Banking Australian CDS specifications, including:
 
 - **Reference Implementation**: Core implementation of Australian Consumer Data Standards
 - **Demo Backend**: Sample backend service for testing and demonstration purposes
@@ -57,6 +63,7 @@ Get the source code from the GitHub repository:
 
 ```bash
 git clone https://github.com/wso2/reference-implementation-consumerdatastandards-au
+git checkout 2.0.0
 cd components/reference-implementation-openbanking-consumerdatastandards-au
 ```
 
