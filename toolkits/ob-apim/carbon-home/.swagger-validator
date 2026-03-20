@@ -1,2 +1,0 @@
-validation.response.body.schema.additionalProperties=IGNORE
-validation.response.body.schema.allOf=IGNORE
