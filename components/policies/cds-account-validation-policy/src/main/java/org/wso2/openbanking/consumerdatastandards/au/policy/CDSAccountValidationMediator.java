@@ -38,7 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Mediator to remove DOMS-blocked accounts from the Account-Request-Information JWT header.
+ * Mediator to remove blocked accounts from the Account-Request-Information JWT header.
  */
 public class CDSAccountValidationMediator extends AbstractMediator {
 
