@@ -64,10 +64,10 @@ public class KeyStoreUtils {
             synchronized (CDSAccountValidationUtils.class) {
                 if (key == null) {
                     log.debug("Initializing signing key from keystore");
-                    try (FileInputStream is = new FileInputStream(getKeyStoreLocation())) {
+                    try (FileInputStream is = new FileInputStream(keyStoreLocation)) {
                         KeyStore keystore = KeyStore.getInstance(KeyStore.getDefaultType());
                         keystore.load(is, getKeyStorePassword());
-                        key = keystore.getKey(getKeyAlias(), getKeyPassword().toCharArray());
+                        key = keystore.getKey(keyAlias, keyPassword.toCharArray());
                     } catch (IOException | CertificateException | KeyStoreException | NoSuchAlgorithmException
                              | UnrecoverableKeyException e) {
                         log.error("Error occurred while retrieving private key from keystore ", e);
@@ -81,21 +81,6 @@ public class KeyStoreUtils {
     private static char[] getKeyStorePassword() {
 
         return Arrays.copyOf(keyStorePassword, keyStorePassword.length);
-    }
-
-    private static String getKeyStoreLocation() {
-
-        return keyStoreLocation;
-    }
-
-    private static String getKeyAlias() {
-
-        return keyAlias;
-    }
-
-    private static String getKeyPassword() {
-
-        return keyPassword;
     }
 
     static void setServerConfiguration(ServerConfiguration config) {

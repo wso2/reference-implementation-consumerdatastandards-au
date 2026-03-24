@@ -25,6 +25,7 @@ import com.nimbusds.jose.JWSHeader;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -54,6 +55,30 @@ public class CDSAccountValidationUtils {
 
     private static final Log log = LogFactory.getLog(CDSAccountValidationUtils.class);
 
+    @Setter
+    private static HttpClient httpClient = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofMillis(CDSAccountValidationConstants.HTTP_CLIENT_CONNECT_TIMEOUT_MILLIS))
+            .build();
+
+    private static final RSASSASigner SIGNER;
+    private static final JWSHeader JWT_HEADER;
+
+    static {
+        RSASSASigner signer = null;
+        try {
+            PrivateKey pk = (PrivateKey) KeyStoreUtils.getSigningKey();
+            if (pk != null) {
+                signer = new RSASSASigner(pk);
+            }
+        } catch (Throwable e) {
+            log.error("Signing key unavailable at startup, JWT signing will fail at call time: " + e.getMessage());
+        }
+        SIGNER = signer;
+        JWT_HEADER = new JWSHeader.Builder(JWSAlgorithm.RS512)
+                .type(JOSEObjectType.JWT)
+                .build();
+    }
+
     /**
      * Method to generate JWT with the given payload.
      *
@@ -62,17 +87,16 @@ public class CDSAccountValidationUtils {
      */
     public static String generateJWT(String payload) throws ParseException, JOSEException {
 
+        if (SIGNER == null) {
+            throw new JOSEException("JWT signing key is not available");
+        }
         log.debug("Generating JWT with provided payload");
-        RSASSASigner signer = new RSASSASigner((PrivateKey) KeyStoreUtils.getSigningKey());
         JWTClaimsSet claimsSet = JWTClaimsSet.parse(payload);
 
-        JWSHeader header = new JWSHeader.Builder(JWSAlgorithm.RS512)
-                .type(JOSEObjectType.JWT)
-                .build();
-
-        SignedJWT signedJWT = new SignedJWT(header, claimsSet);
-        signedJWT.sign(signer);
+        SignedJWT signedJWT = new SignedJWT(JWT_HEADER, claimsSet);
+        signedJWT.sign(SIGNER);
         log.debug("JWT generated successfully");
+
         return signedJWT.serialize();
     }
 
@@ -120,10 +144,6 @@ public class CDSAccountValidationUtils {
             String accountIdsParam = URLEncoder.encode(String.join(",", accountIds), StandardCharsets.UTF_8);
             String requestUrl = blockedAccountsApi + "?" + CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="
                     + accountIdsParam;
-            HttpClient client = HttpClient.newBuilder()
-                    .connectTimeout(Duration.ofMillis(CDSAccountValidationConstants.HTTP_CLIENT_CONNECT_TIMEOUT_MILLIS))
-                    .build();
-
             HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(requestUrl))
                     .timeout(Duration.ofMillis(CDSAccountValidationConstants.HTTP_REQUEST_TIMEOUT_MILLIS))
                     .header(CDSAccountValidationConstants.ACCEPT_TAG, CDSAccountValidationConstants.JSON_CONTENT_TYPE)
@@ -133,7 +153,7 @@ public class CDSAccountValidationUtils {
                     CDSAccountValidationConstants.BASIC_TAG + basicAuthBase64);
 
             HttpRequest request = requestBuilder.build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
             if (response.statusCode() == 200) {
                 JSONArray disclosureOptions;
