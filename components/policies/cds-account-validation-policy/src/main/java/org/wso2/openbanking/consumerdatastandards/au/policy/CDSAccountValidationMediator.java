@@ -25,8 +25,10 @@ import org.apache.synapse.MessageContext;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.exceptions.CDSAccountValidationException;
 import org.wso2.openbanking.consumerdatastandards.au.policy.utils.CDSAccountValidationUtils;
 import org.wso2.openbanking.consumerdatastandards.au.policy.utils.Generated;
 
@@ -72,13 +74,14 @@ public class CDSAccountValidationMediator extends AbstractMediator {
             Map<String, String> headers = (Map<String, String>)
                     axis2Ctx.getProperty(org.apache.axis2.context.MessageContext.TRANSPORT_HEADERS);
 
-            String accountHeaderJwt = headers.get(CDSAccountValidationConstants.INFO_HEADER_TAG);
+            String accountHeader = headers.get(CDSAccountValidationConstants.INFO_HEADER_TAG);
 
             // Unsigned payload
-            JSONObject payload = new JSONObject(accountHeaderJwt);
+            JSONObject payload = new JSONObject(accountHeader);
 
             //collect linkedMember authorization Ids
             Set<String> linkedMemberAuthIds = new HashSet<>();
+            String userId = null;
 
             JSONArray authorizationResources = payload.optJSONArray(CDSAccountValidationConstants.AUTH_RESOURCES_TAG);
             if (authorizationResources != null) {
@@ -87,9 +90,15 @@ public class CDSAccountValidationMediator extends AbstractMediator {
                 for (int i = 0; i < authorizationResources.length(); i++) {
                     JSONObject authResource = authorizationResources.getJSONObject(i);
 
+                    String authType = authResource.optString(CDSAccountValidationConstants.AUTH_TYPE_TAG);
+
+                    // Extract userId from the primary member auth resource
+                    if (CDSAccountValidationConstants.PRIMARY_AUTH_TYPE_TAG.equalsIgnoreCase(authType)) {
+                        userId = authResource.optString(CDSAccountValidationConstants.USER_ID_TAG, null);
+                    }
+
                     // Removing Auth resources of linked members
-                    if (CDSAccountValidationConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(
-                            authResource.optString(CDSAccountValidationConstants.AUTH_TYPE_TAG))) {
+                    if (CDSAccountValidationConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(authType)) {
                         String linkedAuthId = authResource.optString(CDSAccountValidationConstants.AUTH_ID_TAG);
                         if (linkedAuthId != null && !linkedAuthId.isEmpty()) {
                             linkedMemberAuthIds.add(linkedAuthId);
@@ -126,7 +135,6 @@ public class CDSAccountValidationMediator extends AbstractMediator {
                 accountIds.add(mappingResource.optString(CDSAccountValidationConstants.ACCELERATOR_ACCOUNT_ID_TAG));
             }
 
-            String userId = payload.optString(CDSAccountValidationConstants.USER_ID_TAG, null);
             Set<String> blockedAccounts = CDSAccountValidationUtils.fetchAllBlockedAccounts(accountIds,
                     this.webappBaseURL, userId, this.basicAuthCredentials);
 
@@ -160,7 +168,7 @@ public class CDSAccountValidationMediator extends AbstractMediator {
 
             log.debug("CDS mediation completed successfully");
 
-        } catch (ParseException | JOSEException e) {
+        } catch (ParseException | JOSEException | JSONException | CDSAccountValidationException e) {
             String errorDescription = "Error during CDS mediation policy";
             log.error(errorDescription, e);
             setErrorResponseProperties(messageContext, errorDescription);

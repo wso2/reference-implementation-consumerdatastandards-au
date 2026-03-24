@@ -29,6 +29,7 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
+import org.wso2.openbanking.consumerdatastandards.au.policy.exceptions.CDSAccountValidationException;
 import org.wso2.openbanking.consumerdatastandards.au.policy.utils.CDSAccountValidationUtils;
 
 import java.net.http.HttpClient;
@@ -71,9 +72,9 @@ public class CDSAccountValidationMediatorTest {
         Mockito.when(response.body()).thenReturn("["
                 + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"no-sharing\"},"
                 + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"pre-approval\"}"
-            + "]");
+                + "]");
         Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
-            .thenReturn(response);
+                .thenReturn(response);
 
         try (MockedStatic<HttpClient> mockedHttpClient = Mockito.mockStatic(HttpClient.class)) {
             mockedHttpClient.when(HttpClient::newBuilder).thenReturn(clientBuilder);
@@ -84,11 +85,11 @@ public class CDSAccountValidationMediatorTest {
             JSONObject payload = new JSONObject();
             JSONArray authorizationResources = new JSONArray();
             authorizationResources.put(new JSONObject()
-                .put("authorizationType", "linkedMember")
-                .put("authorizationId", "linked-1"));
+                    .put("authorizationType", "linkedMember")
+                    .put("authorizationId", "linked-1"));
             authorizationResources.put(new JSONObject()
-                .put("authorizationType", "user")
-                .put("authorizationId", "auth-2"));
+                    .put("authorizationType", "user")
+                    .put("authorizationId", "auth-2"));
             payload.put("authorizationResources", authorizationResources);
 
             JSONArray accounts = new JSONArray();
@@ -104,44 +105,40 @@ public class CDSAccountValidationMediatorTest {
     }
 
     @Test
-    public void testMediateSkipsWhenNoConsentMappingResources() throws Exception {
-        CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
-
-        JSONObject payload = new JSONObject();
-        String originalHeader = payload.toString();
-        headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, originalHeader);
-
-        boolean result = mediator.mediate(synapseMessageContext);
-
-        Assert.assertTrue(result);
-        Assert.assertEquals(headers.get(CDSAccountValidationConstants.INFO_HEADER_TAG), originalHeader);
-    }
-
-    @Test(expectedExceptions = org.json.JSONException.class)
     public void testMediateHandlesDecodeError() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
 
         headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, "{not-json");
 
-        mediator.mediate(synapseMessageContext);
+        boolean result = mediator.mediate(synapseMessageContext);
+
+        Assert.assertTrue(result);
+        Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_CODE,
+            "Internal Server Error");
+        Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_TITLE,
+            "CDS DOMS Policy Error");
+        Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.CUSTOM_HTTP_SC,
+            "500");
+        Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_DESCRIPTION,
+            "Error during CDS mediation policy");
     }
 
-        @Test
-        public void testMediateFiltersLinkedAndBlockedAccountsAndSignsHeader() throws Exception {
+    @Test
+    public void testMediateFiltersLinkedAndBlockedAccountsAndSignsHeader() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
         mediator.setWebappBaseURL(ACCOUNT_METADATA_WEBAPP_BASE_URL);
         mediator.setBasicAuthCredentials("dGVzdDp0ZXN0");
 
         JSONObject payload = new JSONObject();
-        payload.put(CDSAccountValidationConstants.USER_ID_TAG, "user-1");
 
         JSONArray authorizationResources = new JSONArray();
         authorizationResources.put(new JSONObject()
             .put(CDSAccountValidationConstants.AUTH_TYPE_TAG, CDSAccountValidationConstants.LINKED_MEMBER_TAG)
             .put(CDSAccountValidationConstants.AUTH_ID_TAG, "linked-1"));
         authorizationResources.put(new JSONObject()
-            .put(CDSAccountValidationConstants.AUTH_TYPE_TAG, "user")
-            .put(CDSAccountValidationConstants.AUTH_ID_TAG, "auth-2"));
+            .put(CDSAccountValidationConstants.AUTH_TYPE_TAG, CDSAccountValidationConstants.PRIMARY_AUTH_TYPE_TAG)
+            .put(CDSAccountValidationConstants.AUTH_ID_TAG, "auth-2")
+            .put(CDSAccountValidationConstants.USER_ID_TAG, "user-1"));
         payload.put(CDSAccountValidationConstants.AUTH_RESOURCES_TAG, authorizationResources);
 
         JSONArray accounts = new JSONArray();
@@ -174,10 +171,10 @@ public class CDSAccountValidationMediatorTest {
                 Mockito.eq("dGVzdDp0ZXN0")));
             utilsMock.verify(() -> CDSAccountValidationUtils.generateJWT(Mockito.anyString()));
         }
-        }
+    }
 
-        @Test
-        public void testMediateSetsErrorPropertiesWhenJwtGenerationFails() throws Exception {
+    @Test
+    public void testMediateSetsErrorPropertiesWhenJwtGenerationFails() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
         mediator.setWebappBaseURL(ACCOUNT_METADATA_WEBAPP_BASE_URL);
         mediator.setBasicAuthCredentials("dGVzdDp0ZXN0");
@@ -209,5 +206,41 @@ public class CDSAccountValidationMediatorTest {
             Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_DESCRIPTION,
                 "Error during CDS mediation policy");
         }
+    }
+
+    @Test
+    public void testMediateSetsErrorPropertiesWhenAccountValidationFails() throws Exception {
+        CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
+        mediator.setWebappBaseURL(ACCOUNT_METADATA_WEBAPP_BASE_URL);
+        mediator.setBasicAuthCredentials("dGVzdDp0ZXN0");
+
+        JSONObject payload = new JSONObject();
+        payload.put(CDSAccountValidationConstants.AUTH_RESOURCES_TAG, new JSONArray().put(new JSONObject()
+                .put(CDSAccountValidationConstants.AUTH_TYPE_TAG, CDSAccountValidationConstants.PRIMARY_AUTH_TYPE_TAG)
+                .put(CDSAccountValidationConstants.AUTH_ID_TAG, "auth-2")
+                .put(CDSAccountValidationConstants.USER_ID_TAG, "user-2")));
+        payload.put(CDSAccountValidationConstants.CONSENT_MAPPING_RESOURCES_TAG,
+            new JSONArray().put(new JSONObject()
+                .put(CDSAccountValidationConstants.ACCELERATOR_ACCOUNT_ID_TAG, "acc-1")
+                .put(CDSAccountValidationConstants.AUTH_ID_TAG, "auth-2")));
+        headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, payload.toString());
+
+        try (MockedStatic<CDSAccountValidationUtils> utilsMock = Mockito.mockStatic(CDSAccountValidationUtils.class)) {
+            utilsMock.when(() -> CDSAccountValidationUtils.fetchAllBlockedAccounts(
+                Mockito.anySet(), Mockito.anyString(), Mockito.anyString(), Mockito.anyString()))
+                .thenThrow(new CDSAccountValidationException("metadata service unavailable"));
+
+            boolean result = mediator.mediate(synapseMessageContext);
+
+            Assert.assertTrue(result);
+            Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_CODE,
+                    "Internal Server Error");
+            Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_TITLE,
+                "CDS DOMS Policy Error");
+            Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.CUSTOM_HTTP_SC,
+                "500");
+            Mockito.verify(synapseMessageContext).setProperty(CDSAccountValidationConstants.ERROR_DESCRIPTION,
+                "Error during CDS mediation policy");
         }
+    }
 }

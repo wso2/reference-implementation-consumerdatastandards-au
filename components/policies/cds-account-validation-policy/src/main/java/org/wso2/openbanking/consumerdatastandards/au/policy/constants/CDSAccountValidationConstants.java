@@ -43,6 +43,7 @@ public class CDSAccountValidationConstants {
     public static final String AUTH_ID_TAG = "authorizationId";
     public static final String ACCELERATOR_ACCOUNT_ID_TAG = "account_id";
     public static final String CDS_ACCOUNT_ID_TAG = "accountId";
+    public static final String PRIMARY_AUTH_TYPE_TAG = "primary_member";
 
     // Error constants
     public static final String ERROR_CODE = "ERROR_CODE";
