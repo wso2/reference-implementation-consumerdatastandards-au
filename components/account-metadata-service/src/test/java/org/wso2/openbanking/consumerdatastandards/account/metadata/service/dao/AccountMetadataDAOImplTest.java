@@ -331,6 +331,12 @@ public class AccountMetadataDAOImplTest {
                 dao.updateBatchDisclosureOptions(connection, accountMap));
     }
 
+    /**
+     * Asserts that the given action throws an AccountMetadataException.
+     *
+     * @param action the action expected to throw AccountMetadataException
+     * @throws Exception if the action does not throw or throws a different exception
+     */
     private void assertAccountMetadataException(ThrowingRunnable action) throws Exception {
         try {
             action.run();
@@ -340,10 +346,18 @@ public class AccountMetadataDAOImplTest {
         }
     }
 
+    /**
+     * Asserts that the given mock object has no interactions (no method calls).
+     *
+     * @param mock the mock object to check
+     */
     private void assertNoInteractions(Object mock) {
         Assert.assertTrue(Mockito.mockingDetails(mock).getInvocations().isEmpty());
     }
 
+    /**
+     * Functional interface for a runnable that can throw checked exceptions.
+     */
     private interface ThrowingRunnable {
         void run() throws Exception;
     }
