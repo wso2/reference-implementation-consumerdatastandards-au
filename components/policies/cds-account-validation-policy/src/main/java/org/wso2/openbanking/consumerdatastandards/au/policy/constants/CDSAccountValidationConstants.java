@@ -51,6 +51,7 @@ public class CDSAccountValidationConstants {
     public static final String ERROR_DESCRIPTION = "ERROR_DESCRIPTION";
     public static final String CUSTOM_HTTP_SC = "CUSTOM_HTTP_SC";
 
+
     // Constants related to DOMS
     public static final String ACCOUNT_IDS_TAG = "accountIds";
     public static final String LINKED_MEMBER_TAG = "linked_member";
@@ -59,6 +60,13 @@ public class CDSAccountValidationConstants {
 
     // Account-metadata webapp API paths
     public static final String DISCLOSURE_OPTIONS_PATH = "/disclosure-options";
+    public static final String SECONDARY_ACCOUNTS_PATH = "/secondary-accounts";
+
+    // Constants related to Secondary Accounts
+    public static final String SECONDARY_ACCOUNT_INSTRUCTION_STATUS_TAG = "secondaryAccountInstructionStatus";
+    public static final String SECONDARY_ACCOUNT_STATUS_INACTIVE = "inactive";
+    public static final String SECONDARY_INDIVIDUAL_ACCOUNT_OWNER_TAG = "secondary_individual_account_owner";
+    public static final String SECONDARY_JOINT_ACCOUNT_OWNER_TAG = "secondary_joint_account_owner";
 
     // Timeouts
     public static final int HTTP_CLIENT_CONNECT_TIMEOUT_MILLIS = 3000;
