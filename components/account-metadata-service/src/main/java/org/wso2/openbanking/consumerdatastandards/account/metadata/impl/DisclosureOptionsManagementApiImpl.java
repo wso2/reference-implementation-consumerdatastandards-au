@@ -62,6 +62,7 @@ public class DisclosureOptionsManagementApiImpl {
             Map<String, String> accountDisclosureMap = new HashMap<>();
             List<String> accountIdsToCheck = new ArrayList<>();
 
+            // Validate and build map
             for (DisclosureOptionItem item : request) {
                 String disclosureOptionStatus = item.getDisclosureOption();
                 if (isValidDOMSStatus(disclosureOptionStatus)) {
@@ -126,6 +127,7 @@ public class DisclosureOptionsManagementApiImpl {
         }
 
         try {
+            // Split comma-separated account IDs and trim whitespace
             List<String> accountIdList = Arrays.asList(accountIds.split(","));
             accountIdList = accountIdList.stream().map(String::trim).filter(StringUtils::isNotBlank)
                     .collect(Collectors.toList());
@@ -139,6 +141,7 @@ public class DisclosureOptionsManagementApiImpl {
 
             Map<String, String> result = accountMetadataService.getBatchDisclosureOptions(accountIdList);
 
+            // Convert map to array of objects
             List<DisclosureOptionItem> responseList = result.entrySet().stream()
                     .map(entry -> new DisclosureOptionItem(entry.getKey(), entry.getValue()))
                     .collect(Collectors.toList());
@@ -166,6 +169,7 @@ public class DisclosureOptionsManagementApiImpl {
             Map<String, String> accountDisclosureMap = new HashMap<>();
             List<String> accountIdsToCheck = new ArrayList<>();
 
+            // Validate and collect accounts
             for (DisclosureOptionItem item : request) {
                 String disclosureOptionStatus = item.getDisclosureOption();
                 if (isValidDOMSStatus(disclosureOptionStatus)) {
@@ -180,8 +184,10 @@ public class DisclosureOptionsManagementApiImpl {
                 }
             }
 
+            // Batch check for existing accounts
             Map<String, String> existingStatuses = accountMetadataService.getBatchDisclosureOptions(accountIdsToCheck);
 
+            // Filter to only add new accounts
             Map<String, String> newAccounts = new HashMap<>();
             for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
                 if (!existingStatuses.containsKey(entry.getKey())) {
@@ -201,6 +207,7 @@ public class DisclosureOptionsManagementApiImpl {
                 log.debug("[DOMS] Added disclosure options for " + addedItems.size() + " account(s)");
             }
 
+            // Return 201 Created if all were new, 200 OK if some already existed
             Response.ResponseBuilder responseBuilder = addedItems.isEmpty() ?
                     Response.status(Response.Status.OK) : Response.status(Response.Status.CREATED);
 
