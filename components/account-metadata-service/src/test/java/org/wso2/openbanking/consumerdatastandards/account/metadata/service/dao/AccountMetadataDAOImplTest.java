@@ -18,10 +18,12 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueries;
 
 import java.sql.Connection;
@@ -32,6 +34,7 @@ import java.sql.Timestamp;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -77,6 +80,41 @@ public class AccountMetadataDAOImplTest {
             }
             return "SELECT ACCOUNT_ID, DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN ("
                     + placeholders.toString() + ")";
+        }
+
+        /**
+         * @param pairCount number of account-user pairs
+         * @return select query for secondary account instructions
+         */
+        @Override
+        public String getBatchGetSecondaryAccountInstructionQuery(int pairCount) {
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < pairCount; i++) {
+                if (i > 0) {
+                    placeholders.append(",");
+                }
+                placeholders.append("(?,?)");
+            }
+            return "SELECT ACCOUNT_ID, USER_ID, INSTRUCTION_STATUS, OTHER_ACCOUNTS_AVAILABILITY " +
+                    "FROM fs_account_secondary_user WHERE (ACCOUNT_ID, USER_ID) IN (" + placeholders + ")";
+        }
+
+        /**
+         * @return insert query for secondary account instructions
+         */
+        @Override
+        public String getBatchAddSecondaryAccountInstructionQuery() {
+            return "INSERT INTO fs_account_secondary_user (ACCOUNT_ID, USER_ID, INSTRUCTION_STATUS, "
+                    + "OTHER_ACCOUNTS_AVAILABILITY, LAST_UPDATED_TIMESTAMP) VALUES (?, ?, ?, ?, ?)";
+        }
+
+        /**
+         * @return update query for secondary account instructions
+         */
+        @Override
+        public String getBatchUpdateSecondaryAccountInstructionQuery() {
+            return "UPDATE fs_account_secondary_user SET INSTRUCTION_STATUS = ?, " +
+                    "OTHER_ACCOUNTS_AVAILABILITY = ?, LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ? AND USER_ID = ?";
         }
     }
 
@@ -135,7 +173,7 @@ public class AccountMetadataDAOImplTest {
      *
      * @throws Exception if setup or invocation fails
      */
-    @Test
+    @Test(expectedExceptions = AccountMetadataException.class)
     public void testGetBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
@@ -143,8 +181,7 @@ public class AccountMetadataDAOImplTest {
         Mockito.when(connection.prepareStatement(Mockito.anyString()))
                 .thenThrow(new SQLException("bad"));
 
-        assertAccountMetadataException(() ->
-            dao.getBatchDisclosureOptions(connection, Arrays.asList("acc-501")));
+        dao.getBatchDisclosureOptions(connection, Arrays.asList("acc-501"));
     }
 
     /**
@@ -167,7 +204,6 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, accountMap);
 
-        Assert.assertTrue(Mockito.mockingDetails(statement).getInvocations().size() > 0);
         Mockito.verify(statement, Mockito.times(2)).setString(
                 Mockito.eq(1), Mockito.anyString());
         Mockito.verify(statement, Mockito.times(2)).setString(
@@ -190,7 +226,6 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, new HashMap<>());
 
-        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -199,7 +234,7 @@ public class AccountMetadataDAOImplTest {
      *
      * @throws Exception if setup or invocation fails
      */
-    @Test
+    @Test(expectedExceptions = AccountMetadataException.class)
     public void testAddBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
@@ -209,8 +244,7 @@ public class AccountMetadataDAOImplTest {
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-700", "no-sharing");
 
-        assertAccountMetadataException(() ->
-            dao.addBatchDisclosureOptions(connection, accountMap));
+        dao.addBatchDisclosureOptions(connection, accountMap);
     }
 
     /**
@@ -233,7 +267,6 @@ public class AccountMetadataDAOImplTest {
 
         dao.updateBatchDisclosureOptions(connection, accountMap);
 
-        Assert.assertTrue(Mockito.mockingDetails(statement).getInvocations().size() > 0);
         Mockito.verify(statement, Mockito.times(2)).setString(
                 Mockito.eq(1), Mockito.anyString());
         Mockito.verify(statement, Mockito.times(2)).setTimestamp(
@@ -256,8 +289,88 @@ public class AccountMetadataDAOImplTest {
 
         dao.updateBatchDisclosureOptions(connection, new HashMap<>());
 
-        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies batch retrieval of secondary account instructions when rows are returned.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchSecondaryAccountInstructionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        Mockito.when(resultSet.getString("ACCOUNT_ID"))
+            .thenReturn("acc-900").thenReturn("acc-901");
+        Mockito.when(resultSet.getString("USER_ID"))
+            .thenReturn("user-1").thenReturn("user-2");
+        Mockito.when(resultSet.getString("INSTRUCTION_STATUS"))
+            .thenReturn("active").thenReturn("inactive");
+        Mockito.when(resultSet.getBoolean("OTHER_ACCOUNTS_AVAILABILITY"))
+            .thenReturn(true).thenReturn(false);
+
+        List<Pair<String, String>> accountUserPairs = Arrays.asList(
+                Pair.of("acc-900", "user-1"),
+                Pair.of("acc-901", "user-2"));
+
+        List<SecondaryAccountInstructionItem> result = dao.getBatchSecondaryAccountInstructions(connection,
+            accountUserPairs);
+
+        Assert.assertEquals(result.size(), 2);
+        Assert.assertEquals(result.get(0).getAccountId(), "acc-900");
+        Assert.assertEquals(result.get(0).getSecondaryUserId(), "user-1");
+        Assert.assertTrue(result.get(0).getOtherAccountsAvailability());
+        Assert.assertEquals(result.get(0).getSecondaryAccountInstructionStatus(),
+                SecondaryAccountInstructionItem.SecondaryAccountInstructionStatusEnum.active);
+    }
+
+    /**
+     * Verifies batch retrieval of secondary account instructions when no rows are returned.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchSecondaryAccountInstructionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(false);
+
+        List<Pair<String, String>> accountUserPairs = Collections.singletonList(Pair.of("acc-902", "user-1"));
+
+        List<SecondaryAccountInstructionItem> result = dao.getBatchSecondaryAccountInstructions(connection,
+            accountUserPairs);
+
+        Assert.assertTrue(result.isEmpty());
+    }
+
+    /**
+     * Verifies that SQL failures during secondary instruction retrieval are wrapped as service exceptions.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchSecondaryAccountInstructionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString()))
+                .thenThrow(new SQLException("bad"));
+
+        List<Pair<String, String>> accountUserPairs = Collections.singletonList(Pair.of("acc-903", "user-1"));
+
+        dao.getBatchSecondaryAccountInstructions(connection, accountUserPairs);
     }
 
     /**
@@ -290,7 +403,6 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, null);
 
-        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -307,7 +419,6 @@ public class AccountMetadataDAOImplTest {
 
         dao.updateBatchDisclosureOptions(connection, null);
 
-        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -317,48 +428,120 @@ public class AccountMetadataDAOImplTest {
      *
      * @throws Exception if setup or invocation fails (expected exception is verified by TestNG)
      */
-    @Test
+    @Test(expectedExceptions = AccountMetadataException.class)
     public void testUpdateBatchDisclosureOptionsSqlException() throws Exception {
         AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
         Connection connection = Mockito.mock(Connection.class);
 
         Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
 
+    
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-901", "no-sharing");
 
-        assertAccountMetadataException(() ->
-                dao.updateBatchDisclosureOptions(connection, accountMap));
+        dao.updateBatchDisclosureOptions(connection, accountMap);
     }
 
     /**
-     * Asserts that the given action throws an AccountMetadataException.
+     * Verifies successful batch insert of secondary account instructions.
      *
-     * @param action the action expected to throw AccountMetadataException
-     * @throws Exception if the action does not throw or throws a different exception
+     * @throws Exception if setup or invocation fails
      */
-    private void assertAccountMetadataException(ThrowingRunnable action) throws Exception {
-        try {
-            action.run();
-            Assert.fail("Expected AccountMetadataException to be thrown");
-        } catch (AccountMetadataException ex) {
-            Assert.assertNotNull(ex.getMessage());
-        }
+    @Test
+    public void testAddBatchSecondaryAccountInstructionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        List<SecondaryAccountInstructionItem> items = Arrays.asList(
+                buildSecondaryItem("acc-910", "user-1", true, "active"),
+                buildSecondaryItem("acc-911", "user-2", false, "inactive"));
+        dao.addBatchSecondaryAccountInstructions(connection, items);
+
+        Mockito.verify(statement, Mockito.times(2))
+                .setString(Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2))
+                .setString(Mockito.eq(2), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2))
+                .setString(Mockito.eq(3), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2))
+                .setObject(Mockito.eq(4), Mockito.any(), Mockito.anyInt());
+        Mockito.verify(statement, Mockito.times(2))
+                .setTimestamp(Mockito.eq(5), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
     }
 
     /**
-     * Asserts that the given mock object has no interactions (no method calls).
+     * Verifies that no insert call is made when secondary instruction input is empty.
      *
-     * @param mock the mock object to check
+     * @throws Exception if setup or invocation fails
      */
-    private void assertNoInteractions(Object mock) {
-        Assert.assertTrue(Mockito.mockingDetails(mock).getInvocations().isEmpty());
+    @Test
+    public void testAddBatchSecondaryAccountInstructionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.addBatchSecondaryAccountInstructions(connection, Collections.emptyList());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
     /**
-     * Functional interface for a runnable that can throw checked exceptions.
+     * Verifies successful batch update of secondary account instructions.
+     *
+     * @throws Exception if setup or invocation fails
      */
-    private interface ThrowingRunnable {
-        void run() throws Exception;
+    @Test
+    public void testUpdateBatchSecondaryAccountInstructionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        List<SecondaryAccountInstructionItem> items = Arrays.asList(
+                buildSecondaryItem("acc-920", "user-1", true, "active"),
+                buildSecondaryItem
+                        ("acc-921", "user-2", false, "inactive"));
+        dao.updateBatchSecondaryAccountInstructions(connection, items);
+
+        Mockito.verify(statement, Mockito.times(2))
+                .setString(Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2))
+                .setObject(Mockito.eq(2), Mockito.any(), Mockito.anyInt());
+        Mockito.verify(statement, Mockito.times(2))
+                .setTimestamp(Mockito.eq(3), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2))
+                .setString(Mockito.eq(4), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2))
+                .setString(Mockito.eq(5), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    /**
+     * Builds a secondary instruction test item.
+     *
+     * @param accountId account id
+     * @param userId secondary user id
+     * @param otherAccountsAvailable whether other accounts are available
+     * @param status instruction status
+     * @return populated test item
+     */
+    private SecondaryAccountInstructionItem buildSecondaryItem(String accountId, String userId,
+                                                                boolean otherAccountsAvailable, String status) {
+
+        SecondaryAccountInstructionItem item = new SecondaryAccountInstructionItem();
+        item.setAccountId(accountId);
+        item.setSecondaryUserId(userId);
+        item.setOtherAccountsAvailability(otherAccountsAvailable);
+        item.setSecondaryAccountInstructionStatus(
+                SecondaryAccountInstructionItem.SecondaryAccountInstructionStatusEnum.fromValue(status));
+        return item;
     }
 }

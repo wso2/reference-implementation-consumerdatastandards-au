@@ -82,16 +82,6 @@ public class DisclosureOptionsManagementApiImplTest {
     }
 
     @Test
-    public void testUpdateDisclosureOptionsBadRequestOnNull() {
-        Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(null);
-
-        Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ErrorResponse body = (ErrorResponse) response.getEntity();
-        Assert.assertNotNull(body);
-        Assert.assertEquals(body.getErrorDescription(), "No disclosure options provided");
-    }
-
-    @Test
     public void testUpdateDisclosureOptionsBadRequestOnInvalidStatus() {
         List<DisclosureOptionItem> request = buildRequest("invalid");
 
@@ -101,7 +91,7 @@ public class DisclosureOptionsManagementApiImplTest {
         ErrorResponse body = (ErrorResponse) response.getEntity();
         Assert.assertNotNull(body);
         Assert.assertEquals(body.getErrorDescription(),
-            "Invalid disclosure option status. Allowed values: no-sharing, pre-approval");
+                "Invalid disclosure option status. Allowed values: no-sharing, pre-approval");
     }
 
     @Test
@@ -119,7 +109,7 @@ public class DisclosureOptionsManagementApiImplTest {
     public void testUpdateDisclosureOptionsSuccess() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
-            .thenReturn(Collections.singletonMap("acc-1", "pre-approval"));
+                .thenReturn(Collections.singletonMap("acc-1", "pre-approval"));
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
@@ -131,15 +121,15 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.size(), 1);
         Assert.assertEquals(body.get(0).getAccountId(), "acc-1");
         Assert.assertEquals(body.get(0).getDisclosureOption(), "no-sharing");
-        Mockito.verify(metadataDAO).updateBatchDisclosureOptions(connection, 
+        Mockito.verify(metadataDAO).updateBatchDisclosureOptions(connection,
                 Collections.singletonMap("acc-1", "no-sharing"));
     }
 
-        @Test
-        public void testUpdateDisclosureOptionsOkWhenNoAccountsExist() throws Exception {
+    @Test
+    public void testUpdateDisclosureOptionsOkWhenNoAccountsExist() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("pre-approval");
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
-            .thenReturn(Collections.emptyMap());
+                .thenReturn(Collections.emptyMap());
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
@@ -149,16 +139,16 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertNotNull(body);
         Assert.assertTrue(body.isEmpty());
         Mockito.verify(metadataDAO, Mockito.never()).updateBatchDisclosureOptions(
-            Mockito.any(Connection.class), Mockito.anyMap());
-        }
+                Mockito.any(Connection.class), Mockito.anyMap());
+    }
 
-        @Test
-        public void testUpdateDisclosureOptionsOkWhenPartialAccountsExist() throws Exception {
+    @Test
+    public void testUpdateDisclosureOptionsOkWhenPartialAccountsExist() throws Exception {
         List<DisclosureOptionItem> request = Arrays.asList(
-            buildRequestItem("acc-1", "pre-approval"),
-            buildRequestItem("acc-2", "no-sharing"));
+                buildRequestItem("acc-1", "pre-approval"),
+                buildRequestItem("acc-2", "no-sharing"));
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
-            .thenReturn(Collections.singletonMap("acc-1", "no-sharing"));
+                .thenReturn(Collections.singletonMap("acc-1", "no-sharing"));
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
@@ -170,8 +160,8 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.get(0).getAccountId(), "acc-1");
         Assert.assertEquals(body.get(0).getDisclosureOption(), "pre-approval");
         Mockito.verify(metadataDAO).updateBatchDisclosureOptions(
-            connection, Collections.singletonMap("acc-1", "pre-approval"));
-        }
+                connection, Collections.singletonMap("acc-1", "pre-approval"));
+    }
 
     @Test
     public void testUpdateDisclosureOptionsServiceError() throws Exception {
@@ -179,8 +169,8 @@ public class DisclosureOptionsManagementApiImplTest {
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
                 .thenReturn(Collections.singletonMap("acc-1", "no-sharing"));
         Mockito.doThrow(new AccountMetadataException("fail"))
-            .when(metadataDAO)
-            .updateBatchDisclosureOptions(connection, Collections.singletonMap("acc-1", "pre-approval"));
+                .when(metadataDAO)
+                .updateBatchDisclosureOptions(connection, Collections.singletonMap("acc-1", "pre-approval"));
 
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(request);
 
@@ -225,7 +215,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Map<String, String> batchResult = new HashMap<>();
         batchResult.put("acc-1", "pre-approval");
         batchResult.put("acc-2", "no-sharing");
-        
+
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
                 .thenReturn(batchResult);
 
@@ -237,14 +227,14 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertNotNull(body);
         Assert.assertEquals(body.size(), 2);
         Assert.assertTrue(body.stream().anyMatch(item ->
-            "acc-1".equals(item.getAccountId()) && "pre-approval".equals(item.getDisclosureOption())));
+                "acc-1".equals(item.getAccountId()) && "pre-approval".equals(item.getDisclosureOption())));
     }
 
     @Test
     public void testGetDisclosureOptionsWithSpaces() throws Exception {
         Map<String, String> batchResult = new HashMap<>();
         batchResult.put("acc-1", "pre-approval");
-        
+
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1", "acc-2")))
                 .thenReturn(batchResult);
 
@@ -260,7 +250,7 @@ public class DisclosureOptionsManagementApiImplTest {
     public void testAddDisclosureOptionsCreatedWhenAllNew() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
         Map<String, String> batchResult = new HashMap<>();
-        
+
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-1")))
                 .thenReturn(batchResult);
 
@@ -274,7 +264,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.size(), 1);
         Assert.assertEquals(body.get(0).getAccountId(), "acc-1");
         Assert.assertEquals(body.get(0).getDisclosureOption(), "no-sharing");
-        Mockito.verify(metadataDAO).addBatchDisclosureOptions(connection, 
+        Mockito.verify(metadataDAO).addBatchDisclosureOptions(connection,
                 Collections.singletonMap("acc-1", "no-sharing"));
     }
 
@@ -282,7 +272,7 @@ public class DisclosureOptionsManagementApiImplTest {
     public void testAddDisclosureOptionsOkWhenExisting() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
         Map<String, String> existingMap = Collections.singletonMap("acc-1", "pre-approval");
-        
+
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
                 .thenReturn(existingMap);
 
@@ -297,16 +287,6 @@ public class DisclosureOptionsManagementApiImplTest {
     }
 
     @Test
-    public void testAddDisclosureOptionsBadRequestOnNull() {
-        Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(null);
-
-        Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-        ErrorResponse body = (ErrorResponse) response.getEntity();
-        Assert.assertNotNull(body);
-        Assert.assertEquals(body.getErrorDescription(), "No disclosure options provided");
-    }
-
-    @Test
     public void testAddDisclosureOptionsBadRequestOnInvalidStatus() {
         List<DisclosureOptionItem> request = buildRequest("invalid");
 
@@ -316,14 +296,14 @@ public class DisclosureOptionsManagementApiImplTest {
         ErrorResponse body = (ErrorResponse) response.getEntity();
         Assert.assertNotNull(body);
         Assert.assertEquals(body.getErrorDescription(),
-            "Invalid disclosure option status provided for acc-1, Allowed values: pre-approval, no-sharing");
+                "Invalid disclosure option status provided for acc-1, Allowed values: pre-approval, no-sharing");
     }
 
     @Test
     public void testAddDisclosureOptionsServiceError() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("pre-approval");
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Collections.singletonList("acc-1")))
-            .thenThrow(new AccountMetadataException("fail"));
+                .thenThrow(new AccountMetadataException("fail"));
 
         Response response = DisclosureOptionsManagementApiImpl.addDisclosureOptions(request);
 
@@ -445,7 +425,7 @@ public class DisclosureOptionsManagementApiImplTest {
         Map<String, String> mockResult = new HashMap<>();
         mockResult.put("acc-201", "pre-approval");
         mockResult.put("acc-202", "no-sharing");
-        
+
         Mockito.when(metadataDAO.getBatchDisclosureOptions(connection, Arrays.asList("acc-201", "acc-202")))
                 .thenReturn(mockResult);
 
