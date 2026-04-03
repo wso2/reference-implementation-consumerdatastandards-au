@@ -226,6 +226,7 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, new HashMap<>());
 
+        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -544,4 +545,14 @@ public class AccountMetadataDAOImplTest {
                 SecondaryAccountInstructionItem.SecondaryAccountInstructionStatusEnum.fromValue(status));
         return item;
     }
+
+    /**
+     * Asserts that the given mock object has no interactions (no method calls).
+     *
+     * @param mock the mock object to check
+     */
+    private void assertNoInteractions(Object mock) {
+        Assert.assertTrue(Mockito.mockingDetails(mock).getInvocations().isEmpty());
+    }
+
 }
