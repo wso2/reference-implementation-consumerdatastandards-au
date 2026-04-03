@@ -25,8 +25,8 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
 
   @JsonCreator
   public PopulateConsentAuthorizeScreenRequestBody(
-    @JsonProperty(required = true, value = "requestId") String requestId,
-    @JsonProperty(required = true, value = "data") PopulateConsentAuthorizeScreenData data
+          @JsonProperty(required = true, value = "requestId") String requestId,
+          @JsonProperty(required = true, value = "data") PopulateConsentAuthorizeScreenData data
   ) {
     this.requestId = requestId;
     this.data = data;
@@ -39,7 +39,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
     return this;
   }
 
-  
+
   @ApiModelProperty(example = "Ec1wMjmiG8", required = true, value = "")
   @JsonProperty(required = true, value = "requestId")
   @NotNull public String getRequestId() {
@@ -58,7 +58,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
     return this;
   }
 
-  
+
   @ApiModelProperty(required = true, value = "")
   @JsonProperty(required = true, value = "data")
   @NotNull @Valid public PopulateConsentAuthorizeScreenData getData() {
@@ -81,7 +81,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
     }
     PopulateConsentAuthorizeScreenRequestBody populateConsentAuthorizeScreenRequestBody = (PopulateConsentAuthorizeScreenRequestBody) o;
     return Objects.equals(this.requestId, populateConsentAuthorizeScreenRequestBody.requestId) &&
-        Objects.equals(this.data, populateConsentAuthorizeScreenRequestBody.data);
+            Objects.equals(this.data, populateConsentAuthorizeScreenRequestBody.data);
   }
 
   @Override
@@ -93,7 +93,7 @@ public class PopulateConsentAuthorizeScreenRequestBody   {
   public String toString() {
     StringBuilder sb = new StringBuilder();
     sb.append("class PopulateConsentAuthorizeScreenRequestBody {\n");
-    
+
     sb.append("    requestId: ").append(toIndentedString(requestId)).append("\n");
     sb.append("    data: ").append(toIndentedString(data)).append("\n");
     sb.append("}");

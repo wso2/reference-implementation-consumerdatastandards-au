@@ -47,7 +47,7 @@
             <modules>
                 <module>components/demo-backend</module>
                 <module>components/reference-implementation-openbanking-consumerdatastandards-au</module>
-                <!--                <module>react-apps</module>-->
+<!--                <module>react-apps</module>-->
             </modules>
             <properties>
                 <npm.executable>npm</npm.executable>
@@ -64,8 +64,8 @@
             <modules>
                 <module>components/demo-backend</module>
                 <module>components/reference-implementation-openbanking-consumerdatastandards-au</module>
-                <!--                <module>react-apps</module>-->
-                <!--                <module>toolkits</module>-->
+<!--                <module>react-apps</module>-->
+<!--                <module>toolkits</module>-->
             </modules>
             <properties>
                 <npm.executable>npm</npm.executable>
