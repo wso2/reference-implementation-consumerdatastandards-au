@@ -18,7 +18,9 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 
 import java.sql.Connection;
 import java.util.List;
@@ -58,6 +60,38 @@ public interface AccountMetadataDAO {
      * @throws AccountMetadataException if an error occurs
      */
     void updateBatchDisclosureOptions(Connection conn, Map<String, String> accountDisclosureMap)
+            throws AccountMetadataException;
+
+    /**
+     * Batch retrieve secondary account instructions for multiple account-user pairs.
+     *
+     * @param conn the database connection
+     * @param accountUserPairs list of account-user pairs
+     * @return list of secondary account instruction records
+     * @throws AccountMetadataException if an error occurs
+     */
+    List<SecondaryAccountInstructionItem> getBatchSecondaryAccountInstructions(Connection conn,
+            List<Pair<String, String>> accountUserPairs) throws AccountMetadataException;
+
+    /**
+     * Batch add secondary account instructions.
+     *
+     * @param conn the database connection
+     * @param instructionItems list of secondary account instruction records to add
+     * @throws AccountMetadataException if an error occurs
+     */
+    void addBatchSecondaryAccountInstructions(Connection conn, List<SecondaryAccountInstructionItem> instructionItems)
+            throws AccountMetadataException;
+
+    /**
+     * Batch update secondary account instructions.
+     *
+     * @param conn the database connection
+     * @param instructionItems list of secondary account instruction records to update
+     * @throws AccountMetadataException if an error occurs
+     */
+    void updateBatchSecondaryAccountInstructions(Connection conn,
+                                                 List<SecondaryAccountInstructionItem> instructionItems)
             throws AccountMetadataException;
 
 }

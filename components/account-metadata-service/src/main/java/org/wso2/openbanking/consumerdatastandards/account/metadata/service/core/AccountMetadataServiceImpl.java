@@ -18,9 +18,11 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.core;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAOImpl;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueriesMySqlImpl;
@@ -153,6 +155,62 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
         } catch (SQLException e) {
             log.error("Error batch updating disclosure options", e);
             throw new AccountMetadataException("Failed to batch update disclosure options", e);
+        }
+    }
+
+    /**
+     * Batch retrieve secondary account instructions for multiple account-user pairs.
+     *
+     * @param accountUserPairs list of account-user pairs
+     * @return list of secondary account instruction records
+     * @throws AccountMetadataException if an error occurs
+     */
+    @Override
+    public List<SecondaryAccountInstructionItem> getBatchSecondaryAccountInstructions(
+            List<Pair<String, String>> accountUserPairs)
+            throws AccountMetadataException {
+
+        try (Connection conn = connectionProvider.getConnection()) {
+            return metadataDAO.getBatchSecondaryAccountInstructions(conn, accountUserPairs);
+        } catch (SQLException e) {
+            log.error("Error batch retrieving secondary account instructions", e);
+            throw new AccountMetadataException("Failed to batch retrieve secondary account instructions", e);
+        }
+    }
+
+    /**
+     * Batch add secondary account instructions.
+     *
+     * @param instructionItems list of secondary account instruction records
+     * @throws AccountMetadataException if an error occurs
+     */
+    @Override
+    public void addBatchSecondaryAccountInstructions(List<SecondaryAccountInstructionItem> instructionItems)
+            throws AccountMetadataException {
+
+        try (Connection conn = connectionProvider.getConnection()) {
+            metadataDAO.addBatchSecondaryAccountInstructions(conn, instructionItems);
+        } catch (SQLException e) {
+            log.error("Error batch adding secondary account instructions", e);
+            throw new AccountMetadataException("Failed to batch add secondary account instructions", e);
+        }
+    }
+
+    /**
+     * Batch update secondary account instructions.
+     *
+     * @param instructionItems list of secondary account instruction records
+     * @throws AccountMetadataException if an error occurs
+     */
+    @Override
+    public void updateBatchSecondaryAccountInstructions(List<SecondaryAccountInstructionItem> instructionItems)
+            throws AccountMetadataException {
+
+        try (Connection conn = connectionProvider.getConnection()) {
+            metadataDAO.updateBatchSecondaryAccountInstructions(conn, instructionItems);
+        } catch (SQLException e) {
+            log.error("Error batch updating secondary account instructions", e);
+            throw new AccountMetadataException("Failed to batch update secondary account instructions", e);
         }
     }
 }

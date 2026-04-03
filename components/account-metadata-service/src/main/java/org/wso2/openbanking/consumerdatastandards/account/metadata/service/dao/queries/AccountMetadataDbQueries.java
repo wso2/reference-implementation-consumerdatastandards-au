@@ -48,4 +48,27 @@ public interface AccountMetadataDbQueries {
      */
     String getBatchUpdateDisclosureOptionQuery();
 
+    // DB Queries related to Secondary User Instructions Feature.
+    /**
+     * Get the SQL query for retrieving secondary account instruction records for multiple account-user pairs.
+     *
+     * @param pairCount number of account-user pairs to query
+     * @return the SQL query with placeholders
+     */
+     String getBatchGetSecondaryAccountInstructionQuery(int pairCount);
+
+    /**
+     * Get the SQL query for batch adding secondary account instruction records.
+     *
+     * @return the SQL query for batch insert
+     */
+    String getBatchAddSecondaryAccountInstructionQuery();
+
+    /**
+     * Get the SQL query for batch updating secondary account instruction records.
+     *
+     * @return the SQL query for batch update
+     */
+    String getBatchUpdateSecondaryAccountInstructionQuery();
+
 }
