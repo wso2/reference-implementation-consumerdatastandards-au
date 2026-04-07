@@ -126,7 +126,7 @@ public class CommonConstants {
     public static final String PAYEES_ID_REGEX = "/payees/[^/?]*";
     public static final String ACCOUNT_DATA = "accountData";
     public static final String STATUS = "status";
-        public static final String USER_ID = "userId";
+    public static final String USER_ID = "userId";
     public static final String ACCOUNT_ID = "accountId";
     public static final String DISPLAY_NAME = "displayName";
     public static final String AUTHORIZATION_ID = "authorizationId";
