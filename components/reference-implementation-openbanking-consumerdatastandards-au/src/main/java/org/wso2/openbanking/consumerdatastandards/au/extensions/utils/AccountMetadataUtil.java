@@ -24,18 +24,22 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.configurations.ConfigurableProperties;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +50,7 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Utility class to interact with the Account Metadata Webapp for DOMS status retrieval.
@@ -92,8 +97,8 @@ public class AccountMetadataUtil {
             HttpResponse response = client.execute(request);
 
             if (response.getStatusLine().getStatusCode() != HttpURLConnection.HTTP_OK) {
-                log.error("Failed to retrieve DOMS statuses for accounts, HTTP Status: " +
-                        response.getStatusLine().getStatusCode());
+                int statusCode = response.getStatusLine().getStatusCode();
+                log.error("Failed to retrieve DOMS statuses for accounts, HTTP Status: " + statusCode);
                 return null;
             }
 
@@ -106,6 +111,56 @@ public class AccountMetadataUtil {
             log.error("Failed to retrieve DOMS statuses for batch accounts", e);
         }
         return null;
+    }
+
+    /**
+     * Retrieve secondary account instruction statuses for multiple accounts and a secondary user.
+     * Calls GET /secondary-accounts with comma-separated account IDs and userId as query parameters.
+     *
+     * @param accountIds list of account IDs
+     * @param secondaryUserId secondary user ID
+     * @return map of accountId to instruction status, or empty map when retrieval fails
+     */
+    public static Map<String, String> getSecondaryAccountInstructionStatusesForAccounts(
+            List<String> accountIds, String secondaryUserId) throws CdsConsentException {
+
+        Map<String, String> instructionStatusMap = new HashMap<>();
+
+        if (accountIds == null || accountIds.isEmpty() || StringUtils.isBlank(secondaryUserId)) {
+            return instructionStatusMap;
+        }
+
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
+            String baseUrl = buildSecondaryAccountsUrl();
+            String accountIdParam = String.join(",", accountIds);
+
+            URIBuilder uriBuilder = new URIBuilder(baseUrl);
+            uriBuilder.addParameter(CommonConstants.ACCOUNT_IDS, accountIdParam);
+            uriBuilder.addParameter(CommonConstants.USER_ID_QUERY_PARAM, secondaryUserId);
+
+            HttpGet request = new HttpGet(uriBuilder.build());
+            request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
+            request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
+            addBasicAuthHeader(request);
+
+            HttpResponse response = client.execute(request);
+
+                    if (response.getStatusLine().getStatusCode() != HttpURLConnection.HTTP_OK) {
+                    int statusCode = response.getStatusLine().getStatusCode();
+                    log.error("Failed to retrieve secondary account instruction statuses, HTTP Status: " + statusCode);
+                throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                        "Failed to retrieve secondary account instruction statuses, HTTP Status: " + statusCode);
+            }
+
+            InputStream in = response.getEntity().getContent();
+            String responseBody = IOUtils.toString(in, String.valueOf(StandardCharsets.UTF_8));
+            return extractSecondaryInstructionStatusesFromBatchResponse(responseBody);
+
+        } catch (IOException | URISyntaxException | CdsConsentException e) {
+            log.error("Failed to retrieve secondary account instruction statuses", e);
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR, "");
+        }
     }
 
     /**
@@ -146,11 +201,49 @@ public class AccountMetadataUtil {
     }
 
     /**
+     * Add secondary account instructions for the consenting user.
+     * Calls POST /secondary-accounts with account IDs and the secondary user ID
+     * (the user initiating the consent, not the account owners).
+     *
+     * @param accountIds set of secondary account IDs selected during consent
+     * @param secondaryUserId the user ID of the consenting user (secondary user)
+     * @param otherAccountsAvailability map of accountId to other-accounts-availability
+     * @return true if secondary account instructions are added successfully, false otherwise
+     */
+    public static boolean addSecondaryAccountInstructions(Set<String> accountIds, String secondaryUserId,
+                                               Boolean otherAccountsAvailability) {
+
+        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
+            String requestUrl = buildSecondaryAccountsUrl();
+            HttpPost request = new HttpPost(requestUrl);
+
+            request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
+            request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
+            addBasicAuthHeader(request);
+
+                String requestBody = buildSecondaryAccountInstructionsRequestBody(accountIds, secondaryUserId,
+                    otherAccountsAvailability);
+            request.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
+
+            HttpResponse response = client.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+
+            return statusCode == HttpURLConnection.HTTP_CREATED || statusCode == HttpURLConnection.HTTP_OK;
+
+        } catch (IOException e) {
+            log.error("Failed to add secondary account instructions for user: " + secondaryUserId, e);
+            return false;
+        }
+    }
+
+    /**
      * Add Basic Authentication header to the HTTP request.
      *
      * @param request the HTTP request to add the auth header to
      */
-    private static void addBasicAuthHeader(org.apache.http.client.methods.HttpRequestBase request) {
+    private static void addBasicAuthHeader(HttpRequestBase request) {
 
         String credentials = ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_USERNAME + ":" +
                 ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_PASSWORD;
@@ -191,9 +284,43 @@ public class AccountMetadataUtil {
     }
 
     /**
+     * Build the request URL for the secondary-accounts endpoint.
+     *
+     * @return the complete request URL
+     */
+    private static String buildSecondaryAccountsUrl() {
+        return ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_BASE_URL
+                + CommonConstants.SECONDARY_ACCOUNTS_ENDPOINT;
+    }
+
+    /**
+     * Build the request body for adding secondary account instructions.
+     * Constructs JSON array with account ID, secondary user ID, and instruction status.
+     * @param accountIds set of account IDs
+     * @param secondaryUserId the secondary user ID (consenting user)
+     * @param otherAccountsAvailability map of accountId to other-accounts-availability
+     * @return JSON request body as string
+     */
+    private static String buildSecondaryAccountInstructionsRequestBody(Set<String> accountIds,
+                                           String secondaryUserId, Boolean otherAccountsAvailability) {
+                                            
+        JsonArray dataArray = new JsonArray();
+
+        for (String accountId : accountIds) {
+            JsonObject item = new JsonObject();
+            item.addProperty(CommonConstants.ACCOUNT_ID, accountId);
+            item.addProperty(CommonConstants.SECONDARY_USER_ID_FIELD, secondaryUserId);
+            item.addProperty(CommonConstants.OTHER_ACCOUNTS_AVAILABILITY_FIELD, otherAccountsAvailability);
+            item.addProperty(CommonConstants.SECONDARY_ACCOUNT_INSTRUCTION_STATUS_FIELD,
+                    CommonConstants.SECONDARY_INSTRUCTION_STATUS_ACTIVE);
+            dataArray.add(item);
+        }
+        return dataArray.toString();
+    }
+
+    /**
      * Extract DOMS statuses from batch API response body.
      * Returns a Map of account IDs to their DOMS statuses.
-     *
      * @param responseBody the JSON response body as a string
      * @return Map of accountID to DOMS Status, or empty map if parsing fails
      */
@@ -223,6 +350,42 @@ public class AccountMetadataUtil {
 
         } catch (JsonSyntaxException e) {
             log.error("Failed to parse batch response JSON", e);
+            return statusMap;
+        }
+    }
+
+    /**
+     * Extract secondary account instruction statuses from batch API response body.
+     * @param responseBody the JSON response body as a string
+     * @return map of accountId to secondary account instruction status
+     */
+    private static Map<String, String> extractSecondaryInstructionStatusesFromBatchResponse(String responseBody) {
+        Map<String, String> statusMap = new HashMap<>();
+
+        try {
+            Gson gson = new Gson();
+            JsonElement responseElement = gson.fromJson(responseBody, JsonElement.class);
+
+            if (responseElement != null && responseElement.isJsonArray()) {
+                JsonArray responseArray = responseElement.getAsJsonArray();
+                for (JsonElement itemElement : responseArray) {
+                    if (itemElement != null && itemElement.isJsonObject()) {
+                        JsonObject item = itemElement.getAsJsonObject();
+                        JsonElement accountIdElement = item.get(CommonConstants.ACCOUNT_ID);
+                        JsonElement instructionStatusElement =
+                                item.get(CommonConstants.SECONDARY_ACCOUNT_INSTRUCTION_STATUS_FIELD);
+                        if (accountIdElement != null && !accountIdElement.isJsonNull()
+                                && instructionStatusElement != null && !instructionStatusElement.isJsonNull()) {
+                            statusMap.put(accountIdElement.getAsString(), instructionStatusElement.getAsString());
+                        }
+                    }
+                }
+            }
+
+            return statusMap;
+
+        } catch (JsonSyntaxException e) {
+            log.error("Failed to parse secondary account instruction batch response JSON", e);
             return statusMap;
         }
     }

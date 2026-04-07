@@ -12,11 +12,11 @@ import com.fasterxml.jackson.annotation.JsonTypeName;
 
 
 @JsonTypeName("SuccessResponsePopulateConsentAuthorizeScreenData")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-02-20T15:47:46.918170600+05:30[Asia/Colombo]", comments = "Generator version: 7.20.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-04-07T10:52:53.468738900+05:30[Asia/Colombo]", comments = "Generator version: 7.21.0")
 public class SuccessResponsePopulateConsentAuthorizeScreenData   {
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsentData consentData;
   private SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData;
-  private @Valid List<@Valid AdditionalDisplayDataSection> additionalDisplayData = new ArrayList<>();
+  private @Valid List<@Valid AdditionalData> additionalData = new ArrayList<>();
 
   public SuccessResponsePopulateConsentAuthorizeScreenData() {
   }
@@ -60,37 +60,37 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
   }
 
   /**
-   * Additional display data sections for the authorization screen
+   * Additional data for the authorization screen
    **/
-  public SuccessResponsePopulateConsentAuthorizeScreenData additionalDisplayData(List<@Valid AdditionalDisplayDataSection> additionalDisplayData) {
-    this.additionalDisplayData = additionalDisplayData;
+  public SuccessResponsePopulateConsentAuthorizeScreenData additionalData(List<@Valid AdditionalData> additionalData) {
+    this.additionalData = additionalData;
     return this;
   }
 
 
-  @ApiModelProperty(value = "Additional display data sections for the authorization screen")
-  @JsonProperty("additionalDisplayData")
-  @Valid public List<@Valid AdditionalDisplayDataSection> getAdditionalDisplayData() {
-    return additionalDisplayData;
+  @ApiModelProperty(value = "Additional data for the authorization screen")
+  @JsonProperty("additionalData")
+  @Valid public List<@Valid AdditionalData> getAdditionalData() {
+    return additionalData;
   }
 
-  @JsonProperty("additionalDisplayData")
-  public void setAdditionalDisplayData(List<@Valid AdditionalDisplayDataSection> additionalDisplayData) {
-    this.additionalDisplayData = additionalDisplayData;
+  @JsonProperty("additionalData")
+  public void setAdditionalData(List<@Valid AdditionalData> additionalData) {
+    this.additionalData = additionalData;
   }
 
-  public SuccessResponsePopulateConsentAuthorizeScreenData addAdditionalDisplayDataItem(AdditionalDisplayDataSection additionalDisplayDataItem) {
-    if (this.additionalDisplayData == null) {
-      this.additionalDisplayData = new ArrayList<>();
+  public SuccessResponsePopulateConsentAuthorizeScreenData addAdditionalDataItem(AdditionalData additionalDataItem) {
+    if (this.additionalData == null) {
+      this.additionalData = new ArrayList<>();
     }
 
-    this.additionalDisplayData.add(additionalDisplayDataItem);
+    this.additionalData.add(additionalDataItem);
     return this;
   }
 
-  public SuccessResponsePopulateConsentAuthorizeScreenData removeAdditionalDisplayDataItem(AdditionalDisplayDataSection additionalDisplayDataItem) {
-    if (additionalDisplayDataItem != null && this.additionalDisplayData != null) {
-      this.additionalDisplayData.remove(additionalDisplayDataItem);
+  public SuccessResponsePopulateConsentAuthorizeScreenData removeAdditionalDataItem(AdditionalData additionalDataItem) {
+    if (additionalDataItem != null && this.additionalData != null) {
+      this.additionalData.remove(additionalDataItem);
     }
 
     return this;
@@ -107,12 +107,12 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
     SuccessResponsePopulateConsentAuthorizeScreenData successResponsePopulateConsentAuthorizeScreenData = (SuccessResponsePopulateConsentAuthorizeScreenData) o;
     return Objects.equals(this.consentData, successResponsePopulateConsentAuthorizeScreenData.consentData) &&
             Objects.equals(this.consumerData, successResponsePopulateConsentAuthorizeScreenData.consumerData) &&
-            Objects.equals(this.additionalDisplayData, successResponsePopulateConsentAuthorizeScreenData.additionalDisplayData);
+            Objects.equals(this.additionalData, successResponsePopulateConsentAuthorizeScreenData.additionalData);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(consentData, consumerData, additionalDisplayData);
+    return Objects.hash(consentData, consumerData, additionalData);
   }
 
   @Override
@@ -122,7 +122,7 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
 
     sb.append("    consentData: ").append(toIndentedString(consentData)).append("\n");
     sb.append("    consumerData: ").append(toIndentedString(consumerData)).append("\n");
-    sb.append("    additionalDisplayData: ").append(toIndentedString(additionalDisplayData)).append("\n");
+    sb.append("    additionalData: ").append(toIndentedString(additionalData)).append("\n");
     sb.append("}");
     return sb.toString();
   }
@@ -132,10 +132,6 @@ public class SuccessResponsePopulateConsentAuthorizeScreenData   {
    * (except the first line).
    */
   private String toIndentedString(Object o) {
-    if (o == null) {
-      return "null";
-    }
-    return o.toString().replace("\n", "\n    ");
+    return o == null ? "null" : o.toString().replace("\n", "\n    ");
   }
 }
-
