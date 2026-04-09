@@ -39,7 +39,6 @@ public class EnrichConsentSearchApiImpl {
 
     private static final Log log = LogFactory.getLog(EnrichConsentSearchApiImpl.class);
 
-
     /**
      * Handle enrich consent search request to enrich and transform consent search results
      * before sending the response back to the accelerator.
@@ -48,10 +47,6 @@ public class EnrichConsentSearchApiImpl {
      */
     public static Response handleEnrichSearchPost(EnrichConsentSearchRequestBody requestBody) {
         try {
-            if (requestBody.getData() == null) {
-                return Response.status(Response.Status.BAD_REQUEST).entity("Missing data field in request").build();
-            }
-
             SuccessResponseForConsentSearch response = new SuccessResponseForConsentSearch();
 
             // Adding DOMS status and secondary account info to the search result.
