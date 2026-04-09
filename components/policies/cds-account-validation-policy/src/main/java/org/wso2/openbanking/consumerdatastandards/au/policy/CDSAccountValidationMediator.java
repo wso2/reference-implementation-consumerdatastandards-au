@@ -19,6 +19,7 @@
 package org.wso2.openbanking.consumerdatastandards.au.policy;
 
 import com.nimbusds.jose.JOSEException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.MessageContext;
@@ -27,7 +28,6 @@ import org.apache.synapse.mediators.AbstractMediator;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.wso2.carbon.utils.xml.StringUtils;
 import org.wso2.openbanking.consumerdatastandards.au.policy.constants.CDSAccountValidationConstants;
 import org.wso2.openbanking.consumerdatastandards.au.policy.exceptions.CDSAccountValidationException;
 import org.wso2.openbanking.consumerdatastandards.au.policy.utils.CDSAccountValidationUtils;

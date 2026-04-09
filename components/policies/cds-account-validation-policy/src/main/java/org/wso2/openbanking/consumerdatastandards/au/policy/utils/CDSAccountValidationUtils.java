@@ -79,7 +79,6 @@ public class CDSAccountValidationUtils {
                 .build();
     }
 
-
     /**
      * Method to generate JWT with the given payload.
      *
