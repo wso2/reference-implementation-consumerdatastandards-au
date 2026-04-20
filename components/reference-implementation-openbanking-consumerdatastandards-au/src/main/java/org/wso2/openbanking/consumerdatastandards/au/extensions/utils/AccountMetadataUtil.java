@@ -130,7 +130,11 @@ public class AccountMetadataUtil {
             return instructionStatusMap;
         }
 
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
+
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             String baseUrl = buildSecondaryAccountsUrl();
             String accountIdParam = String.join(",", accountIds);
@@ -213,7 +217,10 @@ public class AccountMetadataUtil {
     public static boolean addSecondaryAccountInstructions(Set<String> accountIds, String secondaryUserId,
                                                Boolean otherAccountsAvailability) {
 
-        RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5000).setSocketTimeout(10000).build();
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
 
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             String requestUrl = buildSecondaryAccountsUrl();
