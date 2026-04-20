@@ -62,6 +62,9 @@ public class CDSAccountValidationMediatorTest {
         Mockito.when(axis2MessageContext.getProperty(MessageContext.TRANSPORT_HEADERS)).thenReturn(headers);
     }
 
+    /**
+     * Verifies mediation falls back to policy error handling when account filtering/signing flow fails.
+     */
     @Test
     public void testMediateFiltersBlockedAccountsAndUpdatesHeader() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -112,6 +115,9 @@ public class CDSAccountValidationMediatorTest {
                 "Error during CDS mediation policy");
     }
 
+    /**
+     * Verifies invalid info-header payloads are handled by setting policy error properties.
+     */
     @Test
     public void testMediateHandlesDecodeError() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -131,6 +137,9 @@ public class CDSAccountValidationMediatorTest {
                 "Error during CDS mediation policy");
     }
 
+    /**
+     * Verifies linked and blocked accounts are filtered out and the updated payload is re-signed.
+     */
     @Test
     public void testMediateFiltersLinkedAndBlockedAccountsAndSignsHeader() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -181,6 +190,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies JWT signing failures are converted into mediation error properties.
+     */
     @Test
     public void testMediateSetsErrorPropertiesWhenJwtGenerationFails() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -216,6 +228,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies mediation succeeds without errors when consent mapping resources are absent.
+     */
     @Test
     public void testMediateWithNoConsentMappingResources() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -232,6 +247,9 @@ public class CDSAccountValidationMediatorTest {
                 .setProperty(Mockito.eq(CDSAccountValidationConstants.ERROR_CODE), Mockito.any());
     }
 
+    /**
+     * Verifies mediation proceeds with a null user context when authorization resources are absent.
+     */
     @Test
     public void testMediateWithNoAuthorizationResources() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -264,6 +282,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies accounts mapped to secondary-owner authorization types are excluded from validation.
+     */
     @Test
     public void testMediateExcludesSecondaryAccountOwnerAuthTypes() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -320,6 +341,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies account_id fields are normalized to accountId when no accounts are blocked.
+     */
     @Test
     public void testMediateWithNoBlockedAccountsNormalizesAccountIdField() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -371,6 +395,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies account-validation service failures are translated into mediation error properties.
+     */
     @Test
     public void testMediateSetsErrorPropertiesWhenAccountValidationFails() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();

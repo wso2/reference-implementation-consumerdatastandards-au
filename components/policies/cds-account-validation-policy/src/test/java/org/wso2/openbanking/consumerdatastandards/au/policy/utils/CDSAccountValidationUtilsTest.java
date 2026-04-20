@@ -48,6 +48,9 @@ public class CDSAccountValidationUtilsTest {
 
     private static final String BASIC_AUTH = Base64.getEncoder().encodeToString("user:pass".getBytes());
 
+    /**
+    * Verifies blocked joint accounts are extracted when the metadata service returns a valid response.
+    */
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -83,6 +86,9 @@ public class CDSAccountValidationUtilsTest {
                 "Basic " + BASIC_AUTH);
     }
 
+    /**
+    * Verifies a non-200 DOMS response is surfaced as a validation exception.
+    */
     @Test
     public void testFetchBlockedAccountsFromServiceNon200() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -102,6 +108,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, DOMS_ENDPOINT, BASIC_AUTH));
     }
 
+    /**
+    * Verifies I/O failures from the DOMS service call are wrapped as validation exceptions.
+    */
     @Test
     public void testFetchBlockedAccountsFromServiceIoError() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -118,6 +127,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, DOMS_ENDPOINT, BASIC_AUTH));
     }
 
+    /**
+    * Verifies Basic authorization is sent when fetching blocked joint accounts.
+    */
     @Test
     public void testFetchBlockedAccountsWithAuthHeader() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -150,6 +162,9 @@ public class CDSAccountValidationUtilsTest {
                 "Basic " + BASIC_AUTH);
     }
 
+    /**
+    * Verifies successful DOMS calls include the required authorization header.
+    */
     @Test
     public void testFetchBlockedAccountsSuccessIncludesRequiredAuthHeader() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -182,6 +197,9 @@ public class CDSAccountValidationUtilsTest {
                 "Basic " + BASIC_AUTH);
     }
 
+    /**
+    * Verifies empty or null account sets return an empty blocked-account result.
+    */
     @Test
     public void testFetchBlockedAccountsFromServiceWithEmptyOrNullAccountIds() throws CDSAccountValidationException {
         Set<String> blockedForEmpty = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
@@ -195,6 +213,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blockedForNull.isEmpty());
     }
 
+    /**
+     * Verifies malformed DOMS rows are ignored while valid no-sharing entries are still processed.
+     */
     @Test
     public void testFetchBlockedAccountsSkipsInvalidRowsAndBlankAccountId() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -221,6 +242,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blocked.contains("acc-5"));
     }
 
+    /**
+     * Verifies interrupted DOMS requests raise a validation exception and preserve interrupt status.
+     */
     @Test
     public void testFetchBlockedAccountsFromServiceInterruptedError() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -240,6 +264,9 @@ public class CDSAccountValidationUtilsTest {
         Thread.interrupted();
     }
 
+    /**
+     * Verifies malformed DOMS payloads trigger a validation exception.
+     */
     @Test
     public void testFetchBlockedAccountsFromServiceMalformedResponse() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -262,6 +289,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchBlockedSecondaryAccountsFromService tests ----
 
+    /**
+     * Verifies inactive secondary-account instructions are marked as blocked.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsSuccess() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -289,6 +319,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertFalse(blocked.contains("acc-2"));
     }
 
+    /**
+     * Verifies non-200 responses from the secondary-account endpoint raise a validation exception.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsNon200() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -309,6 +342,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies I/O failures from the secondary-account endpoint are wrapped as validation exceptions.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsIoError() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -326,6 +362,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies interrupted secondary-account requests raise a validation exception and preserve interrupt status.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsInterruptedError() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -345,6 +384,9 @@ public class CDSAccountValidationUtilsTest {
         Thread.interrupted();
     }
 
+    /**
+     * Verifies malformed secondary-account payloads trigger a validation exception.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsMalformedResponse() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -365,6 +407,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies empty or null account sets return an empty secondary blocked-account result.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsWithEmptyOrNullAccountIds() throws CDSAccountValidationException {
         Set<String> blockedForEmpty = CDSAccountValidationUtils.fetchBlockedSecondaryAccountsFromService(
@@ -378,6 +423,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blockedForNull.isEmpty());
     }
 
+    /**
+     * Verifies blank or null primary user IDs short-circuit with an empty blocked-account result.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsWithBlankUserId() throws CDSAccountValidationException {
         Set<String> accounts = new HashSet<>();
@@ -394,6 +442,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blockedForNull.isEmpty());
     }
 
+    /**
+     * Verifies both accountIds and userId query parameters are included for secondary-account requests.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsIncludesUserIdInRequest() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -421,6 +472,9 @@ public class CDSAccountValidationUtilsTest {
                 "Basic " + BASIC_AUTH);
     }
 
+    /**
+     * Verifies invalid rows and active instructions are skipped while inactive rows are blocked.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsSkipsInvalidAndNonInactiveRows() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -452,6 +506,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchAllBlockedAccounts tests ----
 
+    /**
+     * Verifies blocked-account results from DOMS and secondary-account checks are merged.
+     */
     @Test
     public void testFetchAllBlockedAccountsCombinesResults() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
@@ -488,6 +545,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- generateJWT tests ----
 
+    /**
+     * Verifies JWT generation returns a signed compact token when key material is available.
+     */
     @Test
     public void testGenerateJwtSuccess() throws Exception {
         try {
