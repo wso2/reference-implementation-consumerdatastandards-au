@@ -72,8 +72,9 @@ public class DisclosureOptionsManagementApiImpl {
                     log.error("[DOMS] Invalid disclosure option status for account: " +
                             item.getAccountId() + " - " + disclosureOptionStatus);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status. " +
-                                    "Allowed values: no-sharing, pre-approval")).build();
+                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status provided " +
+                                    "for " + item.getAccountId() +
+                                    " Allowed values: no-sharing, pre-approval")).build();
                 }
             }
 
@@ -179,8 +180,9 @@ public class DisclosureOptionsManagementApiImpl {
                     log.error("[DOMS] Invalid disclosure option status for account: " +
                             item.getAccountId() + " - " + disclosureOptionStatus);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status" +
-                                    " provided for acc-1, Allowed values: pre-approval, no-sharing")).build();
+                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status provided " +
+                                    "for " + item.getAccountId() +
+                                    " Allowed values: no-sharing, pre-approval")).build();
                 }
             }
 
