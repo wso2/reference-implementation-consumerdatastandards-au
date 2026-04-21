@@ -18,6 +18,8 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.core;
 
+import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 import org.testng.Assert;
@@ -312,27 +314,6 @@ public class AccountMetadataServiceImplTest {
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
         service.updateBatchSecondaryAccountInstructions(items);
-    }
-
-    /**
-     * Builds a secondary instruction test item.
-     *
-     * @param accountId account id
-     * @param userId secondary user id
-     * @param otherAccountsAvailable whether other accounts are available
-     * @param status instruction status
-     * @return populated test item
-     */
-    private SecondaryAccountInstructionItem buildSecondaryItem(String accountId, String userId,
-        boolean otherAccountsAvailable,
-        String status) {
-        SecondaryAccountInstructionItem item = new SecondaryAccountInstructionItem();
-        item.setAccountId(accountId);
-        item.setSecondaryUserId(userId);
-        item.setOtherAccountsAvailability(otherAccountsAvailable);
-        item.setSecondaryAccountInstructionStatus(
-                SecondaryAccountInstructionItem.SecondaryAccountInstructionStatusEnum.fromValue(status));
-        return item;
     }
 
     /**

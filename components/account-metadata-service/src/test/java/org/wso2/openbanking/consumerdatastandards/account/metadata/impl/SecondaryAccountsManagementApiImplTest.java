@@ -18,6 +18,8 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.impl;
 
+import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -86,7 +88,7 @@ public class SecondaryAccountsManagementApiImplTest {
     @Test
     public void testAddSecondaryAccountInstructionsCreatedWhenAllNew() throws Exception {
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(
-                buildItem("acc-1", "user-1", true, "active"));
+                buildSecondaryItem("acc-1", "user-1", true, "active"));
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(Mockito.eq(connection), Mockito.anyList()))
                 .thenReturn(Collections.emptyList());
 
@@ -117,7 +119,7 @@ public class SecondaryAccountsManagementApiImplTest {
      */
     @Test
     public void testAddSecondaryAccountInstructionsOkWhenExisting() throws Exception {
-        SecondaryAccountInstructionItem existing = buildItem(
+        SecondaryAccountInstructionItem existing = buildSecondaryItem(
                 "acc-1", "user-1", true, "active");
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(existing);
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(connection,
@@ -145,9 +147,9 @@ public class SecondaryAccountsManagementApiImplTest {
      */
     @Test
     public void testAddSecondaryAccountInstructionsOkWhenPartialExisting() throws Exception {
-        SecondaryAccountInstructionItem existing = buildItem(
+        SecondaryAccountInstructionItem existing = buildSecondaryItem(
                 "acc-10", "user-10", true, "active");
-        SecondaryAccountInstructionItem newItem = buildItem(
+        SecondaryAccountInstructionItem newItem = buildSecondaryItem(
                 "acc-11", "user-11", false, "inactive");
         List<SecondaryAccountInstructionItem> request = Arrays.asList(existing, newItem);
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(Mockito.eq(connection), Mockito.anyList()))
@@ -192,7 +194,7 @@ public class SecondaryAccountsManagementApiImplTest {
     @Test
     public void testAddSecondaryAccountInstructionsServiceError() throws Exception {
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(
-                buildItem("acc-12", "user-12", true, "active"));
+                buildSecondaryItem("acc-12", "user-12", true, "active"));
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(connection,
                         buildAccountUserPairs("acc-12", "user-12")))
                 .thenThrow(new AccountMetadataException("fail"));
@@ -212,7 +214,7 @@ public class SecondaryAccountsManagementApiImplTest {
      */
     @Test
     public void testUpdateSecondaryAccountInstructionsSuccess() throws Exception {
-        SecondaryAccountInstructionItem existing = buildItem(
+        SecondaryAccountInstructionItem existing = buildSecondaryItem(
                 "acc-2", "user-2", false, "inactive");
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(existing);
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(Mockito.eq(connection), Mockito.anyList()))
@@ -237,7 +239,7 @@ public class SecondaryAccountsManagementApiImplTest {
     @Test
     public void testUpdateSecondaryAccountInstructionsOkWhenNoAccountsExist() throws Exception {
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(
-                buildItem("acc-3", "user-3", true, "active"));
+                buildSecondaryItem("acc-3", "user-3", true, "active"));
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(Mockito.eq(connection), Mockito.anyList()))
                 .thenReturn(Collections.emptyList());
 
@@ -259,9 +261,9 @@ public class SecondaryAccountsManagementApiImplTest {
      */
     @Test
     public void testUpdateSecondaryAccountInstructionsOkWhenPartialExists() throws Exception {
-        SecondaryAccountInstructionItem existing = buildItem(
+        SecondaryAccountInstructionItem existing = buildSecondaryItem(
                 "acc-13", "user-13", true, "active");
-        SecondaryAccountInstructionItem missing = buildItem(
+        SecondaryAccountInstructionItem missing = buildSecondaryItem(
                 "acc-14", "user-14", false, "inactive");
         List<SecondaryAccountInstructionItem> request = Arrays.asList(existing, missing);
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(Mockito.eq(connection), Mockito.anyList()))
@@ -295,7 +297,7 @@ public class SecondaryAccountsManagementApiImplTest {
     @Test
     public void testUpdateSecondaryAccountInstructionsServiceError() throws Exception {
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(
-                buildItem("acc-15", "user-15", true, "active"));
+                buildSecondaryItem("acc-15", "user-15", true, "active"));
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(connection,
                         buildAccountUserPairs("acc-15", "user-15")))
                 .thenThrow(new AccountMetadataException("fail"));
@@ -358,8 +360,8 @@ public class SecondaryAccountsManagementApiImplTest {
     @Test
     public void testGetSecondaryAccountInstructionsSuccess() throws Exception {
         List<SecondaryAccountInstructionItem> batchResult = Arrays.asList(
-                buildItem("acc-4", "user-4", true, "active"),
-                buildItem("acc-5", "user-5", false, "inactive"));
+                buildSecondaryItem("acc-4", "user-4", true, "active"),
+                buildSecondaryItem("acc-5", "user-5", false, "inactive"));
 
         Mockito.when(metadataDAO.getBatchSecondaryAccountInstructions(Mockito.eq(connection), Mockito.anyList()))
                 .thenReturn(batchResult);
@@ -401,7 +403,7 @@ public class SecondaryAccountsManagementApiImplTest {
     @Test
     public void testAddSecondaryAccountInstructionsErrorOnBlankIds() {
         List<SecondaryAccountInstructionItem> request = Collections.singletonList(
-                buildItem("   ", "   ", true, "active"));
+                buildSecondaryItem("   ", "   ", true, "active"));
 
         Response response = SecondaryAccountsManagementApiImpl.addSecondaryAccountInstructions(request);
 
@@ -416,8 +418,8 @@ public class SecondaryAccountsManagementApiImplTest {
      */
     @Test
     public void testAddSecondaryAccountInstructionsErrorOnDuplicateItems() {
-        SecondaryAccountInstructionItem item1 = buildItem("acc-dup", "user-dup", true, "active");
-        SecondaryAccountInstructionItem item2 = buildItem("acc-dup", "user-dup", false, "inactive");
+        SecondaryAccountInstructionItem item1 = buildSecondaryItem("acc-dup", "user-dup", true, "active");
+        SecondaryAccountInstructionItem item2 = buildSecondaryItem("acc-dup", "user-dup", false, "inactive");
         List<SecondaryAccountInstructionItem> request = Arrays.asList(item1, item2);
 
         Response response = SecondaryAccountsManagementApiImpl.addSecondaryAccountInstructions(request);
@@ -429,28 +431,15 @@ public class SecondaryAccountsManagementApiImplTest {
     }
 
     /**
-     * Builds a secondary instruction item.
+     * Builds a single account-user pair list for DAO lookup stubbing in tests.
      *
      * @param accountId account id
      * @param userId secondary user id
-     * @param otherAccountsAvailable whether other accounts are available
-     * @param status instruction status
-     * @return populated test item
+     * @return singleton list containing the account-user pair
      */
-    private SecondaryAccountInstructionItem buildItem(String accountId, String userId, boolean otherAccountsAvailable,
-            String status) {
-        SecondaryAccountInstructionItem item = new SecondaryAccountInstructionItem();
-        item.setAccountId(accountId);
-        item.setSecondaryUserId(userId);
-        item.setOtherAccountsAvailability(otherAccountsAvailable);
-        item.setSecondaryAccountInstructionStatus(
-                SecondaryAccountInstructionItem.SecondaryAccountInstructionStatusEnum.fromValue(status));
-        return item;
+    private List<Pair<String, String>> buildAccountUserPairs(String accountId, String userId) {
+        return Collections.singletonList(Pair.of(accountId, userId));
     }
-
-        private List<Pair<String, String>> buildAccountUserPairs(String accountId, String userId) {
-                return Collections.singletonList(Pair.of(accountId, userId));
-        }
 
     /**
      * Resets singleton state to isolate test execution.
