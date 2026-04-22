@@ -47,7 +47,7 @@ public class SuccessResponseApplicationCreation   {
         for (StatusEnum b : StatusEnum.values()) {
             // using Objects.toString() to be safe if value type non-object type
             // because types like 'int' etc. will be auto-boxed
-            if (java.util.Objects.toString(b.value).equals(s)) {
+            if (Objects.toString(b.value).equals(s)) {
                 return b;
             }
         }

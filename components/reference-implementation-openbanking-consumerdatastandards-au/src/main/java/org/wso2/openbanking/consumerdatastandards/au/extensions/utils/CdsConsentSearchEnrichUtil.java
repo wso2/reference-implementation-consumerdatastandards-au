@@ -24,26 +24,52 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Utility to enrich consent search response by adding "domsStatus" for joint accounts.
+ * Utility to enrich consent-search responses with derived account metadata.
+ * <p>
+ * Supported enrichments include DOMS status for joint-account mappings and
+ * secondary-account ownership/instruction information.
  */
 public class CdsConsentSearchEnrichUtil {
 
     private static final Log log = LogFactory.getLog(CdsConsentSearchEnrichUtil.class);
 
     /**
+     * Enrich consent search response by applying all supported enrichment operations.
+     *
+     * @param enrichedObj search result payload to enrich; expected to be a {@link List} of consent objects
+     * @param enrichmentParams optional enrichment flags (query params from caller), expected as a {@link Map}
+     * @return enriched search data wrapped in SuccessResponseForConsentSearchData
+     * @throws CdsConsentException if secondary-account-info enrichment is requested and metadata retrieval fails
+     */
+    public static SuccessResponseForConsentSearchData enrichSearchResult(Object enrichedObj, Object enrichmentParams)
+            throws CdsConsentException {
+
+        SuccessResponseForConsentSearchData searchData = enrichDOMSStatus(enrichedObj);
+
+        if (isSecondaryInfoEnrichmentRequested(enrichmentParams)) {
+            return enrichSecondaryAccountInfo(searchData.getEnrichedSearchResult());
+        }
+
+        return searchData;
+    }
+
+    /**
      * Enrich consent search response by adding "domsStatus" for each account in consentMappingResources.
      *
-     * @param enrichedObj the searchData object containing enrichedSearchResult
+     * @param enrichedObj search result payload to enrich; expected to be a {@link List} of consent objects
      * @return enriched searchData wrapped in SuccessResponseForConsentSearchData
      */
     public static SuccessResponseForConsentSearchData enrichDOMSStatus(Object enrichedObj) {
@@ -116,7 +142,231 @@ public class CdsConsentSearchEnrichUtil {
     }
 
     /**
+     * Enrich consent search response by adding secondary account information for consents.
+     *
+     * @param enrichedObj search result payload to enrich; expected to be a {@link List} of consent objects
+     * @return enriched searchData wrapped in SuccessResponseForConsentSearchData
+     * @throws CdsConsentException if account instruction metadata retrieval fails
+     */
+    public static SuccessResponseForConsentSearchData enrichSecondaryAccountInfo(Object enrichedObj)
+            throws CdsConsentException {
+
+        SuccessResponseForConsentSearchData searchData = new SuccessResponseForConsentSearchData();
+        searchData.setEnrichedSearchResult(enrichedObj);
+
+        if (!(enrichedObj instanceof List)) {
+            log.warn("enrichedSearchResult is not a List, skipping secondary account info enrichment");
+            return searchData;
+        }
+
+        List<?> searchResultArray = (List<?>) enrichedObj;
+
+        List<Object> enrichedSearchResults = new ArrayList<>();
+        for (Object consentObj : searchResultArray) {
+            JSONObject consent = toJSONObject(consentObj);
+            if (consent == null) {
+                enrichedSearchResults.add(consentObj);
+                continue;
+            }
+
+            enrichConsentWithSecondaryInfo(consent);
+            enrichedSearchResults.add(consent.toMap());
+        }
+
+        searchData.setEnrichedSearchResult(enrichedSearchResults);
+        return searchData;
+    }
+
+    /**
+     * Enrich a single consent with secondary account info if secondary account owner auth resources are available.
+     *
+     * @param consent consent object to enrich in-place
+     * @throws CdsConsentException if account instruction metadata retrieval fails
+     */
+    private static void enrichConsentWithSecondaryInfo(JSONObject consent) throws CdsConsentException {
+
+        String primaryUserId = extractPrimaryUserId(consent);
+        if (StringUtils.isBlank(primaryUserId)) {
+            return;
+        }
+
+        Map<String, Set<String>> secondaryOwnerAccountIdsMap = extractSecondaryOwnerAccountIds(consent);
+        if (secondaryOwnerAccountIdsMap.isEmpty()) {
+            return;
+        }
+
+        Set<String> allSecondaryAccountIds = new LinkedHashSet<>();
+        for (Set<String> accountIds : secondaryOwnerAccountIdsMap.values()) {
+            allSecondaryAccountIds.addAll(accountIds);
+        }
+
+        Map<String, String> accountInstructionStatusMap =
+                AccountMetadataUtil.getSecondaryAccountInstructionStatusesForAccounts(
+                        new ArrayList<>(allSecondaryAccountIds), primaryUserId);
+
+        JSONObject secondaryAccountInfo = new JSONObject();
+        secondaryAccountInfo.put(CommonConstants.SECONDARY_ACCOUNT_INFO_ACCOUNT_USER, primaryUserId);
+
+        JSONArray secondaryAccounts = new JSONArray();
+        for (Map.Entry<String, Set<String>> entry : secondaryOwnerAccountIdsMap.entrySet()) {
+            String accountOwnerUserId = entry.getKey();
+            Set<String> accountIds = entry.getValue();
+
+            JSONArray activeAccountIds = new JSONArray();
+            JSONArray inactiveAccountIds = new JSONArray();
+
+            for (String accountId : accountIds) {
+                String instructionStatus = accountInstructionStatusMap.get(accountId);
+                if (CommonConstants.SECONDARY_INSTRUCTION_STATUS_ACTIVE.equalsIgnoreCase(instructionStatus)) {
+                    activeAccountIds.put(accountId);
+                } else {
+                    inactiveAccountIds.put(accountId);
+                }
+            }
+
+            JSONObject secondaryAccountData = new JSONObject();
+            secondaryAccountData.put(CommonConstants.SECONDARY_ACCOUNT_OWNER_TAG, accountOwnerUserId);
+            secondaryAccountData.put(CommonConstants.SECONDARY_ACCOUNT_INFO_ACTIVE_ACCOUNTS, activeAccountIds);
+            secondaryAccountData.put(CommonConstants.SECONDARY_ACCOUNT_INFO_INACTIVE_ACCOUNTS, inactiveAccountIds);
+            secondaryAccounts.put(secondaryAccountData);
+        }
+
+        secondaryAccountInfo.put(CommonConstants.SECONDARY_ACCOUNT_INFO_SECONDARY_ACCOUNTS, secondaryAccounts);
+        consent.put(CommonConstants.SECONDARY_ACCOUNT_INFO_TAG, secondaryAccountInfo);
+    }
+
+    /**
+     * Extract primary user ID from consent authorization resources.
+     *
+     * @param consent consent object containing authorization resources
+     * @return primary user ID when present; otherwise {@code null}
+     */
+    private static String extractPrimaryUserId(JSONObject consent) {
+
+        JSONArray authResources = consent.optJSONArray(CommonConstants.AUTHORIZATION_RESOURCES);
+        if (authResources == null) {
+            return null;
+        }
+
+        for (int i = 0; i < authResources.length(); i++) {
+            JSONObject authResource = authResources.optJSONObject(i);
+            if (authResource == null) {
+                continue;
+            }
+
+            String authType = authResource.optString(CommonConstants.AUTH_TYPE, null);
+            if (CommonConstants.AUTH_RESOURCE_TYPE_PRIMARY.equalsIgnoreCase(authType)) {
+                String userId = authResource.optString(CommonConstants.USER_ID, null);
+                if (StringUtils.isNotBlank(userId)) {
+                    return userId;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Extract secondary owner userId to accountId mappings from consent resources.
+     *
+     * @param consent consent object containing authorization and mapping resources
+     * @return map of secondary owner user ID to associated account ID set; empty when no mappings are found
+     */
+    private static Map<String, Set<String>> extractSecondaryOwnerAccountIds(JSONObject consent) {
+
+        Map<String, Set<String>> accountOwnerAccountIdsMap = new LinkedHashMap<>();
+        Map<String, String> secondaryOwnerAuthIdMap = new HashMap<>();
+
+        JSONArray authResources = consent.optJSONArray(CommonConstants.AUTHORIZATION_RESOURCES);
+        if (authResources == null) {
+            return accountOwnerAccountIdsMap;
+        }
+
+        for (int i = 0; i < authResources.length(); i++) {
+            JSONObject authResource = authResources.optJSONObject(i);
+            if (authResource == null) {
+                continue;
+            }
+
+            String authType = authResource.optString(CommonConstants.AUTH_TYPE, null);
+            if (!isSecondaryAccountOwner(authType)) {
+                continue;
+            }
+
+            String authorizationId = authResource.optString(CommonConstants.AUTHORIZATION_ID, null);
+            String userId = authResource.optString(CommonConstants.USER_ID, null);
+            if (StringUtils.isNotBlank(authorizationId) && StringUtils.isNotBlank(userId)) {
+                secondaryOwnerAuthIdMap.put(authorizationId, userId);
+            }
+        }
+
+        if (secondaryOwnerAuthIdMap.isEmpty()) {
+            return accountOwnerAccountIdsMap;
+        }
+
+        JSONArray mappingResources = consent.optJSONArray(CommonConstants.CONSENT_MAPPING_RESOURCES);
+        if (mappingResources == null) {
+            return accountOwnerAccountIdsMap;
+        }
+
+        for (int i = 0; i < mappingResources.length(); i++) {
+            JSONObject mapping = mappingResources.optJSONObject(i);
+            if (mapping == null) {
+                continue;
+            }
+
+            String authorizationId = mapping.optString(CommonConstants.AUTHORIZATION_ID, null);
+            String accountId = mapping.optString(CommonConstants.ACCOUNT_ID, null);
+
+            if (StringUtils.isBlank(authorizationId) || StringUtils.isBlank(accountId)) {
+                continue;
+            }
+
+            String secondaryOwnerUserId = secondaryOwnerAuthIdMap.get(authorizationId);
+            if (StringUtils.isBlank(secondaryOwnerUserId)) {
+                continue;
+            }
+
+            accountOwnerAccountIdsMap
+                    .computeIfAbsent(secondaryOwnerUserId, key -> new LinkedHashSet<>())
+                    .add(accountId);
+        }
+
+        return accountOwnerAccountIdsMap;
+    }
+
+    /**
+     * Check whether the given authorization type belongs to a secondary account owner.
+     *
+     * @param authType authorization type value from an auth resource
+     * @return {@code true} when the type represents a secondary owner; {@code false} otherwise
+     */
+    private static boolean isSecondaryAccountOwner(String authType) {
+        return CommonConstants.AUTH_TYPE_SECONDARY_INDIVIDUAL_ACCOUNT_OWNER.equalsIgnoreCase(authType)
+            || CommonConstants.AUTH_TYPE_SECONDARY_JOINT_ACCOUNT_OWNER.equalsIgnoreCase(authType);
+    }
+
+    /**
+     * Check whether the secondary account info enrichment is requested by query params.
+     *
+     * @param enrichmentParams enrichment parameters supplied by the caller
+     * @return {@code true} when secondary-account-info enrichment is requested; {@code false} otherwise
+     */
+    private static boolean isSecondaryInfoEnrichmentRequested(Object enrichmentParams) {
+
+        if (enrichmentParams == null) {
+            return false;
+        }
+        Map<?, ?> paramsMap = (Map<?, ?>) enrichmentParams;
+        return paramsMap.containsKey(CommonConstants.SECONDARY_ACCOUNT_INFO_TAG);
+
+    }
+
+    /**
      * Extract Joint account IDs corresponding to consents.
+     *
+     * @param consent consent object containing authorization and mapping resources
+     * @return list of unique joint account IDs linked to the consent
      */
     private static List<String> extractJointAccountIds(JSONObject consent) {
 
@@ -173,6 +423,9 @@ public class CdsConsentSearchEnrichUtil {
 
     /**
      * Check if authorization type is linkedMember.
+     *
+     * @param authType authorization type value from an auth resource
+     * @return {@code true} when the type represents a linked member (joint account); {@code false} otherwise
      */
     private static boolean isJointAccount(String authType) {
         return CommonConstants.AUTH_RESOURCE_TYPE_LINKED.equalsIgnoreCase(authType);
@@ -182,7 +435,7 @@ public class CdsConsentSearchEnrichUtil {
      * Convert a consent object into a {@link JSONObject}.
      *
      * @param consentObj consent object as either JSONObject or Map
-     * @return converted JSONObject, or null when the input type is unsupported
+     * @return converted JSONObject, or {@code null} when the input type is unsupported
      */
     private static JSONObject toJSONObject(Object consentObj) {
         if (consentObj instanceof JSONObject) {
