@@ -58,16 +58,10 @@ public class DisclosureOptionsManagementApiImpl {
      */
     public static Response updateDisclosureOptions(List<DisclosureOptionItem> request) {
 
-        if (request == null) {
-            log.error("[DOMS] No disclosure options provided to update");
-            return Response.status(Response.Status.BAD_REQUEST)
-                .entity(new ErrorResponse().errorDescription("No disclosure options provided")).build();
-        }
-
         try {
             Map<String, String> accountDisclosureMap = new HashMap<>();
             List<String> accountIdsToCheck = new ArrayList<>();
-            
+
             // Validate and build map
             for (DisclosureOptionItem item : request) {
                 String disclosureOptionStatus = item.getDisclosureOption();
@@ -78,8 +72,9 @@ public class DisclosureOptionsManagementApiImpl {
                     log.error("[DOMS] Invalid disclosure option status for account: " +
                             item.getAccountId() + " - " + disclosureOptionStatus);
                     return Response.status(Response.Status.BAD_REQUEST)
-                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status. " +
-                                    "Allowed values: no-sharing, pre-approval")).build();
+                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status provided " +
+                                    "for " + item.getAccountId() +
+                                    " Allowed values: no-sharing, pre-approval")).build();
                 }
             }
 
@@ -104,7 +99,7 @@ public class DisclosureOptionsManagementApiImpl {
             if (log.isDebugEnabled()) {
                 log.debug("[DOMS] Updated disclosure options for " + updatedItems.size() + " account(s)");
             }
-            
+
             return Response.status(Response.Status.OK).entity(updatedItems).build();
 
         } catch (AccountMetadataException e) {
@@ -146,12 +141,12 @@ public class DisclosureOptionsManagementApiImpl {
             }
 
             Map<String, String> result = accountMetadataService.getBatchDisclosureOptions(accountIdList);
-            
+
             // Convert map to array of objects
             List<DisclosureOptionItem> responseList = result.entrySet().stream()
                     .map(entry -> new DisclosureOptionItem(entry.getKey(), entry.getValue()))
                     .collect(Collectors.toList());
-            
+
             return Response.ok().entity(responseList).build();
 
         } catch (AccountMetadataException e) {
@@ -161,7 +156,6 @@ public class DisclosureOptionsManagementApiImpl {
                             "Failed to retrieve disclosure options: " + e.getMessage()))
                     .build();
         }
-
     }
 
     /**
@@ -171,14 +165,6 @@ public class DisclosureOptionsManagementApiImpl {
      * @return response with list of added account IDs
      */
     public static Response addDisclosureOptions(List<DisclosureOptionItem> request) {
-
-        if (request == null) {
-            log.error("[DOMS] No disclosure options provided to add");
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(new ErrorResponse()
-                            .errorDescription("No disclosure options provided"))
-                    .build();
-        }
 
         try {
             Map<String, String> accountDisclosureMap = new HashMap<>();
@@ -191,11 +177,12 @@ public class DisclosureOptionsManagementApiImpl {
                     accountDisclosureMap.put(item.getAccountId(), disclosureOptionStatus);
                     accountIdsToCheck.add(item.getAccountId());
                 } else {
-                    log.error("[DOMS] Invalid disclosure option status for account: " + item.getAccountId() + " - "
-                            + disclosureOptionStatus);
-                    return Response.status(Response.Status.BAD_REQUEST).entity(new ErrorResponse().errorDescription(
-                                    "Invalid disclosure option status provided for " + item.getAccountId() +
-                                            ", Allowed values: pre-approval, no-sharing")).build();
+                    log.error("[DOMS] Invalid disclosure option status for account: " +
+                            item.getAccountId() + " - " + disclosureOptionStatus);
+                    return Response.status(Response.Status.BAD_REQUEST)
+                            .entity(new ErrorResponse().errorDescription("Invalid disclosure option status provided " +
+                                    "for " + item.getAccountId() +
+                                    " Allowed values: no-sharing, pre-approval")).build();
                 }
             }
 
@@ -221,11 +208,11 @@ public class DisclosureOptionsManagementApiImpl {
             if (log.isDebugEnabled()) {
                 log.debug("[DOMS] Added disclosure options for " + addedItems.size() + " account(s)");
             }
-            
+
             // Return 201 Created if all were new, 200 OK if some already existed
-            Response.ResponseBuilder responseBuilder = addedItems.isEmpty() ? 
+            Response.ResponseBuilder responseBuilder = addedItems.isEmpty() ?
                     Response.status(Response.Status.OK) : Response.status(Response.Status.CREATED);
-            
+
             return responseBuilder.entity(addedItems).build();
 
         } catch (AccountMetadataException e) {

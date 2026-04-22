@@ -23,8 +23,12 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.constants;
  */
 public class CommonConstants {
 
-    //Constants Related to Joint Accounts
+    // Constants Related to Joint Accounts
     public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
     public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
+
+    // Constants Related to Secondary Accounts
+    public static final String SUI_ACTIVE_STATUS = "active";
+    public static final String SUI_INACTIVE_STATUS = "inactive";
 
 }

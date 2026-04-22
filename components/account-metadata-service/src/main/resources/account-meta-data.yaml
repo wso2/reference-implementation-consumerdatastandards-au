@@ -1,0 +1,565 @@
+openapi: 3.0.3
+info:
+  title: Disclosure Options Management API
+  version: 1.0.0
+  description: API for managing disclosure options for one or more accounts.
+
+paths:
+  /disclosure-options:
+    get:
+      tags:
+        - Disclosure Options
+      summary: Get disclosure options for multiple accounts
+      description: Retrieve disclosure option statuses for multiple account IDs (comma-separated).
+      operationId: getDisclosureOptionsGet
+      parameters:
+        - name: accountIds
+          in: query
+          required: true
+          description: Comma-separated account IDs
+          schema:
+            type: string
+            example: "143-000-B1234,143-000-B5678"
+      responses:
+        '200':
+          description: Disclosure options retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DisclosureOptionItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    post:
+      tags:
+        - Disclosure Options
+      summary: Add disclosure options for one or more accounts
+      description: Allows adding disclosure option status for multiple account IDs.
+      operationId: addDisclosureOptionsPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DisclosureOptionItem'
+      responses:
+        '201':
+          description: Disclosure options added successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where disclosure options were added
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    put:
+      tags:
+        - Disclosure Options
+      summary: Update disclosure options for one or more accounts
+      description: Allows updating disclosure option status for multiple account IDs.
+      operationId: updateDisclosureOptionsPut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/DisclosureOptionItem'
+      responses:
+        '200':
+          description: Disclosure options updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where disclosure options were updated
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+  /secondary-accounts:
+    get:
+      tags:
+        - Secondary User Instruction
+      summary: Get secondary accounts instruction status for multiple accounts
+      description: Retrieve secondary accounts instruction and privilege status for multiple account IDs (comma-separated).
+      operationId: getSecondaryAccountsInstructionStatusGet
+      parameters:
+        - name: accountIds
+          in: query
+          required: true
+          description: Comma-separated account IDs
+          schema:
+            type: string
+            example: "7500101541,7500101542"
+        - name: userId
+          in: query
+          required: true
+          description: User ID
+          schema:
+            type: string
+            example: "user-123"
+      responses:
+        '200':
+          description: Secondary accounts instruction status retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SecondaryAccountInstructionItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    post:
+      tags:
+        - Secondary User Instruction
+      summary: Add secondary accounts instruction status for one or more accounts
+      description: Allows adding secondary accounts instruction and privilege status for multiple accounts.
+      operationId: addSecondaryAccountsInstructionStatusPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SecondaryAccountInstructionItem'
+      responses:
+        '201':
+          description: Secondary accounts instruction status added successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SecondaryAccountInstructionItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    put:
+      tags:
+        - Secondary User Instruction
+      summary: Update secondary accounts instruction status for one or more accounts
+      description: This API is used to update the CDS Secondary Accounts Instruction and Privilege Status.
+      operationId: updateSecondaryAccountStatusPut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SecondaryAccountInstructionItem'
+      responses:
+        '200':
+          description: Secondary accounts instruction status successfully updated
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SecondaryAccountInstructionItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+  /business-stakeholders:
+    get:
+      tags:
+        - Business Stakeholders
+      summary: Get business stakeholder permissions for one user across one or more accounts
+      description: Retrieve business stakeholder permission records for a given user ID and multiple account IDs (comma-separated).
+      operationId: getBusinessStakeholdersGet
+      parameters:
+        - name: accountIds
+          in: query
+          required: true
+          description: Comma-separated account IDs
+          schema:
+            type: string
+            example: "586-522-B0025,586-522-B0026"
+        - name: userId
+          in: query
+          required: true
+          description: User ID
+          schema:
+            type: string
+            example: nominatedUser1@wso2.com@carbon.super
+      responses:
+        '200':
+          description: Business stakeholder permissions retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/BusinessStakeholderPermissionItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    post:
+      tags:
+        - Business Stakeholders
+      summary: Add business stakeholders for one or more accounts
+      description: Allows adding account owners and nominated representatives for multiple account IDs.
+      operationId: addBusinessStakeholdersPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BusinessStakeholderUpsertItem'
+      responses:
+        '201':
+          description: Business stakeholders added successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where business stakeholders were added
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    put:
+      tags:
+        - Business Stakeholders
+      summary: Update business stakeholders for one or more accounts
+      description: Allows updating account owners and nominated representatives for multiple account IDs.
+      operationId: updateBusinessStakeholdersPut
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BusinessStakeholderUpsertItem'
+      responses:
+        '200':
+          description: Business stakeholders updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where business stakeholders were updated
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    delete:
+      tags:
+        - Business Stakeholders
+      summary: Delete business stakeholders for one or more accounts
+      description: Allows deleting nominated representatives for multiple account IDs.
+      operationId: deleteBusinessStakeholdersDelete
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/BusinessStakeholderDeleteItem'
+      responses:
+        '200':
+          description: Business stakeholders deleted successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                description: List of account IDs where business stakeholders were deleted
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+components:
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    OAuth2:
+      type: oauth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://example.com/oauth/token
+          scopes: {}
+
+  schemas:
+    DisclosureOptionItem:
+      type: object
+      required:
+        - accountId
+        - disclosureOption
+      properties:
+        accountId:
+          type: string
+          description: Account ID
+          example: 143-000-B1234
+        disclosureOption:
+          type: string
+          description: Disclosure option status
+          example: no-sharing
+
+    ErrorResponse:
+      type: object
+      properties:
+        error_description:
+          type: string
+          description: Error description
+          example: Invalid disclosure option status. Allowed values are no-sharing, pre-approval
+
+    SecondaryAccountInstructionItem:
+      type: object
+      required:
+        - accountId
+        - secondaryUserId
+        - otherAccountsAvailability
+        - secondaryAccountInstructionStatus
+      properties:
+        accountId:
+          type: string
+          description: Account ID
+          example: 7500101541
+        secondaryUserId:
+          type: string
+          description: Secondary user identifier
+          example: user-1
+        otherAccountsAvailability:
+          type: boolean
+          description: Indicates whether the secondary user has other accounts available in the bank
+          example: true
+        secondaryAccountInstructionStatus:
+          type: string
+          description: Secondary account instruction status
+          example: inactive
+
+    BusinessStakeholderRepresentative:
+      type: object
+      required:
+        - name
+        - permission
+      properties:
+        name:
+          type: string
+          description: Nominated representative user identifier
+          example: nominatedUser1@wso2.com@carbon.super
+        permission:
+          type: string
+          description: Permission assigned to the nominated representative
+          example: AUTHORIZE
+
+    BusinessStakeholderPermissionItem:
+      type: object
+      required:
+        - accountId
+        - userId
+        - permission
+      properties:
+        accountId:
+          type: string
+          description: Account ID
+          example: 586-522-B0025
+        userId:
+          type: string
+          description: User identifier
+          example: nominatedUser1@wso2.com@carbon.super
+        permission:
+          type: string
+          description: Permission assigned to the user for the account
+          example: AUTHORIZE
+
+    BusinessStakeholderUpsertItem:
+      type: object
+      required:
+        - accountID
+        - accountOwners
+        - nominatedRepresentatives
+      properties:
+        accountID:
+          type: string
+          description: Account ID
+          example: 586-522-B0025
+        accountOwners:
+          type: array
+          description: List of account owner user identifiers
+          items:
+            type: string
+          example:
+            - nominatedUser3@wso2.com@carbon.super
+            - user2@wso2.com@carbon.super
+        nominatedRepresentatives:
+          type: array
+          description: List of nominated representatives with permissions
+          items:
+            $ref: '#/components/schemas/BusinessStakeholderRepresentative'
+
+    BusinessStakeholderDeleteItem:
+      type: object
+      required:
+        - accountID
+        - accountOwners
+        - nominatedRepresentatives
+      properties:
+        accountID:
+          type: string
+          description: Account ID
+          example: 586-522-B0025
+        accountOwners:
+          type: array
+          description: Account owners list to retain in request structure
+          items:
+            type: string
+          example: []
+        nominatedRepresentatives:
+          type: array
+          description: List of nominated representative user identifiers to remove
+          items:
+            type: string
+          example:
+            - psu@gold.com@carbon.super
+            
