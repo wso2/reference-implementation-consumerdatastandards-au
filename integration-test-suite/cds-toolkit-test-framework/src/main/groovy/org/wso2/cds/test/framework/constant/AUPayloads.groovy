@@ -14,22 +14,20 @@ class AUPayloads {
                                                  String permissionType) {
 
         return """
-               {
-                    "data":[
-                         {
+               [
+                    {
                          "accountID":"${accountId}",
-                         "accountOwners":[                     
+                         "accountOwners":[
                                 "${accountOwnerUserID}"
                              ],
-                          "nominatedRepresentatives":[
+                         "nominatedRepresentatives":[
                              {
                                 "name": "${nominatedRepUserID}",
                                 "permission": "${permissionType}"
                               }
                             ]
-                         }
-                        ]
-                 }
+                    }
+               ]
             """.stripIndent()
     }
 
@@ -45,14 +43,13 @@ class AUPayloads {
                                                 String permissionType, String nominatedRepUserID2, String permissionType2) {
 
         return """
-               {
-                    "data":[
-                         {
+               [
+                    {
                          "accountID":"${accountId}",
-                         "accountOwners":[                     
+                         "accountOwners":[
                                 "${accountOwnerUserID}"
                              ],
-                          "nominatedRepresentatives":[
+                         "nominatedRepresentatives":[
                              {
                                 "name": "${nominatedRepUserID}",
                                 "permission": "${permissionType}"
@@ -62,9 +59,8 @@ class AUPayloads {
                                 "permission": "${permissionType2}"
                               }
                             ]
-                         }
-                        ]
-                 }
+                    }
+               ]
             """.stripIndent()
     }
 
@@ -78,19 +74,17 @@ class AUPayloads {
     static String getSingleUserDeletePayload(String accountId, String accountOwnerUserID, String nominatedRepUserID) {
 
         return """
-               {
-                  "data":[
-                     {
-                        "accountID":"${accountId}",
-                        "accountOwners":[
-                            "${accountOwnerUserID}"
-                        ],
-                        "nominatedRepresentatives":[
-                           "${nominatedRepUserID}"
-                        ]
-                     }
-                  ]
-               }
+               [
+                  {
+                     "accountID":"${accountId}",
+                     "accountOwners":[
+                         "${accountOwnerUserID}"
+                     ],
+                     "nominatedRepresentatives":[
+                        "${nominatedRepUserID}"
+                     ]
+                  }
+               ]
             """.stripIndent()
     }
 
@@ -105,24 +99,18 @@ class AUPayloads {
                                             String nominatedRepUserID2) {
 
         return """
-               {
-                    "data":[
-                         {
+               [
+                    {
                          "accountID":"${accountId}",
-                         "accountOwners":[                     
+                         "accountOwners":[
                                 "${accountOwnerUserID}"
                              ],
-                          "nominatedRepresentatives":[
-                             {
-                                "name": "${nominatedRepUserID}"
-                              },
-                              {
-                                "name": "${nominatedRepUserID2}"
-                              }
+                         "nominatedRepresentatives":[
+                             "${nominatedRepUserID}",
+                             "${nominatedRepUserID2}"
                             ]
-                         }
-                        ]
-                 }
+                    }
+               ]
             """.stripIndent()
     }
 
@@ -138,22 +126,20 @@ class AUPayloads {
                                                 String permissionType) {
 
         return """
-               {
-                    "data":[
-                         {
-                         "accountID":${accountId},
-                         "accountOwners":[                     
-                                "${accountOwnerUserID}"
-                             ],
-                          "nominatedRepresentatives":[
-                             {
-                                "name": "${nominatedRepUserID}",
-                                "permission": "${permissionType}"
-                              }
-                            ]
-                         }
-                        ]
-                 }
+                    [
+                          {
+                                 "accountID":${accountId},
+                                 "accountOwners":[
+                                          "${accountOwnerUserID}"
+                                      ],
+                                 "nominatedRepresentatives":[
+                                      {
+                                          "name": "${nominatedRepUserID}",
+                                          "permission": "${permissionType}"
+                                      }
+                                 ]
+                          }
+                    ]
             """.stripIndent()
     }
 
@@ -167,19 +153,17 @@ class AUPayloads {
     static String getIncorrectUserDeletePayload(String accountId, String accountOwnerUserID, String nominatedRepUserID) {
 
         return """
-               {
-                  "data":[
-                     {
-                        "accountID":${accountId},
-                        "accountOwners":[
-                            "${accountOwnerUserID}"
-                        ],
-                        "nominatedRepresentatives":[
-                           "${nominatedRepUserID}"
-                        ]
-                     }
-                  ]
-               }
+                    [
+                          {
+                                "accountID":${accountId},
+                                "accountOwners":[
+                                     "${accountOwnerUserID}"
+                                ],
+                                "nominatedRepresentatives":[
+                                    "${nominatedRepUserID}"
+                                ]
+                          }
+                    ]
             """.stripIndent()
     }
 
@@ -205,18 +189,16 @@ class AUPayloads {
             sharingStatus2 = entry2.getValue()
 
             return """
-            {
-               "data":[
-                   {
-                        "accountID": "${accountId1}",
-                        "disclosureOption": "${sharingStatus1}"
-                    },              
-                    {
-                        "accountID": "${accountId2}",
-                        "disclosureOption": "${sharingStatus2}"
-                    }
-               ]
-            }
+            [
+                {
+                    "accountId": "${accountId1}",
+                    "disclosureOption": "${sharingStatus1}"
+                },
+                {
+                    "accountId": "${accountId2}",
+                    "disclosureOption": "${sharingStatus2}"
+                }
+            ]
             """.stripIndent()
 
         } else {
@@ -225,14 +207,12 @@ class AUPayloads {
             sharingStatus1 = entry1.getValue()
 
             return """
-            {
-               "data":[
-                     {
-                        "accountID": "${accountId1}",
-                        "disclosureOption": "${sharingStatus1}"
-                    }
-               ]
-            }
+            [
+                {
+                    "accountId": "${accountId1}",
+                    "disclosureOption": "${sharingStatus1}"
+                }
+            ]
             """.stripIndent()
         }
     }
@@ -247,16 +227,14 @@ class AUPayloads {
                                                                String secondaryAccountInstructionStatus = "active",
                                                                boolean otherAccountsAvailability = true) {
         return """
-        {
-            "data": [
-                {
-                    "secondaryAccountID": "${secondaryAccountId}",
-                    "secondaryUserID": "${secondaryUserId}",
-                    "otherAccountsAvailability": ${otherAccountsAvailability},
-                    "secondaryAccountInstructionStatus": "${secondaryAccountInstructionStatus}"
-                }
-            ]
-        }
+        [
+            {
+                "accountId": "${secondaryAccountId}",
+                "secondaryUserId": "${secondaryUserId}",
+                "otherAccountsAvailability": ${otherAccountsAvailability},
+                "secondaryAccountInstructionStatus": "${secondaryAccountInstructionStatus}"
+            }
+        ]
         """.stripIndent()
     }
 
@@ -283,30 +261,32 @@ class AUPayloads {
         if(isMultipleLegalEntity) {
 
             payload = """
-            {
-                "data": [
-                    {
-                        "accountID": "${accountId}",
-                        "secondaryUserID": "${secondaryUserId}",
-                        "legalEntitySharingStatus": "${sharingStatus}",
-                        "legalEntityID": "${legalEntityId}"
-                    }
-                ]
-            }
+            [
+                {
+                    "accountID": "${accountId}",
+                    "secondaryUserID": "${secondaryUserId}",
+                    "legalEntitySharingStatus": "${sharingStatus}",
+                    "legalEntityID": "${legalEntityId}"
+                },
+                {
+                    "accountID": "${accountId2}",
+                    "secondaryUserID": "${secondaryUserId2}",
+                    "legalEntitySharingStatus": "${sharingStatus2}",
+                    "legalEntityID": "${legalEntityId2}"
+                }
+            ]
             """.stripIndent()
 
         } else {
             payload = """
-            {
-                "data": [
-                    {
-                        "accountID": "${accountId}",
-                        "secondaryUserID": "${secondaryUserId}",
-                        "legalEntitySharingStatus": "${sharingStatus}",
-                        "legalEntityID": "${legalEntityId}"
-                    }
-                ]
-            }
+            [
+                {
+                    "accountID": "${accountId}",
+                    "secondaryUserID": "${secondaryUserId}",
+                    "legalEntitySharingStatus": "${sharingStatus}",
+                    "legalEntityID": "${legalEntityId}"
+                }
+            ]
             """.stripIndent()
         }
 

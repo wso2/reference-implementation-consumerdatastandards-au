@@ -314,5 +314,21 @@ class AUConfigurationService extends CommonConfigurationService {
         return configuration.get(AUConfigConstants.PROVISIONING + "." + AUConfigConstants.PROVISIONING_FILE_PATH)
     }
 
+    String getConsentManagerClientID() {
+        return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_CLIENT_ID)
+    }
+
+    String getConsentManagerClientSecret() {
+        return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_CLIENT_SECRET)
+    }
+
+    String getConsentManagerAdminUser() {
+        return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_ADMIN_USER)
+    }
+
+    String getConsentManagerAdminPassword() {
+        return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_ADMIN_PASSWORD)
+    }
+
 
 }

@@ -448,7 +448,8 @@ class AUTestUtil extends CommonTestUtil {
      */
     static String getUnavailableAccountsXPath(String accountNumber) {
         String lastFourDigits = accountNumber.substring(accountNumber.length() - 4)
-        return AUPageObjects.LBL_UNAVAILABLE_ACCOUNT + "div[contains(@id,'${lastFourDigits}')]"
+        return "//h4[contains(text(),'Accounts Unavailable To Share')]" +
+                "/following-sibling::div[2]//label[contains(., '${lastFourDigits}')]"
     }
 
     /**

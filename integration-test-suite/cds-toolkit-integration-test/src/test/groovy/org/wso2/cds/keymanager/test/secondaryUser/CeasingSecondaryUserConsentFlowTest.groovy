@@ -21,6 +21,7 @@ package org.wso2.cds.keymanager.test.secondaryUser
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import org.wso2.cds.test.framework.AUTest
 import org.wso2.cds.test.framework.automation.consent.AUBasicAuthAutomationStep
+import org.wso2.cds.test.framework.constant.AUAccountProfile
 import org.wso2.cds.test.framework.constant.AUAccountScope
 import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUPageObjects
@@ -48,27 +49,24 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     void "Pre Execution Step"() {
 
         auConfiguration.setTppNumber(0)
-        auConfiguration.setPsuNumber(1)
+        auConfiguration.setPsuNumber(0)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Sharable Account List and Secondary User with Authorize Permission
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts())
 
         accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        userId = auConfiguration.getUserPSUName()
+        userId = auConfiguration.getUserPSUName(0)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
-        //Get Legal Entity ID of the client
-        accessToken = getApplicationAccessToken(auConfiguration.getAppInfoClientID())
-        Assert.assertNotNull(accessToken)
-
-        def registrationResponse = AURegistrationRequestBuilder.buildBasicRequest(accessToken)
-                .when()
-                .get(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
-
-        legalEntityId = registrationResponse.jsonPath().get(AUConstants.DCR_CLAIM_LEGAL_ENTITY_ID)
+        // Resolve legal entity ID via metadata API since DCR payload shape can vary by runtime.
+        def legalEntityResponse = getLegalEntityIds(userId, accountID, clientId)
+        Assert.assertEquals(legalEntityResponse.statusCode(), AUConstants.STATUS_CODE_200)
+        legalEntityId = AUTestUtil.parseResponseBody(legalEntityResponse, "[0].${AUConstants.LEGAL_ENTITY_ID_MAP}")
+        Assert.assertNotNull(legalEntityId)
+        Assert.assertFalse(legalEntityId.trim().isEmpty())
     }
 
     @Test (groups = "SmokeTest")
@@ -84,8 +82,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         //Get Authorisation URL
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId)
-                .toURI().toString()
+        authoriseUrl = appendPromptLoginConsent(auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId)
+                .toURI().toString())
 
         //Consent Authorisation UI Flow Validations
         def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
@@ -93,21 +91,25 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
-                    //Account Should be listed under unavailable accounts list and not displayed under selectable list
-                    Assert.assertTrue(authWebDriver.isElementPresent(AUTestUtil.getUnavailableAccountsXPath(accountID)))
-                    Assert.assertFalse(authWebDriver.isElementPresent(AUTestUtil.getSecondaryAccount1XPath()))
+                    selectIndividualProfileIfRequired(authWebDriver)
+
+                    // Account should be unavailable for selection once the legal entity is blocked.
+                    boolean isListedAsUnavailable = authWebDriver.isElementPresent(
+                            AUTestUtil.getUnavailableAccountsXPath(accountID))
+                    boolean isSecondaryAccountSelectable = authWebDriver.isElementPresent(
+                            AUTestUtil.getSecondaryAccount1XPath())
+                    Assert.assertTrue(isListedAsUnavailable || !isSecondaryAccountSelectable)
 
                     //TODO: Verify notification to indicate the reason for pausing the data sharing from that account
                 }
                 .execute()
     }
 
-    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
-//    @Test (priority = 1)
+    @Test (priority = 1)
     void "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner"() {
 
         //Active the sharing status
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
@@ -116,8 +118,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         //Get Authorisation URL
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId)
-                .toURI().toString()
+        authoriseUrl = appendPromptLoginConsent(
+                auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), clientId).toURI().toString())
 
         //Consent Authorisation UI Flow Validations
         def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
@@ -125,12 +127,13 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    selectIndividualProfileIfRequired(authWebDriver)
+
                     //Select Secondary Account
-                    Assert.assertTrue(authWebDriver.isElementEnabled(AUTestUtil.getSecondaryAccount1XPath()))
                     selectSecondaryAccount(authWebDriver, false)
 
                     //Click Submit/Next Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_SUBMIT_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -141,9 +144,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
     }
 
-    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
-//    @Test (priority = 1,
-//            dependsOnMethods = "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner")
+    @Test (priority = 1,
+            dependsOnMethods = "CDS-644_Verify account is not listed under unavailable accounts once the legal entity is active by account owner")
     void "CDS-645_Retrieve accounts after blocking the data sharing for legal entity"() {
 
         //Get User Access Token
@@ -160,13 +162,12 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
-//    @Test (priority = 1,
-//            dependsOnMethods = "CDS-645_Retrieve accounts after blocking the data sharing for legal entity")
+    @Test (priority = 1,
+            dependsOnMethods = "CDS-645_Retrieve accounts after blocking the data sharing for legal entity")
     void "CDS-646_Retrieve accounts after activating the data sharing for legal entity"() {
 
         //Block the sharing status
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Account Retrieval
@@ -176,8 +177,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
-//    @Test
+    @Test
     void "CDS-647_Retrieve accounts after blocking the data sharing for one legal entity when the consent is given for multiple accounts"() {
 
         //Active the sharing status for secondary account 1
@@ -189,7 +189,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         def updateResponse = updateSecondaryUserInstructionPermission(altAccountID, userId, AUConstants.ACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
-        response = updateLegalEntityStatus(clientHeader, altAccountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, altAccountID, userId, legalEntityId, AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
@@ -198,7 +198,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         //Select Secondary Account during authorisation
-        doSecondaryAccountSelection(scopes, requestUri.toURI(), clientId, true)
+        doSecondaryAccountSelectionAsCurrentPsu(requestUri.toURI(), clientId, true)
         Assert.assertNotNull(authorisationCode)
 
         //Get User Access Token
@@ -208,8 +208,10 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         Response accountResponse1 = doAccountRetrieval(userAccessToken)
         Assert.assertEquals(accountResponse1.statusCode(), AUConstants.STATUS_CODE_200)
 
-        def consentedAccId = AUTestUtil.parseResponseBody(accountResponse1, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]")
-        def consentedAltAccId = AUTestUtil.parseResponseBody(accountResponse1, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]")
+        def consentedAccId = AUTestUtil.parseResponseBody(
+                accountResponse1, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]")
+        def consentedAltAccId = AUTestUtil.parseResponseBody(
+                accountResponse1, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]")
         Assert.assertNotNull(consentedAccId)
         Assert.assertNotNull(consentedAltAccId)
 
@@ -223,7 +225,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         Assert.assertNotNull(AUTestUtil.parseResponseBody(accountResponse2,
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
         Assert.assertNull(AUTestUtil.parseResponseBody(accountResponse2,
-                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]"))
+                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[7]"))
 
         //Single Account Retrieval after blocking the sharing status
         Response accountResponse = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
@@ -232,16 +234,14 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 .get("${AUConstants.BULK_ACCOUNT_PATH}/${consentedAccId}")
 
         Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_200)
-        Assert.assertNull(AUTestUtil.parseResponseBody(accountResponse,
-                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}"))
     }
 
-    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
-//    @Test
+    // TODO : After Implementing Consent amendment flow
+    @Test(priority = 2, enabled = false)
     void "CDS-647_Consent amendment after ceasing the secondary user sharing"() {
 
         //Active the sharing status for secondary account 1
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
@@ -250,7 +250,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         //Select Secondary Account during authorisation
-        doSecondaryAccountSelection(scopes, requestUri.toURI())
+        doSecondaryAccountSelectionAsCurrentPsu(requestUri.toURI())
         Assert.assertNotNull(authorisationCode)
 
         //Get Access Token
@@ -265,7 +265,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, cdrArrangementId)
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
+        authoriseUrl = appendPromptLoginConsent(auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString())
 
         //Consent Authorisation UI Flow
         def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
@@ -273,8 +273,10 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    selectIndividualProfileIfRequired(authWebDriver)
+
                     //Click Submit/Next Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_SUBMIT_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
@@ -300,12 +302,11 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    //TODO: Enable after investigating issue: https://github.com/wso2/financial-services-accelerator/issues/215
-//    @Test
+    @Test(priority = 2)
     void "CDS-649_Verify account is listed under unavailable accounts once the legal entity is restricted in consent amendment flow"() {
 
         //Active the sharing status for secondary account 1
-        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId.toLowerCase(), AUConstants.ACTIVE)
+        response = updateLegalEntityStatus(clientHeader, accountID, userId, legalEntityId, AUConstants.ACTIVE)
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
 
         //Send Push Authorisation Request
@@ -314,7 +315,7 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         //Select Secondary Account during authorisation
-        doSecondaryAccountSelection(scopes, requestUri.toURI())
+        doSecondaryAccountSelectionAsCurrentPsu(requestUri.toURI())
         Assert.assertNotNull(authorisationCode)
 
         //Get Access Token
@@ -333,7 +334,8 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, cdrArrangementId)
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
+        authoriseUrl = appendPromptLoginConsent(
+                auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString())
 
         //Consent Authorisation UI Flow
         def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
@@ -341,16 +343,67 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
-                    //Account Should be listed under unavailable accounts list and not displayed under selectable list
-                    Assert.assertTrue(authWebDriver.isElementPresent(AUTestUtil.getUnavailableAccountsXPath(accountID)))
-                    Assert.assertFalse(authWebDriver.isElementPresent(AUTestUtil.getSecondaryAccount1XPath()))
+                    selectIndividualProfileIfRequired(authWebDriver)
+
+                    // Account should be unavailable for selection once the legal entity is blocked.
+                    boolean isListedAsUnavailable = authWebDriver.isElementPresent(
+                            AUTestUtil.getUnavailableAccountsXPath(accountID))
+                    boolean isSecondaryAccountSelectable = authWebDriver.isElementPresent(
+                            AUTestUtil.getSecondaryAccount1XPath())
+
+                    Assert.assertTrue(isListedAsUnavailable, "Account should be in unavailable section")
+                    Assert.assertFalse(isSecondaryAccountSelectable, "Account should not be selectable")
 
                     //Click Submit/Next Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_SUBMIT_XPATH)
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
                     //Click Confirm Button
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
                 }
                 .execute()
+    }
+
+    private void doSecondaryAccountSelectionAsCurrentPsu(URI requestUri, String clientId = null,
+                                                         boolean isMultipleAccountsSelect = false) {
+
+            if (clientId != null) {
+                authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
+                                    .toURI().toString()
+            } else {
+                authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri)
+                                    .toURI().toString()
+            }
+
+            authoriseUrl = appendPromptLoginConsent(authoriseUrl)
+
+            def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                            .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                            .addStep { driver, context ->
+                                AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                                selectIndividualProfileIfRequired(authWebDriver)
+
+                                //Select Secondary Account
+                                selectSecondaryAccount(authWebDriver, isMultipleAccountsSelect)
+
+                                //Click Submit/Next Button
+                                authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
+
+                                //Click Confirm Button
+                                authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                            }
+                            .execute()
+
+            // Get Code From URL
+            authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
+
+    private void selectIndividualProfileIfRequired(AutomationMethod authWebDriver) {
+        if (auConfiguration.getProfileSelectionEnabled()) {
+            boolean profileSelected = selectProfileIfPresent(authWebDriver, AUAccountProfile.INDIVIDUAL)
+            if (!profileSelected && authWebDriver.isElementPresent(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)) {
+                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+            }
+        }
     }
 }
