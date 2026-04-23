@@ -22,6 +22,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueries;
 
@@ -54,6 +55,10 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
             "INSTRUCTION_STATUS";
     private static final String SECONDARY_INSTRUCTIONS_COLUMN_OTHER_ACCOUNTS_AVAILABILITY =
         "OTHER_ACCOUNTS_AVAILABILITY";
+    // Column names for business stakeholder permissions table.
+    private static final String BNR_PERMISSIONS_COLUMN_ACCOUNT_ID = "ACCOUNT_ID";
+    private static final String BNR_PERMISSIONS_COLUMN_USER_ID = "USER_ID";
+    private static final String BNR_PERMISSIONS_COLUMN_PERMISSION = "PERMISSION";
 
     private final AccountMetadataDbQueries dbQueries;
 
@@ -300,4 +305,190 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+        public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissions(Connection conn,
+            List<Pair<String, String>> accountUserPairs) throws AccountMetadataException {
+
+        if (accountUserPairs == null) {
+            return Collections.emptyList();
+        }
+
+        String sql = dbQueries.getBatchGetBusinessStakeholderPermissionQuery(accountUserPairs);
+        List<BusinessStakeholderPermissionItem> resultItems = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            int parameterIndex = 1;
+            for (Pair<String, String> pair : accountUserPairs) {
+                stmt.setString(parameterIndex++, pair.getLeft());
+                stmt.setString(parameterIndex++, pair.getRight());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    BusinessStakeholderPermissionItem permissionItem = new BusinessStakeholderPermissionItem();
+                    permissionItem.setAccountId(rs.getString(BNR_PERMISSIONS_COLUMN_ACCOUNT_ID));
+                    permissionItem.setUserId(rs.getString(BNR_PERMISSIONS_COLUMN_USER_ID));
+                    permissionItem.setPermission(BusinessStakeholderPermissionItem.PermissionEnum.fromValue(
+                            rs.getString(BNR_PERMISSIONS_COLUMN_PERMISSION)));
+                    resultItems.add(permissionItem);
+                }
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Retrieved business stakeholder permissions for " + resultItems.size() + " records.");
+            }
+            return resultItems;
+
+        } catch (SQLException e) {
+            log.error("Error retrieving batch business stakeholder permissions", e);
+            throw new AccountMetadataException("Failed to retrieve batch business stakeholder permissions", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissionsByAccountIds(Connection conn,
+            List<String> accountIds) throws AccountMetadataException {
+
+        if (accountIds == null || accountIds.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        String sql = dbQueries.getBatchGetBusinessStakeholderPermissionByAccountQuery(accountIds.size());
+        List<BusinessStakeholderPermissionItem> resultItems = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (int i = 0; i < accountIds.size(); i++) {
+                stmt.setString(i + 1, accountIds.get(i));
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    BusinessStakeholderPermissionItem permissionItem = new BusinessStakeholderPermissionItem();
+                    permissionItem.setAccountId(rs.getString(BNR_PERMISSIONS_COLUMN_ACCOUNT_ID));
+                    permissionItem.setUserId(rs.getString(BNR_PERMISSIONS_COLUMN_USER_ID));
+                    permissionItem.setPermission(BusinessStakeholderPermissionItem.PermissionEnum.fromValue(
+                            rs.getString(BNR_PERMISSIONS_COLUMN_PERMISSION)));
+                    resultItems.add(permissionItem);
+                }
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Retrieved business stakeholder permissions for " + resultItems.size() + " records by " +
+                        "account IDs.");
+            }
+            return resultItems;
+
+        } catch (SQLException e) {
+            log.error("Error retrieving batch business stakeholder permissions by account IDs", e);
+            throw new AccountMetadataException("Failed to retrieve batch business stakeholder permissions by " +
+                    "account IDs", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void addBatchBusinessStakeholderPermissions(Connection conn,
+            List<BusinessStakeholderPermissionItem> permissionItems) throws AccountMetadataException {
+
+        if (permissionItems == null || permissionItems.isEmpty()) {
+            return;
+        }
+
+        String sql = dbQueries.getBatchAddBusinessStakeholderPermissionQuery();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            Timestamp currentTimestamp = new Timestamp((new Date()).getTime());
+
+            for (BusinessStakeholderPermissionItem item : permissionItems) {
+                stmt.setString(1, item.getAccountId());
+                stmt.setString(2, item.getUserId());
+                stmt.setString(3, item.getPermission().value());
+                stmt.setTimestamp(4, currentTimestamp);
+                stmt.addBatch();
+            }
+
+            int[] results = stmt.executeBatch();
+            if (log.isDebugEnabled()) {
+                log.debug("Batch added business stakeholder permissions for " + results.length + " records.");
+            }
+
+        } catch (SQLException e) {
+            log.error("Error batch adding business stakeholder permissions", e);
+            throw new AccountMetadataException("Failed to batch add business stakeholder permissions", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void updateBatchBusinessStakeholderPermissions(Connection conn,
+            List<BusinessStakeholderPermissionItem> permissionItems) throws AccountMetadataException {
+
+        if (permissionItems == null || permissionItems.isEmpty()) {
+            return;
+        }
+
+        String sql = dbQueries.getBatchUpdateBusinessStakeholderPermissionQuery();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            Timestamp currentTimestamp = new Timestamp((new Date()).getTime());
+
+            for (BusinessStakeholderPermissionItem item : permissionItems) {
+                stmt.setString(1, item.getPermission().value());
+                stmt.setTimestamp(2, currentTimestamp);
+                stmt.setString(3, item.getAccountId());
+                stmt.setString(4, item.getUserId());
+                stmt.addBatch();
+            }
+
+            int[] results = stmt.executeBatch();
+            if (log.isDebugEnabled()) {
+                log.debug("Batch updated business stakeholder permissions for " + results.length + " records.");
+            }
+
+        } catch (SQLException e) {
+            log.error("Error batch updating business stakeholder permissions", e);
+            throw new AccountMetadataException("Failed to batch update business stakeholder permissions", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteBatchBusinessStakeholderPermissions(Connection conn,
+            List<BusinessStakeholderPermissionItem> permissionItems) throws AccountMetadataException {
+
+        if (permissionItems == null || permissionItems.isEmpty()) {
+            return;
+        }
+
+        String sql = dbQueries.getBatchDeleteBusinessStakeholderPermissionQuery();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            for (BusinessStakeholderPermissionItem item : permissionItems) {
+                stmt.setString(1, item.getAccountId());
+                stmt.setString(2, item.getUserId());
+                stmt.addBatch();
+            }
+
+            int[] results = stmt.executeBatch();
+            if (log.isDebugEnabled()) {
+                log.debug("Batch deleted business stakeholder permissions for " + results.length + " records.");
+            }
+
+        } catch (SQLException e) {
+            log.error("Error batch deleting business stakeholder permissions", e);
+            throw new AccountMetadataException("Failed to batch delete business stakeholder permissions", e);
+        }
+    }
 }

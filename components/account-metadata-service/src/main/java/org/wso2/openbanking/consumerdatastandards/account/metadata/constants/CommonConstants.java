@@ -31,4 +31,10 @@ public class CommonConstants {
     public static final String SUI_ACTIVE_STATUS = "active";
     public static final String SUI_INACTIVE_STATUS = "inactive";
 
+    // Constants Related to Business Stakeholders
+    public static final String BNR_PERMISSION_AUTHORIZE = "AUTHORIZE";
+    public static final String BNR_PERMISSION_REVOKE = "REVOKE";
+    public static final String BNR_PERMISSION_VIEW = "VIEW";
+
+
 }

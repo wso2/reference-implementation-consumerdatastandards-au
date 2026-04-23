@@ -122,8 +122,8 @@ public class DisclosureOptionsManagementApiImpl {
         if (StringUtils.isBlank(accountIds)) {
             log.error("[DOMS] accountIds are missing in get request");
             return Response.status(Response.Status.BAD_REQUEST)
-                .entity(new ErrorResponse()
-                    .errorDescription("At least one accountId is required"))
+                    .entity(new ErrorResponse()
+                            .errorDescription("At least one accountId is required"))
                     .build();
         }
 
