@@ -133,6 +133,7 @@ public class CommonConstants {
     public static final String AUTHORIZATION_RESOURCES = "authorizationResources";
     public static final String AUTH_TYPE = "authorizationType";
     public static final String DEFAULT_AUTH_TYPE = "authorization";
+    public static final String MAPPING_STATUS = "mappingStatus";
     public static final String AUTH_RESOURCE_TYPE_PRIMARY = "primary_member";
 
     // Content for unavailable accounts section
@@ -174,10 +175,35 @@ public class CommonConstants {
     public static final String AUTH_TYPE_SECONDARY_INDIVIDUAL_ACCOUNT_OWNER = "secondary_individual_account_owner";
     public static final String AUTH_TYPE_SECONDARY_JOINT_ACCOUNT_OWNER = "secondary_joint_account_owner";
     public static final String SECONDARY_ACCOUNTS_ENDPOINT = "/secondary-accounts";
+    public static final String BUSINESS_STAKEHOLDERS_ENDPOINT = "/business-stakeholders";
     public static final String SECONDARY_INSTRUCTION_STATUS_ACTIVE = "active";
     public static final String USER_ID_QUERY_PARAM = "userId";
     public static final String SECONDARY_USER_ID_FIELD = "secondaryUserId";
     public static final String OTHER_ACCOUNTS_AVAILABILITY_FIELD = "otherAccountsAvailability";
     public static final String SECONDARY_ACCOUNT_INSTRUCTION_STATUS_FIELD = "secondaryAccountInstructionStatus";
+
+    // Constants related to Business accounts
+    public static final String AUTH_TYPE_BUSINESS_ACCOUNT_OWNER = "business_account_owner";
+    public static final String AUTH_TYPE_NOMINATED_REPRESENTATIVE = "nominated_representative";
+    public static final String BUSINESS_ACCOUNT_TYPE = "Business";
+    public static final String CUSTOMER_ACCOUNT_TYPE = "customerAccountType";
+    public static final String BUSINESS_ACCOUNT_INFO_TAG = "businessAccountInfo";
+    public static final String ACCOUNT_OWNERS_TAG = "AccountOwners";
+    public static final String NOMINATED_REPRESENTATIVES_TAG = "NominatedRepresentatives";
+    public static final String BUSINESS_STAKEHOLDER_ACCOUNT_ID_FIELD = "accountID";
+    public static final String BUSINESS_STAKEHOLDER_ACCOUNT_OWNERS_FIELD = "accountOwners";
+    public static final String BUSINESS_STAKEHOLDER_NOMINATED_REPRESENTATIVES_FIELD = "nominatedRepresentatives";
+    public static final String BUSINESS_STAKEHOLDER_REPRESENTATIVE_NAME_FIELD = "name";
+    public static final String BUSINESS_STAKEHOLDER_REPRESENTATIVE_PERMISSION_FIELD = "permission";
+    public static final String BUSINESS_STAKEHOLDER_PERMISSION_FIELD = "permission";
+    public static final String BUSINESS_STAKEHOLDER_PERMISSION_AUTHORIZE = "AUTHORIZE";
+    public static final String CONSENT_TYPE_QUERY_PARAM = "consentTypes";
+    public static final String USER_IDS_QUERY_PARAM = "userIds";
+    public static final String CAN_REVOKE_RESPONSE_PROPERTY = "can_revoke";
+    public static final String PROFILE_ID_RESPONSE_TAG = "profileId";
+    public static final String PROFILE_NAME_RESPONSE_TAG = "profileName";
+    public static final String PROFILE_ID_TAG = "profileId";
+    public static final String PROFILE_NAME_TAG = "profileName";
+
 
 }

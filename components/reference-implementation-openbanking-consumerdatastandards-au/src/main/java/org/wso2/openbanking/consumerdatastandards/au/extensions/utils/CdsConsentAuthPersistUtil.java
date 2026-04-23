@@ -112,31 +112,66 @@ public class CdsConsentAuthPersistUtil {
 
             //Check whether account ids are in string format and add them to a JSONArray.
             List<Resource> authResource = validateAndGetResources(authorizedDataInners);
+            String primaryUserId = consumerInputData.getString("userId");
 
             ArrayList<Authorization> authorizationResource = new ArrayList<>();
             Map<String, Set<String>> linkedMemberAccountMap = new HashMap<>();
             Map<String, Set<String>> secondaryOwnerAccountMap = new HashMap<>();
+            Map<String, Set<String>> businessOwnerAccountMap = new HashMap<>();
+            Map<String, Set<String>> nominatedRepresentativeAccountMap = new HashMap<>();
+            Map<String, Set<String>> businessAccountOwnersByAccountMap = new HashMap<>();
+            Map<String, Set<String>> businessNominatedRepresentativesByAccountMap = new HashMap<>();
             Map<String, String> jointAccountDisclosureMap = new HashMap<>();
             boolean otherAccountsAvailability = processAccountsData(authorizedDataInners, linkedMemberAccountMap,
-                    secondaryOwnerAccountMap, jointAccountDisclosureMap);
+                    secondaryOwnerAccountMap, businessOwnerAccountMap, nominatedRepresentativeAccountMap,
+                    businessAccountOwnersByAccountMap, businessNominatedRepresentativesByAccountMap,
+                    jointAccountDisclosureMap, primaryUserId);
 
             // Create Authorizations for primary member
-            String primaryAuthType = linkedMemberAccountMap.isEmpty() && secondaryOwnerAccountMap.isEmpty() ?
-                    CommonConstants.DEFAULT_AUTH_TYPE : CommonConstants.AUTH_RESOURCE_TYPE_PRIMARY;
+            boolean hasAdditionalAuthorizers = !linkedMemberAccountMap.isEmpty() || !secondaryOwnerAccountMap.isEmpty()
+                    || !businessOwnerAccountMap.isEmpty() || !nominatedRepresentativeAccountMap.isEmpty();
+            String primaryAuthType = hasAdditionalAuthorizers ?
+                    CommonConstants.AUTH_RESOURCE_TYPE_PRIMARY : CommonConstants.DEFAULT_AUTH_TYPE;
             authorizationResource.add(validateAndBuildAuthorizations(authResource, primaryAuthType, authStatus,
-                    consumerInputData.getString("userId")));
+                    primaryUserId));
 
             // Create Authorizations for Linked Members
             for (Map.Entry<String, Set<String>> entry : linkedMemberAccountMap.entrySet()) {
                 authorizationResource.add(buildMemberAuthorization(entry, CommonConstants.AUTH_RESOURCE_TYPE_LINKED));
             }
 
-            // Create Authorizations for Secondary Account Owners
+            // Setting the secondary auth type based on joint accounts or individual  accounts
             String secondaryOwnerAuthType = secondaryOwnerAccountMap.size() > 1
                     ? CommonConstants.AUTH_TYPE_SECONDARY_JOINT_ACCOUNT_OWNER
                     : CommonConstants.AUTH_TYPE_SECONDARY_INDIVIDUAL_ACCOUNT_OWNER;
+            // Create Authorizations for Secondary Account Owners
             for (Map.Entry<String, Set<String>> entry : secondaryOwnerAccountMap.entrySet()) {
                 authorizationResource.add(buildMemberAuthorization(entry, secondaryOwnerAuthType));
+            }
+
+            // Create Authorizations for Business Account Owners
+            for (Map.Entry<String, Set<String>> entry : businessOwnerAccountMap.entrySet()) {
+                authorizationResource.add(buildMemberAuthorization(entry,
+                        CommonConstants.AUTH_TYPE_BUSINESS_ACCOUNT_OWNER));
+            }
+
+            // Create Authorizations for Business Nominated Representatives
+            for (Map.Entry<String, Set<String>> entry : nominatedRepresentativeAccountMap.entrySet()) {
+                authorizationResource.add(buildMemberAuthorization(entry,
+                        CommonConstants.AUTH_TYPE_NOMINATED_REPRESENTATIVE));
+            }
+
+            // Persist primary user as AUTHORIZE for every business account in metadata.
+            if (StringUtils.isNotBlank(primaryUserId)) {
+                Set<String> businessAccountIds = new HashSet<>();
+                businessAccountIds.addAll(businessAccountOwnersByAccountMap.keySet());
+                businessAccountIds.addAll(businessNominatedRepresentativesByAccountMap.keySet());
+
+                for (String businessAccountId : businessAccountIds) {
+                    businessNominatedRepresentativesByAccountMap
+                            .computeIfAbsent(businessAccountId, k -> new HashSet<>())
+                            .add(primaryUserId);
+                }
             }
 
             // Add disclosure options for joint accounts
@@ -162,6 +197,15 @@ public class CdsConsentAuthPersistUtil {
                     throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
                             "Error while updating the secondary account instructions.");
                 }
+            }
+
+            // Add business stakeholder permissions for business nominated representatives
+            if (!(businessNominatedRepresentativesByAccountMap.isEmpty() || businessAccountOwnersByAccountMap.isEmpty())
+                    && !AccountMetadataUtil.addBusinessStakeholderPermissions(businessAccountOwnersByAccountMap,
+                    businessNominatedRepresentativesByAccountMap)) {
+                log.error("Error occurred while adding business stakeholder permissions in persist step.");
+                throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                        "Error while updating the business stakeholder permissions.");
             }
 
             //Convert expiration date time to validity time in seconds
@@ -203,13 +247,23 @@ public class CdsConsentAuthPersistUtil {
      * @param authorizedDataInners List of authorized data containing accounts
      * @param linkedMemberAccountMap Map to be populated with linked member userId to account IDs
      * @param secondaryOwnerAccountMap Map to be populated with secondary owner userId to account IDs
+     * @param businessOwnerAccountMap Map to be populated with business account owner userId to account IDs
+     * @param nominatedRepresentativeAccountMap Map to be populated with nominated representative userId to account IDs
+     * @param businessAccountOwnersByAccountMap Map of accountId to business account owners
+     * @param businessNominatedRepresentativesByAccountMap Map of accountId to nominated representatives
      * @param jointAccountDisclosureMap Map to be populated with joint account disclosure information
+     * @param primaryUserId authenticated primary user id
      * @return other-accounts-availability value shared across secondary accounts
      */
     private static boolean processAccountsData(List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners,
                                                Map<String, Set<String>> linkedMemberAccountMap,
                                                Map<String, Set<String>> secondaryOwnerAccountMap,
-                                               Map<String, String> jointAccountDisclosureMap) {
+                                               Map<String, Set<String>> businessOwnerAccountMap,
+                                               Map<String, Set<String>> nominatedRepresentativeAccountMap,
+                                               Map<String, Set<String>> businessAccountOwnersByAccountMap,
+                                               Map<String, Set<String>> businessNominatedRepresentativesByAccountMap,
+                                               Map<String, String> jointAccountDisclosureMap, String primaryUserId) {
+
         boolean otherAccountsAvailability = false;
         boolean secondaryAvailabilityResolved = false;
 
@@ -277,6 +331,37 @@ public class CdsConsentAuthPersistUtil {
                     List<String> secondaryOwners = (List<String>) secondaryOwnersObj;
                     for (String owner : secondaryOwners) {
                         secondaryOwnerAccountMap.computeIfAbsent(owner, k -> new HashSet<>()).add(accountId);
+                    }
+                }
+
+                // Process business account owners
+                Object businessOwnersObj = innerProps.get(CommonConstants.ACCOUNT_OWNERS_TAG);
+                if (businessOwnersObj instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> businessOwners = (List<String>) businessOwnersObj;
+                    for (String owner : businessOwners) {
+                        if (StringUtils.isBlank(owner)) {
+                            continue;
+                        }
+                        businessOwnerAccountMap.computeIfAbsent(owner, k -> new HashSet<>()).add(accountId);
+                        businessAccountOwnersByAccountMap.computeIfAbsent(accountId, k -> new HashSet<>()).add(owner);
+                    }
+                }
+
+                // Process business nominated representatives (excluding primary user)
+                Object nominatedRepresentativesObj = innerProps.get(CommonConstants.NOMINATED_REPRESENTATIVES_TAG);
+                if (nominatedRepresentativesObj instanceof List) {
+                    @SuppressWarnings("unchecked")
+                    List<String> nominatedRepresentatives = (List<String>) nominatedRepresentativesObj;
+                    for (String representative : nominatedRepresentatives) {
+                        if (StringUtils.isBlank(representative)
+                                || representative.equalsIgnoreCase(primaryUserId)) {
+                            continue;
+                        }
+                        nominatedRepresentativeAccountMap.computeIfAbsent(representative,
+                                k -> new HashSet<>()).add(accountId);
+                        businessNominatedRepresentativesByAccountMap.computeIfAbsent(accountId,
+                                k -> new HashSet<>()).add(representative);
                     }
                 }
             }

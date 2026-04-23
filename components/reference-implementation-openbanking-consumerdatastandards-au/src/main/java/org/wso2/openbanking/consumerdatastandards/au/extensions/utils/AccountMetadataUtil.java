@@ -46,7 +46,9 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -161,10 +163,75 @@ public class AccountMetadataUtil {
             String responseBody = IOUtils.toString(in, String.valueOf(StandardCharsets.UTF_8));
             return extractSecondaryInstructionStatusesFromBatchResponse(responseBody);
 
-        } catch (IOException | URISyntaxException | CdsConsentException e) {
+        } catch (IOException | URISyntaxException e) {
             log.error("Failed to retrieve secondary account instruction statuses", e);
             throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR, "");
         }
+    }
+
+    /**
+     * Retrieve BNR permissions for multiple accounts for a given user.
+     * Calls GET /business-stakeholders with comma-separated account IDs and userId query params.
+     *
+     * @param accountIds list of account IDs
+     * @param userId user ID
+     * @return map of accountId to permission, or empty map when retrieval fails
+     */
+    public static Map<String, String> getBusinessStakeholderPermissionsForAccounts(List<String> accountIds,
+                                                                                    String userId) {
+
+        Map<String, String> permissionMap = new HashMap<>();
+
+        if (accountIds == null || accountIds.isEmpty() || StringUtils.isBlank(userId)) {
+            return permissionMap;
+        }
+
+        List<String> validAccountIds = new ArrayList<>();
+        for (String accountId : accountIds) {
+            if (StringUtils.isNotBlank(accountId)) {
+                validAccountIds.add(accountId);
+            }
+        }
+
+        if (validAccountIds.isEmpty()) {
+            return permissionMap;
+        }
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
+
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
+            String baseUrl = buildBusinessStakeholdersUrl();
+            String accountIdParam = String.join(",", validAccountIds);
+
+            URIBuilder uriBuilder = new URIBuilder(baseUrl);
+            uriBuilder.addParameter(CommonConstants.ACCOUNT_IDS, accountIdParam);
+            uriBuilder.addParameter(CommonConstants.USER_ID_QUERY_PARAM, userId);
+
+            HttpGet request = new HttpGet(uriBuilder.build());
+            request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
+            request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
+            addBasicAuthHeader(request);
+
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() != HttpURLConnection.HTTP_OK) {
+                log.error("Failed to retrieve business stakeholder permissions, HTTP Status: " +
+                        response.getStatusLine().getStatusCode());
+                return permissionMap;
+            }
+
+            InputStream in = response.getEntity().getContent();
+            String responseBody = IOUtils.toString(in, String.valueOf(StandardCharsets.UTF_8));
+            return extractBusinessStakeholderPermissionsFromBatchResponse(responseBody);
+
+        } catch (IOException | URISyntaxException e) {
+            log.error("Failed to retrieve business stakeholder permissions", e);
+        }
+
+        return permissionMap;
     }
 
     /**
@@ -246,6 +313,48 @@ public class AccountMetadataUtil {
     }
 
     /**
+     * Add business stakeholder permissions for selected business accounts.
+     * Calls POST /business-stakeholders in account metadata service.
+     *
+     * @param accountOwnersByAccountMap map of accountId to business account owners
+     * @param nominatedRepresentativesByAccountMap map of accountId to nominated representatives
+     * @return true if business stakeholder permissions are added successfully, false otherwise
+     */
+    public static boolean addBusinessStakeholderPermissions(Map<String, Set<String>> accountOwnersByAccountMap,
+            Map<String, Set<String>> nominatedRepresentativesByAccountMap) {
+
+        if (nominatedRepresentativesByAccountMap == null || nominatedRepresentativesByAccountMap.isEmpty()) {
+            return true;
+        }
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
+
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
+            String requestUrl = buildBusinessStakeholdersUrl();
+            HttpPost request = new HttpPost(requestUrl);
+
+            request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
+            request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
+            addBasicAuthHeader(request);
+
+            String requestBody = buildBusinessStakeholderPermissionsRequestBody(accountOwnersByAccountMap,
+                        nominatedRepresentativesByAccountMap);
+            request.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
+
+            HttpResponse response = client.execute(request);
+            int statusCode = response.getStatusLine().getStatusCode();
+            return statusCode == HttpURLConnection.HTTP_CREATED || statusCode == HttpURLConnection.HTTP_OK;
+
+        } catch (IOException e) {
+            log.error("Failed to add business stakeholder permissions", e);
+            return false;
+        }
+    }
+
+    /**
      * Add Basic Authentication header to the HTTP request.
      *
      * @param request the HTTP request to add the auth header to
@@ -301,6 +410,15 @@ public class AccountMetadataUtil {
     }
 
     /**
+     * Build the request URL for the business-stakeholders endpoint.
+     *
+     * @return the complete request URL
+     */
+    private static String buildBusinessStakeholdersUrl() {
+        return ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_BASE_URL + CommonConstants.BUSINESS_STAKEHOLDERS_ENDPOINT;
+    }
+
+    /**
      * Build the request body for adding secondary account instructions.
      * Constructs JSON array with account ID, secondary user ID, and instruction status.
      * @param accountIds set of account IDs
@@ -322,6 +440,65 @@ public class AccountMetadataUtil {
                     CommonConstants.SECONDARY_INSTRUCTION_STATUS_ACTIVE);
             dataArray.add(item);
         }
+        return dataArray.toString();
+    }
+
+    /**
+     * Build the request body for adding business stakeholder permissions.
+     *
+     * @param accountOwnersByAccountMap map of accountId to business account owners
+     * @param nominatedRepresentativesByAccountMap map of accountId to nominated representatives
+     * @return JSON request body as string
+     */
+    private static String buildBusinessStakeholderPermissionsRequestBody(
+        Map<String, Set<String>> accountOwnersByAccountMap,
+        Map<String, Set<String>> nominatedRepresentativesByAccountMap) {
+
+        JsonArray dataArray = new JsonArray();
+
+        for (Map.Entry<String, Set<String>> entry : nominatedRepresentativesByAccountMap.entrySet()) {
+            String accountId = entry.getKey();
+            Set<String> nominatedRepresentatives = entry.getValue();
+
+            if (StringUtils.isBlank(accountId) || nominatedRepresentatives == null) {
+                continue;
+            }
+
+            JsonObject item = new JsonObject();
+            item.addProperty(CommonConstants.BUSINESS_STAKEHOLDER_ACCOUNT_ID_FIELD, accountId);
+
+            JsonArray accountOwnersArray = new JsonArray();
+            Set<String> accountOwners = accountOwnersByAccountMap == null
+                    ? Collections.emptySet()
+                    : accountOwnersByAccountMap.getOrDefault(accountId, Collections.emptySet());
+            for (String owner : accountOwners) {
+                if (StringUtils.isNotBlank(owner)) {
+                    accountOwnersArray.add(owner);
+                }
+            }
+            item.add(CommonConstants.BUSINESS_STAKEHOLDER_ACCOUNT_OWNERS_FIELD, accountOwnersArray);
+
+            JsonArray representativeArray = new JsonArray();
+            for (String representative : nominatedRepresentatives) {
+                if (StringUtils.isBlank(representative)) {
+                    continue;
+                }
+                JsonObject representativeObj = new JsonObject();
+                representativeObj.addProperty(CommonConstants.BUSINESS_STAKEHOLDER_REPRESENTATIVE_NAME_FIELD,
+                        representative);
+                representativeObj.addProperty(CommonConstants.BUSINESS_STAKEHOLDER_REPRESENTATIVE_PERMISSION_FIELD,
+                        CommonConstants.BUSINESS_STAKEHOLDER_PERMISSION_AUTHORIZE);
+                representativeArray.add(representativeObj);
+            }
+
+            if (representativeArray.isEmpty()) {
+                continue;
+            }
+
+            item.add(CommonConstants.BUSINESS_STAKEHOLDER_NOMINATED_REPRESENTATIVES_FIELD, representativeArray);
+            dataArray.add(item);
+        }
+
         return dataArray.toString();
     }
 
@@ -394,6 +571,46 @@ public class AccountMetadataUtil {
         } catch (JsonSyntaxException e) {
             log.error("Failed to parse secondary account instruction batch response JSON", e);
             return statusMap;
+        }
+    }
+
+    /**
+     * Extract business stakeholder permissions from batch API response body.
+     *
+     * @param responseBody the JSON response body as a string
+     * @return map of accountId to permission
+     */
+    private static Map<String, String> extractBusinessStakeholderPermissionsFromBatchResponse(String responseBody) {
+        Map<String, String> permissionMap = new HashMap<>();
+
+        try {
+            Gson gson = new Gson();
+            JsonElement responseElement = gson.fromJson(responseBody, JsonElement.class);
+
+            if (responseElement != null && responseElement.isJsonArray()) {
+                JsonArray responseArray = responseElement.getAsJsonArray();
+                for (JsonElement itemElement : responseArray) {
+                    if (itemElement != null && itemElement.isJsonObject()) {
+                        JsonObject item = itemElement.getAsJsonObject();
+                        JsonElement accountIdElement = item.get(CommonConstants.ACCOUNT_ID);
+                        JsonElement permissionElement = item.get(CommonConstants.BUSINESS_STAKEHOLDER_PERMISSION_FIELD);
+
+                        if (accountIdElement != null && !accountIdElement.isJsonNull()) {
+                            String accountId = accountIdElement.getAsString();
+                            String permission = permissionElement == null || permissionElement.isJsonNull()
+                                    ? null
+                                    : permissionElement.getAsString();
+                            permissionMap.put(accountId, permission);
+                        }
+                    }
+                }
+            }
+
+            return permissionMap;
+
+        } catch (JsonSyntaxException e) {
+            log.error("Failed to parse business stakeholder permission batch response JSON", e);
+            return permissionMap;
         }
     }
 }
