@@ -29,8 +29,8 @@ import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErr
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.PermissionsEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalDisplayDataSection;
-import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.DisplayListItem;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalData;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.AdditionalDataItem;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentData;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsentDataPermissionsInner;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData;
@@ -181,7 +181,7 @@ public class ConsentAuthorizeUtil {
 
             return consentData;
         } catch (JSONException e) {
-            log.error("Consent data retrieval failed: " + e.getMessage(), e);
+            log.error("Consent data retrieval failed", e);
 
             throw new CdsConsentException(CdsErrorEnum.BAD_REQUEST, "Consent data retrieval failed");
         }
@@ -196,7 +196,7 @@ public class ConsentAuthorizeUtil {
      */
     public static void cdsConsumerDataRetrieval(JSONObject jsonRequestBody, String userId,
             SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
-            List<AdditionalDisplayDataSection> displayData) throws CdsConsentException {
+            List<AdditionalData> displayData) throws CdsConsentException {
 
         // Append consumer data to response
         try {
@@ -207,67 +207,160 @@ public class ConsentAuthorizeUtil {
     }
 
     /**
+     * Checks if a secondary account has privilege status.
+     * @param accountJson The account JSON object containing secondary account privilege status
+     * @return true if the account has privilege (secondaryAccountPrivilegeStatus is true), false otherwise
+     */
+    private static boolean isSecondaryAccountPrivileged(JSONObject accountJson) {
+        return accountJson.optBoolean(CommonConstants.SECONDARY_ACCOUNT_PRIVILEGES_STATUS, false);
+    }
+
+    /**
+     * Checks whether the secondary account instruction status is active.
+     * If no record exists in the map the account is allowed through by default —
+     * absence of an instruction record means no override has been set.
+     *
+     * @param accountId              the account ID to check
+     * @param instructionStatusMap   map of accountId to instruction status returned by the batch call
+     * @return true if the instruction status is active or absent, false if explicitly inactive
+     */
+    private static boolean isSecondaryAccountInstructionActive(String accountId,
+            Map<String, String> instructionStatusMap) {
+        if (instructionStatusMap == null || !instructionStatusMap.containsKey(accountId)) {
+            return true;
+        }
+        return CommonConstants.SECONDARY_INSTRUCTION_STATUS_ACTIVE
+                .equalsIgnoreCase(instructionStatusMap.get(accountId));
+    }
+
+    /**
+     * Checks whether a secondary account is eligible for consent authorization.
+     * An account is eligible only if it is both privileged and has an active instruction status.
+     *
+     * @param accountJson            the account JSON containing privilege status
+     * @param instructionStatusMap   map of accountId to instruction status returned by the batch call
+     * @return true if the account is privileged and its instruction status is active or absent
+     */
+    private static boolean isSecondaryAccountEligible(JSONObject accountJson,
+                                                      Map<String, String> instructionStatusMap) {
+        String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
+        return isSecondaryAccountPrivileged(accountJson)
+                && isSecondaryAccountInstructionActive(accountId, instructionStatusMap);
+    }
+
+    /**
      * Checks if a joint account is electable based on its election status.
      * @param accountJson The account JSON object containing joint account election status
      * @return true if the account is electable (not in NOT_ELECTED status), false otherwise
      */
     private static boolean isJointAccountElectable(JSONObject accountJson) {
         return !CommonConstants.JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED
-                .equalsIgnoreCase(
-                        accountJson.optString(
-                        CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS,
-                        "")
-                );
+            .equalsIgnoreCase(accountJson.optString(CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS, ""));
     }
 
     /**
-     * Handle joint account logic including electable accounts and blocked accounts.
-     *
+     * Extracts the linked member IDs from a joint account's JSON data.
+     * @param accountJson The account JSON object containing joint account info
+     * @return list of linked member IDs, or an empty list if none are found
+     */
+    private static List<String> extractLinkedMembers(JSONObject accountJson) {
+
+        List<String> linkedMembers = new ArrayList<>();
+
+        if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
+            JSONArray linkedMemberArray = accountJson.getJSONObject(
+                    CommonConstants.JOINT_ACCOUNT_INFO_TAG).optJSONArray(
+                            CommonConstants.LINKED_MEMBER_TAG_IN_SHARABLE_ENDPOINT);
+            if (linkedMemberArray != null) {
+                for (int j = 0; j < linkedMemberArray.length(); j++) {
+                    linkedMembers.add(linkedMemberArray.getJSONObject(j).optString(CommonConstants.MEMBER_ID_TAG));
+                }
+            }
+        }
+        return linkedMembers;
+    }
+
+    /**
+     * Extracts the account owner IDs from a secondary account's JSON data.
+     * @param accountJson The account JSON object containing secondary account info
+     * @return list of account owner IDs, or an empty list if none are found
+     */
+    private static List<String> extractSecondaryAccountOwners(JSONObject accountJson) {
+        List<String> accountOwners = new ArrayList<>();
+        if (accountJson.has(CommonConstants.SECONDARY_ACCOUNT_INFO_TAG)) {
+            JSONArray ownerArray = accountJson.getJSONObject(CommonConstants.SECONDARY_ACCOUNT_INFO_TAG)
+                    .optJSONArray(CommonConstants.SECONDARY_ACCOUNT_OWNER_TAG_IN_SHARABLE_ENDPOINT);
+            if (ownerArray != null) {
+                for (int j = 0; j < ownerArray.length(); j++) {
+                    accountOwners.add(ownerArray.getJSONObject(j).optString(CommonConstants.MEMBER_ID_TAG));
+                }
+            }
+        }
+        return accountOwners;
+    }
+
+    /**
+     * Processes a single account by checking eligibility and enriching with type-specific properties.
+     * Eligibility rules:
+     *   Joint accounts must be electable (election status is not NOT_ELECTED)
+     *   Secondary accounts must have privilege status
+     *   Accounts that are both joint and secondary must satisfy both conditions
+     *   Normal accounts (neither joint nor secondary) are always eligible
+     * If any eligibility check fails, the account is added to the blocked list.
+     * Otherwise, the account is enriched with linked members / secondary account owners
+     * as appropriate and added to the eligible account list. For secondary accounts,
+     * other-accounts availability is also included based on whether the secondary user has more than one account.
      * @param accountJson The account JSON object
-     * @param accountId The account ID
      * @param account The account object to be populated
      * @param accountList The list of eligible accounts
      * @param blockedAccountsList The list of blocked accounts
-     */
-    private static void handleJointAccount(JSONObject accountJson, String accountId,
-            SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account,
+     * @param hasMultipleAccounts hasMultipleAccounts Whether the authenticated user has multiple accounts
+     * @param secondaryInstructionStatusMap map of accountId to secondary account instruction status,
+     *                                      fetched once before the loop
+     * */
+    private static void processAccount(
+            JSONObject accountJson, SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account,
             List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList,
-            List<DisplayListItem> blockedAccountsList) {
+            List<AdditionalDataItem> blockedAccountsList,
+            boolean hasMultipleAccounts,
+            Map<String, String> secondaryInstructionStatusMap) {
 
-        if (isJointAccountElectable(accountJson)) {
-            // Handle electable joint accounts
-            List<String> linkedMembers = new ArrayList<>();
+        String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
+        boolean isJointAccount = accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false);
+        boolean isSecondaryAccount = accountJson.optBoolean(CommonConstants.IS_SECONDARY_ACCOUNT_RESPONSE, false);
 
-            // Adding joint accounts info as additional properties
-            if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
-                // Getting the linkedMember details from the Joint account info
-                JSONArray linkedMemberArray =
-                        accountJson.getJSONObject(
-                        CommonConstants.JOINT_ACCOUNT_INFO_TAG).optJSONArray(
-                        CommonConstants.LINKED_MEMBER_TAG_IN_SHARABLE_ENDPOINT);
-
-                if (linkedMemberArray != null) {
-                    for (int j = 0; j < linkedMemberArray.length(); j++) {
-                        JSONObject memberObj = linkedMemberArray.getJSONObject(j);
-                        linkedMembers.add(memberObj.optString(CommonConstants.MEMBER_ID_TAG));
-                    }
-                }
-            }
-
-            account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
-            account.setDisplayName(getDisplayNameWithAccountNumber(
+        // Check eligibility for each account.
+        if (!(!isJointAccount || isJointAccountElectable(accountJson)) ||
+                !(!isSecondaryAccount || isSecondaryAccountEligible(accountJson, secondaryInstructionStatusMap))) {
+            // Block account if any eligibility check fails
+            AdditionalDataItem blockedItem = new AdditionalDataItem();
+            blockedItem.setItem(getDisplayNameWithAccountNumber(
                     accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
-            accountList.add(account);
+            blockedAccountsList.add(blockedItem);
+            return;
+        }
+
+        List<String> linkedMembers = Collections.emptyList();
+
+        // Enrich with type-specific additional properties
+        if (isJointAccount) {
+            linkedMembers = extractLinkedMembers(accountJson);
+            account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
+        }
+        if (isSecondaryAccount) {
+            account.setAdditionalProperty(CommonConstants.SECONDARY_ACCOUNT_OWNERS_TAG,
+                    extractSecondaryAccountOwners(accountJson));
+            account.setAdditionalProperty(CommonConstants.OTHER_ACCOUNTS_AVAILABILITY_FIELD, hasMultipleAccounts);
+        }
+
+        if (isJointAccount && !isSecondaryAccount) {
             account.setTitle(CommonConstants.JOINT_ACCOUNT_TOOLTIP_TITLE);
             account.setDescription(buildJointAccountTooltipDescription(linkedMembers.size()));
-
-        } else {
-            // Adding blocked joint accounts to the display data
-            DisplayListItem blockedAccountItem = new DisplayListItem();
-            blockedAccountItem.setDisplayText(getDisplayNameWithAccountNumber(
-                    accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
-            blockedAccountsList.add(blockedAccountItem);
         }
+
+        account.setDisplayName(getDisplayNameWithAccountNumber(
+                accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+        accountList.add(account);
     }
 
     /**
@@ -291,9 +384,10 @@ public class ConsentAuthorizeUtil {
      * @param consumerData Consumer data model to be populated.
      * @param displayData Display data model to be populated.
      */
-    public static void validateAndAppendConsumerObjectToResponse(JSONObject jsonRequestBody, String userId,
-                          SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
-                          List<AdditionalDisplayDataSection> displayData) throws CdsConsentException {
+    public static void validateAndAppendConsumerObjectToResponse(
+            JSONObject jsonRequestBody, String userId,
+            SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
+            List<AdditionalData> displayData) throws CdsConsentException {
         try {
             String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;
             if (StringUtils.isNotBlank(accountsURL)) {
@@ -311,15 +405,29 @@ public class ConsentAuthorizeUtil {
 
                 JSONObject jsonAccountData = new JSONObject(accountData);
                 JSONArray accountsJSON = (JSONArray) jsonAccountData.get(CommonConstants.DATA);
+                boolean hasMultipleAccounts = accountsJSON.length() > 1;
 
                 //TODO: Consent amendment flow. Mark pre-selected accounts
 
                 jsonRequestBody.put(CommonConstants.ACCOUNTS, accountsJSON);
 
+                // Collect all secondary account IDs in one pass for a single batch lookup
+                List<String> secondaryAccountIds = new ArrayList<>();
+                for (int i = 0; i < accountsJSON.length(); i++) {
+                    JSONObject accountJson = accountsJSON.getJSONObject(i);
+                    if (accountJson.optBoolean(CommonConstants.IS_SECONDARY_ACCOUNT_RESPONSE, false)) {
+                        secondaryAccountIds.add(accountJson.getString(CommonConstants.ACCOUNT_ID));
+                    }
+                }
+
+                Map<String, String> secondaryInstructionStatusMap =
+                        AccountMetadataUtil.getSecondaryAccountInstructionStatusesForAccounts(
+                                secondaryAccountIds, userId);
+
                 List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList =
                     new ArrayList<>();
 
-                List<DisplayListItem> blockedAccountsList = new ArrayList<>();
+                List<AdditionalDataItem> blockedAccountsList = new ArrayList<>();
 
                 for (int i = 0; i < accountsJSON.length(); i++) {
 
@@ -327,18 +435,11 @@ public class ConsentAuthorizeUtil {
                             new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner();
                     JSONObject accountJson = accountsJSON.getJSONObject(i);
 
-                    String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
-
-                    if (accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false)) {
-                        handleJointAccount(accountJson, accountId, account, accountList, blockedAccountsList);
-                    } else {
-                        account.setDisplayName(getDisplayNameWithAccountNumber(
-                                        accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
-                        accountList.add(account);
-                    }
+                    processAccount(accountJson, account, accountList, blockedAccountsList,
+                            hasMultipleAccounts, secondaryInstructionStatusMap);
                 }
 
-                List<AdditionalDisplayDataSection> resolvedDisplayData = setDisplayData(blockedAccountsList);
+                List<AdditionalData> resolvedDisplayData = setDisplayData(blockedAccountsList);
                 displayData.clear();
                 displayData.addAll(resolvedDisplayData);
                 consumerData.setAccounts(accountList);
@@ -398,23 +499,25 @@ public class ConsentAuthorizeUtil {
 
     /**
      * Creates and populates display data for blocked/unavailable accounts.
+     *
      * @param blockedAccountsList List of blocked accounts to be displayed
      * @return List of display data sections
      * containing display information for blocked accounts
      */
-    private static List<AdditionalDisplayDataSection> setDisplayData(List<DisplayListItem> blockedAccountsList) {
-        List<AdditionalDisplayDataSection> displayData = new ArrayList<>();
+    private static List<AdditionalData> setDisplayData(List<AdditionalDataItem> blockedAccountsList) {
+        List<AdditionalData> displayData = new ArrayList<>();
 
-        AdditionalDisplayDataSection item = new AdditionalDisplayDataSection();
+        AdditionalData item = new AdditionalData();
 
         // Always initialize the list to avoid nulls in the UI layer
-        List<DisplayListItem> safeList = (blockedAccountsList != null) ? blockedAccountsList : Collections.emptyList();
+        List<AdditionalDataItem> safeList = (blockedAccountsList != null) ? blockedAccountsList :
+                Collections.emptyList();
 
-        item.setDisplayList(safeList);
+        item.setItems(safeList);
 
         // Set UI metadata
-        item.setHeading(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING);
-        item.setSubHeading(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING);
+        item.setTitle(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_HEADING);
+        item.setSubtitle(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_SUB_HEADING);
         item.setDescription(CommonConstants.AUTH_SCREEN_UNAVAILABLE_ACCOUNTS_TOOLTIP_DESCRIPTION);
 
         displayData.add(item);
@@ -541,10 +644,7 @@ public class ConsentAuthorizeUtil {
         basicConsentData.put(CommonConstants.EXPIRATION_DATE_TITLE, Collections.singletonList(expirationDate));
         basicConsentData.put(CommonConstants.PERMISSION_TITLE, permissionsList);
         basicConsentData.put(CommonConstants.SHARING_DURATION_DISPLAY_VALUE,
-                Collections.singletonList(
-                        buildSharingDurationMessage(
-                                Long.parseLong(sharingDurationValue))
-                ));
+                Collections.singletonList(buildSharingDurationMessage(Long.parseLong(sharingDurationValue))));
 
         return basicConsentData;
     }
@@ -563,8 +663,7 @@ public class ConsentAuthorizeUtil {
         long hours = seconds / 3600;
 
         // Construct message with correct pluralization
-        return "Your data will be shared on-going basis for "
-                + hours + " hour" + (hours == 1 ? "" : "s") + ".";
+        return "Your data will be shared on-going basis for " + hours + " hour" + (hours == 1 ? "" : "s") + ".";
     }
 
     /**

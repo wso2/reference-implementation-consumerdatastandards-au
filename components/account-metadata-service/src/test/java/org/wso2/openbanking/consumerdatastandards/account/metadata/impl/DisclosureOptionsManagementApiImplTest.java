@@ -91,7 +91,8 @@ public class DisclosureOptionsManagementApiImplTest {
         ErrorResponse body = (ErrorResponse) response.getEntity();
         Assert.assertNotNull(body);
         Assert.assertEquals(body.getErrorDescription(),
-                "Invalid disclosure option status. Allowed values: no-sharing, pre-approval");
+                "Invalid disclosure option status provided for acc-1 " +
+                        "Allowed values: no-sharing, pre-approval");
     }
 
     @Test
@@ -296,7 +297,7 @@ public class DisclosureOptionsManagementApiImplTest {
         ErrorResponse body = (ErrorResponse) response.getEntity();
         Assert.assertNotNull(body);
         Assert.assertEquals(body.getErrorDescription(),
-                "Invalid disclosure option status provided for acc-1, Allowed values: pre-approval, no-sharing");
+                "Invalid disclosure option status provided for acc-1 Allowed values: no-sharing, pre-approval");
     }
 
     @Test

@@ -1,5 +1,6 @@
 package org.wso2.openbanking.consumerdatastandards.account.metadata.model;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.swagger.annotations.ApiModelProperty;
 import javax.validation.constraints.*;
 
@@ -8,8 +9,9 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 
+
 @JsonTypeName("DisclosureOptionItem")
-@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-02-19T15:46:58.698251900+05:30[Asia/Colombo]", comments = "Generator version: 7.20.0")
+@javax.annotation.Generated(value = "org.openapitools.codegen.languages.JavaJAXRSSpecServerCodegen", date = "2026-03-30T12:21:39.036572300+05:30[Asia/Colombo]", comments = "Generator version: 7.21.0")
 public class DisclosureOptionItem   {
     private String accountId;
     private String disclosureOption;
@@ -35,7 +37,7 @@ public class DisclosureOptionItem   {
     }
 
 
-    @ApiModelProperty(example = "143-000-B1234", required = true, value = "Account ID")
+    @ApiModelProperty(required = true, value = "Account ID")
     @JsonProperty(required = true, value = "accountId")
     @NotNull public String getAccountId() {
         return accountId;
@@ -101,10 +103,7 @@ public class DisclosureOptionItem   {
      * (except the first line).
      */
     private String toIndentedString(Object o) {
-        if (o == null) {
-            return "null";
-        }
-        return o.toString().replace("\n", "\n    ");
+        return o == null ? "null" : o.toString().replace("\n", "\n    ");
     }
 
 

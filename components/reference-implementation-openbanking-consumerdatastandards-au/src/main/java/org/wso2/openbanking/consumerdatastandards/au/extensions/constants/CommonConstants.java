@@ -126,6 +126,7 @@ public class CommonConstants {
     public static final String PAYEES_ID_REGEX = "/payees/[^/?]*";
     public static final String ACCOUNT_DATA = "accountData";
     public static final String STATUS = "status";
+    public static final String USER_ID = "userId";
     public static final String ACCOUNT_ID = "accountId";
     public static final String DISPLAY_NAME = "displayName";
     public static final String AUTHORIZATION_ID = "authorizationId";
@@ -143,7 +144,7 @@ public class CommonConstants {
                     "For secondary user accounts, the account holder(s) must grant data sharing rights." + "<br><br>" +
                     "Please contact your bank for more details.";
 
-    //Constants Related to Joint Accounts
+    // Constants Related to Joint Accounts
     public static final String DOMS_STATUS_PRE_APPROVAL = "pre-approval";
     public static final String DOMS_STATUS_NO_SHARING = "no-sharing";
     public static final String IS_JOINT_ACCOUNT_RESPONSE = "isJointAccount";
@@ -158,5 +159,25 @@ public class CommonConstants {
     public static final String DISCLOSURE_OPTIONS_ENDPOINT = "/disclosure-options";
     public static final String DISCLOSURE_OPTION_FIELD = "disclosureOption";
     public static final String JOINT_ACCOUNT_TOOLTIP_TITLE = "&check; Pre-approval enabled";
+
+    // Constants Related to Secondary user accounts
+    public static final String IS_SECONDARY_ACCOUNT_RESPONSE = "isSecondaryAccount";
+    public static final String SECONDARY_ACCOUNT_INFO_TAG = "secondaryAccountInfo";
+    public static final String SECONDARY_ACCOUNT_OWNER_TAG = "secondaryAccountOwner";
+    public static final String SECONDARY_ACCOUNT_OWNER_TAG_IN_SHARABLE_ENDPOINT = "accountOwner";
+    public static final String SECONDARY_ACCOUNT_PRIVILEGES_STATUS = "secondaryAccountPrivilegeStatus";
+    public static final String SECONDARY_ACCOUNT_OWNERS_TAG = "secondaryAccountOwners";
+    public static final String SECONDARY_ACCOUNT_INFO_ACCOUNT_USER = "secondaryAccountUser";
+    public static final String SECONDARY_ACCOUNT_INFO_SECONDARY_ACCOUNTS = "secondaryAccounts";
+    public static final String SECONDARY_ACCOUNT_INFO_ACTIVE_ACCOUNTS = "activeAccounts";
+    public static final String SECONDARY_ACCOUNT_INFO_INACTIVE_ACCOUNTS = "inactiveAccounts";
+    public static final String AUTH_TYPE_SECONDARY_INDIVIDUAL_ACCOUNT_OWNER = "secondary_individual_account_owner";
+    public static final String AUTH_TYPE_SECONDARY_JOINT_ACCOUNT_OWNER = "secondary_joint_account_owner";
+    public static final String SECONDARY_ACCOUNTS_ENDPOINT = "/secondary-accounts";
+    public static final String SECONDARY_INSTRUCTION_STATUS_ACTIVE = "active";
+    public static final String USER_ID_QUERY_PARAM = "userId";
+    public static final String SECONDARY_USER_ID_FIELD = "secondaryUserId";
+    public static final String OTHER_ACCOUNTS_AVAILABILITY_FIELD = "otherAccountsAvailability";
+    public static final String SECONDARY_ACCOUNT_INSTRUCTION_STATUS_FIELD = "secondaryAccountInstructionStatus";
 
 }

@@ -129,7 +129,7 @@ public class CdsConsentValidateUtil {
 
         //Consent Status Validation
         if (!CommonConstants.AUTHORIZED_STATUS
-                .equalsIgnoreCase(jsonConsentResourceBody.get(CommonConstants.STATUS).toString())) {
+            .equalsIgnoreCase(jsonConsentResourceBody.get(CommonConstants.STATUS).toString())) {
 
             String description = "The associated consent for resource is not in a status " +
                     "that would allow the resource to be executed";

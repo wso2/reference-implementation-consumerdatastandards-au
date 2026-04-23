@@ -61,7 +61,7 @@ public class PersistAuthorizedConsentApiImpl {
 
         } catch (CdsConsentException e) {
             // Convert any other exceptions to CdsConsentException automatically, then handle
-            log.error("Unexpected error during consent persistence: " + e.getMessage(), e);
+            log.error("Unexpected error during consent persistence", e);
 
             CdsConsentException cdsException = new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
                     "Consent persistence failed" + "An unexpected error occurred: " + e.getMessage());

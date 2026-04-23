@@ -115,7 +115,7 @@ public class CdsPushedAuthorizeUtil {
                 }
             } catch (NumberFormatException e) {
                 log.error(String.format("Error while parsing %s value: '%s' to a number.",
-                        CommonConstants.SHARING_DURATION, sharingDurationString), e);
+                    CommonConstants.SHARING_DURATION, sharingDurationString), e);
                 return ErrorUtil.getErrorDataObject(ErrorConstants.INVALID_REQUEST_OBJECT,
                         ErrorConstants.INVALID_SHARING_DURATION);
             }
