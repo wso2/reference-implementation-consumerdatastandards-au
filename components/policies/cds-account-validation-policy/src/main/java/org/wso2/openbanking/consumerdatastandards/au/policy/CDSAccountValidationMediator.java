@@ -19,6 +19,7 @@
 package org.wso2.openbanking.consumerdatastandards.au.policy;
 
 import com.nimbusds.jose.JOSEException;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.MessageContext;
@@ -56,8 +57,8 @@ public class CDSAccountValidationMediator extends AbstractMediator {
     }
 
     /**
-     * Enforces DOMS account validation for the account information header by removing linked-member
-     * authorization resources, filtering blocked accounts, and updating the signed header payload.
+     * Enforces CDS account validation for the account information header by removing linked-member,
+     * Secondary account owner authorization resources, filtering blocked accounts, and updating the signed payload.
      *
      * @param messageContext Synapse message context containing transport headers and mediation properties
      * @return {@code true} to continue the mediation flow
@@ -74,14 +75,14 @@ public class CDSAccountValidationMediator extends AbstractMediator {
             Map<String, String> headers = (Map<String, String>)
                     axis2Ctx.getProperty(org.apache.axis2.context.MessageContext.TRANSPORT_HEADERS);
 
-            String accountHeader = headers.get(CDSAccountValidationConstants.INFO_HEADER_TAG);
+            String accountHeaderJwt = headers.get(CDSAccountValidationConstants.INFO_HEADER_TAG);
 
             // Unsigned payload
-            JSONObject payload = new JSONObject(accountHeader);
-
-            //collect linkedMember authorization Ids
-            Set<String> linkedMemberAuthIds = new HashSet<>();
+            JSONObject payload = new JSONObject(accountHeaderJwt);
             String userId = null;
+
+            // Collect authorization IDs that should be removed from validation and mapping.
+            Set<String> excludedAuthIds = new HashSet<>();
 
             JSONArray authorizationResources = payload.optJSONArray(CDSAccountValidationConstants.AUTH_RESOURCES_TAG);
             if (authorizationResources != null) {
@@ -89,25 +90,19 @@ public class CDSAccountValidationMediator extends AbstractMediator {
 
                 for (int i = 0; i < authorizationResources.length(); i++) {
                     JSONObject authResource = authorizationResources.getJSONObject(i);
-
                     String authType = authResource.optString(CDSAccountValidationConstants.AUTH_TYPE_TAG);
+                    String authId = authResource.optString(CDSAccountValidationConstants.AUTH_ID_TAG);
 
-                    // Extract userId from the primary member auth resource
-                    if (CDSAccountValidationConstants.PRIMARY_AUTH_TYPE_TAG.equalsIgnoreCase(authType)) {
-                        userId = authResource.optString(CDSAccountValidationConstants.USER_ID_TAG, null);
-                    }
-
-                    // Removing Auth resources of linked members
-                    if (CDSAccountValidationConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(authType)) {
-                        String linkedAuthId = authResource.optString(CDSAccountValidationConstants.AUTH_ID_TAG);
-                        if (linkedAuthId != null && !linkedAuthId.isEmpty()) {
-                            linkedMemberAuthIds.add(linkedAuthId);
-                        }
-                        if (log.isDebugEnabled()) {
-                            log.debug("Removing linkedMember authorization resource. authorizationId= "
-                                    + linkedAuthId);
+                    // Remove linked-member and secondary-owner auth resources.
+                    if (isExcludedAuthType(authType)) {
+                        if (!StringUtils.isEmpty(authId)) {
+                            excludedAuthIds.add(authId);
                         }
                         continue;
+                    }
+
+                    if (CDSAccountValidationConstants.PRIMARY_AUTH_TYPE_TAG.equalsIgnoreCase(authType)) {
+                        userId = authResource.optString(CDSAccountValidationConstants.USER_ID_TAG);
                     }
 
                     filteredAuthorizationResources.put(authResource);
@@ -126,10 +121,10 @@ public class CDSAccountValidationMediator extends AbstractMediator {
             Set<String> accountIds = new HashSet<>();
             for (int i = 0; i < consentMappingResources.length(); i++) {
                 JSONObject mappingResource = consentMappingResources.getJSONObject(i);
+                String authId = mappingResource.optString(CDSAccountValidationConstants.AUTH_ID_TAG);
 
-                // exclude linked-member accounts in DOMS call
-                if (linkedMemberAuthIds.contains(mappingResource.optString(
-                        CDSAccountValidationConstants.AUTH_ID_TAG))) {
+                // Exclude linked-member and secondary-user accounts in account validation call.(deduplicating accounts)
+                if (excludedAuthIds.contains(authId)) {
                     continue;
                 }
                 accountIds.add(mappingResource.optString(CDSAccountValidationConstants.ACCELERATOR_ACCOUNT_ID_TAG));
@@ -142,15 +137,16 @@ public class CDSAccountValidationMediator extends AbstractMediator {
 
             for (int i = 0; i < consentMappingResources.length(); i++) {
                 JSONObject mappingResource = consentMappingResources.getJSONObject(i);
+                String authId = mappingResource.optString(CDSAccountValidationConstants.AUTH_ID_TAG);
 
-                // Removing consentMappingResources of linked-members
-                if (linkedMemberAuthIds.contains(mappingResource.optString(
-                        CDSAccountValidationConstants.AUTH_ID_TAG))) {
+                // Removing consentMappingResources of joint account owners and secondary account owners
+                if (excludedAuthIds.contains(authId)) {
                     continue;
                 }
 
                 String accountId = mappingResource.optString(CDSAccountValidationConstants.ACCELERATOR_ACCOUNT_ID_TAG);
                 if (!blockedAccounts.contains(accountId)) {
+                    // Normalize the account id field from Accelerator format (account_id) to CDS format (accountId).
                     mappingResource.put(CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG, accountId);
                     mappingResource.remove(CDSAccountValidationConstants.ACCELERATOR_ACCOUNT_ID_TAG);
                     filteredConsentMappings.put(mappingResource);
@@ -193,4 +189,25 @@ public class CDSAccountValidationMediator extends AbstractMediator {
         messageContext.setProperty(CDSAccountValidationConstants.CUSTOM_HTTP_SC, "500");
     }
 
+    /**
+     * Checks whether the given authorization type belongs to a secondary account owner.
+     *
+     * @param authType authorization type value
+     * @return {@code true} if the auth type is secondary individual or secondary joint account owner
+     */
+    private static boolean isSecondaryAccountOwnerAuthType(String authType) {
+        return CDSAccountValidationConstants.SECONDARY_INDIVIDUAL_ACCOUNT_OWNER_TAG.equalsIgnoreCase(authType)
+                || CDSAccountValidationConstants.SECONDARY_JOINT_ACCOUNT_OWNER_TAG.equalsIgnoreCase(authType);
+    }
+
+    /**
+     * Checks whether the given authorization type should be excluded from account validation and mappings.
+     *
+     * @param authType authorization type value
+     * @return {@code true} if auth type belongs to linked member or secondary account owner
+     */
+    private static boolean isExcludedAuthType(String authType) {
+        return CDSAccountValidationConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(authType)
+                || isSecondaryAccountOwnerAuthType(authType);
+    }
 }
