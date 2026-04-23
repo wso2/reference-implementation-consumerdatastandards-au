@@ -350,7 +350,7 @@ public class CDSAccountValidationUtilsTest {
         HttpClient client = Mockito.mock(HttpClient.class);
 
         Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
-                .thenThrow(new java.io.IOException("Connection refused"));
+                .thenThrow(new IOException("Connection refused"));
 
         CDSAccountValidationUtils.setHttpClient(client);
 
@@ -424,25 +424,6 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-     * Verifies blank or null primary user IDs short-circuit with an empty blocked-account result.
-     */
-    @Test
-    public void testFetchBlockedSecondaryAccountsWithBlankUserId() throws CDSAccountValidationException {
-        Set<String> accounts = new HashSet<>();
-        accounts.add("acc-1");
-
-        Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedSecondaryAccountsFromService(
-                accounts, SECONDARY_ACCOUNTS_ENDPOINT, "", BASIC_AUTH);
-        Set<String> blockedForNull = CDSAccountValidationUtils.fetchBlockedSecondaryAccountsFromService(
-                accounts, SECONDARY_ACCOUNTS_ENDPOINT, null, BASIC_AUTH);
-
-        Assert.assertNotNull(blockedForBlank);
-        Assert.assertNotNull(blockedForNull);
-        Assert.assertTrue(blockedForBlank.isEmpty());
-        Assert.assertTrue(blockedForNull.isEmpty());
-    }
-
-    /**
      * Verifies both accountIds and userId query parameters are included for secondary-account requests.
      */
     @Test
@@ -504,16 +485,57 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertFalse(blocked.contains("acc-active"));
     }
 
+    // ---- fetchBlockedBusinessAccountsFromService tests ----
+
+    @Test
+    public void testFetchBlockedBusinessAccountsWithEmptyOrNullAccountIds() throws CDSAccountValidationException {
+        String businessStakeholdersEndpoint = ACCOUNT_METADATA_WEBAPP_BASE_URL + "/business-stakeholders";
+
+        Set<String> blockedForEmpty = CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
+                Collections.emptySet(), businessStakeholdersEndpoint, "user-1", BASIC_AUTH);
+        Set<String> blockedForNull = CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
+                null, businessStakeholdersEndpoint, "user-1", BASIC_AUTH);
+
+        Assert.assertNotNull(blockedForEmpty);
+        Assert.assertNotNull(blockedForNull);
+        Assert.assertTrue(blockedForEmpty.isEmpty());
+        Assert.assertTrue(blockedForNull.isEmpty());
+    }
+
+    @Test
+    public void testFetchBlockedBusinessAccountsWithBlankBasicAuth() {
+        String businessStakeholdersEndpoint = ACCOUNT_METADATA_WEBAPP_BASE_URL + "/business-stakeholders";
+
+        Set<String> accounts = new HashSet<>();
+        accounts.add("acc-1");
+
+        Assert.expectThrows(CDSAccountValidationException.class,
+                () -> CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
+                        accounts, businessStakeholdersEndpoint, "user-1", ""));
+        Assert.expectThrows(CDSAccountValidationException.class,
+                () -> CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
+                        accounts, businessStakeholdersEndpoint, "user-1", null));
+    }
+
     // ---- fetchAllBlockedAccounts tests ----
 
     /**
      * Verifies blocked-account results from DOMS and secondary-account checks are merged.
      */
     @Test
+    public void testFetchAllBlockedAccountsWithEmptyInput() throws CDSAccountValidationException {
+        Set<String> blocked = CDSAccountValidationUtils.fetchAllBlockedAccounts(
+                Collections.emptySet(), ACCOUNT_METADATA_WEBAPP_BASE_URL, "user-1", BASIC_AUTH);
+        Assert.assertNotNull(blocked);
+        Assert.assertTrue(blocked.isEmpty());
+    }
+
+    @Test
     public void testFetchAllBlockedAccountsCombinesResults() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
         HttpResponse<String> disclosureResponse = Mockito.mock(HttpResponse.class);
         HttpResponse<String> secondaryResponse = Mockito.mock(HttpResponse.class);
+        HttpResponse<String> businessResponse = Mockito.mock(HttpResponse.class);
 
         Mockito.when(disclosureResponse.statusCode()).thenReturn(200);
         Mockito.when(disclosureResponse.body()).thenReturn("["
@@ -523,9 +545,14 @@ public class CDSAccountValidationUtilsTest {
         Mockito.when(secondaryResponse.body()).thenReturn("["
                 + "{\"accountId\":\"acc-2\",\"secondaryAccountInstructionStatus\":\"inactive\"}"
                 + "]");
+        Mockito.when(businessResponse.statusCode()).thenReturn(200);
+        Mockito.when(businessResponse.body()).thenReturn("["
+                + "{\"accountId\":\"acc-3\",\"permission\":\"VIEW\"}"
+                + "]");
         Mockito.when(client.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
                 .thenReturn(disclosureResponse)
-                .thenReturn(secondaryResponse);
+                .thenReturn(secondaryResponse)
+                .thenReturn(businessResponse);
 
         CDSAccountValidationUtils.setHttpClient(client);
 
@@ -533,14 +560,16 @@ public class CDSAccountValidationUtilsTest {
         accounts.add("acc-1");
         accounts.add("acc-2");
         accounts.add("acc-3");
+        accounts.add("acc-4");
 
         Set<String> blocked = CDSAccountValidationUtils.fetchAllBlockedAccounts(
                 accounts, ACCOUNT_METADATA_WEBAPP_BASE_URL, "user-1", BASIC_AUTH);
 
-        Assert.assertEquals(blocked.size(), 2);
+        Assert.assertEquals(blocked.size(), 3);
         Assert.assertTrue(blocked.contains("acc-1"));
         Assert.assertTrue(blocked.contains("acc-2"));
-        Assert.assertFalse(blocked.contains("acc-3"));
+        Assert.assertTrue(blocked.contains("acc-3"));
+        Assert.assertFalse(blocked.contains("acc-4"));
     }
 
     // ---- generateJWT tests ----

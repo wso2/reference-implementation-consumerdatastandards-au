@@ -61,12 +61,19 @@ public class CDSAccountValidationConstants {
     // Account-metadata webapp API paths
     public static final String DISCLOSURE_OPTIONS_PATH = "/disclosure-options";
     public static final String SECONDARY_ACCOUNTS_PATH = "/secondary-accounts";
+    public static final String BUSINESS_STAKEHOLDERS_PATH = "/business-stakeholders";
 
     // Constants related to Secondary Accounts
     public static final String SECONDARY_ACCOUNT_INSTRUCTION_STATUS_TAG = "secondaryAccountInstructionStatus";
     public static final String SECONDARY_ACCOUNT_STATUS_INACTIVE = "inactive";
     public static final String SECONDARY_INDIVIDUAL_ACCOUNT_OWNER_TAG = "secondary_individual_account_owner";
     public static final String SECONDARY_JOINT_ACCOUNT_OWNER_TAG = "secondary_joint_account_owner";
+
+    // Constants related to Business Accounts
+    public static final String NOMINATED_REPRESENTATIVE_TAG = "nominated_representative";
+    public static final String BUSINESS_ACCOUNT_OWNER_TAG = "business_account_owner";
+    public static final String BUSINESS_PERMISSION_TAG = "permission";
+    public static final String BUSINESS_PERMISSION_AUTHORIZE = "AUTHORIZE";
 
     // Timeouts
     public static final int HTTP_CLIENT_CONNECT_TIMEOUT_MILLIS = 3000;
