@@ -36,5 +36,4 @@ public class CommonConstants {
     public static final String BNR_PERMISSION_REVOKE = "REVOKE";
     public static final String BNR_PERMISSION_VIEW = "VIEW";
 
-
 }

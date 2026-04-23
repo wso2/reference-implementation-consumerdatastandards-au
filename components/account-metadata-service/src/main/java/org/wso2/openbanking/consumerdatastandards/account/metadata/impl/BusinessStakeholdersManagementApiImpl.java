@@ -463,7 +463,8 @@ public class BusinessStakeholdersManagementApiImpl {
      * @return distinct list of account IDs
      */
     private static List<String> getAccountIds(List<BusinessStakeholderPermissionItem> items) {
-        return items.stream().map(BusinessStakeholderPermissionItem::getAccountId).collect(Collectors.toList());
+        return items.stream().map(BusinessStakeholderPermissionItem::getAccountId)
+                .distinct().collect(Collectors.toList());
     }
 
     /**
