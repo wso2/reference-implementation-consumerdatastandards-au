@@ -18,6 +18,7 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.utils;
 
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 
 /**
@@ -48,6 +49,19 @@ public final class CommonTestUtils {
         item.setOtherAccountsAvailability(otherAccountsAvailable);
         item.setSecondaryAccountInstructionStatus(
                 SecondaryAccountInstructionItem.SecondaryAccountInstructionStatusEnum.fromValue(status));
+        return item;
+    }
+
+    /**
+     * Builds a business stakeholder permission test item.
+     */
+    public static BusinessStakeholderPermissionItem buildBusinessItem(
+            String accountId, String userId, String permission) {
+        BusinessStakeholderPermissionItem item = new BusinessStakeholderPermissionItem();
+        item.setAccountId(accountId);
+        item.setUserId(userId);
+        item.setPermission(permission != null
+                ? BusinessStakeholderPermissionItem.PermissionEnum.fromValue(permission) : null);
         return item;
     }
 }

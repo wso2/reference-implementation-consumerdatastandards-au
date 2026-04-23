@@ -18,15 +18,15 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 
-import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.Mockito;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueries;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueriesMySqlImpl;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,6 +38,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildBusinessItem;
+import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
 
 /**
  * Unit tests for {@link AccountMetadataDAOImpl}.
@@ -117,6 +120,68 @@ public class AccountMetadataDAOImplTest {
         public String getBatchUpdateSecondaryAccountInstructionQuery() {
             return "UPDATE fs_account_secondary_user SET INSTRUCTION_STATUS = ?, " +
                     "OTHER_ACCOUNTS_AVAILABILITY = ?, LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ? AND USER_ID = ?";
+        }
+
+        /**
+         * @param accountUserPairs list of account-user pairs
+         * @return select query for business stakeholder permissions by account-user pairs
+         */
+        @Override
+        public String getBatchGetBusinessStakeholderPermissionQuery(List<Pair<String, String>> accountUserPairs) {
+            StringBuilder query = new StringBuilder(
+                    "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission " +
+                            "WHERE (ACCOUNT_ID, USER_ID) IN (");
+            for (int i = 0; i < accountUserPairs.size(); i++) {
+                query.append("(?,?)");
+                if (i < accountUserPairs.size() - 1) {
+                    query.append(",");
+                }
+            }
+            query.append(")");
+            return query.toString();
+        }
+
+        /**
+         * @param accountCount number of account ids
+         * @return select query for business stakeholder permissions by account id list
+         */
+        @Override
+        public String getBatchGetBusinessStakeholderPermissionByAccountQuery(int accountCount) {
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < accountCount; i++) {
+                if (i > 0) {
+                    placeholders.append(",");
+                }
+                placeholders.append("?");
+            }
+            return "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission WHERE " +
+                    "ACCOUNT_ID IN (" + placeholders + ")";
+        }
+
+        /**
+         * @return insert query for business stakeholder permissions
+         */
+        @Override
+        public String getBatchAddBusinessStakeholderPermissionQuery() {
+            return "INSERT INTO fs_account_bnr_permission (ACCOUNT_ID, USER_ID, PERMISSION, LAST_UPDATED_TIMESTAMP) " +
+                    "VALUES (?, ?, ?, ?)";
+        }
+
+        /**
+         * @return update query for business stakeholder permissions
+         */
+        @Override
+        public String getBatchUpdateBusinessStakeholderPermissionQuery() {
+            return "UPDATE fs_account_bnr_permission SET PERMISSION = ?, LAST_UPDATED_TIMESTAMP = ? " +
+                    "WHERE ACCOUNT_ID = ? AND USER_ID = ?";
+        }
+
+        /**
+         * @return delete query for business stakeholder permissions
+         */
+        @Override
+        public String getBatchDeleteBusinessStakeholderPermissionQuery() {
+            return "DELETE FROM fs_account_bnr_permission WHERE ACCOUNT_ID = ? AND USER_ID = ?";
         }
     }
 
@@ -228,7 +293,6 @@ public class AccountMetadataDAOImplTest {
 
         dao.addBatchDisclosureOptions(connection, new HashMap<>());
 
-        assertNoInteractions(connection);
         Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
     }
 
@@ -525,6 +589,392 @@ public class AccountMetadataDAOImplTest {
                 .setString(Mockito.eq(5), Mockito.anyString());
         Mockito.verify(statement, Mockito.times(2)).addBatch();
         Mockito.verify(statement).executeBatch();
+    }
+
+    /**
+     * Verifies that no update call is made when secondary instruction input is empty.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testUpdateBatchSecondaryAccountInstructionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.updateBatchSecondaryAccountInstructions(connection, Collections.emptyList());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during secondary account instruction update.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testUpdateBatchSecondaryAccountInstructionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        List<SecondaryAccountInstructionItem> items = Collections.singletonList(
+                buildSecondaryItem("acc-922", "user-3", true, "active"));
+        dao.updateBatchSecondaryAccountInstructions(connection, items);
+    }
+
+    /**
+     * Verifies batch retrieval of business stakeholder permissions when rows are returned.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchBusinessStakeholderPermissionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        Mockito.when(resultSet.getString("ACCOUNT_ID")).thenReturn("acc-b1").thenReturn("acc-b2");
+        Mockito.when(resultSet.getString("USER_ID")).thenReturn("user-b1").thenReturn("user-b2");
+        Mockito.when(resultSet.getString("PERMISSION")).thenReturn("AUTHORIZE").thenReturn("VIEW");
+
+        List<Pair<String, String>> queryPairs = Arrays.asList(
+                Pair.of("acc-b1", "user-b1"),
+                Pair.of("acc-b2", "user-b2"));
+
+        List<BusinessStakeholderPermissionItem> result =
+                dao.getBatchBusinessStakeholderPermissions(connection, queryPairs);
+
+        Assert.assertEquals(result.size(), 2);
+        Assert.assertEquals(result.get(0).getAccountId(), "acc-b1");
+        Assert.assertEquals(result.get(0).getUserId(), "user-b1");
+        Assert.assertEquals(result.get(0).getPermission().value(), "AUTHORIZE");
+    }
+
+    /**
+     * Verifies batch retrieval of business stakeholder permissions with null input.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchBusinessStakeholderPermissionsNullInput() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        List<BusinessStakeholderPermissionItem> result =
+                dao.getBatchBusinessStakeholderPermissions(connection, null);
+
+        Assert.assertTrue(result.isEmpty());
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during business stakeholder retrieval.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchBusinessStakeholderPermissionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString()))
+                .thenThrow(new SQLException("bad"));
+
+        List<Pair<String, String>> queryPairs = Collections.singletonList(
+                Pair.of("acc-b3", "user-b3"));
+        dao.getBatchBusinessStakeholderPermissions(connection, queryPairs);
+    }
+
+    /**
+     * Verifies batch retrieval of business stakeholder permissions by account IDs when rows are returned.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchBusinessStakeholderPermissionsByAccountIdsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        Mockito.when(resultSet.getString("ACCOUNT_ID")).thenReturn("acc-b1").thenReturn("acc-b1");
+        Mockito.when(resultSet.getString("USER_ID")).thenReturn("user-b1").thenReturn("user-b2");
+        Mockito.when(resultSet.getString("PERMISSION")).thenReturn("AUTHORIZE").thenReturn("REVOKE");
+
+        List<BusinessStakeholderPermissionItem> result =
+                dao.getBatchBusinessStakeholderPermissionsByAccountIds(connection, Collections.singletonList("acc-b1"));
+
+        Assert.assertEquals(result.size(), 2);
+        Assert.assertEquals(result.get(0).getAccountId(), "acc-b1");
+        Assert.assertEquals(result.get(0).getPermission().value(), "AUTHORIZE");
+        Assert.assertEquals(result.get(1).getPermission().value(), "REVOKE");
+    }
+
+    /**
+     * Verifies batch retrieval by account IDs with empty input.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchBusinessStakeholderPermissionsByAccountIdsEmptyInput() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        List<BusinessStakeholderPermissionItem> result =
+                dao.getBatchBusinessStakeholderPermissionsByAccountIds(connection, Collections.emptyList());
+
+        Assert.assertTrue(result.isEmpty());
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during business stakeholder retrieval by account IDs.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchBusinessStakeholderPermissionsByAccountIdsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString()))
+                .thenThrow(new SQLException("bad"));
+
+        dao.getBatchBusinessStakeholderPermissionsByAccountIds(connection, Collections.singletonList("acc-b1"));
+    }
+
+    /**
+     * Verifies successful batch insert of business stakeholder permissions.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testAddBatchBusinessStakeholderPermissionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        List<BusinessStakeholderPermissionItem> items = Arrays.asList(
+                buildBusinessItem("acc-b4", "user-b4", "AUTHORIZE"),
+                buildBusinessItem("acc-b5", "user-b5", "VIEW"));
+        dao.addBatchBusinessStakeholderPermissions(connection, items);
+
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(2), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(3), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setTimestamp(Mockito.eq(4), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    /**
+     * Verifies that insert is skipped when business stakeholder list is null.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testAddBatchBusinessStakeholderPermissionsNullInput() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.addBatchBusinessStakeholderPermissions(connection, null);
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during business stakeholder insert.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testAddBatchBusinessStakeholderPermissionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
+                buildBusinessItem("acc-b6", "user-b6", "AUTHORIZE"));
+        dao.addBatchBusinessStakeholderPermissions(connection, items);
+    }
+
+    /**
+     * Verifies successful batch update of business stakeholder permissions.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testUpdateBatchBusinessStakeholderPermissionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        List<BusinessStakeholderPermissionItem> items = Arrays.asList(
+                buildBusinessItem("acc-b7", "user-b7", "VIEW"),
+                buildBusinessItem("acc-b8", "user-b8", "AUTHORIZE"));
+        dao.updateBatchBusinessStakeholderPermissions(connection, items);
+
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setTimestamp(Mockito.eq(2), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(3), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(4), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    /**
+     * Verifies that update is skipped when business stakeholder list is empty.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testUpdateBatchBusinessStakeholderPermissionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.updateBatchBusinessStakeholderPermissions(connection, Collections.emptyList());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during business stakeholder update.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testUpdateBatchBusinessStakeholderPermissionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
+                buildBusinessItem("acc-b9", "user-b9", "VIEW"));
+        dao.updateBatchBusinessStakeholderPermissions(connection, items);
+    }
+
+    /**
+     * Verifies successful batch delete of business stakeholder permissions.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testDeleteBatchBusinessStakeholderPermissionsSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        List<BusinessStakeholderPermissionItem> items = Arrays.asList(
+                buildBusinessItem("acc-b10", "user-b10", null),
+                buildBusinessItem("acc-b11", "user-b11", null));
+        dao.deleteBatchBusinessStakeholderPermissions(connection, items);
+
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(2), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    /**
+     * Verifies that delete is skipped when business stakeholder list is empty.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testDeleteBatchBusinessStakeholderPermissionsEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.deleteBatchBusinessStakeholderPermissions(connection, Collections.emptyList());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during business stakeholder delete.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testDeleteBatchBusinessStakeholderPermissionsSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
+                buildBusinessItem("acc-b12", "user-b12", null));
+        dao.deleteBatchBusinessStakeholderPermissions(connection, items);
+    }
+
+    /**
+     * Verifies that a single account-user pair produces the correct SELECT query with one tuple placeholder.
+     */
+    @Test
+    public void testGetBatchGetBusinessStakeholderPermissionQuerySinglePair() {
+        AccountMetadataDbQueriesMySqlImpl queries = new AccountMetadataDbQueriesMySqlImpl();
+        List<Pair<String, String>> pairs = Collections.singletonList(Pair.of("acc-1", "user-1"));
+
+        String sql = queries.getBatchGetBusinessStakeholderPermissionQuery(pairs);
+
+        Assert.assertTrue(sql.startsWith(
+                "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission " +
+                        "WHERE (ACCOUNT_ID, USER_ID) IN ("));
+        Assert.assertTrue(sql.endsWith(")"));
+        Assert.assertTrue(sql.contains("(?,?)"));
+        Assert.assertFalse(sql.contains("(?,?),(?,?)"));
+    }
+
+    /**
+     * Verifies that multiple account-user pairs produce comma-separated tuple placeholders.
+     */
+    @Test
+    public void testGetBatchGetBusinessStakeholderPermissionQueryMultiplePairs() {
+        AccountMetadataDbQueriesMySqlImpl queries = new AccountMetadataDbQueriesMySqlImpl();
+        List<Pair<String, String>> pairs = Arrays.asList(
+                Pair.of("acc-1", "user-1"),
+                Pair.of("acc-2", "user-2"),
+                Pair.of("acc-3", "user-3"));
+
+        String sql = queries.getBatchGetBusinessStakeholderPermissionQuery(pairs);
+
+        Assert.assertEquals(sql,
+                "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission " +
+                        "WHERE (ACCOUNT_ID, USER_ID) IN ((?,?),(?,?),(?,?))");
+    }
+
+    /**
+     * Verifies the exact SQL output for a single pair.
+     */
+    @Test
+    public void testGetBatchGetBusinessStakeholderPermissionQueryExactSql() {
+        AccountMetadataDbQueriesMySqlImpl queries = new AccountMetadataDbQueriesMySqlImpl();
+        List<Pair<String, String>> pairs = Collections.singletonList(Pair.of("acc-1", "user-1"));
+
+        String sql = queries.getBatchGetBusinessStakeholderPermissionQuery(pairs);
+
+        Assert.assertEquals(sql,
+                "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission " +
+                        "WHERE (ACCOUNT_ID, USER_ID) IN ((?,?))");
     }
 
     /**
