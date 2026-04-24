@@ -79,6 +79,7 @@ public class CDSAccountValidationUtils {
                 .build();
     }
 
+
     /**
      * Method to generate JWT with the given payload.
      *
@@ -114,16 +115,24 @@ public class CDSAccountValidationUtils {
             Set<String> accountIds, String baseUrl, String userId, String basicAuthBase64)
             throws CDSAccountValidationException {
 
+        if (StringUtils.isBlank(userId)) {
+            log.warn("[CDS-policy] no primary userId, skipping cds account validation.");
+            return new HashSet<>();
+        }
+
         String disclosureOptionsApi = baseUrl + CDSAccountValidationConstants.DISCLOSURE_OPTIONS_PATH;
         String secondaryAccountsApi = baseUrl + CDSAccountValidationConstants.SECONDARY_ACCOUNTS_PATH;
+        String businessStakeholdersApi = baseUrl + CDSAccountValidationConstants.BUSINESS_STAKEHOLDERS_PATH;
 
         Set<String> blockedAccounts = fetchBlockedJointAccountsFromService(accountIds, disclosureOptionsApi,
                 basicAuthBase64);
-
         Set<String> blockedSecondaryAccounts = fetchBlockedSecondaryAccountsFromService(accountIds,
                 secondaryAccountsApi, userId, basicAuthBase64);
+        Set<String> blockedBusinessAccounts = fetchBlockedBusinessAccountsFromService(accountIds,
+                businessStakeholdersApi, userId, basicAuthBase64);
 
         blockedAccounts.addAll(blockedSecondaryAccounts);
+        blockedAccounts.addAll(blockedBusinessAccounts);
 
         return blockedAccounts;
     }
@@ -227,11 +236,6 @@ public class CDSAccountValidationUtils {
             return blockedAccounts;
         }
 
-        if (StringUtils.isBlank(userId)) {
-            log.warn("[SecondaryAccounts] userId is blank, skipping secondary accounts check");
-            return blockedAccounts;
-        }
-
         try {
             String accountIdsParam = URLEncoder.encode(String.join(",", accountIds), StandardCharsets.UTF_8);
             String userIdParam = URLEncoder.encode(userId, StandardCharsets.UTF_8);
@@ -289,6 +293,94 @@ public class CDSAccountValidationUtils {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             String errorMessage = "[SecondaryAccounts] Interrupted while calling secondary accounts service";
+            log.error(errorMessage, e);
+            throw new CDSAccountValidationException(errorMessage, e);
+        }
+        return blockedAccounts;
+    }
+
+    /**
+     * Call business stakeholders GET endpoint and return blocked account IDs.
+     * An account is considered blocked when business permission is not AUTHORIZE.
+     *
+     * @param accountIds set of account IDs to check
+     * @param businessStakeholdersApi business stakeholders API endpoint
+     * @param userId user ID for the business stakeholders query
+     * @param basicAuthBase64 Base64-encoded Basic Auth credentials
+     * @return set of blocked account IDs
+     */
+    static Set<String> fetchBlockedBusinessAccountsFromService(Set<String> accountIds, String businessStakeholdersApi,
+                                                               String userId, String basicAuthBase64)
+            throws CDSAccountValidationException {
+
+        Set<String> blockedAccounts = new HashSet<>();
+
+        if (accountIds == null || accountIds.isEmpty()) {
+            return blockedAccounts;
+        }
+
+        try {
+            String accountIdsParam = URLEncoder.encode(String.join(",", accountIds), StandardCharsets.UTF_8);
+            String userIdParam = URLEncoder.encode(userId, StandardCharsets.UTF_8);
+            String requestUrl = businessStakeholdersApi + "?" + CDSAccountValidationConstants.ACCOUNT_IDS_TAG + "="
+                    + accountIdsParam + "&" + CDSAccountValidationConstants.USER_ID_TAG + "=" + userIdParam;
+
+            HttpRequest.Builder requestBuilder = HttpRequest.newBuilder().uri(URI.create(requestUrl))
+                    .timeout(Duration.ofMillis(CDSAccountValidationConstants.HTTP_REQUEST_TIMEOUT_MILLIS))
+                    .header(CDSAccountValidationConstants.ACCEPT_TAG,
+                            CDSAccountValidationConstants.JSON_CONTENT_TYPE).GET();
+
+            if (StringUtils.isNotBlank(basicAuthBase64)) {
+                requestBuilder.header(CDSAccountValidationConstants.AUTH_HEADER,
+                        CDSAccountValidationConstants.BASIC_TAG + basicAuthBase64);
+            } else {
+                String errorMessage = "[BusinessStakeholders] Basic Auth property not set, request may fail";
+                log.error(errorMessage);
+                throw new CDSAccountValidationException(errorMessage);
+            }
+
+            HttpRequest request = requestBuilder.build();
+            HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONArray businessStakeholders;
+                try {
+                    businessStakeholders = new JSONArray(response.body());
+                } catch (JSONException e) {
+                    String errorMessage = "Invalid business stakeholders service response";
+                    log.error(errorMessage, e);
+                    throw new CDSAccountValidationException(errorMessage, e);
+                }
+
+                for (int i = 0; i < businessStakeholders.length(); i++) {
+                    JSONObject permissionItem = businessStakeholders.optJSONObject(i);
+                    if (permissionItem == null) {
+                        continue;
+                    }
+
+                    String permission = permissionItem.optString(
+                            CDSAccountValidationConstants.BUSINESS_PERMISSION_TAG, null);
+                    if (!CDSAccountValidationConstants.BUSINESS_PERMISSION_AUTHORIZE.equalsIgnoreCase(permission)) {
+                        String accountId = permissionItem.optString(
+                                CDSAccountValidationConstants.CDS_ACCOUNT_ID_TAG, null);
+                        if (StringUtils.isNotBlank(accountId)) {
+                            blockedAccounts.add(accountId);
+                        }
+                    }
+                }
+            } else {
+                String errorMessage = "Business stakeholders service returned HTTP " + response.statusCode();
+                log.error(errorMessage);
+                throw new CDSAccountValidationException(errorMessage);
+            }
+
+        } catch (IOException e) {
+            String errorMessage = "[BusinessStakeholders] Error calling business stakeholders service";
+            log.error(errorMessage, e);
+            throw new CDSAccountValidationException(errorMessage, e);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            String errorMessage = "[BusinessStakeholders] Interrupted while calling business stakeholders service";
             log.error(errorMessage, e);
             throw new CDSAccountValidationException(errorMessage, e);
         }
