@@ -183,27 +183,18 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
             List<Pair<String, String>> accountUserPairs) throws AccountMetadataException {
 
         if (accountUserPairs == null || accountUserPairs.isEmpty()) {
-            return Collections.emptyList();
+            throw new AccountMetadataException("Account-user pair list cannot be null or empty " +
+                    "when retrieving Secondary account instructions");
         }
 
-        List<Pair<String, String>> validAccountUserPairs = new ArrayList<>();
-        for (Pair<String, String> accountUserPair : accountUserPairs) {
-            if (accountUserPair != null) {
-                validAccountUserPairs.add(accountUserPair);
-            }
-        }
-
-        int pairCount = validAccountUserPairs.size();
-        if (pairCount == 0) {
-            return Collections.emptyList();
-        }
+        int pairCount = accountUserPairs.size();
 
         String sql = dbQueries.getBatchGetSecondaryAccountInstructionQuery(pairCount);
         List<SecondaryAccountInstructionItem> resultItems = new ArrayList<>();
 
         try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             int parameterIndex = 1;
-            for (Pair<String, String> accountUserPair : validAccountUserPairs) {
+            for (Pair<String, String> accountUserPair : accountUserPairs) {
                 stmt.setString(parameterIndex++, accountUserPair.getLeft());
                 stmt.setString(parameterIndex++, accountUserPair.getRight());
             }
@@ -312,8 +303,9 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
         public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissions(Connection conn,
             List<Pair<String, String>> accountUserPairs) throws AccountMetadataException {
 
-        if (accountUserPairs == null) {
-            return Collections.emptyList();
+        if (accountUserPairs == null || accountUserPairs.isEmpty()) {
+            throw new AccountMetadataException("Account-user pair list cannot be null or empty " +
+                    "when retrieving business stakeholder permissions");
         }
 
         String sql = dbQueries.getBatchGetBusinessStakeholderPermissionQuery(accountUserPairs);
@@ -399,7 +391,8 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
             List<BusinessStakeholderPermissionItem> permissionItems) throws AccountMetadataException {
 
         if (permissionItems == null || permissionItems.isEmpty()) {
-            return;
+            throw new AccountMetadataException("Permission items cannot be null or empty " +
+                        "when adding business stakeholder permissions");
         }
 
         String sql = dbQueries.getBatchAddBusinessStakeholderPermissionQuery();
