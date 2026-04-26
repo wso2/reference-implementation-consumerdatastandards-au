@@ -206,8 +206,7 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.BAD_REQUEST)
         String errorDescription = getErrorText(updateResponse)
         Assert.assertNotNull(errorDescription)
-        Assert.assertTrue((errorDescription.contains("accountID") || errorDescription.contains("accountId"))
-                && (errorDescription.contains("must not be null") || errorDescription.contains("required")))
+        Assert.assertTrue((errorDescription.contains("accountID: must not be null")))
     }
 
     @Test
@@ -304,9 +303,10 @@ class UserNominationManagementTests extends AUTest {
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
                 .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.BANK_ACCOUNT_SERVICE}")
+                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}" +
+                        "${AUConstants.UPDATE_BUSINESS_USER}${AUConstants.BANK_ACCOUNT_SERVICE}")
 
-        Assert.assertEquals(updateResponse.statusCode(), AUConstants.STATUS_CODE_500)
+        Assert.assertEquals(updateResponse.statusCode(), AUConstants.STATUS_CODE_404)
     }
 
     @Test
@@ -430,7 +430,7 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(deleteResponse.statusCode(), AUConstants.BAD_REQUEST)
         String errorDescription = getErrorText(deleteResponse)
         Assert.assertNotNull(errorDescription)
-        Assert.assertTrue((errorDescription.contains("accountID")) && (errorDescription.contains("must not be null")))
+        Assert.assertTrue((errorDescription.contains("accountID: must not be null")))
     }
 
     @Test
