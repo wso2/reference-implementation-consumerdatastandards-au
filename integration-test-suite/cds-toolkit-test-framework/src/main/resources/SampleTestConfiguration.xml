@@ -35,6 +35,9 @@
 
         <!--Sample Values: PS256 -->
         <SigningAlgorithm>PS256</SigningAlgorithm>
+
+        <!--Accredited Data Recipient name displayed in the consent UI -->
+        <AdrName>jFQuQ4eQbNCMSqdCog21nF</AdrName>
     </Common>
 
     <!-- Provisioning Info -->
@@ -284,6 +287,13 @@
         <PSUInfo>
             <Credentials>
                 <User>admin@wso2.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
+        <!-- User with customer-care officer role-->
+        <PSUInfo>
+            <Credentials>
+                <User>accountmetadata@gold.com</User>
                 <Password>wso2123</Password>
             </Credentials>
         </PSUInfo>

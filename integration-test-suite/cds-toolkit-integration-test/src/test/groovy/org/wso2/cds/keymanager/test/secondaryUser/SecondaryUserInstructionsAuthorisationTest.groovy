@@ -144,7 +144,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
 //                .when()
 //                .get(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
 
-        String adrName = "jFQuQ4eQbNCMSqdCog21nF"
+        String adrName = auConfiguration.getADRName()
 
         //Send Authorisation Request via PAR
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
@@ -256,7 +256,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
                 .execute()
     }
 
-    // No select all account feature in the current implementation
+    // TODO: Enable the test after implementing the "select all" button in the account selection page
     @Test(enabled = false)
     void "CDS-546_Verify selecting all secondary user accounts in authorisation"() {
 
@@ -289,7 +289,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
         Assert.assertNotNull(authorisationCode)
     }
 
-    // No cancellation button in the account selection page
+    // TODO: Enable the test after implementing the "Cancel" button in the account selection page
     @Test(priority = 2, enabled = false)
     void "CDS-549_Verify cancellation of authorisation process in account selection page without selecting accounts"() {
 
@@ -318,6 +318,14 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
 
     @Test
     void "CDS-550_Verify cancellation of authorisation process in account selection page by selecting an accounts"() {
+
+        // To make sure secondary account 1 is active
+        shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts(), true)
+        String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
+        String userId = auConfiguration.getUserPSUName(0)
+
+        def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
+        Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")

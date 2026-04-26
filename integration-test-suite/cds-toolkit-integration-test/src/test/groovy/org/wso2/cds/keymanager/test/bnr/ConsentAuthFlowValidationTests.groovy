@@ -44,20 +44,43 @@ import java.nio.charset.Charset
  */
 class ConsentAuthFlowValidationTests extends AUTest {
 
+
     def clientHeader
     String accountID
     String accountOwnerUserID
+    String nominatedRepUserID
+    String nominatedRepUserID2
 
     @BeforeClass(alwaysRun = true)
-    void setup() {
-        auConfiguration.setPsuNumber(3)
+    void "Nominate Business User Representative"() {
+        auConfiguration.setPsuNumber(2)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
-        def sharableAccountList = getSharableBankAccounts().jsonPath().get(AUConstants.DATA)
-        def orgAAccount = sharableAccountList.find { it[AUConstants.PARAM_PROFILE_NAME] == "Organization A" }
-        Assert.assertNotNull(orgAAccount, "Organization A account not found in sharable payload")
-        accountID = orgAAccount[AUConstants.ACCOUNT_ID]
-        accountOwnerUserID = orgAAccount[AUConstants.BUSINESS_ACCOUNT_INFO][AUConstants.ACCOUNT_OWNERS][AUConstants.MEMBER_ID][0]
+        //Get Sharable Account List and Nominate Business Representative with Authorize and View Permissions
+        def shareableElements = AUTestUtil.getSharableAccountsList(getSharableBankAccounts())
+
+        accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
+        accountOwnerUserID = shareableElements[AUConstants.ACCOUNT_OWNER_USER_ID]
+        nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
+        nominatedRepUserID2 = shareableElements[AUConstants.NOMINATED_REP_USER_ID2]
+
+        def updateResponse = addMultiBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString(), nominatedRepUserID2,
+                AUBusinessUserPermission.VIEW.getPermissionString())
+        Assert.assertTrue(
+                updateResponse.statusCode() == AUConstants.CREATED ||
+                        updateResponse.statusCode() == AUConstants.OK
+        )
+
+        def businessAccount3 = "586-522-B0025"
+        def updateSecondAccPermissionResponse = addMultiBusinessUserPermission(
+                clientHeader, businessAccount3, accountOwnerUserID, nominatedRepUserID,
+                AUBusinessUserPermission.AUTHORIZE.getPermissionString(), nominatedRepUserID2,
+                AUBusinessUserPermission.VIEW.getPermissionString())
+        Assert.assertTrue(
+                updateSecondAccPermissionResponse.statusCode() == AUConstants.CREATED ||
+                        updateSecondAccPermissionResponse.statusCode() == AUConstants.OK
+        )
     }
 
     @Test
@@ -85,7 +108,8 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    @Test(priority = 1, enabled = false)
+    // TODO: Enable after implementing customer language rendering for individual and business consumer profiles
+      @Test(priority = 1, enabled = false)
     void "CDS-543_Verify customer language in consent page for individual consumer"() {
 
         auConfiguration.setPsuNumber(0)
@@ -120,7 +144,8 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    @Test(enabled = false)
+    // TODO: Enable after implementing customer language rendering for individual and business consumer profiles
+    @Test (enabled = false)
     void "CDS-544_Verify customer language in consent page for business consumer"() {
 
         List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_DETAIL_READ]
@@ -168,26 +193,33 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    // No cancel button in the account selection page
-    @Test(enabled = false)
+    // TODO: Enable the test after implementing the "cancel" button in the account selection page
+    @Test (enabled = false)
     void "CDS-484_Verify a Consent cancellation flow after Business Profile selection"() {
 
+        //Get Authorisation URL
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
+                .toURI().toString()
         authoriseUrl = appendPromptLoginConsent(authoriseUrl)
 
+        //Consent Authorisation UI Flow
         def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
                 .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    //Select Profile and Accounts
                     if (auConfiguration.getProfileSelectionEnabled()) {
+
+                        //Select Individual Profile
                         authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
 
                         authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CANCEL_XPATH)
                         driver.findElement(By.xpath(AUPageObjects.CONFIRM_CONSENT_DENY_XPATH)).click()
+
                     } else {
                         assert authWebDriver.isElementDisplayed(AUTestUtil.getSingleAccountXPath())
                         log.info("Profile Selection is Disabled")
@@ -248,7 +280,6 @@ class ConsentAuthFlowValidationTests extends AUTest {
     void "CDS-540_Consent Authorisation after updating nominated representatives permission from view to authorise"() {
 
         auConfiguration.setPsuNumber(3)
-        def nominatedRepUserID2 = "nominatedUser2@wso2.com"
 
         def permissionsResponse = getStakeholderPermissions(nominatedRepUserID2, accountID)
         Assert.assertEquals(permissionsResponse.statusCode(), AUConstants.OK)
@@ -291,7 +322,6 @@ class ConsentAuthFlowValidationTests extends AUTest {
     void "CDS-542_Consent Authorisation after updating nominated representatives permission from authorise to view"() {
 
         auConfiguration.setPsuNumber(3)
-        def nominatedRepUserID2 = "nominatedUser2@wso2.com"
 
         def permissionsResponse = getStakeholderPermissions(nominatedRepUserID2, accountID)
         Assert.assertEquals(permissionsResponse.statusCode(), AUConstants.OK)
@@ -324,7 +354,7 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    // No select all account checkbox in the current implementation
+    // TODO: Enable the test after implementing the "select all" button in the account selection page
     @Test(priority = 1, enabled = false)
     void "CDS-589_Verify select all option in account selection page"() {
 
@@ -381,21 +411,24 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    @Test(priority = 1)
+    @Test (priority = 1)
     void "CDS-512_Verify a Consent Authorization Flow with non NR"() {
 
         auConfiguration.setPsuNumber(0)
 
+        //Get Authorisation URL
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
         authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI()).toURI().toString()
 
+        //Consent Authorisation UI Flow
         def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
                 .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    //Select Profile and Accounts
                     if (auConfiguration.getProfileSelectionEnabled()) {
                         // No business accounts eligible — profile selection page is skipped,
                         // flow lands directly on the account selection page with individual accounts only
@@ -408,11 +441,12 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    @Test(priority = 1)
+    @Test (priority = 1)
     void "CDS-541_Verify same user nominated for multiple accounts"() {
 
         auConfiguration.setPsuNumber(3)
 
+        //Consent Authorisation UI Flow
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -424,6 +458,7 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
+                    //Select Profile and Accounts
                     if (auConfiguration.getProfileSelectionEnabled()) {
                         authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)

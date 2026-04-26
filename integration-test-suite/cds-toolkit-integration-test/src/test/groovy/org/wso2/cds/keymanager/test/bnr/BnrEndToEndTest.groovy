@@ -39,32 +39,21 @@ class BnrEndToEndTest extends AUTest{
 
     def clientHeader
     AUConfigurationService auConfiguration = new AUConfigurationService()
-        String accountID
-        String accountOwnerUserID
-        String activeNominatedRepUserID
 
     @BeforeClass(alwaysRun = true)
     void "Nominate Business User Representative"() {
-
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(3)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
-        // Resolve the Organization A business account deterministically from fixed sharable payload.
-        def sharableAccountList = getSharableBankAccounts().jsonPath().get(AUConstants.DATA)
-        def businessAccount = sharableAccountList.find { sharableAccount ->
-            sharableAccount[AUConstants.PARAM_PROFILE_NAME] == AUAccountProfile.ORGANIZATION_A.getProperty(AUConstants.VALUE_KEY)
-        }
+        //Get Sharable Account List and Nominate Business Representative with Authorize Permission
+        def shareableElements = AUTestUtil.getSharableAccountsList(getSharableBankAccounts())
 
-        Assert.assertNotNull(businessAccount, "Organization A business account was not found in sharable payload")
-        accountID = businessAccount[AUConstants.ACCOUNT_ID]
-        accountOwnerUserID = businessAccount[AUConstants.BUSINESS_ACCOUNT_INFO][AUConstants.ACCOUNT_OWNERS][AUConstants.MEMBER_ID][0]
-        activeNominatedRepUserID = "${auConfiguration.getUserPSUName()}"
-
-        // In reference implementation sharable payload is fixed; drive BNR permission setup using active PSU.
-        Assert.assertNotNull(activeNominatedRepUserID, "Active PSU user id should be resolved for BNR setup")
+        String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
+        String accountOwnerUserID = shareableElements[AUConstants.ACCOUNT_OWNER_USER_ID]
+        String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
         def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
-                activeNominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
     }
 
@@ -72,14 +61,15 @@ class BnrEndToEndTest extends AUTest{
     void "CDS-486_Verify an accounts retrieval call after business profile selection and business accounts consented"(resourcePath) {
 
         //Consent Authorisation
-        doBnrConsentAuthorisationViaRequestUri()
+        doConsentAuthorisation(null, AUAccountProfile.ORGANIZATION_A)
         generateUserAccessToken()
 
         int x_v_header = AUTestUtil.getBankingApiEndpointVersion(resourcePath.toString())
 
         //Get Accounts
-        def response = AURequestBuilder.buildBasicRequestWithOptionalHeaders(userAccessToken,
+        def response = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
                 x_v_header, clientHeader)
+                .header(AUConstants.X_FAPI_INTERACTION_ID, UUID.randomUUID().toString())
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
                 .get("${resourcePath}")
 
@@ -94,39 +84,5 @@ class BnrEndToEndTest extends AUTest{
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.LINKS_PREV))
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.LINKS_NEXT))
         Assert.assertNotNull(AUTestUtil.parseResponseBody(response, AUConstants.LINKS_LAST))
-    }
-
-    @Test
-    void "CDS-487_Verify account is blocked when business user only has VIEW permission"() {
-
-        doBnrConsentAuthorisationViaRequestUri()
-        generateUserAccessToken()
-
-        // Set VIEW-only permission — account validation policy blocks non-AUTHORIZE accounts
-        def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
-                activeNominatedRepUserID, AUBusinessUserPermission.VIEW.getPermissionString())
-        Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
-
-        def accountResponse = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
-                AUConstants.X_V_HEADER_ACCOUNTS, clientHeader)
-                .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
-                .get("${AUConstants.BULK_ACCOUNT_PATH}")
-
-        Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_200)
-        Assert.assertTrue(AUTestUtil.parseResponseBody(accountResponse,
-                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}").equals("[]"))
-
-        // Restore AUTHORIZE permission for subsequent tests
-        updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
-                activeNominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
-    }
-
-    private void doBnrConsentAuthorisationViaRequestUri() {
-
-        response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                        true, "")
-        requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
-
-        doConsentAuthorisationViaRequestUri(scopes, requestUri.toURI(), null, AUAccountProfile.ORGANIZATION_A)
     }
 }

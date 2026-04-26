@@ -29,6 +29,13 @@ import org.wso2.cds.test.framework.constant.AUConfigConstants
 class AUConfigurationService extends CommonConfigurationService {
 
     /**
+     * Get ADR Name
+     */
+    String getADRName() {
+        return configuration.get(ConfigConstants.COMMON + "." + AUConfigConstants.ADR_NAME)
+    }
+
+    /**
      * Get Mock CDR Register enabled
      */
     boolean getMockCDREnabled() {

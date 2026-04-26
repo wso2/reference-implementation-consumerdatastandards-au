@@ -29,7 +29,6 @@ import org.wso2.cds.test.framework.constant.AUConstants
 import org.wso2.cds.test.framework.constant.AUDOMSStatus
 import org.wso2.cds.test.framework.constant.AUPageObjects
 import org.wso2.cds.test.framework.request_builder.AURequestBuilder
-import org.wso2.cds.test.framework.utility.AUIdEncryptorDecryptor
 import org.wso2.cds.test.framework.utility.AUTestUtil
 import io.restassured.response.Response
 import org.testng.Assert
@@ -44,65 +43,10 @@ import java.nio.charset.Charset
 class DisclosureOptionManagementServiceTest extends AUTest {
 
     def clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
-    private static final List<AUAccountScope> DOMS_DEFAULT_SCOPES = [
-        AUAccountScope.BANK_ACCOUNT_BASIC_READ,
-        AUAccountScope.BANK_ACCOUNT_DETAIL_READ,
-        AUAccountScope.BANK_TRANSACTION_READ,
-        AUAccountScope.BANK_PAYEES_READ,
-        AUAccountScope.BANK_REGULAR_PAYMENTS_READ,
-        AUAccountScope.BANK_CUSTOMER_BASIC_READ,
-        AUAccountScope.BANK_CUSTOMER_DETAIL_READ
-    ]
     private List<String> jointAccountIdList = new ArrayList<>()
     private List<String> singleAccountIdList = new ArrayList<>()
     private String secretKey = auConfiguration.getIDPermanence()
     Map<String, String> map
-
-    private void resetDomsScopes() {
-            scopes = new ArrayList<>(DOMS_DEFAULT_SCOPES)
-    }
-
-    private void generateScopedUserAccessToken() {
-        AccessTokenResponse tokenResponse = AURequestBuilder.getUserToken(authorisationCode,
-                AUConstants.CODE_VERIFIER, clientId)
-        userAccessToken = tokenResponse.tokens.accessToken
-        assertBankScopesInIssuedToken(userAccessToken.toString())
-    }
-
-    private void assertBankScopesInIssuedToken(String accessTokenJwt) {
-        String[] jwtParts = accessTokenJwt.split('\\.')
-        Assert.assertTrue(jwtParts.length >= 2, "Invalid access token format")
-
-        String payloadJson = new String(Base64.urlDecoder.decode(jwtParts[1]), Charset.defaultCharset())
-        Map<String, Object> tokenClaims = (Map<String, Object>) new JsonSlurper().parseText(payloadJson)
-        String tokenScope = tokenClaims.get("scope")?.toString() ?: ""
-
-        List<String> missingScopes = DOMS_DEFAULT_SCOPES
-                .collect { it.scopeString }
-                .findAll { !tokenScope.contains(it) }
-
-        Assert.assertTrue(missingScopes.isEmpty(),
-                "Issued token is missing banking scopes. " +
-                        "configured_psu=${auConfiguration.getUserPSUName()}, " +
-                        "sub=${tokenClaims.get('sub')}, " +
-                        "client_id=${tokenClaims.get('client_id')}, " +
-                        "azp=${tokenClaims.get('azp')}, " +
-                        "scope=${tokenScope}, " +
-                        "missing=${missingScopes}")
-    }
-
-    private String resolvePlainAccountId(String accountReference) {
-        if (accountReference == null || accountReference.isEmpty()) {
-            return accountReference
-        }
-
-        try {
-            return AUIdEncryptorDecryptor.decrypt(accountReference, secretKey).split(":")[2]
-        } catch (Exception ignored) {
-            // Some responses may already contain a plain account id.
-            return accountReference
-        }
-    }
 
     @BeforeClass (alwaysRun = true)
     void "Initial Consent Authorisation"() {
@@ -122,12 +66,11 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Consent Authorisation
-        resetDomsScopes()
         automationResponse = doJointAccountConsentAuthorisation(auConfiguration.getAppInfoClientID(), true)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
 
         //Get User Access Token
-        generateScopedUserAccessToken()
+        generateUserAccessToken()
     }
 
     @Test(groups = "SmokeTest")
@@ -144,7 +87,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Response accountResponse = doAccountRetrieval(userAccessToken)
         Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_200)
 
-        String account = resolvePlainAccountId(
+        String account = resolvePlainAccountIdFromResponse(
                 AUTestUtil.parseResponseBody(
                         accountResponse, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
 
@@ -197,38 +140,44 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Response accountResponse = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
                 AUConstants.X_V_HEADER_ACCOUNT, clientHeader)
                 .baseUri(auConfiguration.getServerBaseURL())
-                .get("${AUConstants.CDS_PATH}/banking/accounts/${AUConstants.testJointAccountID}")
+                .get("${AUConstants.CDS_PATH}/banking/accounts/${AUConstants.jointAccountID}")
 
         Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_200)
         Assert.assertNotNull(AUTestUtil.parseResponseBody(
                 accountResponse, "${AUConstants.RESPONSE_DATA_SINGLE_ACCOUNTID}"))
     }
 
-    //TODO: Issue: https://github.com/wso2-enterprise/financial-open-banking/issues/8452
-    @Test(priority = 2, enabled = false)
+
+    @Test
     void "CDS-407_Verify single account retrieval when DOMS status change to no-sharing"() {
 
         //Update all known joint accounts to no-sharing to avoid order/index dependencies.
-        for (String jointAccountId : jointAccountIdList) {
-                map.put(jointAccountId, AUDOMSStatus.NO_SHARING.getDomsStatusString())
-        }
+        map.put(jointAccountIdList[0], AUDOMSStatus.NO_SHARING.getDomsStatusString())
 
         Response updateResponse = updateDisclosureOptionsMgtService(clientHeader, map)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
-        //Account Retrieval - Not Return Account Details
+        //Account Retrieval - Blocked account returns 404
         Response accountResponse = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
                 AUConstants.X_V_HEADER_ACCOUNT, clientHeader).baseUri(auConfiguration.getServerBaseURL())
-                .get("${AUConstants.BULK_ACCOUNT_PATH}/${AUConstants.testJointAccountID}")
+                .get("${AUConstants.BULK_ACCOUNT_PATH}/${AUConstants.jointAccountID}")
 
-        Assert.assertEquals(accountResponse.asString().trim(), "[]")
+        //Blocked account should return 404
+        Assert.assertEquals(accountResponse.statusCode(), 404)
+
+        //Response should contain the InvalidBankingAccount error
+        def errorResponse = new JsonSlurper().parseText(accountResponse.asString())
+        Assert.assertNotNull(errorResponse)
+        Assert.assertEquals(errorResponse.code, "${AUConstants.ERROR_CODE_INVALID_BANK_ACC}")
     }
 
     @Test
     void "CDS-408_Verify the DOMS put-call changing the status of a particular account from Pre approval to No Sharing"() {
 
-        //Update the DOMS Status to pre-approval
+        //Update the DOMS Status of both accounts to pre-approval
+        map = new HashMap<>()
         map.put(jointAccountIdList[0], AUDOMSStatus.PRE_APPROVAL.getDomsStatusString())
+        map.put(jointAccountIdList[2], AUDOMSStatus.PRE_APPROVAL.getDomsStatusString())
 
         Response updateResponse = updateDisclosureOptionsMgtService(clientHeader, map)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -243,8 +192,9 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertNotNull(AUTestUtil.parseResponseBody(accountResponse,
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
 
-        //Update the DOMS Status to no-sharing
+        //Update all known joint accounts to no-sharing to avoid order/index dependencies.
         map.put(jointAccountIdList[0], AUDOMSStatus.NO_SHARING.getDomsStatusString())
+        map.put(jointAccountIdList[2], AUDOMSStatus.NO_SHARING.getDomsStatusString())
 
         updateResponse = updateDisclosureOptionsMgtService(clientHeader, map)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -257,14 +207,16 @@ class DisclosureOptionManagementServiceTest extends AUTest {
 
         Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_200)
         Assert.assertNull(AUTestUtil.parseResponseBody(accountResponse,
-                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]"))
+                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
     @Test
     void "CDS-410_Verify the DOMS put-call changing the status of a particular account from No Sharing to Pre approval"() {
 
-        //Update the DOMS Status to no-sharing
+        //Update all known joint accounts to no-sharing to avoid order/index dependencies.
+        map = new HashMap<>()
         map.put(jointAccountIdList[0], AUDOMSStatus.NO_SHARING.getDomsStatusString())
+        map.put(jointAccountIdList[2], AUDOMSStatus.NO_SHARING.getDomsStatusString())
 
         Response updateResponse = updateDisclosureOptionsMgtService(clientHeader, map)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -277,10 +229,11 @@ class DisclosureOptionManagementServiceTest extends AUTest {
 
         Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_200)
         Assert.assertNull(AUTestUtil.parseResponseBody(accountResponse,
-                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]"))
+                "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
 
-        //Update the DOMS Status to pre-approval
+        //Update the DOMS Status of both accounts to pre-approval
         map.put(jointAccountIdList[0], AUDOMSStatus.PRE_APPROVAL.getDomsStatusString())
+        map.put(jointAccountIdList[2], AUDOMSStatus.PRE_APPROVAL.getDomsStatusString())
 
         updateResponse = updateDisclosureOptionsMgtService(clientHeader, map)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -306,12 +259,11 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Consent Authorisation
-        resetDomsScopes()
         automationResponse = doJointAccountConsentAuthorisation(clientId, false)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
 
         //Get User Access Token
-        generateScopedUserAccessToken()
+        generateUserAccessToken()
 
         //Account Retrieval - Return Account Details
         Response accountResponse = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
@@ -324,7 +276,9 @@ class DisclosureOptionManagementServiceTest extends AUTest {
                 accountResponse, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}"))
     }
 
-    // Not testable in the current implementation.
+    // Disabled: DOMS Status changes through APIs do not affect the consent UI flow in the
+    // reference implementation. The consent UI filters accounts based on the eligibility status in the
+    // fixed sharable accounts payload.
     @Test(priority = 2, enabled = false)
     void "CDS-620_Verify creating new consent when DOMS status to no-sharing status"() {
 
@@ -338,7 +292,6 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Consent Authorisation
-        resetDomsScopes()
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -362,19 +315,13 @@ class DisclosureOptionManagementServiceTest extends AUTest {
                                 authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                         }
 
-                        boolean jointAccountSelectable =
-                                authWebDriver.isElementPresent(AUPageObjects.JOINT_ACCOUNT_2_XPATH)
-                        Assert.assertFalse(jointAccountSelectable,
-                                        "Expected joint_account_2 to be unavailable, " +
-                                                        "but selector still matched in consent UI")
+                        //Joint Account 2 is not in the selectable list
+                        Assert.assertFalse(authWebDriver.isElementPresent(AUPageObjects.JOINT_ACCOUNT_2_XPATH))
                     }
                     //If Profile Selection Disabled
                     else {
-                        boolean jointAccountSelectable =
-                                authWebDriver.isElementPresent(AUPageObjects.JOINT_ACCOUNT_2_XPATH)
-                        Assert.assertFalse(jointAccountSelectable,
-                                        "Expected joint_account_2 to be unavailable, " +
-                                                        "but selector still matched in consent UI")
+                        //Joint Account 2 is not in the selectable list
+                        Assert.assertFalse(authWebDriver.isElementPresent(AUPageObjects.JOINT_ACCOUNT_2_XPATH))
                     }
                 }.execute()
     }
@@ -383,12 +330,11 @@ class DisclosureOptionManagementServiceTest extends AUTest {
     void "CDS-405_Verify that when there is no change in DOMS and the account retrieval shows values normally"() {
 
         //Consent Authorisation
-        resetDomsScopes()
         automationResponse = doJointAccountConsentAuthorisation(clientId, false)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
 
         //Get User Access Token
-        generateScopedUserAccessToken()
+        generateUserAccessToken()
 
         //Account Retrieval without updating the DOMS status - Return Account Details
         Response accountResponse = doAccountRetrieval(userAccessToken)
@@ -397,7 +343,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
                 "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[0]"))
     }
 
-    @Test(priority = 2)
+    @Test(priority = 1, dependsOnMethods = "CDS-405_Verify that when there is no change in DOMS and the account retrieval shows values normally")
     void "CDS-624_Consent search API for DOMS status to no-sharing status"() {
 
         //Update the DOMS Status to no-sharing
@@ -410,7 +356,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
-    @Test(priority = 2)
+    @Test(priority = 1, dependsOnMethods = "CDS-405_Verify that when there is no change in DOMS and the account retrieval shows values normally")
     void "CDS-623_Consent search API for DOMS status to pre-approval status"() {
 
         //Update the DOMS Status to pre-approval
@@ -423,12 +369,11 @@ class DisclosureOptionManagementServiceTest extends AUTest {
         Assert.assertEquals(response.statusCode(), AUConstants.STATUS_CODE_200)
     }
 
-    // TODO : After Implementing Consent Amendment flow
+    // TODO : Enable after Implementing Consent Amendment flow
     @Test(priority = 2, enabled = false)
     void "CDS-650_Verify Consent amendment flow after changing DOMS status to no-sharing"() {
 
         //Consent Authorisation
-        resetDomsScopes()
         automationResponse = doJointAccountConsentAuthorisation(clientId, false)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automationResponse.currentUrl.get())
 

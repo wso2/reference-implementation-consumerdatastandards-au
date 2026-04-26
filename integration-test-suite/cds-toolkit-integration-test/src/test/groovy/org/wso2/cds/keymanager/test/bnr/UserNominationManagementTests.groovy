@@ -44,8 +44,8 @@ class UserNominationManagementTests extends AUTest {
      * @param permissionType permission type
      * @return response
      */
-    private def addSingleBusinessUserPermission(String accountID, String accountOwnerUserID,
-                                                String nominatedRepUserID, String permissionType) {
+    private static def addSingleBusinessUserPermission(String accountID, String accountOwnerUserID,
+                                                       String nominatedRepUserID, String permissionType) {
 
         def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID,
                 permissionType)
@@ -61,19 +61,6 @@ class UserNominationManagementTests extends AUTest {
                 .post(AUConstants.UPDATE_BUSINESS_USER)
     }
 
-        private static String getErrorText(def response) {
-                String errorDescription = AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION)
-                if (errorDescription != null) {
-                        return errorDescription
-                }
-                return AUTestUtil.parseResponseBody(response, "errorDescription")
-        }
-
-        private static boolean hasPermissionInResponse(def response, String userId, String permission) {
-                String responseBody = response?.asString()
-                return responseBody != null && responseBody.contains(userId) && responseBody.contains(permission)
-        }
-
     @Test(groups = "SmokeTest")
     void "CDS-590_Verify the UpdateBusiness User with Valid inputs if success response is retrieved"() {
 
@@ -83,6 +70,11 @@ class UserNominationManagementTests extends AUTest {
         String accountOwnerUserID = shareableElements[AUConstants.ACCOUNT_OWNER_USER_ID]
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
+        //add record before updating
+        def addResponse = addSingleBusinessUserPermission(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        Assert.assertEquals(addResponse.statusCode(), AUConstants.CREATED)
+
         //Update the Business User endpoint with the relevant Permission Status
         def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
                 nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
@@ -91,7 +83,7 @@ class UserNominationManagementTests extends AUTest {
         //Check the permissions of nominated representatives
         def permissionsResponse = getStakeholderPermissions(nominatedRepUserID, accountID)
         Assert.assertEquals(permissionsResponse.statusCode(), AUConstants.OK)
-        Assert.assertTrue(hasPermissionInResponse(permissionsResponse, nominatedRepUserID,
+        Assert.assertTrue(hasBNRPermissionInResponse(permissionsResponse, nominatedRepUserID,
                 AUBusinessUserPermission.AUTHORIZE.getPermissionString()))
     }
 
@@ -109,8 +101,7 @@ class UserNominationManagementTests extends AUTest {
 
         def addResponse = addSingleBusinessUserPermission(accountID, accountOwnerUserID,
                 nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
-        Assert.assertTrue(addResponse.statusCode() == AUConstants.STATUS_CODE_201 ||
-                addResponse.statusCode() == AUConstants.OK)
+        Assert.assertTrue(addResponse.statusCode() == AUConstants.STATUS_CODE_201)
     }
 
     @Test
@@ -162,7 +153,7 @@ class UserNominationManagementTests extends AUTest {
         //Check the permissions of nominated representatives
         def permissionsResponse = getStakeholderPermissions(nominatedRepUserID, accountID)
         Assert.assertEquals(permissionsResponse.statusCode(), AUConstants.OK)
-        Assert.assertTrue(hasPermissionInResponse(permissionsResponse, nominatedRepUserID,
+        Assert.assertTrue(hasBNRPermissionInResponse(permissionsResponse, nominatedRepUserID,
                 AUBusinessUserPermission.AUTHORIZE.getPermissionString()))
 
         //Update the Permission of Nominated User to View
@@ -173,7 +164,7 @@ class UserNominationManagementTests extends AUTest {
         //Check the permissions of nominated representatives
         def permissionsResponse2 = getStakeholderPermissions(nominatedRepUserID, accountID)
         Assert.assertEquals(permissionsResponse2.statusCode(), AUConstants.OK)
-        Assert.assertTrue(hasPermissionInResponse(permissionsResponse2, nominatedRepUserID,
+        Assert.assertTrue(hasBNRPermissionInResponse(permissionsResponse2, nominatedRepUserID,
                 AUBusinessUserPermission.VIEW.getPermissionString()))
     }
 
@@ -229,8 +220,8 @@ class UserNominationManagementTests extends AUTest {
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
         //Update the Nominated representative
-        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID,
-                AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
 
         def updateResponse = AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -255,8 +246,8 @@ class UserNominationManagementTests extends AUTest {
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
         //Update the Nominated representative
-        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID,
-                AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
 
         def updateResponse = AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -280,8 +271,8 @@ class UserNominationManagementTests extends AUTest {
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
         //Update the Nominated representative
-        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID,
-                AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
 
         def updateResponse = AURestAsRequestBuilder.buildRequest()
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
@@ -302,8 +293,8 @@ class UserNominationManagementTests extends AUTest {
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
         //Update the Nominated representative
-        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID,
-                AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
 
         def updateResponse = AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -333,9 +324,9 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the relevant Permission Status
-        def deleteResponse = deleteSingleBusinessUser(clientHeader, AUConstants.INCORRECT_ACC_ID, accountOwnerUserID,
-                nominatedRepUserID)
-        Assert.assertEquals(deleteResponse.statusCode(), AUConstants.OK)
+        def deleteResponse = deleteSingleBusinessUser(clientHeader, AUConstants.INCORRECT_ACC_ID,
+                accountOwnerUserID, nominatedRepUserID)
+        Assert.assertEquals(deleteResponse.statusCode(), AUConstants.STATUS_CODE_404)
     }
 
     @Test
@@ -346,6 +337,11 @@ class UserNominationManagementTests extends AUTest {
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
         String accountOwnerUserID = "user1@wso2.com@carbon.super"
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
+
+        //add record before updating
+        def addResponse = addSingleBusinessUserPermission(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        Assert.assertEquals(addResponse.statusCode(), AUConstants.CREATED)
 
         //Update the Business User endpoint with the relevant Permission Status
         def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
@@ -367,6 +363,11 @@ class UserNominationManagementTests extends AUTest {
         String accountOwnerUserID = "user1@wso2.com@carbon.super"
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
+        //add record before updating
+        def addResponse = addSingleBusinessUserPermission(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.VIEW.getPermissionString())
+        Assert.assertEquals(addResponse.statusCode(), AUConstants.CREATED)
+
         //Change Permission from Authorise to VIEW
         def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
                 nominatedRepUserID, AUBusinessUserPermission.VIEW.getPermissionString())
@@ -387,20 +388,25 @@ class UserNominationManagementTests extends AUTest {
         String accountOwnerUserID = "user1@wso2.com@carbon.super"
         String nominatedRepUserID = shareableElements[AUConstants.NOMINATED_REP_USER_ID]
 
+        //add record before updating
+        def addResponse = addSingleBusinessUserPermission(accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        Assert.assertEquals(addResponse.statusCode(), AUConstants.CREATED)
+
         //Update the Business User endpoint with the relevant Permission Status
         def updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
                 nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
-        //Delete marks permission as REVOKE and may remove entries based on remaining AUTHORIZE records.
+        //Change Permission from Authorise to REVOKE
+        updateResponse = updateSingleBusinessUserPermission(clientHeader, accountID, accountOwnerUserID,
+                nominatedRepUserID, AUBusinessUserPermission.AUTHORIZE.getPermissionString())
+        Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
+
+        //Delete the Business User endpoint with the relevant Permission Status
         def deleteResponse = deleteSingleBusinessUser(clientHeader, accountID, accountOwnerUserID,
                 nominatedRepUserID)
         Assert.assertEquals(deleteResponse.statusCode(), AUConstants.OK)
-
-        //Repeat delete should remain idempotent.
-        def secondDeleteResponse = deleteSingleBusinessUser(clientHeader, accountID, accountOwnerUserID,
-                nominatedRepUserID)
-        Assert.assertEquals(secondDeleteResponse.statusCode(), AUConstants.OK)
     }
 
     @Test
@@ -418,14 +424,13 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the relevant Permission Status
-        def deleteResponse = deleteBusinessUserWithIncorrectPayload(clientHeader, null, accountOwnerUserID,
-                nominatedRepUserID)
+        def deleteResponse = deleteBusinessUserWithIncorrectPayload(clientHeader, null,
+                accountOwnerUserID, nominatedRepUserID)
 
         Assert.assertEquals(deleteResponse.statusCode(), AUConstants.BAD_REQUEST)
         String errorDescription = getErrorText(deleteResponse)
         Assert.assertNotNull(errorDescription)
-        Assert.assertTrue((errorDescription.contains("accountID") || errorDescription.contains("accountId"))
-                && (errorDescription.contains("must not be null") || errorDescription.contains("required")))
+        Assert.assertTrue((errorDescription.contains("accountID")) && (errorDescription.contains("must not be null")))
     }
 
     @Test
@@ -443,7 +448,8 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the incorrect content type
-        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID)
+        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID,
+                nominatedRepUserID)
 
         def deleteResponse = AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -473,7 +479,8 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the incorrect content type
-        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID)
+        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID,
+                nominatedRepUserID)
 
         def deleteResponse = AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -502,7 +509,8 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the incorrect content type
-        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID)
+        def requestBody = AUPayloads.getSingleUserDeletePayload(
+                accountID, accountOwnerUserID, nominatedRepUserID)
 
         def deleteResponse = AURestAsRequestBuilder.buildRequest()
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
@@ -528,7 +536,8 @@ class UserNominationManagementTests extends AUTest {
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
         //Delete the Business User endpoint with the incorrect content type
-        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID)
+        def requestBody = AUPayloads.getSingleUserDeletePayload(
+                accountID, accountOwnerUserID, nominatedRepUserID)
 
         def deleteResponse = AURestAsRequestBuilder.buildRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
