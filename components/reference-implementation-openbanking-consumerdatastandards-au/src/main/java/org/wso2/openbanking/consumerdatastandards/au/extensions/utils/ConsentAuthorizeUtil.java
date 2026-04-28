@@ -173,8 +173,10 @@ public class ConsentAuthorizeUtil {
             consentData.setAdditionalProperty(CommonConstants.ID_TOKEN_CLAIMS,
                     Collections.singletonList(idTokenClaim.toString()));
 
-            //Specify to handle Account Selection Page Separately.
-            consentData.setHandleAccountSelectionSeparately(true);
+            if (!ConfigurableProperties.PROFILE_SELECTION_PAGE_ENABLED) {
+                //Specify to handle Account Selection Page Separately.
+                consentData.setHandleAccountSelectionSeparately(true);
+            }
 
             //Set allow multiple accounts to true
             consentData.setAllowMultipleAccounts(true);
@@ -255,7 +257,121 @@ public class ConsentAuthorizeUtil {
      */
     private static boolean isJointAccountElectable(JSONObject accountJson) {
         return !CommonConstants.JOINT_ACCOUNT_ELECTION_STATUS_NOT_ELECTED
-            .equalsIgnoreCase(accountJson.optString(CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS, ""));
+                .equalsIgnoreCase(accountJson.optString(CommonConstants.JOINT_ACCOUNT_CONSENT_ELECTION_STATUS, ""));
+    }
+
+    /**
+     * Checks whether a business account is eligible for the authenticated user.
+     *
+     * A business account is eligible only if the authenticated user appears in
+     * businessAccountInfo.NominatedRepresentatives[].memberId.
+     *
+     * @param accountJson account JSON payload
+     * @param userId authenticated user id
+     * @return true when the user is a nominated representative
+     */
+    private static boolean isBusinessAccountEligible(JSONObject accountJson, String userId) {
+
+        JSONObject businessInfo = accountJson.optJSONObject(CommonConstants.BUSINESS_ACCOUNT_INFO_TAG);
+        if (businessInfo == null) {
+            return false;
+        }
+
+        JSONArray representatives = businessInfo.optJSONArray(CommonConstants.NOMINATED_REPRESENTATIVES_TAG);
+        if (representatives != null && StringUtils.isNotBlank(userId)) {
+            for (int i = 0; i < representatives.length(); i++) {
+                JSONObject representative = representatives.optJSONObject(i);
+                if (representative == null) {
+                    continue;
+                }
+
+                if (representative.optString(CommonConstants.MEMBER_ID_TAG, "").equalsIgnoreCase(userId)) {
+                    return true;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Extracts business account owners from account payload.
+     *
+     * @param accountJson account JSON payload
+     * @return list of business account owner member ids
+     */
+    private static List<String> extractBusinessAccountOwners(JSONObject accountJson) {
+        return extractBusinessMemberIds(accountJson, CommonConstants.ACCOUNT_OWNERS_TAG, null);
+    }
+
+    /**
+     * Extracts nominated representatives excluding the authenticated user.
+     *
+     * @param accountJson account JSON payload
+     * @param userId authenticated user id
+     * @return list of nominated representative member ids excluding userId
+     */
+    private static List<String> extractNominatedRepresentativesExcludingUser(JSONObject accountJson, String userId) {
+        return extractBusinessMemberIds(accountJson, CommonConstants.NOMINATED_REPRESENTATIVES_TAG, userId);
+    }
+
+    /**
+     * Extracts member ids from a business account info section.
+     *
+     * @param accountJson account JSON payload
+     * @param arrayTag businessAccountInfo array key
+     * @param excludedUserId optional user id to exclude from results
+     * @return list of member ids from the requested section
+     */
+    private static List<String> extractBusinessMemberIds(JSONObject accountJson, String arrayTag,
+            String excludedUserId) {
+
+        List<String> memberIds = new ArrayList<>();
+        JSONObject businessInfo = accountJson.optJSONObject(CommonConstants.BUSINESS_ACCOUNT_INFO_TAG);
+        if (businessInfo == null) {
+            return memberIds;
+        }
+
+        JSONArray members = businessInfo.optJSONArray(arrayTag);
+        if (members == null) {
+            return memberIds;
+        }
+
+        for (int i = 0; i < members.length(); i++) {
+            JSONObject member = members.optJSONObject(i);
+            if (member == null) {
+                continue;
+            }
+
+            String memberId = StringUtils.trimToEmpty(member.optString(CommonConstants.MEMBER_ID_TAG, ""));
+
+            if (StringUtils.isNotBlank(excludedUserId) && memberId.equalsIgnoreCase(excludedUserId)) {
+                continue;
+            }
+
+            memberIds.add(memberId);
+        }
+
+        return memberIds;
+    }
+
+    /**
+     * Determines whether an account is eligible to be shown for consent selection.
+     *
+     * @param accountJson account JSON payload
+     * @param isJointAccount whether account is joint
+     * @param isSecondaryAccount whether account is secondary
+     * @param isBusinessAccount whether account is business
+     * @param userId authenticated user id
+     * @param secondaryInstructionStatusMap map of accountId to secondary account instruction status,
+     * @return true if account passes all eligibility checks
+     */
+    private static boolean isAccountEligible(JSONObject accountJson, boolean isJointAccount, boolean isSecondaryAccount,
+                                             boolean isBusinessAccount, String userId,
+                                             Map<String, String> secondaryInstructionStatusMap) {
+        return (!isJointAccount || isJointAccountElectable(accountJson))
+                && (!isSecondaryAccount || isSecondaryAccountEligible(accountJson, secondaryInstructionStatusMap))
+                && (!isBusinessAccount || isBusinessAccountEligible(accountJson, userId));
     }
 
     /**
@@ -314,6 +430,7 @@ public class ConsentAuthorizeUtil {
      * @param account The account object to be populated
      * @param accountList The list of eligible accounts
      * @param blockedAccountsList The list of blocked accounts
+     * @param userId authenticated user id
      * @param hasMultipleAccounts hasMultipleAccounts Whether the authenticated user has multiple accounts
      * @param secondaryInstructionStatusMap map of accountId to secondary account instruction status,
      *                                      fetched once before the loop
@@ -321,36 +438,61 @@ public class ConsentAuthorizeUtil {
     private static void processAccount(
             JSONObject accountJson, SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account,
             List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList,
-            List<AdditionalDataItem> blockedAccountsList,
+            List<AdditionalDataItem> blockedAccountsList, String userId,
             boolean hasMultipleAccounts,
             Map<String, String> secondaryInstructionStatusMap) {
 
         String accountId = accountJson.getString(CommonConstants.ACCOUNT_ID);
         boolean isJointAccount = accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false);
         boolean isSecondaryAccount = accountJson.optBoolean(CommonConstants.IS_SECONDARY_ACCOUNT_RESPONSE, false);
+        boolean isBusinessAccount = CommonConstants.BUSINESS_ACCOUNT_TYPE.equalsIgnoreCase(
+            accountJson.optString(CommonConstants.CUSTOMER_ACCOUNT_TYPE, ""));
 
-        // Check eligibility for each account.
-        if (!(!isJointAccount || isJointAccountElectable(accountJson)) ||
-                !(!isSecondaryAccount || isSecondaryAccountEligible(accountJson, secondaryInstructionStatusMap))) {
+        // Check eligibility for each account and block account if any eligibility check fails
+        if (!isAccountEligible(accountJson, isJointAccount, isSecondaryAccount, isBusinessAccount, userId,
+                secondaryInstructionStatusMap)) {
             // Block account if any eligibility check fails
             AdditionalDataItem blockedItem = new AdditionalDataItem();
-            blockedItem.setItem(getDisplayNameWithAccountNumber(
-                    accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+            blockedItem.setItem(accountJson.getString(CommonConstants.DISPLAY_NAME));
+
+            if (isBusinessAccount && ConfigurableProperties.PROFILE_SELECTION_PAGE_ENABLED) {
+                blockedItem.setType(accountJson.optString(CommonConstants.PROFILE_ID_RESPONSE_TAG, ""));
+            }
+
             blockedAccountsList.add(blockedItem);
             return;
         }
 
+        // Enrich with type-specific additional properties
         List<String> linkedMembers = Collections.emptyList();
 
-        // Enrich with type-specific additional properties
+        // Setting Linked member Details for joint accounts.
         if (isJointAccount) {
             linkedMembers = extractLinkedMembers(accountJson);
             account.setAdditionalProperty(CommonConstants.LINKED_MEMBERS, linkedMembers);
         }
+
+        // Setting secondary account owners data for secondary accounts.
         if (isSecondaryAccount) {
             account.setAdditionalProperty(CommonConstants.SECONDARY_ACCOUNT_OWNERS_TAG,
                     extractSecondaryAccountOwners(accountJson));
             account.setAdditionalProperty(CommonConstants.OTHER_ACCOUNTS_AVAILABILITY_FIELD, hasMultipleAccounts);
+        }
+
+        // Setting BNR and account owners data for business accounts.
+        if (isBusinessAccount) {
+            account.setAdditionalProperty(CommonConstants.ACCOUNT_OWNERS_TAG,
+                    extractBusinessAccountOwners(accountJson));
+            account.setAdditionalProperty(CommonConstants.NOMINATED_REPRESENTATIVES_TAG,
+                    extractNominatedRepresentativesExcludingUser(accountJson, userId));
+
+            // add profile data if profile selection page is enabled.
+            if (ConfigurableProperties.PROFILE_SELECTION_PAGE_ENABLED) {
+                account.setAdditionalProperty(CommonConstants.PROFILE_ID_TAG
+                        , accountJson.optString(CommonConstants.PROFILE_ID_RESPONSE_TAG, ""));
+                account.setAdditionalProperty(CommonConstants.PROFILE_NAME_TAG ,
+                        accountJson.optString(CommonConstants.PROFILE_NAME_RESPONSE_TAG, ""));
+            }
         }
 
         if (isJointAccount && !isSecondaryAccount) {
@@ -358,8 +500,7 @@ public class ConsentAuthorizeUtil {
             account.setDescription(buildJointAccountTooltipDescription(linkedMembers.size()));
         }
 
-        account.setDisplayName(getDisplayNameWithAccountNumber(
-                accountJson.getString(CommonConstants.DISPLAY_NAME), accountId));
+        account.setDisplayName(accountJson.getString(CommonConstants.DISPLAY_NAME));
         accountList.add(account);
     }
 
@@ -430,12 +571,11 @@ public class ConsentAuthorizeUtil {
                 List<AdditionalDataItem> blockedAccountsList = new ArrayList<>();
 
                 for (int i = 0; i < accountsJSON.length(); i++) {
-
                     SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account =
                             new SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner();
                     JSONObject accountJson = accountsJSON.getJSONObject(i);
 
-                    processAccount(accountJson, account, accountList, blockedAccountsList,
+                    processAccount(accountJson, account, accountList, blockedAccountsList, userId,
                             hasMultipleAccounts, secondaryInstructionStatusMap);
                 }
 

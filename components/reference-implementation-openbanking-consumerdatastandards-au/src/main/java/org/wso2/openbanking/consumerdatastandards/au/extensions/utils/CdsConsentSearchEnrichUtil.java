@@ -56,13 +56,22 @@ public class CdsConsentSearchEnrichUtil {
      */
     public static SuccessResponseForConsentSearchData enrichSearchResult(Object enrichedObj, Object enrichmentParams)
             throws CdsConsentException {
-
+                
         SuccessResponseForConsentSearchData searchData = enrichDOMSStatus(enrichedObj);
+        Object enrichedSearchResult = searchData.getEnrichedSearchResult();
+        Map<String, Object> paramsMap = parseEnrichmentParams(enrichmentParams);
 
-        if (isSecondaryInfoEnrichmentRequested(enrichmentParams)) {
-            return enrichSecondaryAccountInfo(searchData.getEnrichedSearchResult());
+        if (isSecondaryInfoEnrichmentRequested(paramsMap)) {
+            enrichedSearchResult = enrichSecondaryAccountInfo(enrichedSearchResult).getEnrichedSearchResult();
         }
 
+        String canRevokeUserId = getCanRevokeUserId(paramsMap);
+        if (StringUtils.isNotBlank(canRevokeUserId)) {
+            enrichedSearchResult = enrichCanRevokeCapability(enrichedSearchResult, canRevokeUserId)
+                    .getEnrichedSearchResult();
+        }
+
+        searchData.setEnrichedSearchResult(enrichedSearchResult);
         return searchData;
     }
 
@@ -170,6 +179,61 @@ public class CdsConsentSearchEnrichUtil {
             }
 
             enrichConsentWithSecondaryInfo(consent);
+            enrichedSearchResults.add(consent.toMap());
+        }
+
+        searchData.setEnrichedSearchResult(enrichedSearchResults);
+        return searchData;
+    }
+
+    /**
+     * Enrich consent search response by adding can_revoke capability for each consent.
+     *
+     * @param enrichedObj search result object to enrich
+     * @param userId user ID used to evaluate BNR permissions
+     * @return enriched searchData wrapped in SuccessResponseForConsentSearchData
+     */
+    public static SuccessResponseForConsentSearchData enrichCanRevokeCapability(Object enrichedObj, String userId) {
+
+        SuccessResponseForConsentSearchData searchData = new SuccessResponseForConsentSearchData();
+        searchData.setEnrichedSearchResult(enrichedObj);
+
+        if (!(enrichedObj instanceof List)) {
+            log.warn("enrichedSearchResult is not a List, skipping can_revoke enrichment");
+            return searchData;
+        }
+
+        List<?> searchResultArray = (List<?>) enrichedObj;
+        Set<String> allActiveAccountIds = new LinkedHashSet<>();
+
+        for (Object consentObj : searchResultArray) {
+            JSONObject consent = toJSONObject(consentObj);
+            if (consent == null) {
+                continue;
+            }
+            allActiveAccountIds.addAll(extractActiveAccountIds(consent));
+        }
+
+        Map<String, String> accountPermissionMap = new HashMap<>();
+        if (!allActiveAccountIds.isEmpty()) {
+            Map<String, String> fetchedPermissionMap =
+                    AccountMetadataUtil.getBusinessStakeholderPermissionsForAccounts(
+                            new ArrayList<>(allActiveAccountIds), userId);
+            if (fetchedPermissionMap != null) {
+                accountPermissionMap.putAll(fetchedPermissionMap);
+            }
+        }
+
+        List<Object> enrichedSearchResults = new ArrayList<>();
+        for (Object consentObj : searchResultArray) {
+            JSONObject consent = toJSONObject(consentObj);
+            if (consent == null) {
+                enrichedSearchResults.add(consentObj);
+                continue;
+            }
+
+            boolean canRevoke = canUserRevokeConsent(consent, accountPermissionMap);
+            consent.put(CommonConstants.CAN_REVOKE_RESPONSE_PROPERTY, canRevoke);
             enrichedSearchResults.add(consent.toMap());
         }
 
@@ -352,14 +416,179 @@ public class CdsConsentSearchEnrichUtil {
      * @param enrichmentParams enrichment parameters supplied by the caller
      * @return {@code true} when secondary-account-info enrichment is requested; {@code false} otherwise
      */
-    private static boolean isSecondaryInfoEnrichmentRequested(Object enrichmentParams) {
+    private static boolean isSecondaryInfoEnrichmentRequested(Map<String, Object> paramsMap) {
+        return hasEnrichmentParam(paramsMap, CommonConstants.SECONDARY_ACCOUNT_INFO_TAG);
+    }
 
-        if (enrichmentParams == null) {
-            return false;
+    /**
+     * Resolve userId for can_revoke enrichment when all trigger conditions are met.
+     */
+    private static String getCanRevokeUserId(Map<String, Object> paramsMap) {
+
+        if (!hasEnrichmentParam(paramsMap, CommonConstants.CONSENT_TYPE_QUERY_PARAM)
+                || !hasEnrichmentParam(paramsMap, CommonConstants.USER_IDS_QUERY_PARAM)) {
+            return null;
         }
-        Map<?, ?> paramsMap = (Map<?, ?>) enrichmentParams;
-        return paramsMap.containsKey(CommonConstants.SECONDARY_ACCOUNT_INFO_TAG);
 
+        String consentType = getFirstParamValue(paramsMap, CommonConstants.CONSENT_TYPE_QUERY_PARAM);
+        if (!CommonConstants.ACCOUNTS.equalsIgnoreCase(consentType)) {
+            return null;
+        }
+
+        List<String> userIds = extractParamValues(getEnrichmentParamValue(paramsMap,
+                CommonConstants.USER_IDS_QUERY_PARAM));
+
+        return userIds.isEmpty() ? null : userIds.get(0);
+    }
+
+    /**
+     * Evaluate can_revoke for a consent using active account permissions.
+     */
+    private static boolean canUserRevokeConsent(JSONObject consent, Map<String, String> accountPermissionMap) {
+
+        Set<String> activeAccountIds = extractActiveAccountIds(consent);
+        for (String accountId : activeAccountIds) {
+            if (isBlockingRevokePermission(accountPermissionMap.get(accountId))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Extract all active account IDs linked to a consent.
+     */
+    private static Set<String> extractActiveAccountIds(JSONObject consent) {
+
+        Set<String> activeAccountIds = new LinkedHashSet<>();
+        JSONArray mappingResources = consent.optJSONArray(CommonConstants.CONSENT_MAPPING_RESOURCES);
+
+        for (int i = 0; i < mappingResources.length(); i++) {
+            JSONObject mapping = mappingResources.optJSONObject(i);
+
+            String accountId = mapping.optString(CommonConstants.ACCOUNT_ID, null);
+
+            // Checking whether the account mapping status is active
+            if (CommonConstants.ACTIVE_MAPPING_STATUS.equalsIgnoreCase(
+                    mapping.optString(CommonConstants.MAPPING_STATUS, null))) {
+                activeAccountIds.add(accountId);
+            }
+        }
+
+        return activeAccountIds;
+    }
+
+    /**
+     * Returns true when permission status retrieved is not equal to AUTHORIZE, if null returns false.
+     */
+    private static boolean isBlockingRevokePermission(String permission) {
+        return StringUtils.isNotBlank(permission)
+                && !CommonConstants.BUSINESS_STAKEHOLDER_PERMISSION_AUTHORIZE.equalsIgnoreCase(permission);
+    }
+
+    /**
+     * Parse enrichment params into a map regardless of whether the input is a Map or JSON object.
+     */
+    private static Map<String, Object> parseEnrichmentParams(Object enrichmentParams) {
+
+        Map<String, Object> paramsMap = new HashMap<>();
+        if (enrichmentParams instanceof Map) {
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) enrichmentParams).entrySet()) {
+                if (entry.getKey() != null) {
+                    paramsMap.put(String.valueOf(entry.getKey()), entry.getValue());
+                }
+            }
+        }
+
+        return paramsMap;
+    }
+
+    /**
+     * Check if enrichment parameter exists, matching keys case-insensitively.
+     */
+    private static boolean hasEnrichmentParam(Map<String, Object> paramsMap, String paramName) {
+        if (paramsMap != null && StringUtils.isNotBlank(paramName)) {
+            for (String key : paramsMap.keySet()) {
+                if (paramName.equalsIgnoreCase(key)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Get enrichment parameter value, matching keys case-insensitively.
+     */
+    private static Object getEnrichmentParamValue(Map<String, Object> paramsMap, String paramName) {
+        if (paramsMap == null || paramsMap.isEmpty() || StringUtils.isBlank(paramName)) {
+            return null;
+        }
+
+        for (Map.Entry<String, Object> entry : paramsMap.entrySet()) {
+            if (paramName.equalsIgnoreCase(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Extract first non-blank string value from an enrichment param.
+     */
+    private static String getFirstParamValue(Map<String, Object> paramsMap, String paramName) {
+        List<String> values = extractParamValues(getEnrichmentParamValue(paramsMap, paramName));
+        return values.isEmpty() ? null : values.get(0);
+    }
+
+    /**
+     * Extract string values from possible query param value shapes.
+     */
+    private static List<String> extractParamValues(Object rawValue) {
+
+        List<String> values = new ArrayList<>();
+        collectParamValues(rawValue, values);
+        return values;
+    }
+
+    /**
+     * Collect query param values recursively from strings, arrays, collections, and JSON arrays.
+     */
+    private static void collectParamValues(Object rawValue, List<String> values) {
+
+        if (rawValue == null) {
+            return;
+        }
+
+        if (rawValue instanceof String) {
+            String[] splitValues = ((String) rawValue).split(",");
+            for (String value : splitValues) {
+                String normalizedValue = StringUtils.trimToNull(value);
+                if (normalizedValue != null) {
+                    values.add(normalizedValue);
+                }
+            }
+            return;
+        }
+
+        if (rawValue instanceof Iterable) {
+            for (Object value : (Iterable<?>) rawValue) {
+                collectParamValues(value, values);
+            }
+            return;
+        }
+
+        if (rawValue.getClass().isArray() && rawValue instanceof Object[]) {
+            for (Object value : (Object[]) rawValue) {
+                collectParamValues(value, values);
+            }
+            return;
+        }
+
+        String normalizedValue = StringUtils.trimToNull(String.valueOf(rawValue));
+        if (normalizedValue != null) {
+            values.add(normalizedValue);
+        }
     }
 
     /**
