@@ -1,5 +1,5 @@
 -- ============================================================
--- FULL MIGRATION SCRIPT: OB3 → OB4
+-- FULL MIGRATION SCRIPT: Accelerator 3 → Accelerator 4
 -- Source : openbank_openbankingdb.ob_account_metadata
 -- Target : fs_account_metadatadb (all 4 tables)
 -- Engine : MySQL / MariaDB

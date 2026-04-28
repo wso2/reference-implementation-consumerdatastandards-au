@@ -239,6 +239,12 @@ public class ConsentAuthorizeUtil {
         }
     }
 
+    /**
+     * Extracts the account IDs that were already authorized in an existing consent resource.
+     *
+     * @param consentResource the stored consent resource, may be null
+     * @return set of pre-selected account IDs, or an empty set when none are available
+     */
     private static Set<String> extractPreSelectedAccountIds(StoredDetailedConsentResourceData consentResource) {
         if (consentResource == null || consentResource.getAuthorizations() == null) {
             return Collections.emptySet();
@@ -584,6 +590,12 @@ public class ConsentAuthorizeUtil {
                 clientId);
     }
 
+    /**
+     * Collects the account IDs for every secondary account entry in the account payload.
+     *
+     * @param accountsJSON the accounts array returned from the sharable endpoint
+     * @return list of non-blank secondary account IDs in encounter order
+     */
     private static List<String> extractSecondaryAccountIds(JSONArray accountsJSON) {
         List<String> secondaryAccountIds = new ArrayList<>();
         for (int i = 0; i < accountsJSON.length(); i++) {
@@ -604,6 +616,15 @@ public class ConsentAuthorizeUtil {
         return secondaryAccountIds;
     }
 
+    /**
+     * Resolves the client identifier from the authorization request payload.
+     *
+     * The request may supply the client id in either snake_case ({@link CommonConstants#CLIENT_ID}) or
+     * camelCase ({@code clientId}).
+     *
+     * @param jsonRequestBody the authorization request JSON payload
+     * @return the first non-blank client id found, or an empty string when neither field is present
+     */
     private static String getClientIdFromRequestBody(JSONObject jsonRequestBody) {
         String snakeCaseClientId = StringUtils.trimToEmpty(
                 jsonRequestBody.optString(CommonConstants.CLIENT_ID, StringUtils.EMPTY));

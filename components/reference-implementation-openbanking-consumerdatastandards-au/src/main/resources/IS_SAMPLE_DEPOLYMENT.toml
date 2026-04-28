@@ -143,7 +143,6 @@ password = "root"
 driver = "com.mysql.jdbc.Driver"
 jmx_enable = false
 
-
 [keystore.primary]
 file_name = "wso2carbon.p12"
 password = "wso2carbon"
@@ -316,8 +315,6 @@ grant_handler = "org.wso2.carbon.identity.oauth2.token.handlers.grant.ClientCred
 [oauth.dcr]
 enable_fapi_enforcement=true
 ssa_jkws= "https://keystore.openbankingtest.org.uk/0015800001HQQrZAAX/0015800001HQQrZAAX.jwks"
-#ssa_jkws= "https://keystore.openbankingtest.org.uk/0015800001HQQrZAAX/oQ4KoaavpOuoE7rvQsZEOV.jwks"
-
 
 [oauth.dcrm]
 return_null_fields_in_response=false
@@ -375,8 +372,6 @@ read_timeout = 5
 type = "Basic-Auth"
 username = "is_admin@wso2.com"
 password = "wso2123"
-
-
 
 [[financial_services.jdbc_persistence_manager]]
 data_source.name = "WSO2FS_DB"
@@ -675,6 +670,3 @@ notification_endpoint = "https://localhost:9443/internal/data/v1/notify"
 username = "am_admin@wso2.com"
 password = "wso2123"
 'header.X-WSO2-KEY-MANAGER' = "WSO2-IS"
-
-[fs.cds]
-doms_enabled = true
