@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.synapse.MessageContext;
+import org.apache.synapse.SynapseException;
 import org.apache.synapse.core.axis2.Axis2MessageContext;
 import org.apache.synapse.mediators.AbstractMediator;
 import org.json.JSONArray;
@@ -80,6 +81,7 @@ public class CDSAccountValidationMediator extends AbstractMediator {
             // Unsigned payload
             JSONObject payload = new JSONObject(accountHeaderJwt);
             String userId = null;
+            String clientId = getClientIdFromPayload(payload);
 
             // Collect authorization IDs that should be removed from validation and mapping.
             Set<String> excludedAuthIds = new HashSet<>();
@@ -132,7 +134,7 @@ public class CDSAccountValidationMediator extends AbstractMediator {
             }
 
             Set<String> blockedAccounts = CDSAccountValidationUtils.fetchAllBlockedAccounts(accountIds,
-                    this.webappBaseURL, userId, this.basicAuthCredentials);
+                    this.webappBaseURL, userId, this.basicAuthCredentials, clientId);
 
             JSONArray filteredConsentMappings = new JSONArray();
 
@@ -160,6 +162,77 @@ public class CDSAccountValidationMediator extends AbstractMediator {
 
             payload.put(CDSAccountValidationConstants.CONSENT_MAPPING_RESOURCES_TAG, filteredConsentMappings);
 
+            // Single-account validation: check if the requested accountId is in the allowed list
+            String electedResource = (String) messageContext.getProperty(
+                    CDSAccountValidationConstants.API_ELECTED_RESOURCE);
+            String fullRequestPath = (String) messageContext.getProperty(
+                    CDSAccountValidationConstants.REST_FULL_REQUEST_PATH);
+
+            if (electedResource != null && electedResource.contains(
+                    CDSAccountValidationConstants.API_ELECTED_RESOURCE_ACCOUNT_ID_PARAMETER)
+                    && fullRequestPath != null) {
+                String requestedAccountId = null;
+                String[] segments = fullRequestPath.split("/");
+                for (int i = 0; i < segments.length - 1; i++) {
+                    if (CDSAccountValidationConstants.RESOURCE_ACCOUNTS_TAG.equals(segments[i])) {
+                        requestedAccountId = segments[i + 1];
+                        break;
+                    }
+                }
+
+                if (requestedAccountId != null) {
+                    if (blockedAccounts.contains(requestedAccountId)) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("[CDS-policy] Single-account request for blocked or unknown accountId: "
+                                    + requestedAccountId);
+                        }
+                        setErrorResponseProperties(messageContext,
+                                CDSAccountValidationConstants.RESOURCE_INVALID_BANKING_ACCOUNT,
+                                CDSAccountValidationConstants.INVALID_BANKING_ACCOUNT_TITLE,
+                                CDSAccountValidationConstants.INVALID_BANKING_ACCOUNT_DESC,
+                                CDSAccountValidationConstants.HTTP_SC_404);
+                        throw new SynapseException("Account " + requestedAccountId
+                                + " is not available for data sharing");
+                    }
+                }
+            }
+
+            // POST multi-account validation: all requested accountIds must be in the allowed list
+            String httpMethod = (String) messageContext.getProperty(CDSAccountValidationConstants.REST_METHOD);
+            if (CDSAccountValidationConstants.POST_METHOD.equals(httpMethod)) {
+                String requestBody = (String) messageContext.getProperty(
+                        CDSAccountValidationConstants.ORIGINAL_REQUEST_JSON_BODY);
+                if (requestBody != null) {
+                    JSONObject requestBodyJson = new JSONObject(requestBody);
+                    if (requestBodyJson.has(CDSAccountValidationConstants.DATA_TAG)) {
+                        JSONObject dataObj = requestBodyJson.getJSONObject(
+                                CDSAccountValidationConstants.DATA_TAG);
+                        if (dataObj.has(CDSAccountValidationConstants.POST_PAYLOAD_ACCOUNT_IDS_TAG)) {
+                            JSONArray requestedAccountIds = dataObj.getJSONArray(
+                                    CDSAccountValidationConstants.POST_PAYLOAD_ACCOUNT_IDS_TAG);
+
+                            // All-or-nothing: reject if any requested account is not allowed
+                            for (int i = 0; i < requestedAccountIds.length(); i++) {
+                                String requestedAccountId = requestedAccountIds.optString(i);
+                                if (blockedAccounts.contains(requestedAccountId)) {
+                                    if (log.isDebugEnabled()) {
+                                        log.debug("[CDS-policy] POST request contains blocked or " +
+                                                "unknown accountId: " + requestedAccountId);
+                                    }
+                                    setErrorResponseProperties(messageContext,
+                                            CDSAccountValidationConstants.RESOURCE_INVALID_BANKING_ACCOUNT,
+                                            CDSAccountValidationConstants.INVALID_BANKING_ACCOUNT_TITLE,
+                                            CDSAccountValidationConstants.INVALID_BANKING_ACCOUNT_POST_DESC,
+                                            CDSAccountValidationConstants.HTTP_SC_422);
+                                    throw new SynapseException("Account " + requestedAccountId
+                                            + " is not available for data sharing");
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             String signedJwt = CDSAccountValidationUtils.generateJWT(payload.toString());
             headers.put(CDSAccountValidationConstants.INFO_HEADER_TAG, signedJwt);
 
@@ -168,26 +241,34 @@ public class CDSAccountValidationMediator extends AbstractMediator {
         } catch (ParseException | JOSEException | JSONException | CDSAccountValidationException e) {
             String errorDescription = "Error during CDS mediation policy";
             log.error(errorDescription, e);
-            setErrorResponseProperties(messageContext, errorDescription);
+            setErrorResponseProperties(messageContext, "Internal Server Error", "CDS DOMS Policy Error",
+                    errorDescription, "500");
+            throw new SynapseException(errorDescription, e);
         }
 
         return true;
     }
 
     /**
-     * Sets standardized error response properties in the message context when CDS mediation fails.
+     * Sets error response properties in the message context.
      *
      * @param messageContext Synapse message context used to propagate error details
-     * @param errorDescription description of the error encountered during mediation
+     * @param errorCode error code value
+     * @param errorTitle error title
+     * @param errorDescription error description
+     * @param httpStatusCode HTTP status code as string
      */
     @Generated(message = "No testable logic")
     private static void setErrorResponseProperties(MessageContext messageContext,
-                                                   String errorDescription) {
+                                                   String errorCode,
+                                                   String errorTitle,
+                                                   String errorDescription,
+                                                   String httpStatusCode) {
 
-        messageContext.setProperty(CDSAccountValidationConstants.ERROR_CODE, "Internal Server Error");
-        messageContext.setProperty(CDSAccountValidationConstants.ERROR_TITLE, "CDS DOMS Policy Error");
+        messageContext.setProperty(CDSAccountValidationConstants.ERROR_CODE, errorCode);
+        messageContext.setProperty(CDSAccountValidationConstants.ERROR_TITLE, errorTitle);
         messageContext.setProperty(CDSAccountValidationConstants.ERROR_DESCRIPTION, errorDescription);
-        messageContext.setProperty(CDSAccountValidationConstants.CUSTOM_HTTP_SC, "500");
+        messageContext.setProperty(CDSAccountValidationConstants.CUSTOM_HTTP_SC, httpStatusCode);
     }
 
     /**
@@ -221,5 +302,15 @@ public class CDSAccountValidationMediator extends AbstractMediator {
     private static boolean isExcludedAuthType(String authType) {
         return CDSAccountValidationConstants.LINKED_MEMBER_TAG.equalsIgnoreCase(authType)
                 || isSecondaryAccountOwnerAuthType(authType) || isBusinessAccountAuthType(authType);
+    }
+
+    /**
+     * Extract client id from payload using either clientId or client_id.
+     *
+     * @param payload account-request-information payload
+     * @return client id value if present, otherwise empty string
+     */
+    private static String getClientIdFromPayload(JSONObject payload) {
+            return payload.optString(CDSAccountValidationConstants.CLIENT_ID_TAG);
     }
 }
