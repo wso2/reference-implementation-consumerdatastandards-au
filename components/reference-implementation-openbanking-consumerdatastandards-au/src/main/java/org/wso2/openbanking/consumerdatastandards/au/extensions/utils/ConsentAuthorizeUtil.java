@@ -162,10 +162,31 @@ public class ConsentAuthorizeUtil {
             }
 
             //Set Basic Consent Data for Consent Authorisation Screen.
-            // TODO: derive customerType from the selected profile once the multi-profile flow is wired up.
+            // When profile selection is enabled, ship both individual and organisation cluster variants in the same
+            // basicConsentData map by prefixing each key with its profile marker (e.g.
+            // "[individual]Name and occupation"). The profile-selection JSP strips the prefix and keeps only the
+            // entries matching the picked profile before forwarding to the consent confirmation page. When profile
+            // selection is disabled, the legacy single-variant (individual) shape is preserved unchanged.
             List<String> scopesForClusters = Arrays.asList(scopesString.split("\\s+"));
-            Map<String, List<String>> basicConsentData = constructBasicConsentData(scopesForClusters,
-                    CommonConstants.INDIVIDUAL_PROFILE_TYPE, expirationDate, sharingDurationValue);
+            Map<String, List<String>> basicConsentData;
+            if (ConfigurableProperties.PROFILE_SELECTION_PAGE_ENABLED) {
+                Map<String, List<String>> individualVariant = constructBasicConsentData(scopesForClusters,
+                        CommonConstants.INDIVIDUAL_PROFILE_TYPE, expirationDate, sharingDurationValue);
+                Map<String, List<String>> organisationVariant = constructBasicConsentData(scopesForClusters,
+                        CommonConstants.ORGANISATION, expirationDate, sharingDurationValue);
+                basicConsentData = new LinkedHashMap<>();
+                for (Map.Entry<String, List<String>> entry : individualVariant.entrySet()) {
+                    basicConsentData.put(CommonConstants.BASIC_CONSENT_DATA_INDIVIDUAL_PREFIX + entry.getKey(),
+                            entry.getValue());
+                }
+                for (Map.Entry<String, List<String>> entry : organisationVariant.entrySet()) {
+                    basicConsentData.put(CommonConstants.BASIC_CONSENT_DATA_ORGANISATION_PREFIX + entry.getKey(),
+                            entry.getValue());
+                }
+            } else {
+                basicConsentData = constructBasicConsentData(scopesForClusters,
+                        CommonConstants.INDIVIDUAL_PROFILE_TYPE, expirationDate, sharingDurationValue);
+            }
             consentData.setBasicConsentData(basicConsentData);
 
             //Set Consent MetaData to Consent Data
@@ -203,8 +224,8 @@ public class ConsentAuthorizeUtil {
      * @param consentResource The existing consent resource, used to pre-select previously authorized accounts.
      */
     public static void cdsConsumerDataRetrieval(JSONObject jsonRequestBody, String userId,
-            SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
-            List<AdditionalData> displayData, StoredDetailedConsentResourceData consentResource)
+                                                SuccessResponsePopulateConsentAuthorizeScreenDataConsumerData consumerData,
+                                                List<AdditionalData> displayData, StoredDetailedConsentResourceData consentResource)
             throws CdsConsentException {
 
         Set<String> preSelectedAccountIds = extractPreSelectedAccountIds(consentResource);
@@ -270,7 +291,7 @@ public class ConsentAuthorizeUtil {
      * @return true if the instruction status is active or absent, false if explicitly inactive
      */
     private static boolean isSecondaryAccountInstructionActive(String accountId,
-            Map<String, String> instructionStatusMap) {
+                                                               Map<String, String> instructionStatusMap) {
         if (instructionStatusMap == null || !instructionStatusMap.containsKey(accountId)) {
             return true;
         }
@@ -378,7 +399,7 @@ public class ConsentAuthorizeUtil {
      * @return list of member ids from the requested section
      */
     private static List<String> extractBusinessMemberIds(JSONObject accountJson, String arrayTag,
-            String excludedUserId) {
+                                                         String excludedUserId) {
 
         List<String> memberIds = new ArrayList<>();
         JSONObject businessInfo = accountJson.optJSONObject(CommonConstants.BUSINESS_ACCOUNT_INFO_TAG);
@@ -440,7 +461,7 @@ public class ConsentAuthorizeUtil {
         if (accountJson.has(CommonConstants.JOINT_ACCOUNT_INFO_TAG)) {
             JSONArray linkedMemberArray = accountJson.getJSONObject(
                     CommonConstants.JOINT_ACCOUNT_INFO_TAG).optJSONArray(
-                            CommonConstants.LINKED_MEMBER_TAG_IN_SHARABLE_ENDPOINT);
+                    CommonConstants.LINKED_MEMBER_TAG_IN_SHARABLE_ENDPOINT);
             if (linkedMemberArray != null) {
                 for (int j = 0; j < linkedMemberArray.length(); j++) {
                     linkedMembers.add(linkedMemberArray.getJSONObject(j).optString(CommonConstants.MEMBER_ID_TAG));
@@ -481,13 +502,13 @@ public class ConsentAuthorizeUtil {
         boolean isJointAccount = accountJson.optBoolean(CommonConstants.IS_JOINT_ACCOUNT_RESPONSE, false);
         boolean isSecondaryAccount = accountJson.optBoolean(CommonConstants.IS_SECONDARY_ACCOUNT_RESPONSE, false);
         boolean isBusinessAccount = CommonConstants.BUSINESS_ACCOUNT_TYPE.equalsIgnoreCase(
-            accountJson.optString(CommonConstants.CUSTOMER_ACCOUNT_TYPE, ""));
+                accountJson.optString(CommonConstants.CUSTOMER_ACCOUNT_TYPE, ""));
         boolean blockedByLegalEntity = isSecondaryAccount
-            && blockedSecondaryAccountsByLegalEntity.getOrDefault(accountId, false);
+                && blockedSecondaryAccountsByLegalEntity.getOrDefault(accountId, false);
 
         // Check eligibility for each account and block account if any eligibility check fails
         if (blockedByLegalEntity
-            || !isAccountEligible(accountJson, isJointAccount, isSecondaryAccount, isBusinessAccount, userId,
+                || !isAccountEligible(accountJson, isJointAccount, isSecondaryAccount, isBusinessAccount, userId,
                 secondaryInstructionStatusMap)) {
             // Block account if any eligibility check fails
             AdditionalDataItem blockedItem = new AdditionalDataItem();
@@ -549,7 +570,7 @@ public class ConsentAuthorizeUtil {
      * @return map of secondary accountId to blocked status for client's legal entity
      */
     private static Map<String, Boolean> buildSecondaryAccountLegalEntityBlockedMap(JSONArray accountsJSON,
-            String userId, String clientId) throws CdsConsentException {
+                                                                                   String userId, String clientId) throws CdsConsentException {
         if (accountsJSON == null || StringUtils.isBlank(userId) || StringUtils.isBlank(clientId)) {
             return new HashMap<>();
         }
@@ -630,7 +651,7 @@ public class ConsentAuthorizeUtil {
                 if (StringUtils.isBlank(accountData)) {
                     log.error("Unable to load accounts data for the user: " + userId);
                     throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
-                        "Exception occurred while getting accounts data");
+                            "Exception occurred while getting accounts data");
                 }
 
                 JSONObject jsonAccountData = new JSONObject(accountData);
@@ -653,7 +674,7 @@ public class ConsentAuthorizeUtil {
                                 secondaryAccountIds, userId);
 
                 List<SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner> accountList =
-                    new ArrayList<>();
+                        new ArrayList<>();
 
                 List<AdditionalDataItem> blockedAccountsList = new ArrayList<>();
 
@@ -666,7 +687,7 @@ public class ConsentAuthorizeUtil {
 
                 String clientId = getClientIdFromRequestBody(jsonRequestBody);
                 Map<String, Boolean> blockedSecondaryAccountsByLegalEntity =
-                    buildSecondaryAccountLegalEntityBlockedMap(accountsJSON, userId, clientId);
+                        buildSecondaryAccountLegalEntityBlockedMap(accountsJSON, userId, clientId);
 
                 for (int i = 0; i < accountsJSON.length(); i++) {
                     SuccessResponsePopulateConsentAuthorizeScreenDataConsumerDataAccountsInner account =

@@ -227,6 +227,12 @@ public class CommonConstants {
     // Customer profile types used to choose between individual / business cluster definitions
     public static final String INDIVIDUAL_PROFILE_TYPE = "Individual";
     public static final String ORGANISATION = "Organisation";
+
+    // Profile-marker prefixes embedded into basicConsentData keys when PROFILE_SELECTION_PAGE_ENABLED is true.
+    // The profile-selection JSP filters by these prefixes and strips them before forwarding to the consent
+    // confirmation page.
+    public static final String BASIC_CONSENT_DATA_INDIVIDUAL_PREFIX = "[individual]";
+    public static final String BASIC_CONSENT_DATA_ORGANISATION_PREFIX = "[organisation]";
     public static final String BANK_PAYEES_READ_SCOPE = "bank:payees:read";
 
     // Human-readable data cluster definitions consumed by the consent UI.

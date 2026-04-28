@@ -192,6 +192,25 @@
             }
         }
 
+        // Filter basicConsentData by the selected profile. The toolkit emits both individual and organisation
+        // cluster sets in the same map, each key prefixed with "[individual]" or "[organisation]". Keep only the
+        // entries matching the picked profile and strip the prefix so the downstream consent-data JSP renders
+        // clean cluster titles. Non-prefixed entries (legacy single-profile path) are passed through unchanged.
+        String basicConsentDataPrefix = "individual".equals(selectedProfileId) ? "[individual]" : "[organisation]";
+        Map filteredBasicConsentData = new LinkedHashMap();
+        Object allBasicConsentDataObj = session.getAttribute("basicConsentData");
+        if (allBasicConsentDataObj instanceof Map) {
+            for (Object entryObj : ((Map) allBasicConsentDataObj).entrySet()) {
+                Map.Entry entry = (Map.Entry) entryObj;
+                String key = String.valueOf(entry.getKey());
+                if (key.startsWith(basicConsentDataPrefix)) {
+                    filteredBasicConsentData.put(key.substring(basicConsentDataPrefix.length()), entry.getValue());
+                } else if (!key.startsWith("[individual]") && !key.startsWith("[organisation]")) {
+                    filteredBasicConsentData.put(key, entry.getValue());
+                }
+            }
+        }
+
         for (String key : keysToPromoteToSession) {
             Object sessionValue = session.getAttribute(key);
             if (sessionValue != null) {
@@ -201,6 +220,7 @@
 
         request.setAttribute("consumerAccounts", filteredConsumerAccounts);
         request.setAttribute("additionalData", filteredAdditionalData);
+        request.setAttribute("basicConsentData", filteredBasicConsentData);
         request.setAttribute("handleAccountSelectionSeparately", true);
         request.setAttribute("selectedProfileId", selectedProfileId);
         request.setAttribute("selectedProfileName", selectedProfileName);
