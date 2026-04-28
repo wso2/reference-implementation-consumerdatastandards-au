@@ -18,8 +18,6 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.impl;
 
-import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -41,6 +39,8 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.ws.rs.core.Response;
+
+import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
 
 /**
  * Unit tests for {@link SecondaryAccountsManagementApiImpl}.
