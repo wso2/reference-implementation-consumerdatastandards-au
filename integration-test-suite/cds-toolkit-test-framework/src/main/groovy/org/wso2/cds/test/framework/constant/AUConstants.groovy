@@ -61,6 +61,7 @@ class AUConstants extends Constants {
     public static final String accountID2 = "qu4WMZ-59LsndgjMN-kikHgbJzws-clthVMQELUH9BMhTt6fOc80bgAI1HN82kKCZKqCobYWnFNnWih_ukgKZmidyLDUN-43WATQRbw0VSI"
     public static final String jointAccountID = "6500001232"
     public static final String businessAccountID = "7ZFnnKruJ7WX52D-vhD4ygZJm07cm-EkVGA87OvIQfSH8yRdrJWxwtRGmHRA-RtlCxLPLQWcNkKsfYc97yqYgQPRrZPKSwrJF3wuJEXUg3g"
+    public static final String businessAccount3 = "586-522-B0025"
     public static final String GET_META = "/admin/register/metadata"
     public static final String GET_STAT = "/admin/metrics"
     public static final String X_FAPI_FINANCIAL_ID = "x-fapi-financial-id"

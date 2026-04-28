@@ -72,7 +72,7 @@ class ConsentAuthFlowValidationTests extends AUTest {
                         updateResponse.statusCode() == AUConstants.OK
         )
 
-        def businessAccount3 = "586-522-B0025"
+        def businessAccount3 = AUConstants.businessAccount3
         def updateSecondAccPermissionResponse = addMultiBusinessUserPermission(
                 clientHeader, businessAccount3, accountOwnerUserID, nominatedRepUserID,
                 AUBusinessUserPermission.AUTHORIZE.getPermissionString(), nominatedRepUserID2,

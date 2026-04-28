@@ -93,7 +93,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
 
         Assert.assertEquals(jointAccountIdList[0], account)
         Assert.assertNull(AUTestUtil.parseResponseBody(
-                accountResponse, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]"))
+                accountResponse, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[7]"))
     }
 
     @Test(groups = "SmokeTest")
@@ -163,7 +163,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
                 .get("${AUConstants.BULK_ACCOUNT_PATH}/${AUConstants.jointAccountID}")
 
         //Blocked account should return 404
-        Assert.assertEquals(accountResponse.statusCode(), 404)
+        Assert.assertEquals(accountResponse.statusCode(), AUConstants.STATUS_CODE_404)
 
         //Response should contain the InvalidBankingAccount error
         def errorResponse = new JsonSlurper().parseText(accountResponse.asString())
@@ -312,7 +312,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
                         boolean profileSelected = selectProfileIfPresent(authWebDriver, AUAccountProfile.INDIVIDUAL)
                         if (!profileSelected && authWebDriver.isElementPresent(
                                 AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)) {
-                                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
                         }
 
                         //Joint Account 2 is not in the selectable list

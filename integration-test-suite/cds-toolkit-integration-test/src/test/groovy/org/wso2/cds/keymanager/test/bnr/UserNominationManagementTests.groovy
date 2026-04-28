@@ -83,7 +83,7 @@ class UserNominationManagementTests extends AUTest {
         //Check the permissions of nominated representatives
         def permissionsResponse = getStakeholderPermissions(nominatedRepUserID, accountID)
         Assert.assertEquals(permissionsResponse.statusCode(), AUConstants.OK)
-        Assert.assertTrue(hasBNRPermissionInResponse(permissionsResponse, nominatedRepUserID,
+        Assert.assertTrue(hasBnrPermissionInResponse(permissionsResponse, nominatedRepUserID,
                 AUBusinessUserPermission.AUTHORIZE.getPermissionString()))
     }
 
@@ -153,7 +153,7 @@ class UserNominationManagementTests extends AUTest {
         //Check the permissions of nominated representatives
         def permissionsResponse = getStakeholderPermissions(nominatedRepUserID, accountID)
         Assert.assertEquals(permissionsResponse.statusCode(), AUConstants.OK)
-        Assert.assertTrue(hasBNRPermissionInResponse(permissionsResponse, nominatedRepUserID,
+        Assert.assertTrue(hasBnrPermissionInResponse(permissionsResponse, nominatedRepUserID,
                 AUBusinessUserPermission.AUTHORIZE.getPermissionString()))
 
         //Update the Permission of Nominated User to View
@@ -164,7 +164,7 @@ class UserNominationManagementTests extends AUTest {
         //Check the permissions of nominated representatives
         def permissionsResponse2 = getStakeholderPermissions(nominatedRepUserID, accountID)
         Assert.assertEquals(permissionsResponse2.statusCode(), AUConstants.OK)
-        Assert.assertTrue(hasBNRPermissionInResponse(permissionsResponse2, nominatedRepUserID,
+        Assert.assertTrue(hasBnrPermissionInResponse(permissionsResponse2, nominatedRepUserID,
                 AUBusinessUserPermission.VIEW.getPermissionString()))
     }
 

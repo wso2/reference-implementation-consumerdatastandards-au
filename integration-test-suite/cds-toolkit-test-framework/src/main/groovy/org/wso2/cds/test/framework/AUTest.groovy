@@ -2607,7 +2607,7 @@ class AUTest extends CommonTest {
      * @param permission the permission to verify
      * @return true if both userId and permission exist in the response body, otherwise false
      */
-    protected static boolean hasBNRPermissionInResponse(def response, String userId, String permission) {
+    protected static boolean hasBnrPermissionInResponse(def response, String userId, String permission) {
         String responseBody = response?.asString()
         return responseBody != null && responseBody.contains(userId) && responseBody.contains(permission)
     }
