@@ -33,7 +33,7 @@ public class AccountMetadataDbQueriesMySqlImpl implements AccountMetadataDbQueri
     @Override
     public String getBatchGetDisclosureOptionQuery(int accountCount) {
         StringBuilder query = new StringBuilder(
-                "SELECT ACCOUNT_ID, DISCLOSURE_OPTION_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN (");
+                "SELECT ACCOUNT_ID, DISCLOSURE_OPTIONS_STATUS FROM fs_account_doms_status WHERE ACCOUNT_ID IN (");
         for (int i = 0; i < accountCount; i++) {
             query.append("?");
             if (i < accountCount - 1) {
@@ -49,7 +49,7 @@ public class AccountMetadataDbQueriesMySqlImpl implements AccountMetadataDbQueri
      */
     @Override
     public String getBatchAddDisclosureOptionQuery() {
-        return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTION_STATUS, LAST_UPDATED_TIMESTAMP) " +
+        return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTIONS_STATUS, LAST_UPDATED_TIMESTAMP) " +
                 "VALUES (?, ?, ?)";
     }
 
@@ -58,7 +58,7 @@ public class AccountMetadataDbQueriesMySqlImpl implements AccountMetadataDbQueri
      */
     @Override
     public String getBatchUpdateDisclosureOptionQuery() {
-        return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ?, " +
+        return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTIONS_STATUS = ?, " +
                 "LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ?";
     }
 
@@ -96,6 +96,36 @@ public class AccountMetadataDbQueriesMySqlImpl implements AccountMetadataDbQueri
     public String getBatchUpdateSecondaryAccountInstructionQuery() {
         return "UPDATE fs_account_secondary_user SET INSTRUCTION_STATUS = ?, " +
                 "OTHER_ACCOUNTS_AVAILABILITY = ?, LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ? AND USER_ID = ?";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBatchGetLegalEntitySharingStatusesQuery(int pairCount) {
+        StringBuilder query = new StringBuilder(
+                "SELECT ACCOUNT_ID, USER_ID, LEGAL_ENTITY_ID, LEGAL_ENTITY_STATUS " +
+                        "FROM fs_account_secondary_user_legal_entity WHERE (ACCOUNT_ID, USER_ID) IN (");
+        for (int i = 0; i < pairCount; i++) {
+            query.append("(?,?)");
+            if (i < pairCount - 1) {
+                query.append(",");
+            }
+        }
+        query.append(")");
+        return query.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getUpsertLegalEntitySharingStatusQuery() {
+        return "INSERT INTO fs_account_secondary_user_legal_entity " +
+                "(ACCOUNT_ID, USER_ID, LEGAL_ENTITY_ID, LEGAL_ENTITY_STATUS, LAST_UPDATED_TIMESTAMP) " +
+                "VALUES (?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE LEGAL_ENTITY_STATUS = VALUES(LEGAL_ENTITY_STATUS), " +
+                "LAST_UPDATED_TIMESTAMP = VALUES(LAST_UPDATED_TIMESTAMP)";
     }
 
     /**

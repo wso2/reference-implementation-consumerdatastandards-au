@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAOImpl;
@@ -112,8 +113,7 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
      * @throws AccountMetadataException if an error occurs
      */
     @Override
-    public Map<String, String> getBatchDisclosureOptions(List<String> accountIds)
-            throws AccountMetadataException {
+    public Map<String, String> getBatchDisclosureOptions(List<String> accountIds) throws AccountMetadataException {
 
         try (Connection conn = connectionProvider.getConnection()) {
             return metadataDAO.getBatchDisclosureOptions(conn, accountIds);
@@ -130,8 +130,7 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
      * @throws AccountMetadataException if an error occurs
      */
     @Override
-    public void addBatchDisclosureOptions(Map<String, String> accountDisclosureMap)
-            throws AccountMetadataException {
+    public void addBatchDisclosureOptions(Map<String, String> accountDisclosureMap) throws AccountMetadataException {
 
         try (Connection conn = connectionProvider.getConnection()) {
             metadataDAO.addBatchDisclosureOptions(conn, accountDisclosureMap);
@@ -148,8 +147,7 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
      * @throws AccountMetadataException if an error occurs
      */
     @Override
-    public void updateBatchDisclosureOptions(Map<String, String> accountDisclosureMap)
-            throws AccountMetadataException {
+    public void updateBatchDisclosureOptions(Map<String, String> accountDisclosureMap) throws AccountMetadataException {
 
         try (Connection conn = connectionProvider.getConnection()) {
             metadataDAO.updateBatchDisclosureOptions(conn, accountDisclosureMap);
@@ -216,6 +214,43 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
     }
 
     /**
+     * Retrieve all legal entity sharing status records for multiple account-user pairs.
+     *
+     * @param accountUserPairs list of (accountId, userId) pairs to query
+     * @return list of legal entity sharing status records
+     * @throws AccountMetadataException if an error occurs
+     */
+    @Override
+    public List<LegalEntitySharingItem> getBatchLegalEntitySharingStatuses(List<Pair<String, String>> accountUserPairs)
+            throws AccountMetadataException {
+
+        try (Connection conn = connectionProvider.getConnection()) {
+            return metadataDAO.getBatchLegalEntitySharingStatuses(conn, accountUserPairs);
+        } catch (SQLException e) {
+            log.error("Error batch retrieving legal entity sharing statuses", e);
+            throw new AccountMetadataException("Failed to batch retrieve legal entity sharing statuses", e);
+        }
+    }
+
+    /**
+     * Upsert legal entity sharing status records.
+     *
+     * @param items legal entity sharing items to upsert
+     * @throws AccountMetadataException if an error occurs
+     */
+    @Override
+    public void upsertBatchLegalEntitySharingStatuses(List<LegalEntitySharingItem> items)
+            throws AccountMetadataException {
+
+        try (Connection conn = connectionProvider.getConnection()) {
+            metadataDAO.upsertBatchLegalEntitySharingStatuses(conn, items);
+        } catch (SQLException e) {
+            log.error("Error batch upserting legal entity sharing statuses", e);
+            throw new AccountMetadataException("Failed to batch upsert legal entity sharing statuses", e);
+        }
+    }
+
+    /**
      * Batch retrieve business stakeholder permissions for multiple account-user pairs.
      *
      * @param accountUserPairs list of (accountId, userId) pairs to query
@@ -223,7 +258,7 @@ public class AccountMetadataServiceImpl implements AccountMetadataService {
      * @throws AccountMetadataException if an error occurs
      */
     @Override
-        public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissions(
+    public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissions(
             List<Pair<String, String>> accountUserPairs) throws AccountMetadataException {
 
         try (Connection conn = connectionProvider.getConnection()) {

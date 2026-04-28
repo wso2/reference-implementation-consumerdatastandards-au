@@ -21,6 +21,7 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 import org.apache.commons.lang3.tuple.Pair;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 
 import java.sql.Connection;
@@ -96,7 +97,31 @@ public interface AccountMetadataDAO {
             throws AccountMetadataException;
 
     /**
+     * Retrieve all legal entity sharing status rows for multiple account-user pairs from
+     * fs_account_secondary_user_legal_entity.
+     *
+     * @param conn             the database connection
+     * @param accountUserPairs list of (accountId, userId) pairs to query
+     * @return list of legal entity sharing status records
+     * @throws AccountMetadataException if an error occurs
+     */
+    List<LegalEntitySharingItem> getBatchLegalEntitySharingStatuses(Connection conn,
+            List<Pair<String, String>> accountUserPairs) throws AccountMetadataException;
+
+    /**
+     * Upsert legal entity sharing status rows. Inserts a new row or updates
+     * LEGAL_ENTITY_STATUS and LAST_UPDATED_TIMESTAMP when the primary key already exists.
+     *
+     * @param conn  the database connection
+     * @param items legal entity sharing items to upsert
+     * @throws AccountMetadataException if an error occurs
+     */
+    void upsertBatchLegalEntitySharingStatuses(Connection conn, List<LegalEntitySharingItem> items)
+            throws AccountMetadataException;
+
+    /**
      * Batch retrieve business stakeholder permissions for multiple account-user pairs.
+     *
      * @param conn the database connection
      * @param accountUserPairs list of (accountId, userId) pairs to query
      * @return list of existing business stakeholder permission records
@@ -146,5 +171,4 @@ public interface AccountMetadataDAO {
      */
     void deleteBatchBusinessStakeholderPermissions(Connection conn,
             List<BusinessStakeholderPermissionItem> permissionItems) throws AccountMetadataException;
-
 }

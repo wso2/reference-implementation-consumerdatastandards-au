@@ -75,6 +75,25 @@ public interface AccountMetadataDbQueries {
      */
     String getBatchUpdateSecondaryAccountInstructionQuery();
 
+    // DB Queries related to Legal Entity Sharing Feature.
+    /**
+     * Get the SQL query for retrieving all legal entity sharing status rows for multiple account-user pairs
+     * from the fs_account_secondary_user_legal_entity table.
+     *
+     * @param pairCount number of account-user pairs to query
+     * @return the SQL query with placeholders
+     */
+    String getBatchGetLegalEntitySharingStatusesQuery(int pairCount);
+
+    /**
+     * Get the SQL upsert query for inserting or updating a legal entity sharing status row.
+     * On duplicate key (ACCOUNT_ID, USER_ID, LEGAL_ENTITY_ID), only LEGAL_ENTITY_STATUS and
+     * LAST_UPDATED_TIMESTAMP are updated.
+     *
+     * @return the SQL upsert query
+     */
+    String getUpsertLegalEntitySharingStatusQuery();
+
     // DB Queries related to BNR Feature.
     /**
      * Get the SQL query for retrieving business stakeholder permission records for
