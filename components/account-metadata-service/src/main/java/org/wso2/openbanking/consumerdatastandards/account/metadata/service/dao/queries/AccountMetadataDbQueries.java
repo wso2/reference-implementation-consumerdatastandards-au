@@ -18,6 +18,10 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
+
 /**
  * Database queries for account metadata operations.
  */
@@ -70,5 +74,45 @@ public interface AccountMetadataDbQueries {
      * @return the SQL query for batch update
      */
     String getBatchUpdateSecondaryAccountInstructionQuery();
+
+    // DB Queries related to BNR Feature.
+    /**
+     * Get the SQL query for retrieving business stakeholder permission records for
+     * multiple account-user pairs.
+     *
+     * @param accountUserPairs list of (accountId, userId) pairs to generate placeholders for
+     * @return the SQL query with placeholders
+     */
+    String getBatchGetBusinessStakeholderPermissionQuery(List<Pair<String, String>> accountUserPairs);
+
+    /**
+     * Get the SQL query for retrieving business stakeholder permission records for
+     * multiple account IDs.
+     *
+     * @param accountCount number of account IDs to query
+     * @return the SQL query with placeholders
+     */
+    String getBatchGetBusinessStakeholderPermissionByAccountQuery(int accountCount);
+
+    /**
+     * Get the SQL query for batch adding business stakeholder permission records.
+     *
+     * @return the SQL query for batch insert
+     */
+    String getBatchAddBusinessStakeholderPermissionQuery();
+
+    /**
+     * Get the SQL query for batch updating business stakeholder permission records.
+     *
+     * @return the SQL query for batch update
+     */
+    String getBatchUpdateBusinessStakeholderPermissionQuery();
+
+    /**
+     * Get the SQL query for batch deleting business stakeholder permission records.
+     *
+     * @return the SQL query for batch delete
+     */
+    String getBatchDeleteBusinessStakeholderPermissionQuery();
 
 }

@@ -24,6 +24,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.ErrorResponse;
 
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -42,7 +43,13 @@ public class AccountMetadataThrowableMapper implements ExceptionMapper<Throwable
 
         Throwable cause = throwable;
         while (cause != null) {
-            if (isCausedBy(cause, InvalidFormatException.class)) {
+            if (isCausedBy(cause, ConstraintViolationException.class)) {
+                log.error("[AccountMetadata] Constraint violation in request: " + cause.getMessage());
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .type(MediaType.APPLICATION_JSON)
+                        .entity(new ErrorResponse().errorDescription("Validation failed: " + cause.getMessage()))
+                        .build();
+            } else if (isCausedBy(cause, InvalidFormatException.class)) {
                 log.error("[AccountMetadata] Invalid format in request body: " + cause.getMessage());
                 return Response.status(Response.Status.BAD_REQUEST)
                         .type(MediaType.APPLICATION_JSON)

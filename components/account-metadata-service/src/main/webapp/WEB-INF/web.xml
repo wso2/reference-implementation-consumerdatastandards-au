@@ -70,8 +70,15 @@
       <param-name>jaxrs.serviceClasses</param-name>
       <param-value>
         org.wso2.openbanking.consumerdatastandards.account.metadata.api.DisclosureOptionsApi,
-        org.wso2.openbanking.consumerdatastandards.account.metadata.api.SecondaryAccountsApi
+        org.wso2.openbanking.consumerdatastandards.account.metadata.api.SecondaryAccountsApi,
+        org.wso2.openbanking.consumerdatastandards.account.metadata.api.BusinessStakeholdersApi
       </param-value>
+    </init-param>
+
+    <!-- Bean Validation interceptor -->
+    <init-param>
+      <param-name>jaxrs.inInterceptors</param-name>
+      <param-value>org.apache.cxf.jaxrs.validation.JAXRSBeanValidationInInterceptor</param-value>
     </init-param>
 
     <!-- JSON Provider + Exception Mapper -->

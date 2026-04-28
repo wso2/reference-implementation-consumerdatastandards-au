@@ -18,6 +18,10 @@
 
 package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries;
 
+import org.apache.commons.lang3.tuple.Pair;
+
+import java.util.List;
+
 /**
  * MySQL implementation of account metadata database queries.
  */
@@ -92,5 +96,66 @@ public class AccountMetadataDbQueriesMySqlImpl implements AccountMetadataDbQueri
     public String getBatchUpdateSecondaryAccountInstructionQuery() {
         return "UPDATE fs_account_secondary_user SET INSTRUCTION_STATUS = ?, " +
                 "OTHER_ACCOUNTS_AVAILABILITY = ?, LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ? AND USER_ID = ?";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBatchGetBusinessStakeholderPermissionQuery(List<Pair<String, String>> accountUserPairs) {
+        StringBuilder query = new StringBuilder(
+                "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission " +
+                        "WHERE (ACCOUNT_ID, USER_ID) IN (");
+        for (int i = 0; i < accountUserPairs.size(); i++) {
+            query.append("(?,?)");
+            if (i < accountUserPairs.size() - 1) {
+                query.append(",");
+            }
+        }
+        query.append(")");
+        return query.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBatchGetBusinessStakeholderPermissionByAccountQuery(int accountCount) {
+        StringBuilder query = new StringBuilder(
+                "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission WHERE ACCOUNT_ID IN (");
+        for (int i = 0; i < accountCount; i++) {
+            query.append("?");
+            if (i < accountCount - 1) {
+                query.append(",");
+            }
+        }
+        query.append(")");
+        return query.toString();
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBatchAddBusinessStakeholderPermissionQuery() {
+        return "INSERT INTO fs_account_bnr_permission (ACCOUNT_ID, USER_ID, PERMISSION, LAST_UPDATED_TIMESTAMP) " +
+                "VALUES (?, ?, ?, ?)";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBatchUpdateBusinessStakeholderPermissionQuery() {
+        return "UPDATE fs_account_bnr_permission SET PERMISSION = ?, LAST_UPDATED_TIMESTAMP = ? " +
+                "WHERE ACCOUNT_ID = ? AND USER_ID = ?";
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getBatchDeleteBusinessStakeholderPermissionQuery() {
+        return "DELETE FROM fs_account_bnr_permission WHERE ACCOUNT_ID = ? AND USER_ID = ?";
     }
 }

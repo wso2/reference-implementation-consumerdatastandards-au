@@ -310,7 +310,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/BusinessStakeholderUpsertItem'
+                $ref: '#/components/schemas/BusinessStakeholderItem'
       responses:
         '201':
           description: Business stakeholders added successfully
@@ -350,7 +350,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: '#/components/schemas/BusinessStakeholderUpsertItem'
+                $ref: '#/components/schemas/BusinessStakeholderItem'
       responses:
         '200':
           description: Business stakeholders updated successfully
@@ -476,7 +476,12 @@ components:
         secondaryAccountInstructionStatus:
           type: string
           description: Secondary account instruction status
+          enum: [active, inactive]
           example: inactive
+          x-enum-description: |
+            Allowed values:
+              - active: Instruction is active
+              - inactive: Instruction is inactive
 
     BusinessStakeholderRepresentative:
       type: object
@@ -486,12 +491,18 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           description: Nominated representative user identifier
           example: nominatedUser1@wso2.com@carbon.super
         permission:
           type: string
+          enum: [VIEW, AUTHORIZE]
           description: Permission assigned to the nominated representative
           example: AUTHORIZE
+          x-enum-description: |
+            Allowed values:
+              - VIEW: Can view account
+              - AUTHORIZE: Can authorize actions
 
     BusinessStakeholderPermissionItem:
       type: object
@@ -502,18 +513,26 @@ components:
       properties:
         accountId:
           type: string
+          minLength: 1
           description: Account ID
           example: 586-522-B0025
         userId:
           type: string
+          minLength: 1
           description: User identifier
           example: nominatedUser1@wso2.com@carbon.super
         permission:
           type: string
+          enum: [VIEW, AUTHORIZE, REVOKE]
           description: Permission assigned to the user for the account
           example: AUTHORIZE
+          x-enum-description: |
+            Allowed values:
+              - VIEW: Can view account
+              - AUTHORIZE: Can authorize actions
+              - REVOKE: Permission revoked
 
-    BusinessStakeholderUpsertItem:
+    BusinessStakeholderItem:
       type: object
       required:
         - accountID
@@ -522,6 +541,7 @@ components:
       properties:
         accountID:
           type: string
+          minLength: 1
           description: Account ID
           example: 586-522-B0025
         accountOwners:
@@ -529,11 +549,13 @@ components:
           description: List of account owner user identifiers
           items:
             type: string
+            minLength: 1
           example:
             - nominatedUser3@wso2.com@carbon.super
             - user2@wso2.com@carbon.super
         nominatedRepresentatives:
           type: array
+          minItems: 1
           description: List of nominated representatives with permissions
           items:
             $ref: '#/components/schemas/BusinessStakeholderRepresentative'
@@ -547,6 +569,7 @@ components:
       properties:
         accountID:
           type: string
+          minLength: 1
           description: Account ID
           example: 586-522-B0025
         accountOwners:
@@ -554,12 +577,15 @@ components:
           description: Account owners list to retain in request structure
           items:
             type: string
+            minLength: 1
           example: []
         nominatedRepresentatives:
           type: array
+          minItems: 1
           description: List of nominated representative user identifiers to remove
           items:
             type: string
+            minLength: 1
           example:
             - psu@gold.com@carbon.super
             
