@@ -54,6 +54,14 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- helpers ----
 
+    /**
+     * Creates a mocked CloseableHttpResponse with the specified status code and response body.
+     *
+     * @param statusCode the HTTP status code for the response
+     * @param body the response body as a string
+     * @return a mocked CloseableHttpResponse
+     * @throws Exception if mock creation fails
+     */
     private static CloseableHttpResponse mockResponse(int statusCode, String body) throws Exception {
         CloseableHttpResponse response = Mockito.mock(CloseableHttpResponse.class);
         StatusLine statusLine = Mockito.mock(StatusLine.class);
@@ -64,6 +72,14 @@ public class CDSAccountValidationUtilsTest {
         return response;
     }
 
+    /**
+     * Creates a mocked CloseableHttpClient that returns a response with the specified status code and body.
+     *
+     * @param statusCode the HTTP status code for the response
+     * @param body the response body as a string
+     * @return a mocked CloseableHttpClient configured to return the specified response
+     * @throws Exception if mock creation fails
+     */
     private static CloseableHttpClient mockClientWithResponse(int statusCode, String body) throws Exception {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         CloseableHttpResponse response = mockResponse(statusCode, body);
@@ -73,6 +89,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchBlockedJointAccountsFromService tests ----
 
+    /**
+     * Verifies successful DOMS response with multiple accounts returns the correct blocked accounts.
+     */
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -102,8 +121,8 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-    * Verifies a non-200 DOMS response is surfaced as a validation exception.
-    */
+     * Verifies a non-200 DOMS response is surfaced as a validation exception.
+     */
     @Test
     public void testFetchBlockedAccountsFromServiceNon200() throws Exception {
         CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(500, "[]"));
@@ -116,8 +135,8 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-    * Verifies I/O failures from the DOMS service call are wrapped as validation exceptions.
-    */
+     * Verifies I/O failures from the DOMS service call are wrapped as validation exceptions.
+     */
     @Test
     public void testFetchBlockedAccountsFromServiceIoError() throws Exception {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
@@ -133,8 +152,8 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-    * Verifies Basic authorization is sent when fetching blocked joint accounts.
-    */
+     * Verifies Basic authorization is sent when fetching blocked joint accounts.
+     */
     @Test
     public void testFetchBlockedAccountsWithAuthHeader() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -158,8 +177,8 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-    * Verifies successful DOMS calls include the required authorization header.
-    */
+     * Verifies successful DOMS calls include the required authorization header.
+     */
     @Test
     public void testFetchBlockedAccountsSuccessIncludesRequiredAuthHeader() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -183,8 +202,8 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-    * Verifies empty or null account sets return an empty blocked-account result.
-    */
+     * Verifies empty or null account sets return an empty blocked-account result.
+     */
     @Test
     public void testFetchBlockedAccountsFromServiceWithEmptyOrNullAccountIds() throws CDSAccountValidationException {
         Set<String> blockedForEmpty = CDSAccountValidationUtils.fetchBlockedJointAccountsFromService(
@@ -237,6 +256,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchBlockedSecondaryAccountsFromService tests ----
 
+    /**
+     * Verifies successful secondary accounts response returns inactive accounts as blocked.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsSuccess() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -272,6 +294,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies I/O failures from the secondary accounts service call are wrapped as validation exceptions.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsIoError() throws Exception {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
@@ -287,6 +312,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies malformed secondary accounts JSON responses raise a validation exception.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsMalformedResponse() throws Exception {
         CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "{not-an-array"));
@@ -299,6 +327,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies empty or null account sets return an empty blocked-account result for secondary accounts.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsWithEmptyOrNullAccountIds() throws CDSAccountValidationException {
         Set<String> blockedForEmpty = CDSAccountValidationUtils.fetchBlockedSecondaryAccountsFromService(
@@ -312,6 +343,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blockedForNull.isEmpty());
     }
 
+    /**
+     * Verifies blank user ID returns empty results while null user ID raises a NullPointerException.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsWithBlankUserId() throws Exception {
         Set<String> accounts = new HashSet<>();
@@ -328,6 +362,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, SECONDARY_ACCOUNTS_ENDPOINT, null, BASIC_AUTH));
     }
 
+    /**
+     * Verifies the secondary accounts request includes both account IDs and user ID parameters.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsIncludesUserIdInRequest() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "[]");
@@ -348,6 +385,9 @@ public class CDSAccountValidationUtilsTest {
                 "Basic " + BASIC_AUTH);
     }
 
+    /**
+     * Verifies malformed rows and active accounts are skipped while inactive accounts are returned as blocked.
+     */
     @Test
     public void testFetchBlockedSecondaryAccountsSkipsInvalidAndNonInactiveRows() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -372,6 +412,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchBlockedBusinessAccountsFromService tests ----
 
+    /**
+     * Verifies successful business stakeholders response returns VIEW permission accounts as blocked.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsSuccess() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -392,6 +435,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertFalse(blocked.contains("acc-2"));
     }
 
+    /**
+     * Verifies a non-200 business stakeholders response triggers a validation exception.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsNon200() throws Exception {
         CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(503, "[]"));
@@ -404,6 +450,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies I/O failures from the business stakeholders service call are wrapped as validation exceptions.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsIoError() throws Exception {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
@@ -419,6 +468,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies malformed business stakeholders JSON responses raise a validation exception.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsMalformedResponse() throws Exception {
         CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "{not-an-array"));
@@ -431,6 +483,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, "user-1", BASIC_AUTH));
     }
 
+    /**
+     * Verifies empty or null account sets return an empty blocked-account result for business accounts.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsWithEmptyOrNullAccountIds() throws CDSAccountValidationException {
         Set<String> blockedForEmpty = CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
@@ -444,22 +499,28 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blockedForNull.isEmpty());
     }
 
-        @Test
-        public void testFetchBlockedBusinessAccountsWithBlankUserId() throws Exception {
+    /**
+     * Verifies blank user ID returns empty results while null user ID raises a NullPointerException for business accounts.
+     */
+    @Test
+    public void testFetchBlockedBusinessAccountsWithBlankUserId() throws Exception {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-                CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
-                Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
-                                accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, "", BASIC_AUTH);
-                Assert.assertNotNull(blockedForBlank);
-                Assert.assertTrue(blockedForBlank.isEmpty());
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
+        Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
+                accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, "", BASIC_AUTH);
+        Assert.assertNotNull(blockedForBlank);
+        Assert.assertTrue(blockedForBlank.isEmpty());
 
         Assert.expectThrows(NullPointerException.class,
                 () -> CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
                         accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, null, BASIC_AUTH));
     }
 
+    /**
+     * Verifies the business stakeholders request includes both account IDs and user ID parameters.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsIncludesUserIdInRequest() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "[]");
@@ -480,6 +541,9 @@ public class CDSAccountValidationUtilsTest {
                 "Basic " + BASIC_AUTH);
     }
 
+    /**
+     * Verifies malformed rows and AUTHORIZE permission accounts are skipped while VIEW permission accounts are returned as blocked.
+     */
     @Test
     public void testFetchBlockedBusinessAccountsSkipsInvalidAndAuthorizeRows() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "["
@@ -504,6 +568,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchAllBlockedAccounts tests ----
 
+    /**
+     * Verifies empty input account set returns an empty blocked accounts result.
+     */
     @Test
     public void testFetchAllBlockedAccountsWithEmptyInput() throws CDSAccountValidationException {
         Set<String> blocked = CDSAccountValidationUtils.fetchAllBlockedAccounts(
@@ -512,6 +579,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blocked.isEmpty());
     }
 
+    /**
+     * Verifies fetchAllBlockedAccounts combines results from disclosure options, secondary, and business endpoints.
+     */
     @Test
     public void testFetchAllBlockedAccountsCombinesResults() throws Exception {
         // Pre-create all responses before the Mockito.when chain to avoid UnfinishedStubbingException
@@ -567,6 +637,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- CDSAccountValidationException constructor tests ----
 
+    /**
+     * Verifies CDSAccountValidationException string constructor sets the message correctly.
+     */
     @Test
     public void testCDSAccountValidationExceptionStringConstructor() {
         CDSAccountValidationException ex = new CDSAccountValidationException("test-message");
@@ -574,6 +647,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertNull(ex.getCause());
     }
 
+    /**
+     * Verifies CDSAccountValidationException string-throwable constructor sets message and cause correctly.
+     */
     @Test
     public void testCDSAccountValidationExceptionStringThrowableConstructor() {
         Throwable cause = new RuntimeException("root-cause");
@@ -584,6 +660,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchBlockedLegalEntityAccountsFromService tests ----
 
+    /**
+     * Verifies null account IDs return an empty blocked accounts result for legal entity.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsWithNullAccountIds() throws CDSAccountValidationException {
         Set<String> blocked = CDSAccountValidationUtils.fetchBlockedLegalEntityAccountsFromService(
@@ -592,6 +671,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blocked.isEmpty());
     }
 
+    /**
+     * Verifies empty account IDs return an empty blocked accounts result for legal entity.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsWithEmptyAccountIds() throws CDSAccountValidationException {
         Set<String> blocked = CDSAccountValidationUtils.fetchBlockedLegalEntityAccountsFromService(
@@ -600,22 +682,28 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blocked.isEmpty());
     }
 
-        @Test
-        public void testFetchBlockedLegalEntityAccountsWithBlankUserId() throws Exception {
+    /**
+     * Verifies blank user ID returns empty results while null user ID raises a NullPointerException for legal entity.
+     */
+    @Test
+    public void testFetchBlockedLegalEntityAccountsWithBlankUserId() throws Exception {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-                CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
-                Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedLegalEntityAccountsFromService(
-                                accounts, LEGAL_ENTITY_ENDPOINT, "", BASIC_AUTH, "client-1");
-                Assert.assertNotNull(blockedForBlank);
-                Assert.assertTrue(blockedForBlank.isEmpty());
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
+        Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedLegalEntityAccountsFromService(
+                accounts, LEGAL_ENTITY_ENDPOINT, "", BASIC_AUTH, "client-1");
+        Assert.assertNotNull(blockedForBlank);
+        Assert.assertTrue(blockedForBlank.isEmpty());
 
         Assert.expectThrows(NullPointerException.class,
                 () -> CDSAccountValidationUtils.fetchBlockedLegalEntityAccountsFromService(
                         accounts, LEGAL_ENTITY_ENDPOINT, null, BASIC_AUTH, "client-1"));
     }
 
+    /**
+     * Verifies null client ID returns empty blocked accounts result for legal entity.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsWithNullClientId() throws CDSAccountValidationException {
         Set<String> accounts = new HashSet<>();
@@ -626,6 +714,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blocked.isEmpty());
     }
 
+    /**
+     * Verifies the legal entity endpoint is called when client ID is provided.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsWhenLegalEntityIdBlank() throws Exception {
         CloseableHttpClient client = mockClientWithResponse(200, "[]");
@@ -641,6 +732,9 @@ public class CDSAccountValidationUtilsTest {
         Mockito.verify(client, Mockito.times(1)).execute(Mockito.any(HttpGet.class));
     }
 
+    /**
+     * Verifies successful legal entity response returns blocked accounts with camelCase accountID field.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsSuccess() throws Exception {
         // null element in array covers the sharingItem == null branch
@@ -667,6 +761,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertFalse(blocked.contains("acc-2"));
     }
 
+    /**
+     * Verifies legal entity response parsing supports camelCase accountId fallback key.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsFallbackKeys() throws Exception {
         // Tests accountId (camelCase) fallback key path.
@@ -690,6 +787,9 @@ public class CDSAccountValidationUtilsTest {
         Assert.assertTrue(blocked.contains("acc-camel"));
     }
 
+    /**
+     * Verifies a non-200 legal entity response triggers a validation exception.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsNon200() throws Exception {
         CloseableHttpResponse leResp = mockResponse(503, "[]");
@@ -705,6 +805,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, LEGAL_ENTITY_ENDPOINT, "user-1", BASIC_AUTH, "client-1"));
     }
 
+    /**
+     * Verifies I/O failures from the legal entity service call are wrapped as validation exceptions.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsIoError() throws Exception {
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
@@ -719,6 +822,9 @@ public class CDSAccountValidationUtilsTest {
                         accounts, LEGAL_ENTITY_ENDPOINT, "user-1", BASIC_AUTH, "client-1"));
     }
 
+    /**
+     * Verifies malformed legal entity JSON responses raise a validation exception.
+     */
     @Test
     public void testFetchBlockedLegalEntityAccountsMalformedResponse() throws Exception {
         CloseableHttpResponse leResp = mockResponse(200, "{not-an-array");
@@ -736,6 +842,9 @@ public class CDSAccountValidationUtilsTest {
 
     // ---- fetchAllBlockedAccounts with clientId (exercises legal entity path) ----
 
+    /**
+     * Verifies fetchAllBlockedAccounts with clientId includes legal entity blocking logic.
+     */
     @Test
     public void testFetchAllBlockedAccountsWithClientId() throws Exception {
         String leBody = "[{\"accountID\":\"acc-1\",\"legalEntitySharingStatus\":\"blocked\"}]";

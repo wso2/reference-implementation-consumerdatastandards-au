@@ -173,6 +173,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies mediation succeeds when no authorization resources are present in the payload.
+     */
     @Test
     public void testMediateWithNoAuthorizationResources() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -403,6 +406,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies all accounts are filtered out when they are all blocked.
+     */
     @Test
     public void testMediateAllAccountsBlocked() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -447,6 +453,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies filtered authorization resources and account mappings are included in the signed JWT payload.
+     */
     @Test
     public void testMediateVerifiesFilteredAuthResourcesAndMappingsInSignedPayload() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -495,7 +504,7 @@ public class CDSAccountValidationMediatorTest {
             JSONArray filteredAuth = capturedJson.getJSONArray(CDSAccountValidationConstants.AUTH_RESOURCES_TAG);
             Assert.assertEquals(filteredAuth.length(), 1);
             Assert.assertEquals(filteredAuth.getJSONObject(0)
-                    .getString(CDSAccountValidationConstants.AUTH_TYPE_TAG),
+                            .getString(CDSAccountValidationConstants.AUTH_TYPE_TAG),
                     CDSAccountValidationConstants.PRIMARY_AUTH_TYPE_TAG);
 
             // acc-linked (excluded) and acc-blocked (blocked) must be absent; only acc-allowed survives
@@ -507,6 +516,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies account validation service failures are translated into mediation error properties.
+     */
     @Test
     public void testMediateSetsErrorPropertiesWhenAccountValidationFails() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -544,6 +556,9 @@ public class CDSAccountValidationMediatorTest {
         }
     }
 
+    /**
+     * Verifies client ID from the payload is passed to the account validation utility.
+     */
     @Test
     public void testMediatePassesClientIdFromPayload() throws Exception {
         CDSAccountValidationMediator mediator = new CDSAccountValidationMediator();
@@ -581,5 +596,4 @@ public class CDSAccountValidationMediatorTest {
                     Mockito.anyString(), Mockito.eq("my-client-id")));
         }
     }
-
 }
