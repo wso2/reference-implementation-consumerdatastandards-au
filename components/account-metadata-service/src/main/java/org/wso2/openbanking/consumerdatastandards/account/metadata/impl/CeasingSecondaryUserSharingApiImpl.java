@@ -87,8 +87,8 @@ public class CeasingSecondaryUserSharingApiImpl {
 
     static {
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(5000)
-                .setSocketTimeout(10000)
+                .setConnectTimeout(ConfigurableProperties.CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.SOCKET_TIMEOUT_MILLIS)
                 .build();
         httpClient = HttpClients.custom().setDefaultRequestConfig(requestConfig).build();
 

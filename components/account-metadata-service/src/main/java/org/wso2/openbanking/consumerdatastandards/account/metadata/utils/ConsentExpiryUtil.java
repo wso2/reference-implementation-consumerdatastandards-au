@@ -322,8 +322,8 @@ public class ConsentExpiryUtil {
             throws KeyStoreException, NoSuchAlgorithmException, KeyManagementException {
 
         RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(ConfigurableProperties.ACCELERATOR_CONNECT_TIMEOUT_MILLIS)
-                .setSocketTimeout(ConfigurableProperties.ACCELERATOR_SOCKET_TIMEOUT_MILLIS)
+                .setConnectTimeout(ConfigurableProperties.CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.SOCKET_TIMEOUT_MILLIS)
                 .build();
 
         SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial(TrustAllStrategy.INSTANCE).build();

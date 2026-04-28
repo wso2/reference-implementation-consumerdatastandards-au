@@ -57,6 +57,6 @@ public class ConfigurableProperties {
     public static final String IS_ADMIN_PASSWORD = "<IS_ADMIN_PASSWORD>";
 
     // HTTP timeouts (ms)
-    public static final int ACCELERATOR_CONNECT_TIMEOUT_MILLIS = 5000;
-    public static final int ACCELERATOR_SOCKET_TIMEOUT_MILLIS  = 10000;
+    public static final int CONNECT_TIMEOUT_MILLIS = 5000;
+    public static final int SOCKET_TIMEOUT_MILLIS = 10000;
 }
