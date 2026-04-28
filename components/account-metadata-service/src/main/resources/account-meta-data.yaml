@@ -211,45 +211,6 @@ paths:
         - OAuth2: []
         - BasicAuth: []
 
-    put:
-      tags:
-        - Secondary User Instruction
-      summary: Update secondary accounts instruction status for one or more accounts
-      description: This API is used to update the CDS Secondary Accounts Instruction and Privilege Status.
-      operationId: updateSecondaryAccountStatusPut
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SecondaryAccountInstructionItem'
-      responses:
-        '200':
-          description: Secondary accounts instruction status successfully updated
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SecondaryAccountInstructionItem'
-        '400':
-          description: Bad Request
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-      security:
-        - OAuth2: []
-        - BasicAuth: []
-
   /business-stakeholders:
     get:
       tags:
@@ -417,6 +378,105 @@ paths:
         - OAuth2: []
         - BasicAuth: []
 
+  /legal-entity:
+    get:
+      tags:
+        - CeasingSecondaryUserShare
+      summary: Get legal entity sharing statuses for one user across multiple accounts
+      description: Retrieve legal entity sharing statuses (blocked or active) for a given user ID and multiple account IDs (comma-separated).
+      operationId: getLegalEntitySharingStatusGet
+      parameters:
+        - name: userId
+          in: query
+          required: true
+          description: User ID
+          schema:
+            type: string
+            minLength: 1
+            example: secondary.user@example.com
+        - name: accountIds
+          in: query
+          required: true
+          description: Comma-separated account IDs
+          schema:
+            type: string
+            minLength: 1
+            example: "acc-12345,acc-67890"
+        - name: clientId
+          in: query
+          required: false
+          description: Software product client ID used to resolve the legal entity ID from the IS server. When provided, only records matching the resolved legal entity are returned.
+          schema:
+            type: string
+            example: "client-001"
+      responses:
+        '200':
+          description: Legal entity sharing statuses retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LegalEntitySharingItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
+    put:
+      tags:
+        - CeasingSecondaryUserShare
+      summary: Update legal entity sharing statuses for one or more records
+      description: |
+        Update legal entity sharing status records identified by the (secondaryUserID, accountID) pair.
+        If legalEntitySharingStatus is blocked, legalEntityID is added to the fs_secondary_user.BLOCKED_ENTITIES column.
+        If a record already exists, legalEntityID values are appended with a preceding ','.
+        If legalEntitySharingStatus is active, legalEntityID is removed from the BLOCKED_ENTITIES string.
+      operationId: updateLegalEntitySharingStatusPost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/LegalEntitySharingItem'
+      responses:
+        '200':
+          description: Legal entity sharing statuses updated successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/LegalEntitySharingItem'
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+      security:
+        - OAuth2: []
+        - BasicAuth: []
+
 components:
   securitySchemes:
     BasicAuth:
@@ -439,7 +499,6 @@ components:
         accountId:
           type: string
           description: Account ID
-          example: 143-000-B1234
         disclosureOption:
           type: string
           description: Disclosure option status
@@ -477,6 +536,7 @@ components:
           type: string
           description: Secondary account instruction status
           enum: [active, inactive]
+          x-enum-varnames: [active, inactive]
           example: inactive
           x-enum-description: |
             Allowed values:
@@ -588,4 +648,37 @@ components:
             minLength: 1
           example:
             - psu@gold.com@carbon.super
-            
+
+    LegalEntitySharingItem:
+      type: object
+      required:
+        - secondaryUserID
+        - accountID
+        - legalEntityID
+        - legalEntitySharingStatus
+      properties:
+        secondaryUserID:
+          type: string
+          minLength: 1
+          description: Secondary user identifier. Together with accountID, this uniquely identifies a record in fs_secondary_user.
+          example: secondary.user@example.com
+        accountID:
+          type: string
+          minLength: 1
+          description: Account ID
+          example: acc-12345
+        legalEntityID:
+          type: string
+          minLength: 1
+          description: Legal entity identifier
+          example: le-001
+        legalEntitySharingStatus:
+          type: string
+          description: Legal entity sharing status. blocked adds legalEntityID to BLOCKED_ENTITIES, active removes legalEntityID from BLOCKED_ENTITIES.
+          enum: [blocked, active]
+          x-enum-varnames: [blocked, active]
+          example: active
+          x-enum-description: |
+            Allowed values:
+              - active: Legal entity is not blocked
+              - blocked: Legal Entity is blocked

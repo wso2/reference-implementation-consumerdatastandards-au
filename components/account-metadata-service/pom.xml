@@ -92,6 +92,13 @@
     <dependency>
       <groupId>javax.validation</groupId>
       <artifactId>validation-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate.validator</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -124,7 +131,17 @@
       <version>${jackson.annotations.version}</version>
       <scope>compile</scope>
     </dependency>
-
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.core.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.databind.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -212,6 +229,14 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>10</source>
+          <target>10</target>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
   <properties>
@@ -222,6 +247,9 @@
     <org.json.version>20231013</org.json.version>
     <testng.version>7.7.0</testng.version>
     <commons.codec.version>1.21.0</commons.codec.version>
-    <jackson.annotations.version>2.19.2</jackson.annotations.version>
+    <jackson.annotations.version>2.13.4</jackson.annotations.version>
+    <jackson.core.version>2.21.1</jackson.core.version>
+    <jackson.databind.version>2.13.4.2</jackson.databind.version>
+    <maven-war-plugin.version>3.3.1</maven-war-plugin.version>
   </properties>
 </project>

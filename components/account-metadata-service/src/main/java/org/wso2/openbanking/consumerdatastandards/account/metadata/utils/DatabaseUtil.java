@@ -60,6 +60,12 @@ public class DatabaseUtil {
         }
     }
 
+    /**
+     * Obtain a connection from the configured Account Metadata datasource.
+     *
+     * @return a live database connection
+     * @throws SQLException if a connection cannot be created
+     */
     public static Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }

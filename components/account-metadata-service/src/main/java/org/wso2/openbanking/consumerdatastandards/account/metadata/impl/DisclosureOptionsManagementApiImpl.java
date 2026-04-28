@@ -128,7 +128,6 @@ public class DisclosureOptionsManagementApiImpl {
         }
 
         try {
-            // Split comma-separated account IDs and trim whitespace
             List<String> accountIdList = Arrays.asList(accountIds.split(","));
             accountIdList = accountIdList.stream().map(String::trim).filter(StringUtils::isNotBlank)
                     .collect(Collectors.toList());
@@ -170,7 +169,6 @@ public class DisclosureOptionsManagementApiImpl {
             Map<String, String> accountDisclosureMap = new HashMap<>();
             List<String> accountIdsToCheck = new ArrayList<>();
 
-            // Validate and collect accounts
             for (DisclosureOptionItem item : request) {
                 String disclosureOptionStatus = item.getDisclosureOption();
                 if (isValidDOMSStatus(disclosureOptionStatus)) {
@@ -186,10 +184,8 @@ public class DisclosureOptionsManagementApiImpl {
                 }
             }
 
-            // Batch check for existing accounts
             Map<String, String> existingStatuses = accountMetadataService.getBatchDisclosureOptions(accountIdsToCheck);
 
-            // Filter to only add new accounts
             Map<String, String> newAccounts = new HashMap<>();
             for (Map.Entry<String, String> entry : accountDisclosureMap.entrySet()) {
                 if (!existingStatuses.containsKey(entry.getKey())) {

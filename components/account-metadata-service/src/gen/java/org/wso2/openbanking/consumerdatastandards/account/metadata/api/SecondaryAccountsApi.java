@@ -55,22 +55,4 @@ public class SecondaryAccountsApi {
     public Response getSecondaryAccountsInstructionStatusGet(@QueryParam("accountIds") @NotNull  @ApiParam("Comma-separated account IDs")  String accountIds,@QueryParam("userId") @NotNull  @ApiParam("User ID")  String userId) {
         return SecondaryAccountsManagementApiImpl.getSecondaryAccountInstructions(accountIds, userId);
     }
-
-    @PUT
-    @Consumes({ "application/json" })
-    @Produces({ "application/json" })
-    @ApiOperation(value = "Update secondary accounts instruction status for one or more accounts", notes = "This API is used to update the CDS Secondary Accounts Instruction and Privilege Status.", response = SecondaryAccountInstructionItem.class, responseContainer = "List", authorizations = {
-            @Authorization(value = "OAuth2", scopes = {
-            }),
-
-            @Authorization(value = "BasicAuth")
-    }, tags={ "Secondary User Instruction" })
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Secondary accounts instruction status successfully updated", response = SecondaryAccountInstructionItem.class, responseContainer = "List"),
-            @ApiResponse(code = 400, message = "Bad Request", response = ErrorResponse.class),
-            @ApiResponse(code = 500, message = "Server Error", response = ErrorResponse.class)
-    })
-    public Response updateSecondaryAccountStatusPut(@Valid @NotNull List<@Valid SecondaryAccountInstructionItem> secondaryAccountInstructionItem) {
-        return SecondaryAccountsManagementApiImpl.updateSecondaryAccountInstructions(secondaryAccountInstructionItem);
-    }
 }

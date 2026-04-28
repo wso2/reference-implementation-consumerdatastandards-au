@@ -25,6 +25,7 @@ import org.apache.commons.logging.LogFactory;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.ErrorResponse;
 
 import javax.validation.ConstraintViolationException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -40,6 +41,26 @@ public class AccountMetadataThrowableMapper implements ExceptionMapper<Throwable
 
     @Override
     public Response toResponse(Throwable throwable) {
+
+        WebApplicationException webApplicationException = findWebApplicationException(throwable);
+        if (webApplicationException != null) {
+            Response response = webApplicationException.getResponse();
+            int statusCode = response != null ? response.getStatus()
+                : Response.Status.INTERNAL_SERVER_ERROR.getStatusCode();
+            String message = webApplicationException.getMessage();
+            if (message == null || message.trim().isEmpty()) {
+            message = response != null && response.getStatusInfo() != null
+                ? response.getStatusInfo().getReasonPhrase()
+                : "Request failed";
+            }
+
+            log.warn("[AccountMetadata] WebApplicationException mapped with status " + statusCode +
+                ": " + message);
+            return Response.status(statusCode)
+                .type(MediaType.APPLICATION_JSON)
+                .entity(new ErrorResponse().errorDescription(message))
+                .build();
+        }
 
         Throwable cause = throwable;
         while (cause != null) {
@@ -74,9 +95,35 @@ public class AccountMetadataThrowableMapper implements ExceptionMapper<Throwable
     }
 
     /**
-     * Checks if a throwable is an instance of the given class by name, tolerating classloader boundaries.
-     * Using Class.getName() instead of instanceof handles the case where the exception is thrown by a class
-     * loaded in a different classloader (e.g. the server's OSGi Jackson bundle vs the WAR's WEB-INF/lib copy).
+     * Search the causal chain for a {@link WebApplicationException} and return it if found.
+     * This allows existing JAX-RS exceptions to be mapped through transparently.
+     *
+     * @param throwable the root throwable to inspect
+     * @return the first {@link WebApplicationException} found in the cause chain, or {@code null}
+     *         if none is present
+     */
+    private static WebApplicationException findWebApplicationException(Throwable throwable) {
+        Throwable cause = throwable;
+        while (cause != null) {
+            if (cause instanceof WebApplicationException) {
+                return (WebApplicationException) cause;
+            }
+            cause = cause.getCause();
+        }
+        return null;
+    }
+
+    /**
+     * Determine whether the provided {@code throwable} is an instance of the given
+     * {@code targetClass}, comparing by class name to tolerate classloader boundaries.
+     *
+     * <p>Using the class name rather than {@code instanceof} allows detection of
+     * exception types that may have been loaded by a different classloader (common
+     * in servlet/OSGi environments).</p>
+     *
+     * @param throwable the throwable to inspect
+     * @param targetClass the exception class to match (by name)
+     * @return {@code true} if the throwable is an instance of {@code targetClass}
      */
     private static boolean isCausedBy(Throwable throwable, Class<?> targetClass) {
         String targetName = targetClass.getName();

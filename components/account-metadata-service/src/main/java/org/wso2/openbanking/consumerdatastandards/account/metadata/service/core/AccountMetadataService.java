@@ -21,6 +21,7 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.service.core
 import org.apache.commons.lang3.tuple.Pair;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 
 import java.util.List;
@@ -86,6 +87,26 @@ public interface AccountMetadataService {
         throws AccountMetadataException;
 
     /**
+     * Retrieve all legal entity sharing status records for multiple account-user pairs from
+     * fs_account_secondary_user_legal_entity.
+     *
+     * @param accountUserPairs list of (accountId, userId) pairs to query
+     * @return list of legal entity sharing status records
+     * @throws AccountMetadataException if an error occurs
+     */
+    List<LegalEntitySharingItem> getBatchLegalEntitySharingStatuses(
+            List<Pair<String, String>> accountUserPairs) throws AccountMetadataException;
+
+    /**
+     * Upsert legal entity sharing status records. Inserts new rows or updates
+     * LEGAL_ENTITY_STATUS when the primary key already exists.
+     *
+     * @param items legal entity sharing items to upsert
+     * @throws AccountMetadataException if an error occurs
+     */
+    void upsertBatchLegalEntitySharingStatuses(List<LegalEntitySharingItem> items) throws AccountMetadataException;
+
+    /**
      * Batch retrieve business stakeholder permissions for multiple account-user pairs.
      *
      * @param accountUserPairs list of (accountId, userId) pairs to query
@@ -131,5 +152,4 @@ public interface AccountMetadataService {
      */
     void deleteBatchBusinessStakeholderPermissions(List<BusinessStakeholderPermissionItem> permissionItems)
         throws AccountMetadataException;
-
 }
