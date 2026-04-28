@@ -24,6 +24,7 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueries;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueriesMySqlImpl;
@@ -40,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildBusinessItem;
+import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildLegalEntityItem;
 import static org.wso2.openbanking.consumerdatastandards.account.metadata.utils.CommonTestUtils.buildSecondaryItem;
 
 /**
@@ -57,8 +59,8 @@ public class AccountMetadataDAOImplTest {
          */
         @Override
         public String getBatchAddDisclosureOptionQuery() {
-            return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTION_STATUS, LAST_UPDATED_TIMESTAMP)" +
-                    " VALUES (?, ?, ?)";
+            return "INSERT INTO fs_account_doms_status (ACCOUNT_ID, DISCLOSURE_OPTIONS_STATUS, LAST_UPDATED_TIMESTAMP)"
+                    + " VALUES (?, ?, ?)";
         }
 
         /**
@@ -66,7 +68,7 @@ public class AccountMetadataDAOImplTest {
          */
         @Override
         public String getBatchUpdateDisclosureOptionQuery() {
-            return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTION_STATUS = ?, LAST_UPDATED_TIMESTAMP = ?" +
+            return "UPDATE fs_account_doms_status SET DISCLOSURE_OPTIONS_STATUS = ?, LAST_UPDATED_TIMESTAMP = ?" +
                     " WHERE ACCOUNT_ID = ?";
         }
 
@@ -120,6 +122,35 @@ public class AccountMetadataDAOImplTest {
         public String getBatchUpdateSecondaryAccountInstructionQuery() {
             return "UPDATE fs_account_secondary_user SET INSTRUCTION_STATUS = ?, " +
                     "OTHER_ACCOUNTS_AVAILABILITY = ?, LAST_UPDATED_TIMESTAMP = ? WHERE ACCOUNT_ID = ? AND USER_ID = ?";
+        }
+
+        /**
+         * @param pairCount number of account-user pairs
+         * @return select query for legal entity sharing statuses
+         */
+        @Override
+        public String getBatchGetLegalEntitySharingStatusesQuery(int pairCount) {
+            StringBuilder placeholders = new StringBuilder();
+            for (int i = 0; i < pairCount; i++) {
+                if (i > 0) {
+                    placeholders.append(",");
+                }
+                placeholders.append("(?,?)");
+            }
+            return "SELECT ACCOUNT_ID, USER_ID, LEGAL_ENTITY_ID, LEGAL_ENTITY_STATUS FROM "
+                    + "fs_account_secondary_user_legal_entity WHERE (ACCOUNT_ID, USER_ID) IN (" + placeholders + ")";
+        }
+
+        /**
+         * @return upsert query for legal entity sharing statuses
+         */
+        @Override
+        public String getUpsertLegalEntitySharingStatusQuery() {
+            return "INSERT INTO fs_account_secondary_user_legal_entity "
+                    + "(ACCOUNT_ID, USER_ID, LEGAL_ENTITY_ID, LEGAL_ENTITY_STATUS, LAST_UPDATED_TIMESTAMP) "
+                    + "VALUES (?, ?, ?, ?, ?) "
+                    + "ON DUPLICATE KEY UPDATE LEGAL_ENTITY_STATUS = VALUES(LEGAL_ENTITY_STATUS), "
+                    + "LAST_UPDATED_TIMESTAMP = VALUES(LAST_UPDATED_TIMESTAMP)";
         }
 
         /**
@@ -202,7 +233,7 @@ public class AccountMetadataDAOImplTest {
         Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
         Mockito.when(resultSet.getString("ACCOUNT_ID"))
                 .thenReturn("acc-400").thenReturn("acc-401");
-        Mockito.when(resultSet.getString("DISCLOSURE_OPTION_STATUS"))
+        Mockito.when(resultSet.getString("DISCLOSURE_OPTIONS_STATUS"))
                 .thenReturn("no-sharing").thenReturn("pre-approval");
 
         Map<String, String> result = dao.getBatchDisclosureOptions(connection,
@@ -375,20 +406,20 @@ public class AccountMetadataDAOImplTest {
         Mockito.when(statement.executeQuery()).thenReturn(resultSet);
         Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
         Mockito.when(resultSet.getString("ACCOUNT_ID"))
-            .thenReturn("acc-900").thenReturn("acc-901");
+                .thenReturn("acc-900").thenReturn("acc-901");
         Mockito.when(resultSet.getString("USER_ID"))
-            .thenReturn("user-1").thenReturn("user-2");
+                .thenReturn("user-1").thenReturn("user-2");
         Mockito.when(resultSet.getString("INSTRUCTION_STATUS"))
-            .thenReturn("active").thenReturn("inactive");
+                .thenReturn("active").thenReturn("inactive");
         Mockito.when(resultSet.getBoolean("OTHER_ACCOUNTS_AVAILABILITY"))
-            .thenReturn(true).thenReturn(false);
+                .thenReturn(true).thenReturn(false);
 
         List<Pair<String, String>> accountUserPairs = Arrays.asList(
                 Pair.of("acc-900", "user-1"),
                 Pair.of("acc-901", "user-2"));
 
         List<SecondaryAccountInstructionItem> result = dao.getBatchSecondaryAccountInstructions(connection,
-            accountUserPairs);
+                accountUserPairs);
 
         Assert.assertEquals(result.size(), 2);
         Assert.assertEquals(result.get(0).getAccountId(), "acc-900");
@@ -417,7 +448,7 @@ public class AccountMetadataDAOImplTest {
         List<Pair<String, String>> accountUserPairs = Collections.singletonList(Pair.of("acc-902", "user-1"));
 
         List<SecondaryAccountInstructionItem> result = dao.getBatchSecondaryAccountInstructions(connection,
-            accountUserPairs);
+                accountUserPairs);
 
         Assert.assertTrue(result.isEmpty());
     }
@@ -502,7 +533,6 @@ public class AccountMetadataDAOImplTest {
 
         Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
 
-    
         Map<String, String> accountMap = new HashMap<>();
         accountMap.put("acc-901", "no-sharing");
 
@@ -927,6 +957,124 @@ public class AccountMetadataDAOImplTest {
     }
 
     /**
+     * Verifies batch retrieval of legal entity sharing statuses.
+     */
+    @Test
+    public void testGetBatchLegalEntitySharingStatusesSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+        ResultSet resultSet = Mockito.mock(ResultSet.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(true).thenReturn(true).thenReturn(false);
+        Mockito.when(resultSet.getString("ACCOUNT_ID")).thenReturn("acc-200").thenReturn("acc-201");
+        Mockito.when(resultSet.getString("USER_ID")).thenReturn("user-200").thenReturn("user-201");
+        Mockito.when(resultSet.getString("LEGAL_ENTITY_ID")).thenReturn("le-001").thenReturn("le-002");
+        Mockito.when(resultSet.getString("LEGAL_ENTITY_STATUS")).thenReturn("blocked").thenReturn("active");
+
+        List<Pair<String, String>> queryItems = Arrays.asList(
+                Pair.of("acc-200", "user-200"),
+                Pair.of("acc-201", "user-201"));
+
+        List<LegalEntitySharingItem> result = dao.getBatchLegalEntitySharingStatuses(connection, queryItems);
+
+        Assert.assertEquals(result.size(), 2);
+        Assert.assertEquals(result.get(0).getAccountID(), "acc-200");
+        Assert.assertEquals(result.get(0).getSecondaryUserID(), "user-200");
+        Assert.assertEquals(result.get(0).getLegalEntityID(), "le-001");
+        Assert.assertEquals(result.get(0).getLegalEntitySharingStatus(),
+                LegalEntitySharingItem.LegalEntitySharingStatusEnum.blocked);
+        Assert.assertEquals(result.get(1).getLegalEntitySharingStatus(),
+                LegalEntitySharingItem.LegalEntitySharingStatusEnum.active);
+    }
+
+    /**
+     * Verifies retrieval short-circuit when legal entity sharing input is empty.
+     */
+    @Test
+    public void testGetBatchLegalEntitySharingStatusesEmptyInput() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        List<LegalEntitySharingItem> result =
+                dao.getBatchLegalEntitySharingStatuses(connection, Collections.emptyList());
+
+        Assert.assertTrue(result.isEmpty());
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during legal entity sharing retrieval.
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchLegalEntitySharingStatusesSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        dao.getBatchLegalEntitySharingStatuses(connection,
+                Collections.singletonList(Pair.of("acc-202", "user-202")));
+    }
+
+    /**
+     * Verifies successful batch upsert of legal entity sharing statuses.
+     */
+    @Test
+    public void testUpsertBatchLegalEntitySharingStatusesSuccess() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+        PreparedStatement statement = Mockito.mock(PreparedStatement.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeBatch()).thenReturn(new int[]{1, 1});
+
+        List<LegalEntitySharingItem> items = Arrays.asList(
+                buildLegalEntityItem("acc-206", "user-206", "le-020", "blocked"),
+                buildLegalEntityItem("acc-207", "user-207", "le-021", "active"));
+
+        dao.upsertBatchLegalEntitySharingStatuses(connection, items);
+
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(1), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(2), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(3), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setString(Mockito.eq(4), Mockito.anyString());
+        Mockito.verify(statement, Mockito.times(2)).setTimestamp(Mockito.eq(5), Mockito.any(Timestamp.class));
+        Mockito.verify(statement, Mockito.times(2)).addBatch();
+        Mockito.verify(statement).executeBatch();
+    }
+
+    /**
+     * Verifies upsert short-circuit for empty legal entity sharing list.
+     */
+    @Test
+    public void testUpsertBatchLegalEntitySharingStatusesEmpty() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        dao.upsertBatchLegalEntitySharingStatuses(connection, Collections.emptyList());
+
+        Mockito.verify(connection, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
+    /**
+     * Verifies SQL exception handling during legal entity sharing upsert.
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testUpsertBatchLegalEntitySharingStatusesSqlException() throws Exception {
+        AccountMetadataDAO dao = new AccountMetadataDAOImpl(new TestQueries());
+        Connection connection = Mockito.mock(Connection.class);
+
+        Mockito.when(connection.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("bad"));
+
+        List<LegalEntitySharingItem> items = Collections.singletonList(
+                buildLegalEntityItem("acc-208", "user-208", "le-021", "blocked"));
+        dao.upsertBatchLegalEntitySharingStatuses(connection, items);
+    }
+
+    /**
      * Verifies that a single account-user pair produces the correct SELECT query with one tuple placeholder.
      */
     @Test
@@ -976,14 +1124,4 @@ public class AccountMetadataDAOImplTest {
                 "SELECT ACCOUNT_ID, USER_ID, PERMISSION FROM fs_account_bnr_permission " +
                         "WHERE (ACCOUNT_ID, USER_ID) IN ((?,?))");
     }
-
-    /**
-     * Asserts that the given mock object has no interactions (no method calls).
-     *
-     * @param mock the mock object to check
-     */
-    private void assertNoInteractions(Object mock) {
-        Assert.assertTrue(Mockito.mockingDetails(mock).getInvocations().isEmpty());
-    }
-
 }
