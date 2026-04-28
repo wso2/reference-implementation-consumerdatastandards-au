@@ -20,7 +20,10 @@ package org.wso2.openbanking.consumerdatastandards.au.extensions.constants;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * This class holds common constants for the CDS Open Banking implementation.
@@ -178,9 +181,25 @@ public class CommonConstants {
     public static final String BUSINESS_STAKEHOLDERS_ENDPOINT = "/business-stakeholders";
     public static final String SECONDARY_INSTRUCTION_STATUS_ACTIVE = "active";
     public static final String USER_ID_QUERY_PARAM = "userId";
+    public static final String CLIENT_ID_QUERY_PARAM = "clientId";
     public static final String SECONDARY_USER_ID_FIELD = "secondaryUserId";
     public static final String OTHER_ACCOUNTS_AVAILABILITY_FIELD = "otherAccountsAvailability";
     public static final String SECONDARY_ACCOUNT_INSTRUCTION_STATUS_FIELD = "secondaryAccountInstructionStatus";
+    public static final String LEGAL_ENTITY_SHARING_ENDPOINT = "/legal-entity";
+    public static final String LEGAL_ENTITY_ID = "legalEntityID";
+    public static final String LEGAL_ENTITY_SHARING_STATUS = "legalEntitySharingStatus";
+    public static final String LEGAL_ENTITY_SHARING_STATUS_BLOCKED = "blocked";
+
+    // Constants related to IS applications endpoint response
+    public static final String FILTER_QUERY_PARAM = "filter";
+    public static final String ATTRIBUTES_QUERY_PARAM = "attributes";
+    public static final String CLIENT_ID_FILTER_PREFIX = "clientId eq ";
+    public static final String APPLICATIONS = "applications";
+    public static final String ADVANCED_CONFIGURATIONS = "advancedConfigurations";
+    public static final String ADDITIONAL_SP_PROPERTIES = "additionalSpProperties";
+    public static final String NAME = "name";
+    public static final String VALUE = "value";
+    public static final String LEGAL_ENTITY_ID_PROPERTY_NAME = "legal_entity_id";
 
     // Constants related to Business accounts
     public static final String AUTH_TYPE_BUSINESS_ACCOUNT_OWNER = "business_account_owner";
@@ -204,4 +223,143 @@ public class CommonConstants {
     public static final String PROFILE_NAME_RESPONSE_TAG = "profileName";
     public static final String PROFILE_ID_TAG = "profileId";
     public static final String PROFILE_NAME_TAG = "profileName";
+
+    // Customer profile types used to choose between individual / business cluster definitions
+    public static final String INDIVIDUAL_PROFILE_TYPE = "Individual";
+    public static final String ORGANISATION = "Organisation";
+
+    // Profile-marker prefixes embedded into basicConsentData keys when PROFILE_SELECTION_PAGE_ENABLED is true.
+    // The profile-selection JSP filters by these prefixes and strips them before forwarding to the consent
+    // confirmation page.
+    public static final String BASIC_CONSENT_DATA_INDIVIDUAL_PREFIX = "[individual]";
+    public static final String BASIC_CONSENT_DATA_ORGANISATION_PREFIX = "[organisation]";
+    public static final String BANK_PAYEES_READ_SCOPE = "bank:payees:read";
+
+    // Human-readable data cluster definitions consumed by the consent UI.
+    public static final Map<String, Map<String, List<String>>> CDS_DATA_CLUSTER;
+    public static final Map<String, Map<String, List<String>>> BUSINESS_CDS_DATA_CLUSTER;
+    public static final Map<String, Map<String, List<String>>> INDIVIDUAL_CDS_DATA_CLUSTER;
+    public static final Map<String, Map<String, List<String>>> PROFILE_DATA_CLUSTER;
+    public static final Map<String, List<String>> CONTACT_CLUSTER_CLAIMS;
+
+    // Bank scope clusters
+    static {
+        Map<String, Map<String, List<String>>> dataCluster = new HashMap<>();
+
+        Map<String, List<String>> permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Account name, type, and balance",
+                Arrays.asList("Name of account", "Type of account", "Account balance"));
+        dataCluster.put(COMMON_ACCOUNTS_BASIC_READ_SCOPE, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Account balance and details",
+                Arrays.asList("Name of account", "Type of account", "Account balance", "Account number",
+                        "Interest rates", "Fees", "Discounts", "Account terms", "Account mail address"));
+        dataCluster.put(COMMON_ACCOUNTS_DETAIL_READ_SCOPE, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Transaction details",
+                Arrays.asList("Incoming and outgoing transactions", "Amounts", "Dates",
+                        "Descriptions of transactions",
+                        "Who you have sent money to and received money from(e.g.their name)"));
+        dataCluster.put(TRANSACTIONS_READ_SCOPE, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Direct debits and scheduled payments",
+                Arrays.asList("Direct debits", "Scheduled payments"));
+        dataCluster.put(REGULAR_PAYMENTS_READ_SCOPE, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Saved payees",
+                Collections.singletonList("Names and details of accounts you have saved; (e.g. their BSB and Account "
+                        + "Number, BPay CRN and Biller code, or NPP PayID)"));
+        dataCluster.put(BANK_PAYEES_READ_SCOPE, permissionLanguage);
+
+        CDS_DATA_CLUSTER = Collections.unmodifiableMap(dataCluster);
+    }
+
+    // Profile (name + contact details) clusters
+    static {
+        Map<String, Map<String, List<String>>> dataCluster = new HashMap<>();
+
+        Map<String, List<String>> permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Name", Collections.singletonList("Full name and title(s)"));
+        dataCluster.put(NAME_CLUSTER, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Collections.singletonList("Email address"));
+        dataCluster.put("contactDetails_email", permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Collections.singletonList("Mail address"));
+        dataCluster.put("contactDetails_mail", permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Collections.singletonList("Phone number"));
+        dataCluster.put("contactDetails_phone", permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Arrays.asList("Email address", "Mail address"));
+        dataCluster.put("contactDetails_email_mail", permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Arrays.asList("Email address", "Phone number"));
+        dataCluster.put("contactDetails_email_phone", permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Arrays.asList("Mail address", "Phone number"));
+        dataCluster.put("contactDetails_mail_phone", permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Contact Details", Arrays.asList("Email address", "Mail address", "Phone number"));
+        dataCluster.put("contactDetails_email_mail_phone", permissionLanguage);
+
+        PROFILE_DATA_CLUSTER = Collections.unmodifiableMap(dataCluster);
+    }
+
+    // Business common:* clusters
+    static {
+        Map<String, Map<String, List<String>>> dataCluster = new HashMap<>();
+
+        Map<String, List<String>> permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Organisation profile",
+                Arrays.asList("Agent name and role", "Organisation name", "Organisation numbers (ABN or ACN)",
+                        "Charity status", "Establishment date", "Industry", "Organisation type",
+                        "Country of registration"));
+        dataCluster.put(COMMON_CUSTOMER_BASIC_READ_SCOPE, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Organisation profile and contact details",
+                Arrays.asList("Agent name and role", "Organisation name", "Organisation numbers (ABN or ACN)",
+                        "Charity status", "Establishment date", "Industry", "Organisation type",
+                        "Country of registration", "Organisation address", "Mail address", "Phone number"));
+        dataCluster.put(COMMON_CUSTOMER_DETAIL_READ_SCOPE, permissionLanguage);
+
+        BUSINESS_CDS_DATA_CLUSTER = Collections.unmodifiableMap(dataCluster);
+    }
+
+    // Individual common:* clusters
+    static {
+        Map<String, Map<String, List<String>>> dataCluster = new HashMap<>();
+
+        Map<String, List<String>> permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Name and occupation", Arrays.asList("Name", "Occupation"));
+        dataCluster.put(COMMON_CUSTOMER_BASIC_READ_SCOPE, permissionLanguage);
+
+        permissionLanguage = new LinkedHashMap<>();
+        permissionLanguage.put("Name, occupation, contact details",
+                Arrays.asList("Name", "Occupation", "Phone", "Email address", "Mail address", "Residential address"));
+        dataCluster.put(COMMON_CUSTOMER_DETAIL_READ_SCOPE, permissionLanguage);
+
+        INDIVIDUAL_CDS_DATA_CLUSTER = Collections.unmodifiableMap(dataCluster);
+    }
+
+    // Mapping from contact cluster name to its claim list
+    static {
+        Map<String, List<String>> contactClusters = new HashMap<>();
+        contactClusters.put(EMAIL_CLUSTER, EMAIL_CLUSTER_CLAIMS);
+        contactClusters.put(MAIL_CLUSTER, MAIL_CLUSTER_CLAIMS);
+        contactClusters.put(PHONE_CLUSTER, PHONE_CLUSTER_CLAIMS);
+        CONTACT_CLUSTER_CLAIMS = Collections.unmodifiableMap(contactClusters);
+    }
 }

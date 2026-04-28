@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
@@ -76,7 +75,7 @@ public class AccountMetadataUtil {
      * @param accountIds list of account IDs to retrieve DOMS statuses for
      * @return a Map of accountId to DOMS Status, or null if retrieval fails
      */
-    public static Map<String, String> getDOMSStatusesForAccounts(List<String> accountIds) {
+    public static Map<String, String> getDOMSStatusesForAccounts(List<String> accountIds) throws CdsConsentException {
 
         RequestConfig requestConfig = RequestConfig.custom()
                 .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
@@ -111,8 +110,9 @@ public class AccountMetadataUtil {
 
         } catch (IOException | URISyntaxException e) {
             log.error("Failed to retrieve DOMS statuses for batch accounts", e);
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "Failed to retrieve DOMS statuses");
         }
-        return null;
     }
 
     /**
@@ -165,7 +165,70 @@ public class AccountMetadataUtil {
 
         } catch (IOException | URISyntaxException e) {
             log.error("Failed to retrieve secondary account instruction statuses", e);
-            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR, "");
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "Failed to retrieve secondary account instruction statuses");
+        }
+    }
+
+    /**
+     * Retrieve legal-entity blocked status for secondary accounts for a given user and client.
+     * Calls GET /legal-entity with comma-separated account IDs, userId, and clientId query parameters.
+     * The account-metadata service resolves the clientId to a legal entity ID internally.
+     *
+     * @param accountIds list of secondary account IDs
+     * @param secondaryUserId secondary user ID
+     * @param clientId software product client ID used to resolve the legal entity ID server-side
+     * @return map of accountId to blocking status (true when blocked for the resolved legal entity)
+     */
+    public static Map<String, Boolean> getSecondaryAccountBlockedByLegalEntityMap(List<String> accountIds,
+            String secondaryUserId, String clientId) throws CdsConsentException {
+
+        Map<String, Boolean> blockedMap = new HashMap<>();
+
+        for (String accountId : accountIds) {
+            if (StringUtils.isNotBlank(accountId)) {
+                blockedMap.put(accountId, false);
+            }
+        }
+
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
+                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
+                .build();
+
+        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
+            String baseUrl = buildLegalEntitySharingUrl();
+            String accountIdParam = String.join(",", accountIds);
+
+            URIBuilder uriBuilder = new URIBuilder(baseUrl);
+            uriBuilder.addParameter(CommonConstants.ACCOUNT_IDS, accountIdParam);
+            uriBuilder.addParameter(CommonConstants.USER_ID_QUERY_PARAM, secondaryUserId);
+            if (StringUtils.isNotBlank(clientId)) {
+                uriBuilder.addParameter(CommonConstants.CLIENT_ID_QUERY_PARAM, clientId);
+            }
+
+            HttpGet request = new HttpGet(uriBuilder.build());
+            request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
+            request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
+            addBasicAuthHeader(request);
+
+            HttpResponse response = client.execute(request);
+
+            if (response.getStatusLine().getStatusCode() != HttpURLConnection.HTTP_OK) {
+                log.error("Failed to retrieve legal entity sharing statuses, HTTP Status: " +
+                        response.getStatusLine().getStatusCode());
+                throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                        "Failed to retrieve legal entity sharing statuses from Account metadata service");
+            }
+
+            InputStream in = response.getEntity().getContent();
+            String responseBody = IOUtils.toString(in, String.valueOf(StandardCharsets.UTF_8));
+            return extractLegalEntityBlockedStatusFromBatchResponse(responseBody, blockedMap);
+
+        } catch (IOException | URISyntaxException e) {
+            log.error("Failed to retrieve legal entity sharing statuses", e);
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "Failed to retrieve legal entity sharing statuses");
         }
     }
 
@@ -177,23 +240,12 @@ public class AccountMetadataUtil {
      * @param userId user ID
      * @return map of accountId to permission, or empty map when retrieval fails
      */
-    public static Map<String, String> getBusinessStakeholderPermissionsForAccounts(List<String> accountIds,
-                                                                                    String userId) {
+    public static Map<String, String> getBusinessStakeholderPermissionsForAccounts(
+            List<String> accountIds, String userId) throws CdsConsentException {
 
         Map<String, String> permissionMap = new HashMap<>();
 
         if (accountIds == null || accountIds.isEmpty() || StringUtils.isBlank(userId)) {
-            return permissionMap;
-        }
-
-        List<String> validAccountIds = new ArrayList<>();
-        for (String accountId : accountIds) {
-            if (StringUtils.isNotBlank(accountId)) {
-                validAccountIds.add(accountId);
-            }
-        }
-
-        if (validAccountIds.isEmpty()) {
             return permissionMap;
         }
 
@@ -204,7 +256,7 @@ public class AccountMetadataUtil {
 
         try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
             String baseUrl = buildBusinessStakeholdersUrl();
-            String accountIdParam = String.join(",", validAccountIds);
+            String accountIdParam = String.join(",", accountIds);
 
             URIBuilder uriBuilder = new URIBuilder(baseUrl);
             uriBuilder.addParameter(CommonConstants.ACCOUNT_IDS, accountIdParam);
@@ -220,7 +272,9 @@ public class AccountMetadataUtil {
             if (response.getStatusLine().getStatusCode() != HttpURLConnection.HTTP_OK) {
                 log.error("Failed to retrieve business stakeholder permissions, HTTP Status: " +
                         response.getStatusLine().getStatusCode());
-                return permissionMap;
+                throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                        "Failed to retrieve legal entity sharing statuses from Account metadata service");
+
             }
 
             InputStream in = response.getEntity().getContent();
@@ -229,9 +283,9 @@ public class AccountMetadataUtil {
 
         } catch (IOException | URISyntaxException e) {
             log.error("Failed to retrieve business stakeholder permissions", e);
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "Failed to retrieve legal entity sharing statuses from Account metadata service");
         }
-
-        return permissionMap;
     }
 
     /**
@@ -267,47 +321,6 @@ public class AccountMetadataUtil {
 
         } catch (IOException e) {
             log.error("Failed to add DOMS statuses for joint accounts", e);
-            return false;
-        }
-    }
-
-    /**
-     * Add secondary account instructions for the consenting user.
-     * Calls POST /secondary-accounts with account IDs and the secondary user ID
-     * (the user initiating the consent, not the account owners).
-     *
-     * @param accountIds set of secondary account IDs selected during consent
-     * @param secondaryUserId the user ID of the consenting user (secondary user)
-     * @param otherAccountsAvailability map of accountId to other-accounts-availability
-     * @return true if secondary account instructions are added successfully, false otherwise
-     */
-    public static boolean addSecondaryAccountInstructions(Set<String> accountIds, String secondaryUserId,
-                                               Boolean otherAccountsAvailability) {
-
-        RequestConfig requestConfig = RequestConfig.custom()
-                .setConnectTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS)
-                .setSocketTimeout(ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS)
-                .build();
-
-        try (CloseableHttpClient client = HttpClients.custom().setDefaultRequestConfig(requestConfig).build()) {
-            String requestUrl = buildSecondaryAccountsUrl();
-            HttpPost request = new HttpPost(requestUrl);
-
-            request.addHeader(CommonConstants.ACCEPT_HEADER_NAME, CommonConstants.ACCEPT_HEADER_VALUE);
-            request.addHeader(CommonConstants.ACCEPT_CONTENT_NAME, CommonConstants.ACCEPT_CONTENT_VALUE_JSON);
-            addBasicAuthHeader(request);
-
-                String requestBody = buildSecondaryAccountInstructionsRequestBody(accountIds, secondaryUserId,
-                    otherAccountsAvailability);
-            request.setEntity(new StringEntity(requestBody, StandardCharsets.UTF_8));
-
-            HttpResponse response = client.execute(request);
-            int statusCode = response.getStatusLine().getStatusCode();
-
-            return statusCode == HttpURLConnection.HTTP_CREATED || statusCode == HttpURLConnection.HTTP_OK;
-
-        } catch (IOException e) {
-            log.error("Failed to add secondary account instructions for user: " + secondaryUserId, e);
             return false;
         }
     }
@@ -419,28 +432,11 @@ public class AccountMetadataUtil {
     }
 
     /**
-     * Build the request body for adding secondary account instructions.
-     * Constructs JSON array with account ID, secondary user ID, and instruction status.
-     * @param accountIds set of account IDs
-     * @param secondaryUserId the secondary user ID (consenting user)
-     * @param otherAccountsAvailability map of accountId to other-accounts-availability
-     * @return JSON request body as string
+     * Build the request URL for the legal-entity sharing endpoint.
+     *
      */
-    private static String buildSecondaryAccountInstructionsRequestBody(Set<String> accountIds,
-                                           String secondaryUserId, Boolean otherAccountsAvailability) {
-                                            
-        JsonArray dataArray = new JsonArray();
-
-        for (String accountId : accountIds) {
-            JsonObject item = new JsonObject();
-            item.addProperty(CommonConstants.ACCOUNT_ID, accountId);
-            item.addProperty(CommonConstants.SECONDARY_USER_ID_FIELD, secondaryUserId);
-            item.addProperty(CommonConstants.OTHER_ACCOUNTS_AVAILABILITY_FIELD, otherAccountsAvailability);
-            item.addProperty(CommonConstants.SECONDARY_ACCOUNT_INSTRUCTION_STATUS_FIELD,
-                    CommonConstants.SECONDARY_INSTRUCTION_STATUS_ACTIVE);
-            dataArray.add(item);
-        }
-        return dataArray.toString();
+    private static String buildLegalEntitySharingUrl() {
+        return ConfigurableProperties.ACCOUNT_METADATA_WEBAPP_BASE_URL + CommonConstants.LEGAL_ENTITY_SHARING_ENDPOINT;
     }
 
     /**
@@ -612,5 +608,70 @@ public class AccountMetadataUtil {
             log.error("Failed to parse business stakeholder permission batch response JSON", e);
             return permissionMap;
         }
+    }
+
+    /**
+     * Extract legal-entity blocked statuses from batch API response body.
+     * The server has already filtered results by the resolved legal entity (via clientId),
+     * so only items matching that legal entity are present in the response.
+     *
+     * @param responseBody the JSON response body as a string
+     * @param defaultStatusMap account-level default statuses
+     * @return map of accountId to blocked status
+     */
+    private static Map<String, Boolean> extractLegalEntityBlockedStatusFromBatchResponse(String responseBody,
+            Map<String, Boolean> defaultStatusMap) {
+
+        Map<String, Boolean> blockedStatusMap = new HashMap<>(defaultStatusMap);
+
+        try {
+            Gson gson = new Gson();
+            JsonElement responseElement = gson.fromJson(responseBody, JsonElement.class);
+
+            if (responseElement != null && responseElement.isJsonArray()) {
+                JsonArray responseArray = responseElement.getAsJsonArray();
+                for (JsonElement itemElement : responseArray) {
+                    if (itemElement == null || !itemElement.isJsonObject()) {
+                        continue;
+                    }
+
+                    JsonObject item = itemElement.getAsJsonObject();
+                    String accountId = getJsonString(item, "accountID", CommonConstants.ACCOUNT_ID);
+                    String sharingStatus = getJsonString(item, CommonConstants.LEGAL_ENTITY_SHARING_STATUS,
+                            "legalEntitySharingStatus");
+
+                    if (StringUtils.isBlank(accountId) || !blockedStatusMap.containsKey(accountId)) {
+                        continue;
+                    }
+
+                    if (CommonConstants.LEGAL_ENTITY_SHARING_STATUS_BLOCKED.equalsIgnoreCase(sharingStatus)) {
+                        blockedStatusMap.put(accountId, true);
+                    }
+                }
+            }
+
+            return blockedStatusMap;
+        } catch (JsonSyntaxException e) {
+            log.error("Failed to parse legal-entity sharing batch response JSON", e);
+            return blockedStatusMap;
+        }
+    }
+
+    /**
+     * Retrieves the first non-null and non-empty string value from the given JsonObject for the provided field names.
+     * Iterates through the fieldNames in order and returns the value of the first field that exists and is not null.
+     *
+     * @param item       the JsonObject to search for the fields
+     * @param fieldNames one or more field names to check in order of priority
+     * @return the string value of the first found field, or an empty string if none are found or all are null
+     */
+    private static String getJsonString(JsonObject item, String... fieldNames) {
+        for (String fieldName : fieldNames) {
+            JsonElement value = item.get(fieldName);
+            if (value != null && !value.isJsonNull()) {
+                return value.getAsString();
+            }
+        }
+        return StringUtils.EMPTY;
     }
 }

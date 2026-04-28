@@ -86,7 +86,8 @@ public class PopulateConsentAuthorizeScreenApiImpl {
             List<AdditionalData> additionalDisplayData = new ArrayList<>();
 
             //Getting Consumer and Display Data
-            ConsentAuthorizeUtil.cdsConsumerDataRetrieval(jsonRequestBody, userId, consumerData, additionalDisplayData);
+            ConsentAuthorizeUtil.cdsConsumerDataRetrieval(jsonRequestBody, userId, consumerData, additionalDisplayData,
+                    data.getConsentResource());
 
             //Set consent data to return to accelerator
             SuccessResponsePopulateConsentAuthorizeScreenData screenData =
@@ -103,7 +104,7 @@ public class PopulateConsentAuthorizeScreenApiImpl {
 
             return Response.status(Response.Status.OK).entity(new JSONObject(response).toString()).build();
 
-                } catch (CdsConsentException e) {
+        } catch (CdsConsentException e) {
                         // Handle all CDS-related errors (including auto-converted exceptions)
                         log.error("CDS error during consent authorize screen population", e);
 
