@@ -144,7 +144,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
 //                .when()
 //                .get(AUConstants.DCR_REGISTRATION_ENDPOINT + auConfiguration.getAppInfoClientID())
 
-        String adrName = auConfiguration.getADRName()
+        String adrName = auConfiguration.getAppDCRSoftwareId()
 
         //Send Authorisation Request via PAR
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,

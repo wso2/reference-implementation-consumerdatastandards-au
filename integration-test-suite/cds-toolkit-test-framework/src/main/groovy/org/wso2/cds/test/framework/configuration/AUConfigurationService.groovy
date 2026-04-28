@@ -29,13 +29,6 @@ import org.wso2.cds.test.framework.constant.AUConfigConstants
 class AUConfigurationService extends CommonConfigurationService {
 
     /**
-     * Get ADR Name
-     */
-    String getADRName() {
-        return configuration.get(ConfigConstants.COMMON + "." + AUConfigConstants.ADR_NAME)
-    }
-
-    /**
      * Get Mock CDR Register enabled
      */
     boolean getMockCDREnabled() {
@@ -321,21 +314,31 @@ class AUConfigurationService extends CommonConfigurationService {
         return configuration.get(AUConfigConstants.PROVISIONING + "." + AUConfigConstants.PROVISIONING_FILE_PATH)
     }
 
+    /**
+     * Get Consent Manager App ClientID
+     */
     String getConsentManagerClientID() {
         return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_CLIENT_ID)
     }
 
+    /**
+     * Get Consent Manager App Client Secret
+     */
     String getConsentManagerClientSecret() {
         return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_CLIENT_SECRET)
     }
 
+    /**
+     * Get Consent Manager App Admin username
+     */
     String getConsentManagerAdminUser() {
         return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_ADMIN_USER)
     }
 
+    /**
+     * Get Consent Manager App Admin password
+     */
     String getConsentManagerAdminPassword() {
         return configuration.get(AUConfigConstants.CONSENT_MANAGER_APP + "." + AUConfigConstants.CONSENT_MANAGER_ADMIN_PASSWORD)
     }
-
-
 }

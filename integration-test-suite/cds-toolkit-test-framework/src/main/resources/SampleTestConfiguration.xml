@@ -36,8 +36,6 @@
         <!--Sample Values: PS256 -->
         <SigningAlgorithm>PS256</SigningAlgorithm>
 
-        <!--Accredited Data Recipient name displayed in the consent UI -->
-        <AdrName>jFQuQ4eQbNCMSqdCog21nF</AdrName>
     </Common>
 
     <!-- Provisioning Info -->
