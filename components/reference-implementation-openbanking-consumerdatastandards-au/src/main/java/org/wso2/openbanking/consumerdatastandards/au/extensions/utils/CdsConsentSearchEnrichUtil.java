@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CdsErrorEnum;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.exceptions.CdsConsentException;
 import org.wso2.openbanking.consumerdatastandards.au.extensions.gen.model.SuccessResponseForConsentSearchData;
@@ -81,14 +82,14 @@ public class CdsConsentSearchEnrichUtil {
      * @param enrichedObj search result payload to enrich; expected to be a {@link List} of consent objects
      * @return enriched searchData wrapped in SuccessResponseForConsentSearchData
      */
-    public static SuccessResponseForConsentSearchData enrichDOMSStatus(Object enrichedObj) {
+    public static SuccessResponseForConsentSearchData enrichDOMSStatus(Object enrichedObj) throws CdsConsentException {
 
         SuccessResponseForConsentSearchData searchData = new SuccessResponseForConsentSearchData();
         searchData.setEnrichedSearchResult(enrichedObj);
 
         if (!(enrichedObj instanceof List)) {
-            log.warn("enrichedSearchResult is not a List, skipping DOMS enrichment");
-            return searchData;
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "enrichedSearchResult should be a List");
         }
 
         List<?> searchResultArray = (List<?>) enrichedObj;
@@ -164,8 +165,8 @@ public class CdsConsentSearchEnrichUtil {
         searchData.setEnrichedSearchResult(enrichedObj);
 
         if (!(enrichedObj instanceof List)) {
-            log.warn("enrichedSearchResult is not a List, skipping secondary account info enrichment");
-            return searchData;
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "enrichedSearchResult should be a List");
         }
 
         List<?> searchResultArray = (List<?>) enrichedObj;
@@ -193,14 +194,15 @@ public class CdsConsentSearchEnrichUtil {
      * @param userId user ID used to evaluate BNR permissions
      * @return enriched searchData wrapped in SuccessResponseForConsentSearchData
      */
-    public static SuccessResponseForConsentSearchData enrichCanRevokeCapability(Object enrichedObj, String userId) {
+    public static SuccessResponseForConsentSearchData enrichCanRevokeCapability(Object enrichedObj, String userId)
+            throws CdsConsentException {
 
         SuccessResponseForConsentSearchData searchData = new SuccessResponseForConsentSearchData();
         searchData.setEnrichedSearchResult(enrichedObj);
 
         if (!(enrichedObj instanceof List)) {
-            log.warn("enrichedSearchResult is not a List, skipping can_revoke enrichment");
-            return searchData;
+            throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
+                    "enrichedSearchResult should be a List");
         }
 
         List<?> searchResultArray = (List<?>) enrichedObj;
@@ -412,9 +414,6 @@ public class CdsConsentSearchEnrichUtil {
 
     /**
      * Check whether the secondary account info enrichment is requested by query params.
-     *
-     * @param enrichmentParams enrichment parameters supplied by the caller
-     * @return {@code true} when secondary-account-info enrichment is requested; {@code false} otherwise
      */
     private static boolean isSecondaryInfoEnrichmentRequested(Map<String, Object> paramsMap) {
         return hasEnrichmentParam(paramsMap, CommonConstants.SECONDARY_ACCOUNT_INFO_TAG);

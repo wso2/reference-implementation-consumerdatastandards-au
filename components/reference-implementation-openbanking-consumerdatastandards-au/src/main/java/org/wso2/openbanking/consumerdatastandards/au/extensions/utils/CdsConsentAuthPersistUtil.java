@@ -116,19 +116,21 @@ public class CdsConsentAuthPersistUtil {
 
             ArrayList<Authorization> authorizationResource = new ArrayList<>();
             Map<String, Set<String>> linkedMemberAccountMap = new HashMap<>();
-            Map<String, Set<String>> secondaryOwnerAccountMap = new HashMap<>();
+            Map<String, Set<String>> secondaryOwnersByAccountMap = new HashMap<>();
             Map<String, Set<String>> businessOwnerAccountMap = new HashMap<>();
             Map<String, Set<String>> nominatedRepresentativeAccountMap = new HashMap<>();
             Map<String, Set<String>> businessAccountOwnersByAccountMap = new HashMap<>();
             Map<String, Set<String>> businessNominatedRepresentativesByAccountMap = new HashMap<>();
             Map<String, String> jointAccountDisclosureMap = new HashMap<>();
-            boolean otherAccountsAvailability = processAccountsData(authorizedDataInners, linkedMemberAccountMap,
-                    secondaryOwnerAccountMap, businessOwnerAccountMap, nominatedRepresentativeAccountMap,
-                    businessAccountOwnersByAccountMap, businessNominatedRepresentativesByAccountMap,
-                    jointAccountDisclosureMap, primaryUserId);
+
+            processAccountsData(authorizedDataInners, linkedMemberAccountMap,
+                    secondaryOwnersByAccountMap, businessOwnerAccountMap,
+                    nominatedRepresentativeAccountMap, businessAccountOwnersByAccountMap,
+                    businessNominatedRepresentativesByAccountMap, jointAccountDisclosureMap, primaryUserId);
 
             // Create Authorizations for primary member
-            boolean hasAdditionalAuthorizers = !linkedMemberAccountMap.isEmpty() || !secondaryOwnerAccountMap.isEmpty()
+            boolean hasAdditionalAuthorizers = !linkedMemberAccountMap.isEmpty()
+                    || !secondaryOwnersByAccountMap.isEmpty()
                     || !businessOwnerAccountMap.isEmpty() || !nominatedRepresentativeAccountMap.isEmpty();
             String primaryAuthType = hasAdditionalAuthorizers ?
                     CommonConstants.AUTH_RESOURCE_TYPE_PRIMARY : CommonConstants.DEFAULT_AUTH_TYPE;
@@ -140,13 +142,26 @@ public class CdsConsentAuthPersistUtil {
                 authorizationResource.add(buildMemberAuthorization(entry, CommonConstants.AUTH_RESOURCE_TYPE_LINKED));
             }
 
-            // Setting the secondary auth type based on joint accounts or individual  accounts
-            String secondaryOwnerAuthType = secondaryOwnerAccountMap.size() > 1
-                    ? CommonConstants.AUTH_TYPE_SECONDARY_JOINT_ACCOUNT_OWNER
-                    : CommonConstants.AUTH_TYPE_SECONDARY_INDIVIDUAL_ACCOUNT_OWNER;
-            // Create Authorizations for Secondary Account Owners
-            for (Map.Entry<String, Set<String>> entry : secondaryOwnerAccountMap.entrySet()) {
-                authorizationResource.add(buildMemberAuthorization(entry, secondaryOwnerAuthType));
+            // Create Authorizations for Secondary Account Owners.
+            // Auth type is determined per-account: if an account has multiple secondary owners it is JOINT,
+            // otherwise INDIVIDUAL. An owner with both joint and individual accounts gets two authorizations.
+            Map<String, Set<String>> ownerToJointAccounts = new HashMap<>();
+            Map<String, Set<String>> ownerToIndividualAccounts = new HashMap<>();
+            for (Map.Entry<String, Set<String>> accountEntry : secondaryOwnersByAccountMap.entrySet()) {
+                String accountId = accountEntry.getKey();
+                Set<String> owners = accountEntry.getValue();
+                Map<String, Set<String>> target = owners.size() > 1 ? ownerToJointAccounts : ownerToIndividualAccounts;
+                for (String owner : owners) {
+                    target.computeIfAbsent(owner, k -> new HashSet<>()).add(accountId);
+                }
+            }
+            for (Map.Entry<String, Set<String>> entry : ownerToJointAccounts.entrySet()) {
+                authorizationResource.add(buildMemberAuthorization(entry,
+                        CommonConstants.AUTH_TYPE_SECONDARY_JOINT_ACCOUNT_OWNER));
+            }
+            for (Map.Entry<String, Set<String>> entry : ownerToIndividualAccounts.entrySet()) {
+                authorizationResource.add(buildMemberAuthorization(entry,
+                        CommonConstants.AUTH_TYPE_SECONDARY_INDIVIDUAL_ACCOUNT_OWNER));
             }
 
             // Create Authorizations for Business Account Owners
@@ -181,22 +196,6 @@ public class CdsConsentAuthPersistUtil {
                 log.error("Error occurred while adding disclosure options in persist step.");
                 throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
                         "Error While Updating the Joint account Info.");
-            }
-
-            // Add secondary account instructions for the consenting user
-            if (!secondaryOwnerAccountMap.isEmpty()) {
-                // Collect all secondary account IDs from the map values
-                Set<String> secondaryAccountIds = secondaryOwnerAccountMap.values().stream().flatMap(Set::stream)
-                        .collect(Collectors.toSet());
-
-                String userId = consumerInputData.getString("userId");
-                if (!AccountMetadataUtil.addSecondaryAccountInstructions(secondaryAccountIds, userId,
-                        otherAccountsAvailability)) {
-                    // Throwing an error if secondary user instruction data didn't get added.
-                    log.error("Error occurred while adding secondary account instructions in persist step.");
-                    throw new CdsConsentException(CdsErrorEnum.UNEXPECTED_ERROR,
-                            "Error while updating the secondary account instructions.");
-                }
             }
 
             // Add business stakeholder permissions for business nominated representatives
@@ -246,26 +245,22 @@ public class CdsConsentAuthPersistUtil {
      *
      * @param authorizedDataInners List of authorized data containing accounts
      * @param linkedMemberAccountMap Map to be populated with linked member userId to account IDs
-     * @param secondaryOwnerAccountMap Map to be populated with secondary owner userId to account IDs
+     * @param secondaryOwnersByAccountMap Map to be populated with accountId to secondary owner userIds
      * @param businessOwnerAccountMap Map to be populated with business account owner userId to account IDs
      * @param nominatedRepresentativeAccountMap Map to be populated with nominated representative userId to account IDs
      * @param businessAccountOwnersByAccountMap Map of accountId to business account owners
      * @param businessNominatedRepresentativesByAccountMap Map of accountId to nominated representatives
      * @param jointAccountDisclosureMap Map to be populated with joint account disclosure information
      * @param primaryUserId authenticated primary user id
-     * @return other-accounts-availability value shared across secondary accounts
      */
-    private static boolean processAccountsData(List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners,
+    private static void processAccountsData(List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners,
                                                Map<String, Set<String>> linkedMemberAccountMap,
-                                               Map<String, Set<String>> secondaryOwnerAccountMap,
+                                               Map<String, Set<String>> secondaryOwnersByAccountMap,
                                                Map<String, Set<String>> businessOwnerAccountMap,
                                                Map<String, Set<String>> nominatedRepresentativeAccountMap,
                                                Map<String, Set<String>> businessAccountOwnersByAccountMap,
                                                Map<String, Set<String>> businessNominatedRepresentativesByAccountMap,
                                                Map<String, String> jointAccountDisclosureMap, String primaryUserId) {
-
-        boolean otherAccountsAvailability = false;
-        boolean secondaryAvailabilityResolved = false;
 
         for (AuthorizedResourcesAuthorizedDataInner authorizedDataInner : authorizedDataInners) {
             for (Account account : authorizedDataInner.getAccounts()) {
@@ -282,8 +277,7 @@ public class CdsConsentAuthPersistUtil {
                 }
 
                 String accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(
-                        ConfigurableProperties.SHARABLE_ENDPOINT, displayName.split("<br>")[0]
-                );
+                        ConfigurableProperties.SHARABLE_ENDPOINT, displayName.split("<br>")[0]);
 
                 if (StringUtils.isEmpty(accountId)) {
                     log.warn("Could not resolve accountId for displayName: " + displayName.split("<br>")[0]);
@@ -313,24 +307,10 @@ public class CdsConsentAuthPersistUtil {
                 // Process secondary account owners
                 Object secondaryOwnersObj = innerProps.get(CommonConstants.SECONDARY_ACCOUNT_OWNERS_TAG);
                 if (secondaryOwnersObj instanceof List) {
-                    boolean otherAccountsAvailabilityProp = true;
-                    Object otherAccountsAvailabilityObj =
-                            innerProps.get(CommonConstants.OTHER_ACCOUNTS_AVAILABILITY_FIELD);
-                    if (otherAccountsAvailabilityObj instanceof Boolean) {
-                        otherAccountsAvailabilityProp = (Boolean) otherAccountsAvailabilityObj;
-                    }
-                    if (!secondaryAvailabilityResolved) {
-                        otherAccountsAvailability = otherAccountsAvailabilityProp;
-                        secondaryAvailabilityResolved = true;
-                    } else if (otherAccountsAvailability != otherAccountsAvailabilityProp) {
-                        log.warn("Inconsistent otherAccountsAvailablitiy values found across secondary accounts; " +
-                                "using the first resolved value for all accounts");
-                    }
-
                     @SuppressWarnings("unchecked")
                     List<String> secondaryOwners = (List<String>) secondaryOwnersObj;
                     for (String owner : secondaryOwners) {
-                        secondaryOwnerAccountMap.computeIfAbsent(owner, k -> new HashSet<>()).add(accountId);
+                        secondaryOwnersByAccountMap.computeIfAbsent(accountId, k -> new HashSet<>()).add(owner);
                     }
                 }
 
@@ -366,8 +346,6 @@ public class CdsConsentAuthPersistUtil {
                 }
             }
         }
-
-        return otherAccountsAvailability;
     }
 
     /**
@@ -382,8 +360,13 @@ public class CdsConsentAuthPersistUtil {
         String memberUserId = entry.getKey();
         Set<String> accountIds = entry.getValue();
 
+        // Compare after removing tenant domain (e.g., "@carbon.super") from memberId
+        String normalizedMemberId = memberUserId.contains("@")
+                ? memberUserId.substring(0, memberUserId.lastIndexOf("@"))
+                : memberUserId;
+
         Authorization memberAuthorization = new Authorization();
-        memberAuthorization.setUserId(memberUserId);
+        memberAuthorization.setUserId(normalizedMemberId);
         memberAuthorization.setType(authType);
         memberAuthorization.setStatus(CommonConstants.AUTHORIZED_STATUS);
 
@@ -410,6 +393,7 @@ public class CdsConsentAuthPersistUtil {
             List<AuthorizedResourcesAuthorizedDataInner> authorizedDataInners) {
 
         List<Resource> resources = new ArrayList<>();
+        Set<String> uniqueAccountIds = new HashSet<>();
         String accountsURL = ConfigurableProperties.SHARABLE_ENDPOINT;
         String accountId;
 
@@ -430,6 +414,11 @@ public class CdsConsentAuthPersistUtil {
                 //Get Account_Id from Display Name
                 accountId = CommonConsentExtensionUtil.getAccountIdByDisplayName(accountsURL,
                         displayName.split("<br>")[0]);
+
+                // Avoid duplicate resources when the same account appears under multiple permission scopes.
+                if (!uniqueAccountIds.add(accountId)) {
+                    continue;
+                }
 
                 // Set properties from the individual 'account' and the outer 'authorizedDataInner'
                 resource.setAccountId(accountId);
