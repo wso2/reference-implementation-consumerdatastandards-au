@@ -41,5 +41,4 @@ public class ConfigurableProperties {
     public static final int ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS = 10000;
 
     public static final Boolean PROFILE_SELECTION_PAGE_ENABLED = true;
-
 }
