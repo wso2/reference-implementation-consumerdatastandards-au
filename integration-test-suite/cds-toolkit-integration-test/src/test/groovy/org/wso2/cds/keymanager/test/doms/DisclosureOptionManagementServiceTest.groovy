@@ -93,7 +93,7 @@ class DisclosureOptionManagementServiceTest extends AUTest {
 
         Assert.assertEquals(jointAccountIdList[0], account)
         Assert.assertNull(AUTestUtil.parseResponseBody(
-                accountResponse, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[7]"))
+                accountResponse, "${AUConstants.RESPONSE_DATA_BULK_ACCOUNTID_LIST}[1]"))
     }
 
     @Test(groups = "SmokeTest")
