@@ -19,14 +19,14 @@ This guide covers deploying and configuring the three main components of the CDS
 
 ## Prerequisites
 
-| Requirement                   | Version                                |
-|-------------------------------|----------------------------------------|
-| Java (OpenJDK)                 | 11 or above                            |
-| Apache Maven                  | 3.0.5 or above                         |
-| MySQL                         | 8.0 or above                           |
-| WSO2 Identity Server          | 7.1.0                                  |
+| Requirement                   | Version                    |
+|-------------------------------|----------------------------|
+| Java (OpenJDK)                 | 11 or above                |
+| Apache Maven                  | 3.0.5 or above             |
+| MySQL                         | 8.0                        |
+| WSO2 Identity Server          | 7.1.0                      |
 | WSO2 API Manager              | Compatible release for IS 7.1.0 (4.5.0) |
-| WSO2 Open Banking Accelerator | 4.0.0                                  |
+| WSO2 Open Banking Accelerator | 4.0.0                      |
 
 > **Port reference used in this guide** — IS is assumed to run with `offset = 3`, giving a management HTTPS port of **9446** (9443 + 3). APIM management port is **9443** (default, no offset). Adjust URLs throughout if your setup differs.
 
@@ -204,11 +204,11 @@ The four tables used by the webapp are:
 
 ### 2.2 Migrating from Accelerator 3.0 to 4.0
 
-If migrating from an OB3 deployment to OB4 deployment , apply the migration script:
+If migrating from an Accelerator 3.0 deployment to Accelerator 4.0 deployment , apply the migration script:
 
 ```bash
 mysql -u root -p fs_account_metadatadb < \
-  components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/ob3_to_ob4_migration.sql
+  components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/ob3_to_ob4_migration_mysql.sql
 ```
 
 ### 2.3 Build
