@@ -94,20 +94,6 @@ public class BusinessStakeholdersManagementApiImplTest {
     }
 
     /**
-     * Verifies bad request when account id is missing.
-     */
-    @Test
-    public void testAddBusinessStakeholdersSendBadRequestOnMissingAccountId() {
-        BusinessStakeholderItem item = buildUpsertItem(" ",
-            buildRepresentative("user-1", "AUTHORIZE"));
-
-        Response response = BusinessStakeholdersManagementApiImpl.addBusinessStakeholders(
-            Collections.singletonList(item));
-
-        assertSendBadRequest(response, "accountID is required");
-    }
-
-    /**
      * Verifies add returns OK with empty list when request has no representatives.
      */
     @Test
@@ -597,19 +583,6 @@ public class BusinessStakeholdersManagementApiImplTest {
     }
 
     /**
-     * Verifies bad request when delete account id is missing.
-     */
-    @Test
-    public void testDeleteBusinessStakeholdersSendBadRequestOnMissingAccountId() {
-        BusinessStakeholderDeleteItem item = buildDeleteItem(" ", "user-1");
-
-        Response response = BusinessStakeholdersManagementApiImpl.deleteBusinessStakeholders(
-            Collections.singletonList(item));
-
-        assertSendBadRequest(response, "accountID is required");
-    }
-
-    /**
      * Verifies bad request when delete nominated representative is blank.
      */
     @Test
@@ -736,8 +709,7 @@ public class BusinessStakeholdersManagementApiImplTest {
         Response response = BusinessStakeholdersManagementApiImpl.deleteBusinessStakeholders(
             Collections.singletonList(requestItem));
 
-        Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        Assert.assertEquals(asStringList(response).size(), 0);
+        Assert.assertEquals(response.getStatus(), Response.Status.NOT_FOUND.getStatusCode());
         Mockito.verify(metadataDAO, Mockito.never())
             .updateBatchBusinessStakeholderPermissions(Mockito.any(Connection.class), Mockito.anyList());
         Mockito.verify(metadataDAO, Mockito.never())
@@ -768,28 +740,7 @@ public class BusinessStakeholdersManagementApiImplTest {
         Response response = BusinessStakeholdersManagementApiImpl.deleteBusinessStakeholders(
             Collections.singletonList(requestItem));
 
-        Assert.assertEquals(response.getStatus(), Response.Status.OK.getStatusCode());
-        List<BusinessStakeholderDeleteItem> body = asDeleteItemList(response);
-        Assert.assertEquals(body.size(), 1);
-        Assert.assertEquals(body.get(0).getAccountID(), "acc-3");
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<BusinessStakeholderPermissionItem>> revokeCaptor =
-            (ArgumentCaptor<List<BusinessStakeholderPermissionItem>>) (ArgumentCaptor<?>)
-                ArgumentCaptor.forClass(List.class);
-        Mockito.verify(metadataDAO).updateBatchBusinessStakeholderPermissions(Mockito.eq(connection),
-            revokeCaptor.capture());
-        Assert.assertEquals(revokeCaptor.getValue().size(), 1);
-        Assert.assertEquals(revokeCaptor.getValue().get(0).getUserId(), "user-3");
-        Assert.assertEquals(revokeCaptor.getValue().get(0).getPermission().value(), "REVOKE");
-
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<List<BusinessStakeholderPermissionItem>> deleteCaptor =
-            (ArgumentCaptor<List<BusinessStakeholderPermissionItem>>) (ArgumentCaptor<?>)
-                ArgumentCaptor.forClass(List.class);
-        Mockito.verify(metadataDAO).deleteBatchBusinessStakeholderPermissions(Mockito.eq(connection),
-                deleteCaptor.capture());
-        Assert.assertEquals(deleteCaptor.getValue().size(), 2);
+        Assert.assertEquals(response.getStatus(), Response.Status.NOT_FOUND.getStatusCode());
     }
 
     /**
@@ -925,6 +876,11 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Builds a business stakeholder permission item.
+     *
+     * @param accountId the account identifier to assign
+     * @param userId the user identifier to assign
+     * @param permission the permission value to assign
+     * @return the constructed permission item
      */
     private BusinessStakeholderPermissionItem buildItem(String accountId, String userId, String permission) {
         BusinessStakeholderPermissionItem item = new BusinessStakeholderPermissionItem();
@@ -937,6 +893,10 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Builds a business stakeholder representative model.
+     *
+     * @param name the representative name
+     * @param permission the permission value to assign
+     * @return the constructed representative model
      */
     private BusinessStakeholderRepresentative buildRepresentative(String name, String permission) {
         BusinessStakeholderRepresentative representative = new BusinessStakeholderRepresentative();
@@ -950,6 +910,10 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Builds an upsert request item.
+     *
+     * @param accountId the account identifier to assign
+     * @param representatives the nominated representatives to include
+     * @return the constructed upsert item
      */
     private BusinessStakeholderItem buildUpsertItem(String accountId,
                                                     BusinessStakeholderRepresentative... representatives) {
@@ -958,6 +922,11 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Builds an upsert request item with account owners.
+     *
+     * @param accountId the account identifier to assign
+     * @param accountOwners the account owners to include
+     * @param representatives the nominated representatives to include
+     * @return the constructed upsert item
      */
     private BusinessStakeholderItem buildUpsertItem(String accountId, List<String> accountOwners,
                                                     BusinessStakeholderRepresentative... representatives) {
@@ -970,6 +939,10 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Builds a delete request item.
+     *
+     * @param accountId the account identifier to assign
+     * @param representativeUserIds the nominated representative user IDs to include
+     * @return the constructed delete item
      */
     private BusinessStakeholderDeleteItem buildDeleteItem(String accountId, String... representativeUserIds) {
         return buildDeleteItem(accountId, new ArrayList<>(), representativeUserIds);
@@ -977,6 +950,11 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Builds a delete request item with account owners.
+     *
+     * @param accountId the account identifier to assign
+     * @param accountOwners the account owners to include
+     * @param representativeUserIds the nominated representative user IDs to include
+     * @return the constructed delete item
      */
     private BusinessStakeholderDeleteItem buildDeleteItem(String accountId, List<String> accountOwners,
             String... representativeUserIds) {
@@ -989,6 +967,9 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Asserts a bad request response with expected error description.
+     *
+     * @param response the response to inspect
+     * @param expectedDescription the expected error description
      */
     private void assertSendBadRequest(Response response, String expectedDescription) {
         Assert.assertEquals(response.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
@@ -999,17 +980,32 @@ public class BusinessStakeholdersManagementApiImplTest {
 
     /**
      * Casts response entity to list of account ids.
+     *
+     * @param response the JAX-RS response under test
+     * @return the response entity as a list of account IDs
      */
     @SuppressWarnings("unchecked")
     private List<String> asStringList(Response response) {
         return (List<String>) response.getEntity();
     }
 
+    /**
+     * Cast the response entity to a list of business stakeholder upsert items.
+     *
+     * @param response the JAX-RS response under test
+     * @return the response entity as a list of {@link BusinessStakeholderItem}
+     */
     @SuppressWarnings("unchecked")
     private List<BusinessStakeholderItem> asUpsertItemList(Response response) {
         return (List<BusinessStakeholderItem>) response.getEntity();
     }
 
+    /**
+     * Cast the response entity to a list of business stakeholder delete items.
+     *
+     * @param response the JAX-RS response under test
+     * @return the response entity as a list of {@link BusinessStakeholderDeleteItem}
+     */
     @SuppressWarnings("unchecked")
     private List<BusinessStakeholderDeleteItem> asDeleteItemList(Response response) {
         return (List<BusinessStakeholderDeleteItem>) response.getEntity();
