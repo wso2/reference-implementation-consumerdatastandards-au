@@ -30,6 +30,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -181,7 +182,7 @@ public class CDSAccountValidationUtils {
 
             try (CloseableHttpResponse response = apacheHttpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
+                if (statusCode == HttpStatus.SC_OK) {
                     String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     JSONArray disclosureOptions;
                     try {
@@ -256,7 +257,7 @@ public class CDSAccountValidationUtils {
 
             try (CloseableHttpResponse response = apacheHttpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
+                if (statusCode == HttpStatus.SC_OK) {
                     String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     JSONArray secondaryAccounts;
                     try {
@@ -331,7 +332,7 @@ public class CDSAccountValidationUtils {
 
             try (CloseableHttpResponse response = apacheHttpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
+                if (statusCode == HttpStatus.SC_OK) {
                     String responseBody = EntityUtils.toString(response.getEntity(), StandardCharsets.UTF_8);
                     JSONArray businessStakeholders;
                     try {
@@ -412,7 +413,7 @@ public class CDSAccountValidationUtils {
 
             try (CloseableHttpResponse response = apacheHttpClient.execute(request)) {
                 int statusCode = response.getStatusLine().getStatusCode();
-                if (statusCode == 200) {
+                if (statusCode == HttpStatus.SC_OK) {
                     String responseBody;
                     try (InputStream inputStream = response.getEntity().getContent()) {
                         responseBody = IOUtils.toString(inputStream, "UTF-8");

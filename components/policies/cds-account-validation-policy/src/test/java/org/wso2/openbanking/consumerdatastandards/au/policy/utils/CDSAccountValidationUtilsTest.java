@@ -18,6 +18,7 @@
 
 package org.wso2.openbanking.consumerdatastandards.au.policy.utils;
 
+import org.apache.http.HttpStatus;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -94,7 +95,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedAccountsFromServiceSuccess() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"},"
                 + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"pre-approval\"},"
                 + "{\"accountId\":\"acc-3\",\"disclosureOption\":\"no-sharing\"}"
@@ -125,7 +126,8 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedAccountsFromServiceNon200() throws Exception {
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(500, "[]"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(
+                HttpStatus.SC_INTERNAL_SERVER_ERROR, "[]"));
 
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
@@ -156,7 +158,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedAccountsWithAuthHeader() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"}"
                 + "]");
         CDSAccountValidationUtils.setApacheHttpClient(client);
@@ -181,7 +183,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedAccountsSuccessIncludesRequiredAuthHeader() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "{\"accountId\":\"acc-2\",\"disclosureOption\":\"no-sharing\"}"
                 + "]");
         CDSAccountValidationUtils.setApacheHttpClient(client);
@@ -222,7 +224,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedAccountsSkipsInvalidRowsAndBlankAccountId() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "\"invalid\","
                 + "{\"disclosureOption\":\"no-sharing\"},"
                 + "{\"accountId\":\"acc-5\",\"disclosureOption\":\"no-sharing\"}"
@@ -244,7 +246,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedAccountsFromServiceMalformedResponse() throws Exception {
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "{not-an-array"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_OK, "{not-an-array"));
 
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
@@ -261,7 +263,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedSecondaryAccountsSuccess() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "{\"accountId\":\"acc-1\",\"secondaryAccountInstructionStatus\":\"inactive\"},"
                 + "{\"accountId\":\"acc-2\",\"secondaryAccountInstructionStatus\":\"active\"}"
                 + "]");
@@ -284,7 +286,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedSecondaryAccountsNon200() throws Exception {
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(503, "[]"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_SERVICE_UNAVAILABLE, "[]"));
 
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
@@ -317,7 +319,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedSecondaryAccountsMalformedResponse() throws Exception {
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "{not-an-array"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_OK, "{not-an-array"));
 
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
@@ -351,7 +353,7 @@ public class CDSAccountValidationUtilsTest {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_OK, "[]"));
         Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedSecondaryAccountsFromService(
                 accounts, SECONDARY_ACCOUNTS_ENDPOINT, "", BASIC_AUTH);
         Assert.assertNotNull(blockedForBlank);
@@ -367,7 +369,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedSecondaryAccountsIncludesUserIdInRequest() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "[]");
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "[]");
         CDSAccountValidationUtils.setApacheHttpClient(client);
 
         Set<String> accounts = new HashSet<>();
@@ -390,7 +392,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedSecondaryAccountsSkipsInvalidAndNonInactiveRows() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "\"invalid-string-entry\","
                 + "{\"secondaryAccountInstructionStatus\":\"inactive\"},"
                 + "{\"accountId\":\"acc-active\",\"secondaryAccountInstructionStatus\":\"active\"},"
@@ -417,7 +419,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedBusinessAccountsSuccess() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "{\"accountId\":\"acc-1\",\"permission\":\"VIEW\"},"
                 + "{\"accountId\":\"acc-2\",\"permission\":\"AUTHORIZE\"}"
                 + "]");
@@ -440,7 +442,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedBusinessAccountsNon200() throws Exception {
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(503, "[]"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_SERVICE_UNAVAILABLE, "[]"));
 
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
@@ -473,7 +475,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedBusinessAccountsMalformedResponse() throws Exception {
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "{not-an-array"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_OK, "{not-an-array"));
 
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
@@ -500,14 +502,15 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-     * Verifies blank user ID returns empty results while null user ID raises a NullPointerException for business accounts.
+     * Verifies blank user ID returns empty results while null user ID raises a NullPointerException for
+     * business accounts.
      */
     @Test
     public void testFetchBlockedBusinessAccountsWithBlankUserId() throws Exception {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_OK, "[]"));
         Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedBusinessAccountsFromService(
                 accounts, BUSINESS_STAKEHOLDERS_ENDPOINT, "", BASIC_AUTH);
         Assert.assertNotNull(blockedForBlank);
@@ -523,7 +526,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedBusinessAccountsIncludesUserIdInRequest() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "[]");
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "[]");
         CDSAccountValidationUtils.setApacheHttpClient(client);
 
         Set<String> accounts = new HashSet<>();
@@ -542,11 +545,12 @@ public class CDSAccountValidationUtilsTest {
     }
 
     /**
-     * Verifies malformed rows and AUTHORIZE permission accounts are skipped while VIEW permission accounts are returned as blocked.
+     * Verifies malformed rows and AUTHORIZE permission accounts are skipped while
+     * VIEW permission accounts are returned as blocked.
      */
     @Test
     public void testFetchBlockedBusinessAccountsSkipsInvalidAndAuthorizeRows() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "["
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "["
                 + "\"invalid-entry\","
                 + "{\"permission\":\"VIEW\"},"
                 + "{\"accountId\":\"acc-auth\",\"permission\":\"AUTHORIZE\"},"
@@ -586,11 +590,11 @@ public class CDSAccountValidationUtilsTest {
     public void testFetchAllBlockedAccountsCombinesResults() throws Exception {
         // Pre-create all responses before the Mockito.when chain to avoid UnfinishedStubbingException
         // (mockResponse internally calls Mockito.when, which must not happen mid-chain).
-        CloseableHttpResponse disclosureResp = mockResponse(200,
+        CloseableHttpResponse disclosureResp = mockResponse(HttpStatus.SC_OK,
                 "[{\"accountId\":\"acc-1\",\"disclosureOption\":\"no-sharing\"}]");
-        CloseableHttpResponse secondaryResp = mockResponse(200,
+        CloseableHttpResponse secondaryResp = mockResponse(HttpStatus.SC_OK,
                 "[{\"accountId\":\"acc-2\",\"secondaryAccountInstructionStatus\":\"inactive\"}]");
-        CloseableHttpResponse businessResp = mockResponse(200,
+        CloseableHttpResponse businessResp = mockResponse(HttpStatus.SC_OK,
                 "[{\"accountId\":\"acc-3\",\"permission\":\"VIEW\"}]");
 
         // disclosure → secondary → business; legal entity is skipped because clientId is null
@@ -690,7 +694,7 @@ public class CDSAccountValidationUtilsTest {
         Set<String> accounts = new HashSet<>();
         accounts.add("acc-1");
 
-        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(200, "[]"));
+        CDSAccountValidationUtils.setApacheHttpClient(mockClientWithResponse(HttpStatus.SC_OK, "[]"));
         Set<String> blockedForBlank = CDSAccountValidationUtils.fetchBlockedLegalEntityAccountsFromService(
                 accounts, LEGAL_ENTITY_ENDPOINT, "", BASIC_AUTH, "client-1");
         Assert.assertNotNull(blockedForBlank);
@@ -719,7 +723,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedLegalEntityAccountsWhenLegalEntityIdBlank() throws Exception {
-        CloseableHttpClient client = mockClientWithResponse(200, "[]");
+        CloseableHttpClient client = mockClientWithResponse(HttpStatus.SC_OK, "[]");
         CDSAccountValidationUtils.setApacheHttpClient(client);
 
         Set<String> accounts = new HashSet<>();
@@ -743,7 +747,7 @@ public class CDSAccountValidationUtilsTest {
                 + "{\"accountID\":\"acc-2\",\"legalEntitySharingStatus\":\"allowed\"}"
                 + "]";
 
-        CloseableHttpResponse leResp = mockResponse(200, leResponse);
+        CloseableHttpResponse leResp = mockResponse(HttpStatus.SC_OK, leResponse);
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         Mockito.when(client.execute(Mockito.any(HttpGet.class)))
                 .thenReturn(leResp);
@@ -771,7 +775,7 @@ public class CDSAccountValidationUtilsTest {
                 + "{\"accountId\":\"acc-camel\",\"legalEntitySharingStatus\":\"blocked\"}"
                 + "]";
 
-        CloseableHttpResponse leResp = mockResponse(200, leResponse);
+        CloseableHttpResponse leResp = mockResponse(HttpStatus.SC_OK, leResponse);
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         Mockito.when(client.execute(Mockito.any(HttpGet.class)))
                 .thenReturn(leResp);
@@ -792,7 +796,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedLegalEntityAccountsNon200() throws Exception {
-        CloseableHttpResponse leResp = mockResponse(503, "[]");
+        CloseableHttpResponse leResp = mockResponse(HttpStatus.SC_SERVICE_UNAVAILABLE, "[]");
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         Mockito.when(client.execute(Mockito.any(HttpGet.class)))
                 .thenReturn(leResp);
@@ -827,7 +831,7 @@ public class CDSAccountValidationUtilsTest {
      */
     @Test
     public void testFetchBlockedLegalEntityAccountsMalformedResponse() throws Exception {
-        CloseableHttpResponse leResp = mockResponse(200, "{not-an-array");
+        CloseableHttpResponse leResp = mockResponse(HttpStatus.SC_OK, "{not-an-array");
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         Mockito.when(client.execute(Mockito.any(HttpGet.class)))
                 .thenReturn(leResp);
@@ -849,10 +853,10 @@ public class CDSAccountValidationUtilsTest {
     public void testFetchAllBlockedAccountsWithClientId() throws Exception {
         String leBody = "[{\"accountID\":\"acc-1\",\"legalEntitySharingStatus\":\"blocked\"}]";
 
-        CloseableHttpResponse disclosureResp = mockResponse(200, "[]");
-        CloseableHttpResponse secondaryResp = mockResponse(200, "[]");
-        CloseableHttpResponse businessResp = mockResponse(200, "[]");
-        CloseableHttpResponse leResp = mockResponse(200, leBody);
+        CloseableHttpResponse disclosureResp = mockResponse(HttpStatus.SC_OK, "[]");
+        CloseableHttpResponse secondaryResp = mockResponse(HttpStatus.SC_OK, "[]");
+        CloseableHttpResponse businessResp = mockResponse(HttpStatus.SC_OK, "[]");
+        CloseableHttpResponse leResp = mockResponse(HttpStatus.SC_OK, leBody);
 
         CloseableHttpClient client = Mockito.mock(CloseableHttpClient.class);
         Mockito.when(client.execute(Mockito.any(HttpGet.class)))
