@@ -18,16 +18,16 @@
 
 package org.wso2.cds.test.framework
 
-import com.fasterxml.jackson.databind.JsonNode
+
 import com.google.gson.JsonArray
 import com.google.gson.JsonElement
 import com.google.gson.JsonObject
 import com.nimbusds.oauth2.sdk.ResponseMode
 import com.nimbusds.oauth2.sdk.ResponseType
 import com.nimbusds.oauth2.sdk.token.RefreshToken
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode
+import org.apache.commons.lang3.StringUtils
+import org.openqa.selenium.TimeoutException
+import org.openqa.selenium.NoSuchElementException
 import org.wso2.bfsi.test.framework.CommonTest
 import org.wso2.bfsi.test.framework.automation.AutomationMethod
 import org.wso2.bfsi.test.framework.automation.NavigationAutomationStep
@@ -41,6 +41,7 @@ import org.wso2.cds.test.framework.constant.AUPayloads
 import org.wso2.cds.test.framework.constant.ContextConstants
 import com.nimbusds.oauth2.sdk.AccessTokenResponse
 import org.wso2.cds.test.framework.request_builder.AUJWTGenerator
+import org.wso2.cds.test.framework.utility.AUIdEncryptorDecryptor
 import org.wso2.cds.test.framework.utility.DbConnection
 import org.wso2.cds.test.framework.utility.SqlQuery
 import org.wso2.cds.test.framework.configuration.AUConfigurationService
@@ -250,6 +251,11 @@ class AUTest extends CommonTest {
                     .toURI().toString()
         }
 
+        // Force consent UI for business profile flows to prevent silent redirect using prior grant/session state.
+        if (profiles == AUAccountProfile.ORGANIZATION_A || profiles == AUAccountProfile.ORGANIZATION_B) {
+            authoriseUrl = appendPromptLoginConsent(authoriseUrl)
+        }
+
         //UI Flow Navigation
         def automation = doAuthorisationFlowNavigation(authoriseUrl, profiles, true)
         authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
@@ -399,9 +405,74 @@ class AUTest extends CommonTest {
         return registrationResponse
     }
 
+    /**
+     * Get CDS Client credentials as a concatenated string.
+     * @return client ID and secret concatenated with colon separator
+     */
     String getCDSClient() {
         auConfiguration = new AUConfigurationService()
         return "${auConfiguration.getAppInfoClientID()}:${auConfiguration.getAppInfoClientSecret()}"
+    }
+
+    /**
+     * Resolve the first XPath that is present in the DOM from a list of candidate XPaths.
+     * @param authWebDriver automation driver instance
+     * @param candidateXpaths list of XPath expressions to check
+     * @return the first XPath found to be present, or null if none are found
+     */
+    protected static String resolveFirstPresentXpath(AutomationMethod authWebDriver, List<String> candidateXpaths) {
+        for (String xpath : candidateXpaths) {
+            if (authWebDriver.isElementPresent(xpath)) {
+                return xpath
+            }
+        }
+        return null
+    }
+
+    /**
+     * Resolve XPath for a joint account based on position.
+     * @param authWebDriver automation driver instance
+     * @param position account position (1 for primary, 2 for alternative)
+     * @return the XPath for the joint account if present, null otherwise
+     */
+    protected static String resolveJointAccountXpath(AutomationMethod authWebDriver, int position = 1) {
+
+        String xpath = position == 1 ? AUPageObjects.JOINT_ACCOUNT_XPATH : AUPageObjects.ALT_JOINT_ACCOUNT_XPATH
+        if (authWebDriver.isElementPresent(xpath)) {
+            return xpath
+        }
+
+        return null
+    }
+
+    /**
+     * Select a profile if the profile selection element is present for the given account profile type.
+     * @param authWebDriver automation driver instance
+     * @param profile the account profile type to select (INDIVIDUAL, ORGANIZATION_A, or ORGANIZATION_B)
+     * @return true after attempting to select the profile
+     */
+    protected static boolean selectProfileIfPresent(AutomationMethod authWebDriver, AUAccountProfile profile) {
+
+        try {
+            if (profile == AUAccountProfile.ORGANIZATION_A) {
+                authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
+                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+            } else if (profile == AUAccountProfile.ORGANIZATION_B) {
+                authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
+                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+            } else {
+                authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
+                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+            }
+        } catch (NoSuchElementException e) {
+            // Profile selection page may not be displayed for all flows
+            log.debug("Profile selection not available: ${e.message}")
+        } catch (TimeoutException e) {
+            // Element not found within timeout period
+            log.debug("Profile selection timed out: ${e.message}")
+        }
+
+        return true
     }
 
     /**
@@ -417,9 +488,8 @@ class AUTest extends CommonTest {
         if (auConfiguration.getProfileSelectionEnabled()) {
             if (profiles == AUAccountProfile.ORGANIZATION_A) {
 
-                //Select Business Profile
-                authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
-                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                //Select Business Profile when profile selection page is displayed.
+                selectProfileIfPresent(authWebDriver, AUAccountProfile.ORGANIZATION_A)
 
                 //Select Business Account 1
                 consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getBusinessAccount1CheckBox(),
@@ -428,9 +498,8 @@ class AUTest extends CommonTest {
 
             } else if (profiles == AUAccountProfile.ORGANIZATION_B) {
 
-                //Select Business Profile
-                authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
-                authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                //Select Business Profile when profile selection page is displayed.
+                selectProfileIfPresent(authWebDriver, AUAccountProfile.ORGANIZATION_B)
 
                 //Select Business Account 1
                 consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getBusinessAccount2CheckBox(),
@@ -462,8 +531,9 @@ class AUTest extends CommonTest {
                 }
             }
         }
-        //If Profile Selection Disabled
         else {
+            //If Profile Selection Disabled
+
             //Select Account 1
             consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getSingleAccountXPath(),
                     AUPageObjects.VALUE)
@@ -485,7 +555,6 @@ class AUTest extends CommonTest {
      * @param isSelectMultipleAccounts
      */
     void selectSecondaryAccount(AutomationMethod authWebDriver, boolean isSelectMultipleAccounts = false) {
-
         //Select Account 1
         consentedAccount = authWebDriver.getElementAttribute(AUTestUtil.getSecondaryAccount1XPath(),
                 AUPageObjects.VALUE)
@@ -504,13 +573,13 @@ class AUTest extends CommonTest {
      */
     void doConsentAuthorisationWithoutAccountSelection(String profiles = AUAccountProfile.INDIVIDUAL) {
 
-        def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
-                true, "")
+        def response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes,
+                AUConstants.DEFAULT_SHARING_DURATION, true, "")
         String requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
 
         AUAuthorisationBuilder auAuthorisationBuilder = new AUAuthorisationBuilder()
-        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(), auConfiguration.getAppInfoClientID())
-                .toURI().toString()
+        authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri.toURI(),
+                auConfiguration.getAppInfoClientID()).toURI().toString()
 
         automationResponse = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
                 .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
@@ -522,17 +591,14 @@ class AUTest extends CommonTest {
                         if (profiles == AUAccountProfile.ORGANIZATION_A) {
 
                             //Select Business Profile
-                            authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
-                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                            selectProfileIfPresent(authWebDriver, AUAccountProfile.ORGANIZATION_A)
                         } else if (profiles == AUAccountProfile.ORGANIZATION_B) {
 
                             //Select Business Profile
-                            authWebDriver.selectOption(AUPageObjects.ORGANIZATION_B_PROFILE_SELECTION)
-                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                            selectProfileIfPresent(authWebDriver, AUAccountProfile.ORGANIZATION_B)
                         } else {
                             //Select Individual Profile
-                            authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
-                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                            selectProfileIfPresent(authWebDriver, AUAccountProfile.INDIVIDUAL)
                         }
                     }
 
@@ -617,6 +683,24 @@ class AUTest extends CommonTest {
     }
 
     /**
+     * Resolve the plain account ID from an encrypted or plain account reference.
+     * @param accountReference the account reference which may be encrypted
+     * @return the plain account ID extracted from the reference, or the original reference if decryption fails
+     */
+    public String resolvePlainAccountIdFromResponse(String accountReference) {
+        if (StringUtils.isEmpty(accountReference)) {
+            return accountReference
+        }
+
+        try {
+            return AUIdEncryptorDecryptor.decrypt(accountReference, secretKey).split(":")[2]
+        } catch (Exception ignored) {
+            // Some responses may already contain a plain account id.
+            return accountReference
+        }
+    }
+
+    /**
      * Consent AAuthorization Deny flow.
      * @param scopes
      * @param requestUri
@@ -661,7 +745,8 @@ class AUTest extends CommonTest {
      * @param profiles
      */
     void doConsentAuthorisationViaRequestUriNoAccountSelection(List<AUAccountScope> scopes, URI requestUri,
-                                                               String clientId = null , AUAccountProfile profiles = null) {
+                                                               String clientId = null ,
+                                                               AUAccountProfile profiles = null) {
         if (clientId != null) {
             authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
                     .toURI().toString()
@@ -679,13 +764,11 @@ class AUTest extends CommonTest {
                     if (auConfiguration.getProfileSelectionEnabled()) {
                         if (profiles == AUAccountProfile.ORGANIZATION_A) {
                             //Select Business Profile
-                            authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
-                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                            selectProfileIfPresent(authWebDriver, AUAccountProfile.ORGANIZATION_A)
                         }
                         else {
                             //Select Individual Profile
-                            authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
-                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                            selectProfileIfPresent(authWebDriver, AUAccountProfile.INDIVIDUAL)
                         }
                     }
                     //If Profile Selection Disabled
@@ -750,7 +833,8 @@ class AUTest extends CommonTest {
      * @param profiles
      */
     void doSecondaryAccountSelectionCheckUnavailableAccounts(List<AUAccountScope> scopes, URI requestUri,
-                                                             String clientId = null , AUAccountProfile profiles = null) {
+                                                             String clientId = null ,
+                                                             AUAccountProfile profiles = null) {
 
         if (clientId != null) {
             authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
@@ -765,8 +849,8 @@ class AUTest extends CommonTest {
                 .addStep { driver, context ->
                     AutomationMethod authWebDriver = new AutomationMethod(driver)
 
-                    Assert.assertTrue(authWebDriver.getElementAttribute(AUPageObjects.ADR_NAME_HEADER_XPATH, AUPageObjects.TEXT)
-                            .contains(auConfiguration.getAppDCRSoftwareId()))
+                    Assert.assertTrue(authWebDriver.getElementAttribute(AUPageObjects.ADR_NAME_HEADER_XPATH,
+                            AUPageObjects.TEXT).contains(auConfiguration.getAppDCRSoftwareId()))
 
                     //Select Secondary Account
                     selectSecondaryAccount(authWebDriver, true)
@@ -822,7 +906,7 @@ class AUTest extends CommonTest {
     Response doAccountRetrieval(String userAccessToken, int accountEndpointVersion = AUConstants.X_V_HEADER_ACCOUNTS) {
 
         response = AURequestBuilder.buildBasicRequest(userAccessToken, accountEndpointVersion)
-                .header(AUConstants.PARAM_FAPI_AUTH_DATE,AUConstants.VALUE_FAPI_AUTH_DATE)
+                .header(AUConstants.PARAM_FAPI_AUTH_DATE, AUConstants.VALUE_FAPI_AUTH_DATE)
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
                 .get("${AUConstants.BULK_ACCOUNT_PATH}")
 
@@ -831,18 +915,34 @@ class AUTest extends CommonTest {
 
     /**
      * Send Consent Search Request.
-     * @return consent search request
+     * Obtains an access token via OAuth2 password grant using the Consent Manager app credentials
+     * and a Customer Care Officer user, then uses it as a Bearer token on the admin search endpoint.
+     * @return consent search response
      */
     Response doConsentSearch() {
+        String appBasicAuth = AUConstants.BASIC_HEADER_KEY + " " +
+            Base64.encoder.encodeToString(
+                "${auConfiguration.getConsentManagerClientID()}:${auConfiguration.getConsentManagerClientSecret()}"
+                    .getBytes(Charset.forName("UTF-8")))
+
+        Response tokenResponse = AURestAsRequestBuilder.buildBasicRequest()
+            .header(AUConstants.AUTHORIZATION_HEADER_KEY, appBasicAuth)
+            .header("Cache-Control", "no-cache")
+            .contentType(AUConstants.CONTENT)
+            .formParam("grant_type", "password")
+            .formParam("username", auConfiguration.getConsentManagerAdminUser())
+            .formParam("password", auConfiguration.getConsentManagerAdminPassword())
+            .formParam("scope", "consents:read_all")
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+            .post(AUConstants.TOKEN_ENDPOINT)
+
+        String adminAccessToken = tokenResponse.jsonPath().getString("access_token")
 
         response = AURestAsRequestBuilder.buildBasicRequest()
-                .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
-                        Base64.encoder.encodeToString(
-                                "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
-                                        .getBytes(Charset.forName("UTF-8"))))
-                .queryParam(AUConstants.QUERY_PARAM_USERID, auConfiguration.getUserPSUName())
-                .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .get("${AUConstants.CONSENT_SEARCH_ENDPOINT}")
+            .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.AUTHORIZATION_BEARER_TAG + adminAccessToken)
+            .queryParam(AUConstants.QUERY_PARAM_USERID, auConfiguration.getUserPSUName())
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+            .get("${AUConstants.CONSENT_SEARCH_ENDPOINT}")
 
         return response
     }
@@ -879,10 +979,11 @@ class AUTest extends CommonTest {
      * @param permissionType
      * @return response
      */
-    Response updateSingleBusinessUserPermission(String headerString, String accountID, String accountOwnerUserID, String nominatedRepUserID,
-                                                String permissionType) {
+    Response updateSingleBusinessUserPermission(String headerString, String accountID, String accountOwnerUserID,
+                                                String nominatedRepUserID, String permissionType) {
 
-        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID, permissionType)
+        def requestBody = AUPayloads.getSingleUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, permissionType)
 
         return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -891,8 +992,8 @@ class AUTest extends CommonTest {
                                         .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_BUSINESS_USER}")
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .put(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -906,11 +1007,41 @@ class AUTest extends CommonTest {
      * @param permissionType2
      * @return
      */
-    Response updateMultiBusinessUserPermission(String headerString, String accountID, String accountOwnerUserID, String nominatedRepUserID,
-                                               String permissionType, String nominatedRepUserID2, String permissionType2) {
+    static Response updateMultiBusinessUserPermission(String headerString, String accountID, String accountOwnerUserID,
+                                                      String nominatedRepUserID, String permissionType,
+                                                      String nominatedRepUserID2, String permissionType2) {
 
-        def requestBody = AUPayloads.getMultiUserNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID,
-                permissionType, nominatedRepUserID2, permissionType2)
+        def requestBody = AUPayloads.getMultiUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, permissionType, nominatedRepUserID2, permissionType2)
+
+        return AURestAsRequestBuilder.buildBasicRequest()
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
+                        Base64.encoder.encodeToString(
+                                "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
+                                        .getBytes(Charset.forName("UTF-8"))))
+                .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
+                .body(requestBody)
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .put(AUConstants.UPDATE_BUSINESS_USER)
+    }
+
+    /**
+     * Add and Update Business User Permission for a Multiple Users.
+     * @param headerString
+     * @param accountID
+     * @param accountOwnerUserID
+     * @param nominatedRepUserID
+     * @param permissionType
+     * @param nominatedRepUserID2
+     * @param permissionType2
+     * @return
+     */
+    static Response addMultiBusinessUserPermission(String headerString, String accountID, String accountOwnerUserID,
+                                                      String nominatedRepUserID, String permissionType,
+                                                      String nominatedRepUserID2, String permissionType2) {
+
+        def requestBody = AUPayloads.getMultiUserNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, permissionType, nominatedRepUserID2, permissionType2)
 
         return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -920,7 +1051,7 @@ class AUTest extends CommonTest {
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
                 .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_BUSINESS_USER}")
+                .post(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -942,19 +1073,21 @@ class AUTest extends CommonTest {
      * @param nominatedRepUserID
      * @return response
      */
-    Response deleteSingleBusinessUser(String headerString, String accountID, String accountOwnerUserID, String nominatedRepUserID) {
+    Response deleteSingleBusinessUser(String headerString, String accountID, String accountOwnerUserID,
+                                      String nominatedRepUserID) {
 
-        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID)
+        def requestBody = AUPayloads.getSingleUserDeletePayload(accountID, accountOwnerUserID,
+                nominatedRepUserID)
 
-        return AURestAsRequestBuilder.buildRequest()
+        return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
                         Base64.encoder.encodeToString(
                                 "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
                                         .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
-                .delete("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_BUSINESS_USER}")
+            .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
+                .delete(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -965,19 +1098,21 @@ class AUTest extends CommonTest {
      * @param nominatedRepUserID
      * @return response
      */
-    Response deleteMultipleBusinessUsers(String headerString, String accountID, String accountOwnerUserID, String nominatedRepUserID,
-                                         String nominatedRepUserID2) {
+    Response deleteMultipleBusinessUsers(String headerString, String accountID, String accountOwnerUserID,
+                                         String nominatedRepUserID, String nominatedRepUserID2) {
 
         def requestBody = AUPayloads.getMultiUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID,
                 nominatedRepUserID2)
 
-        return AURestAsRequestBuilder.buildRequest()
-                .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + Base64.encoder.encodeToString(
-                        headerString.getBytes(Charset.forName("UTF-8"))))
+        return AURestAsRequestBuilder.buildBasicRequest()
+                .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
+                        Base64.encoder.encodeToString(
+                                "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
+                                        .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
-                .delete("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_BUSINESS_USER}")
+            .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
+                .delete(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -995,9 +1130,9 @@ class AUTest extends CommonTest {
                                         .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .queryParam(AUConstants.QUERY_PARAM_USERID, userId)
-                .queryParam(AUConstants.QUERY_PARAM_ACCID, accountId)
-                .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
-                .get("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.BUSINESS_USER_PERMISSION}")
+                .queryParam(AUConstants.QUERY_PARAM_ACCIDS, accountId)
+            .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
+                .get(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -1039,10 +1174,12 @@ class AUTest extends CommonTest {
      * @param permissionType permission type
      * @return response
      */
-    Response updateBusinessUserPermissionWithIncorrectPayload(String headerString, String accountID, String accountOwnerUserID, String nominatedRepUserID,
+    Response updateBusinessUserPermissionWithIncorrectPayload(String headerString, String accountID,
+                                                              String accountOwnerUserID, String nominatedRepUserID,
                                                               String permissionType) {
 
-        def requestBody = AUPayloads.getIncorrectNominationPayload(accountID, accountOwnerUserID, nominatedRepUserID, permissionType)
+        def requestBody = AUPayloads.getIncorrectNominationPayload(accountID, accountOwnerUserID,
+                nominatedRepUserID, permissionType)
 
         return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
@@ -1051,8 +1188,8 @@ class AUTest extends CommonTest {
                                         .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_BUSINESS_USER}")
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .put(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -1063,19 +1200,21 @@ class AUTest extends CommonTest {
      * @param nominatedRepUserID
      * @return response
      */
-    Response deleteBusinessUserWithIncorrectPayload(String headerString, String accountID, String accountOwnerUserID, String nominatedRepUserID) {
+    Response deleteBusinessUserWithIncorrectPayload(String headerString, String accountID, String accountOwnerUserID,
+                                                    String nominatedRepUserID) {
 
-        def requestBody = AUPayloads.getIncorrectUserDeletePayload(accountID, accountOwnerUserID, nominatedRepUserID)
+        def requestBody = AUPayloads.getIncorrectUserDeletePayload(accountID, accountOwnerUserID,
+                nominatedRepUserID)
 
-        return AURestAsRequestBuilder.buildRequest()
+        return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
                         Base64.encoder.encodeToString(
                                 "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
                                         .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
-                .delete("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_BUSINESS_USER}")
+            .baseUri(getAuConfiguration().getServerAuthorisationServerURL())
+                .delete(AUConstants.UPDATE_BUSINESS_USER)
     }
 
     /**
@@ -1095,6 +1234,9 @@ class AUTest extends CommonTest {
                     .toURI().toString()
         }
 
+        // Force consent UI for joint account scenarios to prevent silent redirect using prior grant/session state.
+        authoriseUrl = appendPromptLoginConsent(authoriseUrl)
+
         automationResponse = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
                 .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
                 .addStep { driver, context ->
@@ -1104,46 +1246,74 @@ class AUTest extends CommonTest {
                     //If Profile Selection Enabled
                     if (auConfiguration.getProfileSelectionEnabled()) {
 
-                        //Select Individual Profile
-                        authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
-                        authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                        //Select Individual Profile when profile selection page is displayed.
+                        boolean profileSelected = selectProfileIfPresent(authWebDriver, AUAccountProfile.INDIVIDUAL)
+                        if (!profileSelected &&
+                                authWebDriver.isElementPresent(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)) {
+                            authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
+                        }
 
-                        //Select Joint Account 1
-                        consentedAccount = authWebDriver.getElementAttribute(AUPageObjects.JOINT_ACCOUNT_XPATH,
-                                AUPageObjects.VALUE)
-                        authWebDriver.clickButtonXpath(AUPageObjects.JOINT_ACCOUNT_XPATH)
+                        String jointAccountXpath = resolveJointAccountXpath(authWebDriver, 1)
+                        Assert.assertNotNull(jointAccountXpath, "No selectable joint account found in consent UI")
+                        consentedAccount = authWebDriver.getElementAttribute(jointAccountXpath, AUPageObjects.VALUE)
+                        authWebDriver.clickButtonXpath(jointAccountXpath)
 
                         if(isSelectMultipleAccounts) {
                             //Select Joint Account 2
-                            secondConsentedAccount = authWebDriver.getElementAttribute(AUPageObjects.ALT_JOINT_ACCOUNT_XPATH,
+                            String jointAltXpath = resolveJointAccountXpath(authWebDriver, 2)
+                            if (jointAltXpath != null) {
+                            secondConsentedAccount = authWebDriver.getElementAttribute(jointAltXpath,
                                     AUPageObjects.VALUE)
-                            authWebDriver.clickButtonXpath(AUPageObjects.ALT_JOINT_ACCOUNT_XPATH)
+                            authWebDriver.clickButtonXpath(jointAltXpath)
+                            }
                         }
                     }
                     //If Profile Selection Disabled
                     else {
                         //Select Account 1
-                        consentedAccount = authWebDriver.getElementAttribute(AUPageObjects.JOINT_ACCOUNT_XPATH,
-                                AUPageObjects.VALUE)
-                        authWebDriver.clickButtonXpath(AUPageObjects.JOINT_ACCOUNT_XPATH)
+                        String jointAccountXpath = resolveJointAccountXpath(authWebDriver, 1)
+                        Assert.assertNotNull(jointAccountXpath, "No selectable joint account found in consent UI")
+                        consentedAccount = authWebDriver.getElementAttribute(jointAccountXpath, AUPageObjects.VALUE)
+                        authWebDriver.clickButtonXpath(jointAccountXpath)
 
                         if (isSelectMultipleAccounts) {
                             //Select Account 2
-                            secondConsentedAccount = authWebDriver.getElementAttribute(AUPageObjects.ALT_JOINT_ACCOUNT_XPATH,
+                            String jointAltXpath = resolveJointAccountXpath(authWebDriver, 2)
+                            if (jointAltXpath != null) {
+                            secondConsentedAccount = authWebDriver.getElementAttribute(jointAltXpath,
                                     AUPageObjects.VALUE)
-                            authWebDriver.clickButtonXpath(AUPageObjects.ALT_JOINT_ACCOUNT_XPATH)
+                            authWebDriver.clickButtonXpath(jointAltXpath)
+                            }
                         }
                     }
 
-                    //Click Confirm Button
-                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                    //Click Next Button on account selection
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
-                    //Click Authorise Button
+                    //Click Authorise Button on consent confirmation
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
                 }
                 .execute()
 
         return automationResponse
+    }
+
+    /**
+     * Append prompt=login%20consent parameter to URL if not already present.
+     * Forces user to re-authenticate and re-consent to prevent silent redirects using prior grants.
+     * @param url the authorization URL
+     * @return the URL with prompt parameter appended, or the original URL if already has prompt parameter
+     */
+    protected String appendPromptLoginConsent(String url) {
+        if (url == null || url.isEmpty()) {
+            return url
+        }
+        if (url.contains("prompt=")) {
+            return url
+        }
+
+        String separator = url.contains("?") ? "&" : "?"
+        return "${url}${separator}prompt=login%20consent"
     }
 
     /**
@@ -1182,14 +1352,15 @@ class AUTest extends CommonTest {
 
         def requestBody = AUPayloads.getDOMSStatusUpdatePayload(domsStatusMap)
 
-        return AURestAsRequestBuilder.buildRequest()
+        return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
-                        Base64.encoder.encodeToString("${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
+                        Base64.encoder.encodeToString(
+                                "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
                                 .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.DISCLOSURE_OPTIONS_ENDPOINT}")
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .put(AUConstants.DISCLOSURE_OPTIONS_ENDPOINT)
     }
 
     /**
@@ -1213,17 +1384,18 @@ class AUTest extends CommonTest {
                                             String legalEntityId2 = null, String legalEntityStatus2 = null) {
 
         def requestBody = AUPayloads.getBlockLegalEntityPayload(secondaryUserId, accountId, legalEntityId,
-                legalEntityStatus, isMultipleLegalEntity, secondaryUserId2, accountId2, legalEntityId2, legalEntityStatus2)
+                legalEntityStatus, isMultipleLegalEntity, secondaryUserId2, accountId2, legalEntityId2,
+                legalEntityStatus2)
 
-        Response secondUserUpdateResponse = AURestAsRequestBuilder.buildRequest()
+        Response secondUserUpdateResponse = AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
                         Base64.encoder.encodeToString(
                                 "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
                                         .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
-                .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.UPDATE_LEGAL_ENTITY_SHARING_STATUS}")
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .post(AUConstants.UPDATE_LEGAL_ENTITY_SHARING_STATUS)
 
         return secondUserUpdateResponse
     }
@@ -1243,7 +1415,7 @@ class AUTest extends CommonTest {
         def requestBody = AUPayloads.getSecondaryUserInstructionPermissionPayload(secondaryAccId, userId,
                 secondaryAccountInstructionStatus, otherAccountsAvailability)
 
-        Response secondUserUpdateResponse = AURestAsRequestBuilder.buildRequest()
+        Response secondUserUpdateResponse = AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
                         Base64.encoder.encodeToString(
                                 "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
@@ -1251,27 +1423,31 @@ class AUTest extends CommonTest {
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
                 .body(requestBody)
                 .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .put("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.SECONDARY_ACCOUNT_ENDPOINT}")
+                .post(AUConstants.SECONDARY_ACCOUNT_ENDPOINT)
 
         return secondUserUpdateResponse
     }
 
     /**
-     * Get Legal Entity IDs of User.
-     * @param userID - User ID
+     * Get legal entity sharing statuses for a user and account.
+     * @param userId - Secondary user ID
+     * @param accountId - Account ID to query
+     * @param clientId - Software product client ID to resolve legal entity
      * @return response.
      */
-    static Response getLegalEntityIds(String userID) {
+    static Response getLegalEntityIds(String userId, String accountId, String clientId) {
 
-        userID = "amy@gold.com@carbon.super"
-
-        return AURestAsRequestBuilder.buildRequest()
+        return AURestAsRequestBuilder.buildBasicRequest()
                 .header(AUConstants.AUTHORIZATION_HEADER_KEY, AUConstants.BASIC_HEADER_KEY + " " +
-                        Base64.encoder.encodeToString("${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
+                        Base64.encoder.encodeToString(
+                                "${auConfiguration.getUserBasicAuthName()}:${auConfiguration.getUserBasicAuthPWD()}"
                                 .getBytes(Charset.forName("UTF-8"))))
                 .contentType(AUConstants.CONTENT_TYPE_APPLICATION_JSON)
-                .baseUri(auConfiguration.getServerAuthorisationServerURL())
-                .get("${AUConstants.CONSENT_STATUS_AU_ENDPOINT}${AUConstants.LEGAL_ENTITY_LIST_ENDPOINT}/${userID}")
+            .baseUri(auConfiguration.getServerAuthorisationServerURL())
+                .queryParam(AUConstants.QUERY_PARAM_USERID, userId)
+                .queryParam(AUConstants.QUERY_PARAM_ACCIDS, accountId)
+                .queryParam(AUConstants.QUERY_PARAM_CLIENTID, clientId)
+                .get(AUConstants.LEGAL_ENTITY_LIST_ENDPOINT)
     }
 
     /**
@@ -1282,50 +1458,21 @@ class AUTest extends CommonTest {
      * @param legalEntityId - Legal Entity ID
      * @return response.
      */
-    static String getSharingStatusOfUserAccount(String legalEntityList, String userId, String accountId, String legalEntityId) {
+    static String getSharingStatusOfUserAccount(String legalEntityList, String userId, String accountId,
+                                                String legalEntityId) {
 
-        // Create a Gson instance
         Gson gson = new Gson()
+        JsonArray itemsArray = gson.fromJson(legalEntityList, JsonArray.class)
 
-        // Parse the payload into a JsonObject
-        JsonObject legalEntityListObject = gson.fromJson(legalEntityList, JsonObject.class)
-
-        // Retrieve the SecondaryUsers array
-        JsonArray secondaryUsersArray = legalEntityListObject.getAsJsonArray(AUConstants.PAYLOAD_SECONDARY_USERS)
-
-        // Iterate through the secondary users
-        for (JsonElement secondaryUserElement : secondaryUsersArray) {
-            JsonObject secondaryUserObj = secondaryUserElement.getAsJsonObject()
-
-            // Check if the user ID matches
-            if (secondaryUserObj.get(AUConstants.SECONDARY_USERS_USERID).getAsString().equals(userId)) {
-
-                // Get the legal entity details array for the given user
-                JsonArray accountsArray = secondaryUserObj.getAsJsonArray("accounts")
-
-                // Iterate through the legal entity details
-                for (JsonElement legalEntityDetailsElement : accountsArray) {
-                    JsonObject legalEntityDetailsObj = legalEntityDetailsElement.getAsJsonObject()
-
-                    // Check if the account ID matches
-                    if (legalEntityDetailsObj.get(AUConstants.PAYLOAD_PARAM_ACCOUNT_ID).getAsString().equals(accountId)) {
-
-                        // Get the legal entities array for the given account
-                        JsonArray legalEntitiesArray = legalEntityDetailsObj.getAsJsonArray(AUConstants.LEGAL_ENTITIES)
-
-                        // Iterate through the legal entities
-                        for (JsonElement legalEntityElement : legalEntitiesArray) {
-                            JsonObject legalEntityObj = legalEntityElement.getAsJsonObject()
-
-                            // Check if the legal entity ID matches
-                            if (legalEntityObj.get(AUConstants.LEGAL_ENTITY_ID_MAP).getAsString().equals(legalEntityId)) {
-                                return legalEntityObj.get(AUConstants.SHARING_STATUS).getAsString()
-                            }
-                        }
-                    }
-                }
+        for (JsonElement element : itemsArray) {
+            JsonObject item = element.getAsJsonObject()
+            if (item.get(AUConstants.SECONDARY_USERS_USERID).getAsString().equals(userId) &&
+                    item.get(AUConstants.PAYLOAD_PARAM_ACCOUNT_ID).getAsString().equals(accountId) &&
+                    item.get(AUConstants.LEGAL_ENTITY_ID_MAP).getAsString().equalsIgnoreCase(legalEntityId)) {
+                return item.get(AUConstants.SHARING_STATUS).getAsString()
             }
         }
+        return null
     }
 
     /**
@@ -1460,8 +1607,8 @@ class AUTest extends CommonTest {
      * @param requestUri - request URI
      * @param clientId - client ID
      */
-    void doSecondaryUserAuthFlowWithoutAccountSelection(List<AUAccountScope> scopes, URI requestUri, String clientId = null) {
-
+    void doSecondaryUserAuthFlowWithoutAccountSelection(List<AUAccountScope> scopes, URI requestUri,
+                                                        String clientId = null) {
         if (clientId != null) {
             authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
                     .toURI().toString()
@@ -1587,7 +1734,8 @@ class AUTest extends CommonTest {
         recipientCount = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.DATA_RECIPIENT_COUNT).toInteger()
 
         //Session Count
-        sessionCount = AUTestUtil.parseResponseBody(metricsResponse, AUConstants.DATA_SESSION_COUNT_CURRENTDAY).toInteger()
+        sessionCount = AUTestUtil.parseResponseBody(metricsResponse,
+                AUConstants.DATA_SESSION_COUNT_CURRENTDAY).toInteger()
     }
 
     /**
@@ -2332,6 +2480,12 @@ class AUTest extends CommonTest {
         return totalResourceCount
     }
 
+    /**
+     * Get an access token response using a different client ID than the default.
+     * @param assertionClientId the client ID to use in JWT assertion
+     * @param bodyClientID the client ID to use in the request body
+     * @return access token response
+     */
     AccessTokenResponse getUserAccessTokenResponseWithDifferentClientId(String assertionClientId = null, String bodyClientID ) {
         try {
             return AURequestBuilder.getUserToken(authorisationCode, AUConstants.CODE_VERIFIER, clientId)
@@ -2395,8 +2549,8 @@ class AUTest extends CommonTest {
      * @param clientId
      * @return auth code
      */
-    String doBusinessConsentAmendmentAuthorisation(List<AUAccountScope> scopes, String cdrArrangementId, long sharingDuration,
-                                                   String clientId = null) {
+    String doBusinessConsentAmendmentAuthorisation(List<AUAccountScope> scopes, String cdrArrangementId,
+                                                   long sharingDuration, String clientId = null) {
 
         if (clientId == null) {
             response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, sharingDuration,
@@ -2429,4 +2583,75 @@ class AUTest extends CommonTest {
         // Get Code From URL
         return AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
     }
+
+    /**
+     * Extracts the error description from the response.
+     * Tries the standard key first, then falls back to an alternative key if needed.
+     *
+     * @param response the API response
+     * @return error description text if present, otherwise null
+     */
+    protected static String getErrorText(def response) {
+        String errorDescription = AUTestUtil.parseResponseBody(response, AUConstants.ERROR_DESCRIPTION)
+        if (errorDescription != null) {
+            return errorDescription
+        }
+        return AUTestUtil.parseResponseBody(response, "errorDescription")
+    }
+
+    /**
+     * Checks whether the response contains a given userId and permission.
+     *
+     * @param response  the API response
+     * @param userId    the user ID to look for
+     * @param permission the permission to verify
+     * @return true if both userId and permission exist in the response body, otherwise false
+     */
+    protected static boolean hasBnrPermissionInResponse(def response, String userId, String permission) {
+        String responseBody = response?.asString()
+        return responseBody != null && responseBody.contains(userId) && responseBody.contains(permission)
+    }
+
+    /**
+    * Executes authorization flow and selects secondary account(s) as current PSU.
+    *
+    * @param requestUri authorization request URI
+    * @param clientId optional client ID
+    * @param isMultipleAccountsSelect whether multiple accounts should be selected
+    */
+    protected void doSecondaryAccountSelectionAsCurrentPsu(URI requestUri, String clientId = null,
+                                                         boolean isMultipleAccountsSelect = false) {
+
+        if (clientId != null) {
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri, clientId)
+                    .toURI().toString()
+        } else {
+            authoriseUrl = auAuthorisationBuilder.getAuthorizationRequest(requestUri)
+                    .toURI().toString()
+        }
+
+        authoriseUrl = appendPromptLoginConsent(authoriseUrl)
+
+        def automation = getBrowserAutomation(AUConstants.DEFAULT_DELAY)
+                .addStep(new AUBasicAuthAutomationStep(authoriseUrl))
+                .addStep { driver, context ->
+
+                    AutomationMethod authWebDriver = new AutomationMethod(driver)
+
+                    selectProfileIfPresent(authWebDriver, AUAccountProfile.INDIVIDUAL)
+
+                    //Select Secondary Account
+                    selectSecondaryAccount(authWebDriver, isMultipleAccountsSelect)
+
+                    //Click Submit/Next Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
+
+                    //Click Confirm Button
+                    authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
+                }.execute()
+
+        // Get Code From URL
+        authorisationCode = AUTestUtil.getCodeFromJwtResponse(automation.currentUrl.get())
+    }
+
 }

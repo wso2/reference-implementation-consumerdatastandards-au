@@ -42,7 +42,7 @@ class BnrEndToEndTest extends AUTest{
 
     @BeforeClass(alwaysRun = true)
     void "Nominate Business User Representative"() {
-        auConfiguration.setPsuNumber(2)
+        auConfiguration.setPsuNumber(3)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
         //Get Sharable Account List and Nominate Business Representative with Authorize Permission
@@ -61,7 +61,7 @@ class BnrEndToEndTest extends AUTest{
     void "CDS-486_Verify an accounts retrieval call after business profile selection and business accounts consented"(resourcePath) {
 
         //Consent Authorisation
-        doConsentAuthorisation(null, AUAccountProfile.ORGANIZATION_B)
+        doConsentAuthorisation(null, AUAccountProfile.ORGANIZATION_A)
         generateUserAccessToken()
 
         int x_v_header = AUTestUtil.getBankingApiEndpointVersion(resourcePath.toString())
@@ -69,6 +69,7 @@ class BnrEndToEndTest extends AUTest{
         //Get Accounts
         def response = AURequestBuilder.buildBasicRequestWithCustomHeaders(userAccessToken,
                 x_v_header, clientHeader)
+                .header(AUConstants.X_FAPI_INTERACTION_ID, UUID.randomUUID().toString())
                 .baseUri(AUTestUtil.getBaseUrl(AUConstants.BASE_PATH_TYPE_ACCOUNT))
                 .get("${resourcePath}")
 

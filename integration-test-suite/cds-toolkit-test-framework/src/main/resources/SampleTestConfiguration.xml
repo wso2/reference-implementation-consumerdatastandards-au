@@ -35,6 +35,7 @@
 
         <!--Sample Values: PS256 -->
         <SigningAlgorithm>PS256</SigningAlgorithm>
+
     </Common>
 
     <!-- Provisioning Info -->
@@ -287,6 +288,13 @@
                 <Password>wso2123</Password>
             </Credentials>
         </PSUInfo>
+        <!-- User with customer-care officer role-->
+        <PSUInfo>
+            <Credentials>
+                <User>accountmetadata@gold.com</User>
+                <Password>wso2123</Password>
+            </Credentials>
+        </PSUInfo>
     </PSUList>
 
     <!-- Publisher Info -->
@@ -367,6 +375,23 @@
     <ProfileSelection>
         <Enabled>true</Enabled>
     </ProfileSelection>
+
+    <!-- Consent Manager Application Info -->
+    <ConsentManagerApp>
+        <!--Client ID of the Consent Manager application (used as Basic Auth username for token request)-->
+        <ClientID>ConsentManagerAppConfig.Application.ClientID</ClientID>
+
+        <!--Client Secret of the Consent Manager application (used as Basic Auth password for token request)-->
+        <ClientSecret>ConsentManagerAppConfig.Application.ClientSecret</ClientSecret>
+
+        <!--Username of a user with Customer Care Officer role (used in password grant for consent admin search)-->
+        <ConsentAdminUser>accountmetadata@gold.com</ConsentAdminUser>
+
+        <!--Password of the Customer Care Officer user-->
+        <ConsentAdminPassword>password</ConsentAdminPassword>
+    </ConsentManagerApp>
+
+
 
     <DataBaseConfiguration>
         <!--Sample Value: mysql/mssql/postgresql/oracle -->

@@ -89,5 +89,15 @@ class AUConfigConstants {
     public static final String PROVISIONING = "Provisioning"
     public static final String PROVISIONING_ENABLED = "Enabled"
     public static final String PROVISIONING_FILE_PATH = "FilePath"
+
+    // ADR Name configuration constant
+    public static final String ADR_NAME = "AdrName"
+
+    // Consent Manager App configuration constants
+    public static final String CONSENT_MANAGER_APP = "ConsentManagerApp"
+    public static final String CONSENT_MANAGER_CLIENT_ID = "ClientID"
+    public static final String CONSENT_MANAGER_CLIENT_SECRET = "ClientSecret"
+    public static final String CONSENT_MANAGER_ADMIN_USER = "ConsentAdminUser"
+    public static final String CONSENT_MANAGER_ADMIN_PASSWORD = "ConsentAdminPassword"
 }
 
