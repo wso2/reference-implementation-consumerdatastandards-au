@@ -19,14 +19,14 @@ This guide covers deploying and configuring the three main components of the CDS
 
 ## Prerequisites
 
-| Requirement | Version |
-|---|---|
-| Java (JDK) | 11 or above |
-| Apache Maven | 3.0.5 or above |
-| MySQL | 5.7 or above |
-| WSO2 Identity Server | 7.1.0 |
-| WSO2 API Manager | Compatible release for IS 7.1.0 |
-| WSO2 Open Banking Accelerator | 4.0.0 |
+| Requirement                   | Version                                |
+|-------------------------------|----------------------------------------|
+| Java (OpenJDK)                 | 11 or above                            |
+| Apache Maven                  | 3.0.5 or above                         |
+| MySQL                         | 8.0 or above                           |
+| WSO2 Identity Server          | 7.1.0                                  |
+| WSO2 API Manager              | Compatible release for IS 7.1.0 (4.5.0) |
+| WSO2 Open Banking Accelerator | 4.0.0                                  |
 
 > **Port reference used in this guide** — IS is assumed to run with `offset = 3`, giving a management HTTPS port of **9446** (9443 + 3). APIM management port is **9443** (default, no offset). Adjust URLs throughout if your setup differs.
 
@@ -65,17 +65,17 @@ https://<IS_HOST>:9446/api/reference-implementation/ob/consumerdatastandards/au/
 
 The file [components/reference-implementation-openbanking-consumerdatastandards-au/src/main/java/org/wso2/openbanking/consumerdatastandards/au/extensions/configurations/ConfigurableProperties.java](components/reference-implementation-openbanking-consumerdatastandards-au/src/main/java/org/wso2/openbanking/consumerdatastandards/au/extensions/configurations/ConfigurableProperties.java) holds all hard-coded configuration values. Update these before building if your environment differs from the defaults.
 
-| Constant | Default value | Purpose |
-|---|---|---|
-| `SHARABLE_ENDPOINT` | `http://localhost:9766/api/openbanking/cds/backend/services/bankaccounts/bankaccountservice/sharable-accounts` | Demo backend URL for fetching shareable accounts |
-| `CDS_HEADER_HOLDER_IDENTIFIER` | `HID` | Header identifier key for the holder |
-| `ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL` | `"true"` | Toggles account ID validation during consent retrieval |
-| `ACCOUNT_METADATA_WEBAPP_BASE_URL` | `http://localhost:9766/ob/cds/account-metadata` | Base URL of the Account Metadata Webapp (Part 2) |
-| `ACCOUNT_METADATA_WEBAPP_USERNAME` | `is_admin@wso2.com` | Basic Auth username for calling the Account Metadata Webapp |
-| `ACCOUNT_METADATA_WEBAPP_PASSWORD` | `wso2123` | Basic Auth password for calling the Account Metadata Webapp |
-| `ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS` | `5000` | HTTP connection timeout (ms) |
-| `ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS` | `10000` | HTTP socket/read timeout (ms) |
-| `PROFILE_SELECTION_PAGE_ENABLED` | `true` | Enables the CDS profile-selection page during authorization |
+| Constant | Example value                                                                                                  | Purpose |
+|---|----------------------------------------------------------------------------------------------------------------|---|
+| `SHARABLE_ENDPOINT` | `http://<IS_HOST>:9766/api/openbanking/cds/backend/services/bankaccounts/bankaccountservice/sharable-accounts` | Demo backend URL for fetching shareable accounts |
+| `CDS_HEADER_HOLDER_IDENTIFIER` | `HID`                                                                                                          | Header identifier key for the holder |
+| `ENABLE_ACCOUNT_ID_VALIDATION_ON_RETRIEVAL` | `"true"`                                                                                                       | Toggles account ID validation during consent retrieval |
+| `ACCOUNT_METADATA_WEBAPP_BASE_URL` | `http://<IS_HOST>:9766/ob/cds/account-metadata`                                                                | Base URL of the Account Metadata Webapp (Part 2) |
+| `ACCOUNT_METADATA_WEBAPP_USERNAME` | `is_admin@wso2.com`                                                                                            | Basic Auth username for calling the Account Metadata Webapp |
+| `ACCOUNT_METADATA_WEBAPP_PASSWORD` | `wso2123`                                                                                                      | Basic Auth password for calling the Account Metadata Webapp |
+| `ACCOUNT_METADATA_WEBAPP_CONNECT_TIMEOUT_MILLIS` | `5000`                                                                                                         | HTTP connection timeout (ms) |
+| `ACCOUNT_METADATA_WEBAPP_SOCKET_TIMEOUT_MILLIS` | `10000`                                                                                                        | HTTP socket/read timeout (ms) |
+| `PROFILE_SELECTION_PAGE_ENABLED` | `true`                                                                                                         | Enables the CDS profile-selection page during authorization |
 
 ### 1.4 IS `deployment.toml` Changes
 
@@ -108,7 +108,7 @@ allowed_extensions = [
     "validate_event_creation", "validate_event_polling", "enrich_event_polling_response",
     "map_accelerator_error_response"
 ]
-base_url = "http://localhost:9766/api/reference-implementation/ob/consumerdatastandards/au"
+base_url = "http://<IS_HOST>:9766/api/reference-implementation/ob/consumerdatastandards/au"
 retry_count = 5
 connect_timeout = 5
 read_timeout = 5
@@ -130,10 +130,10 @@ path = "fs_cds_profile_selection.jsp"
 
 Place the profile-selection files in the WSO2 IS authentication endpoint webapp:
 
-| File | Deployment path |
-|---|---|
-| `fs_cds_profile_selection.jsp` | `<IS_HOME>\repository\deployment\server\webapps\fs#authenticationendpoint\` |
-| `profile-selection.js` | `<IS_HOME>\repository\deployment\server\webapps\fs#authenticationendpoint\includes\` |
+| File | Source path in repository | Deployment path |
+|---|---|---|
+| `fs_cds_profile_selection.jsp` | `components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/fs_cds_profile_selection.jsp` | `<IS_HOME>\repository\deployment\server\webapps\fs#authenticationendpoint\` |
+| `profile-selection.js` | `components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/profile-selection.js` | `<IS_HOME>\repository\deployment\server\webapps\fs#authenticationendpoint\includes\` |
 
 #### Consent payload signing — prevent double-signing
 
@@ -183,7 +183,9 @@ The account metadata webapp provides REST APIs consumed by both the toolkit weba
 
 ### 2.1 Database Setup
 
-Create a dedicated MySQL schema:
+Create a dedicated MySQL schema. For a schema-only bootstrap script that creates the database and the required tables, use [components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/create_fs_account_metadatadb.sql](components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/create_fs_account_metadatadb.sql).
+
+If you prefer to run the SQL inline, the schema definition is:
 
 ```sql
 CREATE DATABASE fs_account_metadatadb
@@ -200,14 +202,16 @@ The four tables used by the webapp are:
 | `fs_account_secondary_user_legal_entity` | Legal-entity blocking records |
 | `fs_account_secondary_user` | Secondary account sharing instructions |
 
-If upgrading from an OB3 deployment, apply the migration script:
+### 2.2 Migrating from Accelerator 3.0 to 4.0
+
+If migrating from an OB3 deployment to OB4 deployment , apply the migration script:
 
 ```bash
 mysql -u root -p fs_account_metadatadb < \
   components/reference-implementation-openbanking-consumerdatastandards-au/src/main/resources/ob3_to_ob4_migration.sql
 ```
 
-### 2.2 Build
+### 2.3 Build
 
 ```bash
 cd components/account-metadata-service
@@ -220,7 +224,7 @@ components/account-metadata-service/target/
 └── ob#cds#account-metadata.war
 ```
 
-### 2.3 Deploy on WSO2 IS
+### 2.4 Deploy on WSO2 IS
 
 ```bash
 cp components/account-metadata-service/target/ob#cds#account-metadata.war \
@@ -232,7 +236,7 @@ Deployed context path:
 https://<IS_HOST>:9446/ob/cds/account-metadata/
 ```
 
-### 2.4 IS `deployment.toml` Changes
+### 2.5 IS `deployment.toml` Changes
 
 #### Add the `ACCOUNT_METADATA_DB` datasource
 
@@ -241,7 +245,7 @@ The webapp uses the JNDI name `jdbc/ACCOUNT_METADATA_DB`. Add this datasource bl
 ```toml
 [[datasource]]
 id = "ACCOUNT_METADATA_DB"
-url = "jdbc:mysql://localhost:3306/fs_account_metadatadb?allowPublicKeyRetrieval=true&amp;autoReconnect=true&amp;useSSL=false"
+url = "jdbc:mysql://<DB_HOST>:3306/fs_account_metadatadb?allowPublicKeyRetrieval=true&amp;autoReconnect=true&amp;useSSL=false"
 username = "root"
 password = "<DB_PASSWORD>"
 driver = "com.mysql.jdbc.Driver"
@@ -260,27 +264,27 @@ http_method = "all"
 secure = "true"
 ```
 
-### 2.5 Internal Configuration — `ConfigurableProperties.java`
+### 2.6 Internal Configuration — `ConfigurableProperties.java`
 
 The file [components/account-metadata-service/src/main/java/org/wso2/openbanking/consumerdatastandards/account/metadata/configurations/ConfigurableProperties.java](components/account-metadata-service/src/main/java/org/wso2/openbanking/consumerdatastandards/account/metadata/configurations/ConfigurableProperties.java) holds all hard-coded configuration values. Update these before building if your environment differs.
 
-| Constant | Default value | Purpose |
-|---|---|---|
-| `ACCOUNT_METADATA_DATASOURCE_JNDI_NAME` | `jdbc/ACCOUNT_METADATA_DB` | JNDI name used to look up the datasource from IS |
-| `IS_USERNAME` | `is_admin@wso2.com` | IS admin user for resolving client ID → legal entity ID |
-| `IS_PASSWORD` | `wso2123` | IS admin password |
-| `ACCELERATOR_TOKEN_ENDPOINT_URL` | `https://localhost:9446/oauth2/token` | IS OAuth2 token endpoint |
-| `ACCELERATOR_CONSENT_SEARCH_URL` | `https://localhost:9446/api/fs/consent/admin/search` | IS consent search API |
-| `ACCELERATOR_CONSENT_UPDATE_BASE_URL` | `https://localhost:9446/api/fs/consent/manage/account-access-consents` | IS consent expire (update) API |
-| `IS_ADMIN_USERNAME` | `is_admin@wso2.com` | Admin credentials for Basic Auth on the consent update endpoint |
-| `IS_ADMIN_PASSWORD` | `wso2123` | Admin password |
-| `ACCOUNT_METADATA_CLIENT_APP_ID` | `Hz49zCz6zQ2TxxM08Ojo3mpgAAoa` | OAuth2 client ID of a valid registered app in IS with consent-manager functionality (used for consent search operations) |
-| `ACCOUNT_METADATA_CLIENT_APP_SECRET` | `35Jz7QEQjXyDMHoanQnIBpIM2Tf2L9KYoK1I41SVHesa` | OAuth2 client secret of the same registered app |
-| `CUSTOMER_CARE_OFFICER_USERNAME` | `accountmetadata@gold.com` | Resource-owner user for password-grant consent queries |
-| `CUSTOMER_CARE_OFFICER_PASSWORD` | `Wso21234` | Resource-owner password |
-| `CUSTOMER_CARE_OFFICER_TOKEN_SCOPE` | `consents:read_all` | Scope for resource-owner consent queries |
-| `ACCELERATOR_CONNECT_TIMEOUT_MILLIS` | `5000` | HTTP connection timeout (ms) for IS calls |
-| `ACCELERATOR_SOCKET_TIMEOUT_MILLIS` | `10000` | HTTP socket/read timeout (ms) for IS calls |
+| Constant | Default value                                                          | Purpose |
+|---|------------------------------------------------------------------------|---|
+| `ACCOUNT_METADATA_DATASOURCE_JNDI_NAME` | `jdbc/ACCOUNT_METADATA_DB`                                             | JNDI name used to look up the datasource from IS |
+| `IS_USERNAME` | `is_admin@wso2.com`                                                    | IS admin user for resolving client ID → legal entity ID |
+| `IS_PASSWORD` | `wso2123`                                                              | IS admin password |
+| `ACCELERATOR_TOKEN_ENDPOINT_URL` | `https://<IS_HOST>:9446/oauth2/token`                                  | IS OAuth2 token endpoint |
+| `ACCELERATOR_CONSENT_SEARCH_URL` | `https://<IS_HOST>:9446/api/fs/consent/admin/search`                   | IS consent search API |
+| `ACCELERATOR_CONSENT_UPDATE_BASE_URL` | `https://<IS_HOST>:9446/api/fs/consent/manage/account-access-consents` | IS consent expire (update) API |
+| `IS_ADMIN_USERNAME` | `is_admin@wso2.com`                                                    | Admin credentials for Basic Auth on the consent update endpoint |
+| `IS_ADMIN_PASSWORD` | `wso2123`                                                              | Admin password |
+| `ACCOUNT_METADATA_CLIENT_APP_ID` | `<CLIENT_APP_ID>`                                                      | OAuth2 client ID of a valid registered app in IS with consent-manager functionality (used for consent search operations) |
+| `ACCOUNT_METADATA_CLIENT_APP_SECRET` | `<SECRET_KEY>`                                                         | OAuth2 client secret of the same registered app |
+| `CUSTOMER_CARE_OFFICER_USERNAME` | `<CUSTOMER_CARE_OFFICER_USERNAME>`                                     | Resource-owner user for password-grant consent queries |
+| `CUSTOMER_CARE_OFFICER_PASSWORD` | `<CUSTOMER_CARE_OFFICER_PASSWORD>`                                     | Resource-owner password |
+| `CUSTOMER_CARE_OFFICER_TOKEN_SCOPE` | `consents:read_all`                                                    | Scope for resource-owner consent queries |
+| `ACCELERATOR_CONNECT_TIMEOUT_MILLIS` | `5000`                                                                 | HTTP connection timeout (ms) for IS calls |
+| `ACCELERATOR_SOCKET_TIMEOUT_MILLIS` | `10000`                                                                | HTTP socket/read timeout (ms) for IS calls |
 
 > **Client app requirement for consent retrieval**
 > Use a real application registered in IS (not a placeholder client) that supports Consent Manager flows/capabilities, because this client is used by the account metadata service for consent retrieval operations.
@@ -348,7 +352,7 @@ When attaching the policy via the APIM Publisher UI, two properties must be set:
 
 | Property | Description | Example value |
 |---|---|---|
-| `webappBaseURL` | Base URL of the Account Metadata Webapp (no trailing slash) | `https://localhost:9446/ob/cds/account-metadata` |
+| `webappBaseURL` | Base URL of the Account Metadata Webapp (no trailing slash) | `https://<IS_HOST>:9446/ob/cds/account-metadata` |
 | `basicAuthCredentials` | Base64-encoded `username:password` for calling the Account Metadata Webapp | `aXNfYWRtaW5Ad3NvMi5jb206d3NvMjEyMw==` |
 
 To generate the Base64 credential:
@@ -356,13 +360,11 @@ To generate the Base64 credential:
 echo -n "is_admin@wso2.com:wso2123" | base64
 ```
 
-> **Screenshot placeholder** — Add a screenshot here showing the policy properties panel in APIM Publisher with `webappBaseURL` and `basicAuthCredentials` filled in.
-
 In a custom Synapse sequence XML the mediator is wired as:
 
 ```xml
 <class name="org.wso2.openbanking.consumerdatastandards.au.policy.CDSAccountValidationMediator">
-    <property name="webappBaseURL" value="https://localhost:9446/ob/cds/account-metadata"/>
+    <property name="webappBaseURL" value="https://<IS_HOST>:9446/ob/cds/account-metadata"/>
     <property name="basicAuthCredentials" value="<BASE64(username:password)>"/>
 </class>
 ```
