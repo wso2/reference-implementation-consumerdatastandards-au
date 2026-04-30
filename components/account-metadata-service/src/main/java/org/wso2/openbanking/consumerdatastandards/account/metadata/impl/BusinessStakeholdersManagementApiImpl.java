@@ -228,13 +228,10 @@ public class BusinessStakeholdersManagementApiImpl {
                     .collect(Collectors.toList());
 
             if (!missingItems.isEmpty()) {
-                String missingPairs = missingItems.stream()
-                        .map(item -> "accountId=" + item.getAccountId() + ", userId=" + item.getUserId())
-                        .collect(Collectors.joining("; "));
-                log.error("[Business Stakeholders] No records found for: " + missingPairs);
+                log.error("[Business Stakeholders] No records found for requested items");
                 return Response.status(Response.Status.NOT_FOUND)
-                        .entity(new ErrorResponse().errorDescription("No records found for: " + missingPairs))
-                        .build();
+                    .entity(new ErrorResponse().errorDescription("No records found for requested items"))
+                    .build();
             }
 
             List<BusinessStakeholderPermissionItem> itemsToRevoke = validItems.stream()
