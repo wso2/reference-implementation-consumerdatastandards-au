@@ -18,8 +18,6 @@
 
 package org.wso2.cds.test.framework.constant
 
-import org.apache.commons.lang3.StringUtils
-
 /**
  * Class for keep automation Page objects
  */
@@ -62,6 +60,32 @@ class AUPageObjects {
     public static String LBL_PERMISSION_LIST_ITEM_10 = "//h4[text()='Data requested:']/following-sibling::div//ul[@class='scopes-list padding']//li[10]"
     public static String LBL_PERMISSION_LIST_ITEM_11 = "//h4[text()='Data requested:']/following-sibling::div//ul[@class='scopes-list padding']//li[11]"
     public static String LBL_PERMISSION_HEADER = "//*[@class='padding']//button"
+
+    /**
+     * Build the XPath for a scope group's header label (the bold title of a
+     * "Data requested" group on the consent page, e.g. "Name, occupation, contact details").
+     *
+     * @param header the exact heading text shown in the {@code <b>} element
+     * @return XPath locating the {@code <b>} heading element
+     */
+    static String getScopeGroupHeaderXpath(String header) {
+        return "//div[contains(@style,'border:1px solid')]/b[normalize-space(text())='${header}']"
+    }
+
+    /**
+     * Build the XPath for a single list item under a scope group on the consent page.
+     * The new consent UI renders each scope group as a flat
+     * {@code <div><b>Header</b><ul class="scopes-list ..."><li>...</li></ul></div>}
+     * (no accordion / no expand button), so items are resolved relative to the heading text.
+     *
+     * @param header the exact group heading text (e.g. "Name, occupation, contact details")
+     * @param index  1-based index of the {@code <li>} within the group's scopes list
+     * @return XPath locating the requested list item
+     */
+    static String getScopeGroupListItemXpath(String header, int index) {
+        return "//div[contains(@style,'border:1px solid')]/b[normalize-space(text())='${header}']" +
+                "/following-sibling::ul[contains(@class,'scopes-list')]/li[${index}]"
+    }
     public static String LBL_SECONDARY_ACCOUNT_INDICATION= "//button[@id='secondary_account']/span[contains(text(),'New')]"
 
     public static String LBL_AUTHORISED_STATUS = "//div[@id='heading0acc']//div[@class='p1 consent-status ml-3 ml-auto align-self-center']"

@@ -40,7 +40,7 @@ import java.nio.charset.Charset
  *
  * PSU assignments (fixed sharable accounts payload — NR membership is static):
  *   PSU 3 (nominatedUser1@wso2.com) — NR of Org A and both Org B accounts
- *   PSU 0 (psu@gold.com)           — not in any NR list, sees only individual accounts
+ *   PSU 1 (psu@gold.com)           — not in any NR list, sees only individual accounts
  */
 class ConsentAuthFlowValidationTests extends AUTest {
 
@@ -86,6 +86,7 @@ class ConsentAuthFlowValidationTests extends AUTest {
     @Test
     void "CDS-477_Verify Profile Selection is displayed in Auth Flow when the configuration is enabled"() {
 
+        auConfiguration.setPsuNumber(0)
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
         requestUri = AUTestUtil.parseResponseBody(response, AUConstants.REQUEST_URI)
@@ -108,12 +109,11 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    // TODO: Enable after implementing customer language rendering for individual and business consumer profiles
-      @Test(priority = 1, enabled = false)
+    @Test(priority = 1)
     void "CDS-543_Verify customer language in consent page for individual consumer"() {
 
         auConfiguration.setPsuNumber(0)
-        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_BASIC_READ]
+        List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_DETAIL_READ]
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -129,13 +129,24 @@ class ConsentAuthFlowValidationTests extends AUTest {
                         authWebDriver.selectOption(AUPageObjects.INDIVIDUAL_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
 
-                        Assert.assertTrue(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_HEADER)
-                                .contains(AUConstants.BANK_CUSTOMER_BASIC_READ_INDIVIDUAL))
-                        authWebDriver.clickButtonXpath(AUPageObjects.LBL_PERMISSION_HEADER)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_1),
-                                AUConstants.LBL_NAME)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_2),
-                                AUConstants.LBL_OCCUPATION)
+                        authWebDriver.clickButtonXpath(AUPageObjects.SINGLE_ACCOUNT_XPATH)
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
+
+                        String header = AUConstants.BANK_CUSTOMER_BASIC_READ_INDIVIDUAL
+                        assert authWebDriver.isElementDisplayed(AUPageObjects.getScopeGroupHeaderXpath(header))
+
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 1)), AUConstants.LBL_NAME)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 2)), AUConstants.LBL_OCCUPATION)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 3)), AUConstants.LBL_PHONE)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 4)), AUConstants.LBL_EMAIL_ADDRESS)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 5)), AUConstants.LBL_MAIL_ADDRESS)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 6)), AUConstants.LBL_RESIDENTIAL_ADDRESS)
                     } else {
                         assert authWebDriver.isElementDisplayed(AUTestUtil.getSingleAccountXPath())
                         log.info("Profile Selection is Disabled")
@@ -144,9 +155,10 @@ class ConsentAuthFlowValidationTests extends AUTest {
                 .execute()
     }
 
-    // TODO: Enable after implementing customer language rendering for individual and business consumer profiles
-    @Test (enabled = false)
+    @Test
     void "CDS-544_Verify customer language in consent page for business consumer"() {
+
+        auConfiguration.setPsuNumber(0)
 
         List<AUAccountScope> scopes = [AUAccountScope.BANK_CUSTOMER_DETAIL_READ]
 
@@ -165,26 +177,34 @@ class ConsentAuthFlowValidationTests extends AUTest {
                         authWebDriver.selectOption(AUPageObjects.ORGANIZATION_A_PROFILE_SELECTION)
                         authWebDriver.clickButtonXpath(AUPageObjects.PROFILE_SELECTION_NEXT_BUTTON)
 
-                        Assert.assertTrue(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_HEADER)
-                                .contains(AUConstants.BANK_CUSTOMER_BASIC_READ))
+                        authWebDriver.clickButtonXpath(AUPageObjects.CHK_ORG_A_BUSINESS_ACCOUNT_1)
+                        authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_NEXT)
 
-                        authWebDriver.clickButtonXpath(AUPageObjects.LBL_PERMISSION_HEADER)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_1),
-                                AUConstants.LBL_AGENT_NAME_AND_ROLE)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_2),
-                                AUConstants.LBL_ORGANISATION_NAME)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_3),
-                                AUConstants.LBL_ORGANISATION_NUMBER)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_4),
-                                AUConstants.LBL_CHARITY_STATUS)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_5),
-                                AUConstants.LBL_ESTABLISHMENT_DATE)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_6),
-                                AUConstants.LBL_INDUSTRY)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_7),
-                                AUConstants.LBL_ORGANISATION_TYPE)
-                        Assert.assertEquals(authWebDriver.getAttributeText(AUPageObjects.LBL_PERMISSION_LIST_ITEM_8),
-                                AUConstants.LBL_COUNTRY_OF_REGISTRATION)
+                        String header = AUConstants.BANK_CUSTOMER_BASIC_READ
+                        assert authWebDriver.isElementDisplayed(AUPageObjects.getScopeGroupHeaderXpath(header))
+
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 1)), AUConstants.LBL_AGENT_NAME_AND_ROLE)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 2)), AUConstants.LBL_ORGANISATION_NAME)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 3)), AUConstants.LBL_ORGANISATION_NUMBER)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 4)), AUConstants.LBL_CHARITY_STATUS)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 5)), AUConstants.LBL_ESTABLISHMENT_DATE)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 6)), AUConstants.LBL_INDUSTRY)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 7)), AUConstants.LBL_ORGANISATION_TYPE)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 8)), AUConstants.LBL_COUNTRY_OF_REGISTRATION)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 9)), AUConstants.LBL_ORGANISATION_ADDRESS)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 10)), AUConstants.LBL_MAIL_ADDRESS)
+                        Assert.assertEquals(authWebDriver.getAttributeText(
+                                AUPageObjects.getScopeGroupListItemXpath(header, 11)), AUConstants.LBL_PHONE_NUMBER)
                     } else {
                         assert authWebDriver.isElementDisplayed(AUTestUtil.getSingleAccountXPath())
                         log.info("Profile Selection is Disabled")
@@ -386,7 +406,7 @@ class ConsentAuthFlowValidationTests extends AUTest {
     @Test
     void "CDS-510_Verify a non-NR user does not see any business profile in the consent flow"() {
 
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(1)
 
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
                 true, "")
@@ -414,7 +434,7 @@ class ConsentAuthFlowValidationTests extends AUTest {
     @Test (priority = 1)
     void "CDS-512_Verify a Consent Authorization Flow with non NR"() {
 
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(1)
 
         //Get Authorisation URL
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,

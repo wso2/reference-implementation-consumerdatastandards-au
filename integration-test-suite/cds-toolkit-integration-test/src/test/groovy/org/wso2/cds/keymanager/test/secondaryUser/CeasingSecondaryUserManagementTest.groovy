@@ -55,7 +55,7 @@ class CeasingSecondaryUserManagementTest extends AUTest {
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts())
 
         accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        userId = auConfiguration.getUserPSUName()
+        userId = auConfiguration.getUserPSUName(1)
 
         //Give Secondary User Instruction Permission
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
