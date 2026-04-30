@@ -125,7 +125,7 @@ class AUConstants extends Constants {
     public static final String BANK_TRANSACTION_READ = "Transaction details"
     public static final String BANK_PAYEES_READ = "Saved payees"
     public static final String BANK_REGULAR_PAYMENTS_READ = "Direct debits and scheduled payments"
-    public static final String BANK_CUSTOMER_BASIC_READ_INDIVIDUAL = "Name and occupation"
+    public static final String BANK_CUSTOMER_BASIC_READ_INDIVIDUAL = "Name, occupation, contact details"
     public static final String BANK_CUSTOMER_BASIC_DETAIL_INDIVIDUAL = "Name, occupation, contact details ‡"
 
     public static final String LBL_OTP_TIMEOUT = "//div[@id='otpTimeout']"
@@ -622,6 +622,4 @@ class AUConstants extends Constants {
     public static final String CONTENT_TYPE_APPLICATION_SCIM_JSON = "application/scim+json"
     public static final String SUBSCRIBER_ROLE = "Internal/subscriber"
     public static final String PUBLISHER_ROLE = "Internal/publisher"
-
 }
-

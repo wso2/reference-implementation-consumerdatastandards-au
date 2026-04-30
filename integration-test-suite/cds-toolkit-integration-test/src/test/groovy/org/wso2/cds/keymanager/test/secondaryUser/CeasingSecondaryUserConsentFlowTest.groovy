@@ -49,13 +49,13 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
     void "Pre Execution Step"() {
 
         auConfiguration.setTppNumber(0)
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(1)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Sharable Account List and Secondary User with Authorize Permission
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts())
 
         accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        userId = auConfiguration.getUserPSUName(0)
+        userId = auConfiguration.getUserPSUName(1)
         clientHeader = "${Base64.encoder.encodeToString(getCDSClient().getBytes(Charset.defaultCharset()))}"
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
@@ -360,5 +360,4 @@ class CeasingSecondaryUserConsentFlowTest extends AUTest {
                     authWebDriver.clickButtonXpath(AUPageObjects.CONSENT_CONFIRM_XPATH)
                 }.execute()
     }
-
 }

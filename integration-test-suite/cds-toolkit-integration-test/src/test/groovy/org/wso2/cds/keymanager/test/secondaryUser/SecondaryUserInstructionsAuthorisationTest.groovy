@@ -43,13 +43,13 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
     void "Provide User Permissions"() {
 
         auConfiguration.setTppNumber(0)
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(1)
         clientId = auConfiguration.getAppInfoClientID()
         //Get Sharable Account List and Secondary User with Authorize Permission
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts())
 
         accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        userId = auConfiguration.getUserPSUName()
+        userId = auConfiguration.getUserPSUName(1)
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -322,7 +322,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
         // To make sure secondary account 1 is active
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts(), true)
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String userId = auConfiguration.getUserPSUName(0)
+        String userId = auConfiguration.getUserPSUName(1)
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -360,7 +360,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
         //Provide secondary user instruction permissions for individual account
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts(), true)
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String userId = auConfiguration.getUserPSUName(0)
+        String userId = auConfiguration.getUserPSUName(1)
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.ACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -426,12 +426,12 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
         //Inactive secondary user instruction permissions for individual account
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts(), true)
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String userId = auConfiguration.getUserPSUName(0)
+        String userId = auConfiguration.getUserPSUName(1)
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.INACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
 
-        auConfiguration.setPsuNumber(0)
+        auConfiguration.setPsuNumber(1)
 
         //Consent Authorisation
         response = auAuthorisationBuilder.doPushAuthorisationRequest(scopes, AUConstants.DEFAULT_SHARING_DURATION,
@@ -459,7 +459,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
         //Inactive secondary user instruction permissions for joint account
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts(), false)
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String userId = auConfiguration.getUserPSUName(0)
+        String userId = auConfiguration.getUserPSUName(1)
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.INACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
@@ -490,7 +490,7 @@ class SecondaryUserInstructionsAuthorisationTest extends AUTest {
         //Inactive secondary user instruction permissions for individual account
         shareableElements = AUTestUtil.getSecondaryUserDetails(getSharableBankAccounts(), true)
         String accountID =  shareableElements[AUConstants.PARAM_ACCOUNT_ID]
-        String userId = auConfiguration.getUserPSUName(0)
+        String userId = auConfiguration.getUserPSUName(1)
 
         def updateResponse = updateSecondaryUserInstructionPermission(accountID, userId, AUConstants.INACTIVE)
         Assert.assertEquals(updateResponse.statusCode(), AUConstants.OK)
