@@ -236,4 +236,5 @@ public class CommonConsentExtensionUtil {
         // Get the number of seconds from the epoch for the successfully parsed Instant
         return instant.getEpochSecond();
     }
+
 }
