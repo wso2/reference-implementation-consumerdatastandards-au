@@ -21,8 +21,10 @@ package org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.constants.CommonConstants;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.queries.AccountMetadataDbQueries;
 
@@ -45,22 +47,29 @@ import java.util.Map;
 public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
 
     private static final Log log = LogFactory.getLog(AccountMetadataDAOImpl.class);
+    private final AccountMetadataDbQueries dbQueries;
+
     // Column names for DOMS table.
     private static final String DISCLOSURE_OPTIONS_COLUMN_ACCOUNT_ID = "ACCOUNT_ID";
-    private static final String DISCLOSURE_OPTIONS_COLUMN_STATUS = "DISCLOSURE_OPTION_STATUS";
+    private static final String DISCLOSURE_OPTIONS_COLUMN_STATUS = "DISCLOSURE_OPTIONS_STATUS";
+
     // Column names for secondary user instructions table.
     private static final String SECONDARY_INSTRUCTIONS_COLUMN_ACCOUNT_ID = "ACCOUNT_ID";
     private static final String SECONDARY_INSTRUCTIONS_COLUMN_USER_ID = "USER_ID";
-    private static final String SECONDARY_INSTRUCTIONS_COLUMN_STATUS =
-            "INSTRUCTION_STATUS";
+    private static final String SECONDARY_INSTRUCTIONS_COLUMN_STATUS = "INSTRUCTION_STATUS";
     private static final String SECONDARY_INSTRUCTIONS_COLUMN_OTHER_ACCOUNTS_AVAILABILITY =
-        "OTHER_ACCOUNTS_AVAILABILITY";
+            "OTHER_ACCOUNTS_AVAILABILITY";
+
+    // Column names for legal entity sharing status table.
+    private static final String LEGAL_ENTITY_TABLE_COLUMN_ACCOUNT_ID = "ACCOUNT_ID";
+    private static final String LEGAL_ENTITY_TABLE_COLUMN_USER_ID = "USER_ID";
+    private static final String LEGAL_ENTITY_TABLE_COLUMN_LEGAL_ENTITY_ID = "LEGAL_ENTITY_ID";
+    private static final String LEGAL_ENTITY_TABLE_COLUMN_STATUS = "LEGAL_ENTITY_STATUS";
+
     // Column names for business stakeholder permissions table.
     private static final String BNR_PERMISSIONS_COLUMN_ACCOUNT_ID = "ACCOUNT_ID";
     private static final String BNR_PERMISSIONS_COLUMN_USER_ID = "USER_ID";
     private static final String BNR_PERMISSIONS_COLUMN_PERMISSION = "PERMISSION";
-
-    private final AccountMetadataDbQueries dbQueries;
 
     /**
      * Constructs a new DAO with the specified query provider.
@@ -300,12 +309,94 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
      * {@inheritDoc}
      */
     @Override
-        public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissions(Connection conn,
+    public List<LegalEntitySharingItem> getBatchLegalEntitySharingStatuses(Connection conn,
             List<Pair<String, String>> accountUserPairs) throws AccountMetadataException {
 
         if (accountUserPairs == null || accountUserPairs.isEmpty()) {
-            throw new AccountMetadataException("Account-user pair list cannot be null or empty " +
-                    "when retrieving business stakeholder permissions");
+            return Collections.emptyList();
+        }
+
+        String sql = dbQueries.getBatchGetLegalEntitySharingStatusesQuery(accountUserPairs.size());
+        List<LegalEntitySharingItem> result = new ArrayList<>();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            int parameterIndex = 1;
+            for (Pair<String, String> pair : accountUserPairs) {
+                stmt.setString(parameterIndex++, pair.getLeft());
+                stmt.setString(parameterIndex++, pair.getRight());
+            }
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    String statusStr = rs.getString(LEGAL_ENTITY_TABLE_COLUMN_STATUS);
+                    LegalEntitySharingItem item = new LegalEntitySharingItem();
+                    item.setAccountID(rs.getString(LEGAL_ENTITY_TABLE_COLUMN_ACCOUNT_ID));
+                    item.setSecondaryUserID(rs.getString(LEGAL_ENTITY_TABLE_COLUMN_USER_ID));
+                    item.setLegalEntityID(rs.getString(LEGAL_ENTITY_TABLE_COLUMN_LEGAL_ENTITY_ID));
+                    item.setLegalEntitySharingStatus(
+                            CommonConstants.LEGAL_ENTITY_SHARING_STATUS_BLOCKED.equalsIgnoreCase(statusStr)
+                                    ? LegalEntitySharingItem.LegalEntitySharingStatusEnum.blocked
+                                    : LegalEntitySharingItem.LegalEntitySharingStatusEnum.active);
+                    result.add(item);
+                }
+            }
+
+            if (log.isDebugEnabled()) {
+                log.debug("Retrieved " + result.size() + " legal entity sharing status rows.");
+            }
+            return result;
+
+        } catch (SQLException e) {
+            log.error("Error retrieving batch legal entity sharing statuses", e);
+            throw new AccountMetadataException("Failed to retrieve batch legal entity sharing statuses", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void upsertBatchLegalEntitySharingStatuses(Connection conn, List<LegalEntitySharingItem> items)
+            throws AccountMetadataException {
+
+        if (items == null || items.isEmpty()) {
+            return;
+        }
+
+        String sql = dbQueries.getUpsertLegalEntitySharingStatusQuery();
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            Timestamp currentTimestamp = new Timestamp((new Date()).getTime());
+
+            for (LegalEntitySharingItem item : items) {
+                stmt.setString(1, item.getAccountID());
+                stmt.setString(2, item.getSecondaryUserID());
+                stmt.setString(3, item.getLegalEntityID());
+                stmt.setString(4, item.getLegalEntitySharingStatus().toString());
+                stmt.setTimestamp(5, currentTimestamp);
+                stmt.addBatch();
+            }
+
+            int[] results = stmt.executeBatch();
+            if (log.isDebugEnabled()) {
+                log.debug("Batch upserted " + results.length + " legal entity sharing status rows.");
+            }
+
+        } catch (SQLException e) {
+            log.error("Error batch upserting legal entity sharing statuses", e);
+            throw new AccountMetadataException("Failed to batch upsert legal entity sharing statuses", e);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+        public List<BusinessStakeholderPermissionItem> getBatchBusinessStakeholderPermissions(Connection conn,
+            List<Pair<String, String>> accountUserPairs) throws AccountMetadataException {
+
+        if (accountUserPairs == null) {
+            return Collections.emptyList();
         }
 
         String sql = dbQueries.getBatchGetBusinessStakeholderPermissionQuery(accountUserPairs);
@@ -391,8 +482,7 @@ public class  AccountMetadataDAOImpl implements AccountMetadataDAO {
             List<BusinessStakeholderPermissionItem> permissionItems) throws AccountMetadataException {
 
         if (permissionItems == null || permissionItems.isEmpty()) {
-            throw new AccountMetadataException("Permission items cannot be null or empty " +
-                        "when adding business stakeholder permissions");
+            return;
         }
 
         String sql = dbQueries.getBatchAddBusinessStakeholderPermissionQuery();

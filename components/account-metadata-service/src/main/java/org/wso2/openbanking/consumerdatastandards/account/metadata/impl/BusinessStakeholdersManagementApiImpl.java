@@ -223,6 +223,17 @@ public class BusinessStakeholdersManagementApiImpl {
             Set<String> existingKeys = existingItems.stream().map(BusinessStakeholdersManagementApiImpl::buildKey)
                     .collect(Collectors.toSet());
 
+            List<BusinessStakeholderPermissionItem> missingItems = validItems.stream()
+                    .filter(item -> !existingKeys.contains(buildKey(item)))
+                    .collect(Collectors.toList());
+
+            if (!missingItems.isEmpty()) {
+                log.error("[Business Stakeholders] No records found for requested items");
+                return Response.status(Response.Status.NOT_FOUND)
+                    .entity(new ErrorResponse().errorDescription("No records found for requested items"))
+                    .build();
+            }
+
             List<BusinessStakeholderPermissionItem> itemsToRevoke = validItems.stream()
                 .filter(item -> existingKeys.contains(buildKey(item)))
                 .map(item -> new BusinessStakeholderPermissionItem(
@@ -305,9 +316,6 @@ public class BusinessStakeholdersManagementApiImpl {
             }
 
             String accountId = StringUtils.trimToEmpty(requestItem.getAccountID());
-            if (StringUtils.isBlank(accountId)) {
-                throw new AccountMetadataException("accountID is required");
-            }
 
             List<String> accountOwners = requestItem.getAccountOwners();
             // Add account owners with VIEW permission
@@ -374,9 +382,6 @@ public class BusinessStakeholdersManagementApiImpl {
             }
 
             String accountId = StringUtils.trimToEmpty(requestItem.getAccountID());
-            if (StringUtils.isBlank(accountId)) {
-                throw new AccountMetadataException("accountID is required");
-            }
 
             List<String> accountOwners = requestItem.getAccountOwners();
             if (accountOwners != null) {

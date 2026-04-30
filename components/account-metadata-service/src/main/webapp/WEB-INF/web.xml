@@ -71,7 +71,8 @@
       <param-value>
         org.wso2.openbanking.consumerdatastandards.account.metadata.api.DisclosureOptionsApi,
         org.wso2.openbanking.consumerdatastandards.account.metadata.api.SecondaryAccountsApi,
-        org.wso2.openbanking.consumerdatastandards.account.metadata.api.BusinessStakeholdersApi
+        org.wso2.openbanking.consumerdatastandards.account.metadata.api.BusinessStakeholdersApi,
+        org.wso2.openbanking.consumerdatastandards.account.metadata.api.CeasingSecondaryUserSharing
       </param-value>
     </init-param>
 
