@@ -447,12 +447,12 @@ public class AccountMetadataServiceImplTest {
      */
     @Test(expectedExceptions = AccountMetadataException.class)
     public void testGetBatchBusinessStakeholderPermissionsByAccountIdsDaoException() throws Exception {
-    List<String> accountIds = Arrays.asList("acc-130", "acc-131");
-    Mockito.when(metadataDAO.getBatchBusinessStakeholderPermissionsByAccountIds(connection, accountIds))
-        .thenThrow(new AccountMetadataException("dao error"));
+        List<String> accountIds = Arrays.asList("acc-130", "acc-131");
+        Mockito.when(metadataDAO.getBatchBusinessStakeholderPermissionsByAccountIds(connection, accountIds))
+                .thenThrow(new AccountMetadataException("dao error"));
 
-    AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
-    service.getBatchBusinessStakeholderPermissionsByAccountIds(accountIds);
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        service.getBatchBusinessStakeholderPermissionsByAccountIds(accountIds);
     }
 
     /**
@@ -462,13 +462,13 @@ public class AccountMetadataServiceImplTest {
      */
     @Test
     public void testAddBatchBusinessStakeholderPermissions() throws Exception {
-    List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
-        buildBusinessItem("acc-132", "user-1", "AUTHORIZE"));
-    AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
+                buildBusinessItem("acc-132", "user-1", "AUTHORIZE"));
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-    service.addBatchBusinessStakeholderPermissions(items);
+        service.addBatchBusinessStakeholderPermissions(items);
 
-    Mockito.verify(metadataDAO).addBatchBusinessStakeholderPermissions(connection, items);
+        Mockito.verify(metadataDAO).addBatchBusinessStakeholderPermissions(connection, items);
     }
 
     /**
@@ -478,13 +478,12 @@ public class AccountMetadataServiceImplTest {
      */
     @Test
     public void testUpdateBatchBusinessStakeholderPermissions() throws Exception {
-    List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
-        buildBusinessItem("acc-133", "user-2", "VIEW"));
-    AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
+                buildBusinessItem("acc-133", "user-2", "VIEW"));
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-    service.updateBatchBusinessStakeholderPermissions(items);
-
-    Mockito.verify(metadataDAO).updateBatchBusinessStakeholderPermissions(connection, items);
+        service.updateBatchBusinessStakeholderPermissions(items);
+        Mockito.verify(metadataDAO).updateBatchBusinessStakeholderPermissions(connection, items);
     }
 
     /**
@@ -494,13 +493,12 @@ public class AccountMetadataServiceImplTest {
      */
     @Test
     public void testDeleteBatchBusinessStakeholderPermissions() throws Exception {
-    List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
-        buildBusinessItem("acc-134", "user-3", null));
-    AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
+                buildBusinessItem("acc-134", "user-3", null));
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
-    service.deleteBatchBusinessStakeholderPermissions(items);
-
-    Mockito.verify(metadataDAO).deleteBatchBusinessStakeholderPermissions(connection, items);
+        service.deleteBatchBusinessStakeholderPermissions(items);
+        Mockito.verify(metadataDAO).deleteBatchBusinessStakeholderPermissions(connection, items);
     }
 
     /**
