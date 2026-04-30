@@ -19,6 +19,7 @@
 package org.wso2.openbanking.consumerdatastandards.account.metadata.utils;
 
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 
 /**
@@ -62,6 +63,19 @@ public final class CommonTestUtils {
         item.setUserId(userId);
         item.setPermission(permission != null
                 ? BusinessStakeholderPermissionItem.PermissionEnum.fromValue(permission) : null);
+        return item;
+    }
+
+    /**
+     * Builds a legal entity sharing status test item.
+     */
+    public static LegalEntitySharingItem buildLegalEntityItem(String accountId, String userId,
+                                                        String legalEntityId, String status) {
+        LegalEntitySharingItem item = new LegalEntitySharingItem();
+        item.setAccountID(accountId);
+        item.setSecondaryUserID(userId);
+        item.setLegalEntityID(legalEntityId);
+        item.setLegalEntitySharingStatus(LegalEntitySharingItem.LegalEntitySharingStatusEnum.fromValue(status));
         return item;
     }
 }

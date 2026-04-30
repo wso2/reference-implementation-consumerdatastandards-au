@@ -25,6 +25,7 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.exceptions.AccountMetadataException;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.BusinessStakeholderPermissionItem;
+import org.wso2.openbanking.consumerdatastandards.account.metadata.model.LegalEntitySharingItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.model.SecondaryAccountInstructionItem;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.service.dao.AccountMetadataDAO;
 import org.wso2.openbanking.consumerdatastandards.account.metadata.utils.connection.provider.ConnectionProvider;
@@ -319,6 +320,79 @@ public class AccountMetadataServiceImplTest {
     }
 
     /**
+     * Verifies successful retrieval of legal entity sharing statuses through the service layer.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testGetBatchLegalEntitySharingStatuses() throws Exception {
+        List<Pair<String, String>> queryItems = Arrays.asList(
+                Pair.of("acc-129", "user-3"),
+                Pair.of("acc-130", "user-4"));
+        List<LegalEntitySharingItem> expected = Arrays.asList(
+                buildLegalEntityItem("acc-129", "user-3", "le-001", "blocked"),
+                buildLegalEntityItem("acc-130", "user-4", "le-002", "active"));
+
+        Mockito.when(metadataDAO.getBatchLegalEntitySharingStatuses(connection, queryItems)).thenReturn(expected);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        List<LegalEntitySharingItem> result = service.getBatchLegalEntitySharingStatuses(queryItems);
+
+        Assert.assertEquals(result, expected);
+        Mockito.verify(metadataDAO).getBatchLegalEntitySharingStatuses(connection, queryItems);
+    }
+
+    /**
+     * Verifies service propagation of DAO exceptions during legal entity sharing retrieval.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchLegalEntitySharingStatusesDaoException() throws Exception {
+        List<Pair<String, String>> queryItems = Collections.singletonList(Pair.of("acc-131", "user-5"));
+
+        Mockito.when(metadataDAO.getBatchLegalEntitySharingStatuses(connection, queryItems))
+                .thenThrow(new AccountMetadataException("dao error"));
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        service.getBatchLegalEntitySharingStatuses(queryItems);
+    }
+
+    /**
+     * Verifies successful upsert of legal entity sharing statuses through the service layer.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test
+    public void testUpsertBatchLegalEntitySharingStatuses() throws Exception {
+        List<LegalEntitySharingItem> items = Collections.singletonList(
+                buildLegalEntityItem("acc-132", "user-6", "le-003", "blocked"));
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        service.upsertBatchLegalEntitySharingStatuses(items);
+
+        Mockito.verify(metadataDAO).upsertBatchLegalEntitySharingStatuses(connection, items);
+    }
+
+    /**
+     * Verifies service propagation of DAO exceptions during legal entity sharing upsert.
+     *
+     * @throws Exception if setup or invocation fails
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testUpsertBatchLegalEntitySharingStatusesDaoException() throws Exception {
+        List<LegalEntitySharingItem> items = Collections.singletonList(
+                buildLegalEntityItem("acc-133", "user-7", "le-004", "active"));
+
+        Mockito.doThrow(new AccountMetadataException("dao error"))
+                .when(metadataDAO)
+                .upsertBatchLegalEntitySharingStatuses(connection, items);
+
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+        service.upsertBatchLegalEntitySharingStatuses(items);
+    }
+
+    /**
      * Verifies successful retrieval of business stakeholder permissions through the service layer.
      *
      * @throws Exception if setup or invocation fails
@@ -393,6 +467,7 @@ public class AccountMetadataServiceImplTest {
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
 
         service.addBatchBusinessStakeholderPermissions(items);
+
         Mockito.verify(metadataDAO).addBatchBusinessStakeholderPermissions(connection, items);
     }
 
@@ -405,7 +480,8 @@ public class AccountMetadataServiceImplTest {
     public void testUpdateBatchBusinessStakeholderPermissions() throws Exception {
         List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
                 buildBusinessItem("acc-133", "user-2", "VIEW"));
-        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider)
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
         service.updateBatchBusinessStakeholderPermissions(items);
         Mockito.verify(metadataDAO).updateBatchBusinessStakeholderPermissions(connection, items);
     }
@@ -420,6 +496,7 @@ public class AccountMetadataServiceImplTest {
         List<BusinessStakeholderPermissionItem> items = Collections.singletonList(
                 buildBusinessItem("acc-134", "user-3", null));
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(metadataDAO, connectionProvider);
+
         service.deleteBatchBusinessStakeholderPermissions(items);
         Mockito.verify(metadataDAO).deleteBatchBusinessStakeholderPermissions(connection, items);
     }
@@ -495,6 +572,29 @@ public class AccountMetadataServiceImplTest {
     }
 
     /**
+     * Verifies SQLException handling for legal entity sharing retrieval.
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testGetBatchLegalEntitySharingStatusesSqlExceptionFromConnectionProvider() throws Exception {
+        List<Pair<String, String>> queryItems = Collections.singletonList(Pair.of("acc-145", "user-3"));
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(
+                metadataDAO, getFailingConnectionProvider());
+        service.getBatchLegalEntitySharingStatuses(queryItems);
+    }
+
+    /**
+     * Verifies SQLException handling for legal entity sharing upsert.
+     */
+    @Test(expectedExceptions = AccountMetadataException.class)
+    public void testUpsertBatchLegalEntitySharingStatusesSqlExceptionFromConnectionProvider() throws Exception {
+        List<LegalEntitySharingItem> items = Collections.singletonList(
+                buildLegalEntityItem("acc-147", "user-5", "le-002", "blocked"));
+        AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(
+                metadataDAO, getFailingConnectionProvider());
+        service.upsertBatchLegalEntitySharingStatuses(items);
+    }
+
+    /**
      * Verifies SQLException handling for business stakeholder retrieval.
      */
     @Test(expectedExceptions = AccountMetadataException.class)
@@ -552,6 +652,19 @@ public class AccountMetadataServiceImplTest {
         AccountMetadataServiceImpl service = AccountMetadataServiceImpl.getInstance(
                 metadataDAO, getFailingConnectionProvider());
         service.deleteBatchBusinessStakeholderPermissions(items);
+    }
+
+    /**
+     * Builds a legal entity sharing status test item.
+     */
+    private LegalEntitySharingItem buildLegalEntityItem(String accountId, String userId,
+                                                        String legalEntityId, String status) {
+        LegalEntitySharingItem item = new LegalEntitySharingItem();
+        item.setAccountID(accountId);
+        item.setSecondaryUserID(userId);
+        item.setLegalEntityID(legalEntityId);
+        item.setLegalEntitySharingStatus(LegalEntitySharingItem.LegalEntitySharingStatusEnum.fromValue(status));
+        return item;
     }
 
     /**

@@ -81,6 +81,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Mockito.when(connectionProvider.getConnection()).thenReturn(connection);
     }
 
+    /**
+     * Verifies bad request handling when an invalid disclosure option status is provided.
+     */
     @Test
     public void testUpdateDisclosureOptionsBadRequestOnInvalidStatus() {
         List<DisclosureOptionItem> request = buildRequest("invalid");
@@ -95,6 +98,9 @@ public class DisclosureOptionsManagementApiImplTest {
                         "Allowed values: no-sharing, pre-approval");
     }
 
+    /**
+     * Verifies update returns OK with an empty response when the request list is empty.
+     */
     @Test
     public void testUpdateDisclosureOptionsOkOnEmptyRequest() {
         Response response = DisclosureOptionsManagementApiImpl.updateDisclosureOptions(Collections.emptyList());
@@ -106,6 +112,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertTrue(body.isEmpty());
     }
 
+    /**
+     * Verifies update persists a new disclosure option and returns the processed payload.
+     */
     @Test
     public void testUpdateDisclosureOptionsSuccess() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
@@ -126,6 +135,9 @@ public class DisclosureOptionsManagementApiImplTest {
                 Collections.singletonMap("acc-1", "no-sharing"));
     }
 
+    /**
+     * Verifies update returns OK without persistence when none of the requested accounts exist.
+     */
     @Test
     public void testUpdateDisclosureOptionsOkWhenNoAccountsExist() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("pre-approval");
@@ -143,6 +155,9 @@ public class DisclosureOptionsManagementApiImplTest {
                 Mockito.any(Connection.class), Mockito.anyMap());
     }
 
+    /**
+     * Verifies update only persists disclosure options for accounts that exist in the database.
+     */
     @Test
     public void testUpdateDisclosureOptionsOkWhenPartialAccountsExist() throws Exception {
         List<DisclosureOptionItem> request = Arrays.asList(
@@ -164,6 +179,9 @@ public class DisclosureOptionsManagementApiImplTest {
                 connection, Collections.singletonMap("acc-1", "pre-approval"));
     }
 
+    /**
+     * Verifies update returns an internal server error when persistence fails.
+     */
     @Test
     public void testUpdateDisclosureOptionsServiceError() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("pre-approval");
@@ -181,6 +199,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertTrue(body.getErrorDescription().startsWith("Failed to update disclosure options:"));
     }
 
+    /**
+     * Verifies bad request handling when no account identifier is provided for lookup.
+     */
     @Test
     public void testGetDisclosureOptionsBadRequestOnEmpty() {
         Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("");
@@ -191,6 +212,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.getErrorDescription(), "At least one accountId is required");
     }
 
+    /**
+     * Verifies bad request handling when the provided account identifier is blank.
+     */
     @Test
     public void testGetDisclosureOptionsBadRequestOnBlankIds() {
         Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions("   ");
@@ -201,6 +225,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.getErrorDescription(), "At least one accountId is required");
     }
 
+    /**
+     * Verifies bad request handling when the account list contains only separators.
+     */
     @Test
     public void testGetDisclosureOptionsBadRequestOnOnlyCommas() {
         Response response = DisclosureOptionsManagementApiImpl.getDisclosureOptions(" , , ");
@@ -211,6 +238,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.getErrorDescription(), "At least one valid accountId is required");
     }
 
+    /**
+     * Verifies disclosure options are returned for multiple account identifiers.
+     */
     @Test
     public void testGetDisclosureOptionsSuccess() throws Exception {
         Map<String, String> batchResult = new HashMap<>();
@@ -231,6 +261,9 @@ public class DisclosureOptionsManagementApiImplTest {
                 "acc-1".equals(item.getAccountId()) && "pre-approval".equals(item.getDisclosureOption())));
     }
 
+    /**
+     * Verifies disclosure option lookup trims whitespace around account identifiers.
+     */
     @Test
     public void testGetDisclosureOptionsWithSpaces() throws Exception {
         Map<String, String> batchResult = new HashMap<>();
@@ -247,6 +280,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertEquals(body.size(), 1);
     }
 
+    /**
+     * Verifies add creates disclosure options when all requested accounts are new.
+     */
     @Test
     public void testAddDisclosureOptionsCreatedWhenAllNew() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
@@ -269,6 +305,9 @@ public class DisclosureOptionsManagementApiImplTest {
                 Collections.singletonMap("acc-1", "no-sharing"));
     }
 
+    /**
+     * Verifies add returns OK without persistence when the account already exists.
+     */
     @Test
     public void testAddDisclosureOptionsOkWhenExisting() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("no-sharing");
@@ -287,6 +326,9 @@ public class DisclosureOptionsManagementApiImplTest {
         Assert.assertTrue(body.isEmpty());
     }
 
+    /**
+     * Verifies bad request handling when add receives an invalid disclosure option status.
+     */
     @Test
     public void testAddDisclosureOptionsBadRequestOnInvalidStatus() {
         List<DisclosureOptionItem> request = buildRequest("invalid");
@@ -300,6 +342,9 @@ public class DisclosureOptionsManagementApiImplTest {
                 "Invalid disclosure option status provided for acc-1 Allowed values: no-sharing, pre-approval");
     }
 
+    /**
+     * Verifies add returns an internal server error when database access fails.
+     */
     @Test
     public void testAddDisclosureOptionsServiceError() throws Exception {
         List<DisclosureOptionItem> request = buildRequest("pre-approval");
