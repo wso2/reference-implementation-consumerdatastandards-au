@@ -355,6 +355,8 @@ When attaching the policy via the APIM Publisher UI, two properties must be set:
 | `webappBaseURL` | Base URL of the Account Metadata Webapp (no trailing slash) | `https://<IS_HOST>:9446/ob/cds/account-metadata` |
 | `basicAuthCredentials` | Base64-encoded `username:password` for calling the Account Metadata Webapp | `aXNfYWRtaW5Ad3NvMi5jb206d3NvMjEyMw==` |
 
+> **Note:** In the current implementation, this policy supports only Basic Auth when calling the Account Metadata Webapp. If you need to support other authentication mechanisms, the policy implementation must be changed.
+
 To generate the Base64 credential:
 ```bash
 echo -n "is_admin@wso2.com:wso2123" | base64
