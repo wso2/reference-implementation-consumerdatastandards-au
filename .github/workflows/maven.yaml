@@ -82,7 +82,7 @@ jobs:
                 "url": "http://resources.knopflerfish.org/repo/maven2/release"
               }
             ]
-      - name: Build with Maven
+      - name: Add host entry
         run: |
           export MAVEN_OPTS="-Xmx8g -XX:MaxPermSize=512m"
           mvn -B install --file pom.xml
@@ -106,3 +106,4 @@ jobs:
 #        wso2.releases (http://maven.wso2.org/nexus/content/repositories/releases/, default, releases+snapshots),
 #        wso2.snapshots (http://maven.wso2.org/nexus/content/repositories/snapshots/, default, snapshots),
 #        knopflerfish (http://resources.knopflerfish.org/repo/maven2/release, default, releases+snapshots)]
+
