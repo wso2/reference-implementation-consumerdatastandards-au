@@ -34,7 +34,7 @@ If you want to build WSO2 Consumer Data Standards AU Reference Implementation fr
 1. Navigate to the downloaded solution using a command prompt and run the Maven command.
 
    |  Command | Description |
-         | :--- |:--- |
+   | :--- |:--- |
    | ```mvn install``` | This starts building the pack without cleaning the folders. |
    | ```mvn clean install``` | This cleans the folders and starts building the solution pack from scratch. |
    | ```mvn clean install -P solution``` | This cleans the folders and starts building the solution pack from scratch. Finally creates the toolkit zip files containing the artifacts required to setup the toolkit. |
@@ -42,7 +42,7 @@ If you want to build WSO2 Consumer Data Standards AU Reference Implementation fr
 1. Once the build is created, navigate to the relevant folder to get the toolkit for each product.
 
 |  Product | Toolkit Path |
-      | :--- |:--- |
+| :--- |:--- |
 | ```Identity Server``` | `/reference-implementation-consumerdatastandards-au/toolkits/ob-is/target` |
 | ```API Manager``` | `/reference-implementation-consumerdatastandards-au/toolkits/ob-apim/target` |
 
