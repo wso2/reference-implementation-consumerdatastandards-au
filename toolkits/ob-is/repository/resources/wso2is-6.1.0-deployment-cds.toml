@@ -3,9 +3,9 @@
 hostname = "IS_HOSTNAME"
 node_ip = "127.0.0.1"
 base_path = "https://$ref{server.hostname}:${carbon.management.port}"
-serverDetails = "WSO2 IS as KM 6.0.0"
+serverDetails = "WSO2 IS as KM 6.1.0"
 mode = "single"
-userAgent = "WSO2 IS as KM 6.0.0"
+userAgent = "WSO2 IS as KM 6.1.0"
 offset = 3
 
 [keystore.primary]
