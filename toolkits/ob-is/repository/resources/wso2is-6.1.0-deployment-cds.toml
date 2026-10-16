@@ -1002,3 +1002,7 @@ password = "$ref{super_admin.password}"
 [open_banking_cds.external_traffic]
 header_name = "X-External-Traffic"
 expected_value = "true"
+
+[open_banking.consent.api_credentials]
+username="$ref{super_admin.username}"
+password="$ref{super_admin.password}"
