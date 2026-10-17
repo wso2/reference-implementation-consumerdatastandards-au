@@ -41,25 +41,25 @@ public class IdEncryptorDecryptor {
 
     private static final Log log = LogFactory.getLog(IdEncryptorDecryptor.class);
 
-    private static SecretKeySpec secretKey;
-    private static byte[] key;
-
-    /**
-     * Set resource ID encryption/decryption key.
+     /**
+     * Derive a SecretKeySpec from the given secret string.
+     * This method operates on local variables only and is thread-safe.
      *
      * @param secret secret key
+     * @return SecretKeySpec derived from the secret, or null if derivation fails
      */
-    public static void setKey(String secret) {
+    public static SecretKeySpec getKey(String secret) {
         MessageDigest sha = null;
         try {
-            key = secret.getBytes(StandardCharsets.UTF_8);
-            sha = MessageDigest.getInstance("SHA-512");
-            key = sha.digest(key);
-            key = Arrays.copyOf(key, 16);
-            secretKey = new SecretKeySpec(key, "AES");
+           byte[] secretBytes = secret.getBytes(StandardCharsets.UTF_8);
+            MessageDigest digest = MessageDigest.getInstance("SHA-512");
+            byte[] hashedSecret = digest.digest(secretBytes);
+            byte[] aesKeyBytes = Arrays.copyOf(hashedSecret, 16);
+            return new SecretKeySpec(aesKeyBytes, "AES");
         } catch (NoSuchAlgorithmException e) {
             log.error("Error while setting the encryption key", e);
         }
+        return null;
     }
 
     /**
@@ -71,7 +71,7 @@ public class IdEncryptorDecryptor {
      */
     public static String encrypt(String strToEncrypt, String secret) {
         try {
-            setKey(secret);
+            SecretKeySpec secretKey = getKey(secret);
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5Padding");
             cipher.init(Cipher.ENCRYPT_MODE, secretKey);
             return Base64.encodeBase64URLSafeString(cipher.doFinal(strToEncrypt.getBytes(StandardCharsets.UTF_8)));
@@ -92,11 +92,11 @@ public class IdEncryptorDecryptor {
      */
     public static String decrypt(String strToDecrypt, String secret) throws IllegalArgumentException {
         try {
-            setKey(secret);
+            SecretKeySpec secretKey = getKey(secret);
             Cipher cipher = Cipher.getInstance("AES/ECB/PKCS5PADDING");
             cipher.init(Cipher.DECRYPT_MODE, secretKey);
-            byte[] test = cipher.doFinal(Base64.decodeBase64(strToDecrypt.getBytes(StandardCharsets.UTF_8)));
-            return new String(test, StandardCharsets.UTF_8);
+            byte[] decryptedBytes = cipher.doFinal(Base64.decodeBase64(strToDecrypt.getBytes(StandardCharsets.UTF_8)));
+            return new String(decryptedBytes, StandardCharsets.UTF_8);
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException e) {
             log.error("Error while setting the decryption key", e);
         } catch (BadPaddingException | IllegalBlockSizeException e) {
